@@ -112,13 +112,18 @@ class BasicMLModelChooser:
             len(context[context_table_key][context_table_features_idx])
         feature_names = list(
             map(lambda i: 'f{}'.format(i), range(0, features_count)))
+
+        # print('feature_names # 1')
+        # print(feature_names)
+
         return feature_names
 
     def score(
             self, variant: Dict[str, object],
             context: Dict[str, object], context_table_key: str = "table",
             context_table_features_idx: int = 1,
-            seed_key: str = "model_seed") -> float:
+            seed_key: str = "model_seed",
+            mlmodel_score_res_key: str = 'target') -> float:
 
         """
         Performs scoring of a single variant using provided context and loaded
@@ -148,17 +153,22 @@ class BasicMLModelChooser:
             self._get_encoded_features(
                 variant=variant, context=context,
                 context_table_key=context_table_key, seed_key=seed_key)
+
         # rename features
         feature_names = \
             self._get_feature_names(
                 context=context, context_table_key=context_table_key,
                 context_table_features_idx=context_table_features_idx)
 
-        print(dict(zip(feature_names, list(encoded_features.values()))))
-
         score = \
             self.des_mlmodel.predict(
-                dict(zip(feature_names, list(encoded_features.values()))))
+                dict(zip(feature_names, list(encoded_features.values()))))\
+            .get(mlmodel_score_res_key, None)
+
+        if not score:
+            raise KeyError(
+                'There was no key named: {} in result of predict() method'
+                .format(mlmodel_score_res_key))
 
         return score
 
@@ -188,7 +198,9 @@ class BasicMLModelChooser:
             scores.append(self.score(variant=variant, context=context))
 
         assert len(scores) == len(variants)
-        variants_w_scores = np.array([variants, scores]).reshape((-1, 2))
+        variants_w_scores = \
+            np.array([variants, scores])\
+            .reshape((-1, 2)).T
         return variants_w_scores
 
     def sort(
@@ -263,6 +275,22 @@ if __name__ == '__main__':
     feature_names = list(
         map(lambda i: 'f{}'.format(i), range(0, features_count)))
 
-    sample_variant = {"arrays": [el for el in range(0, features_count)]}
+    sample_variant = {"arrays": [el for el in range(0, features_count + 130)]}
+
     res = mlmc.score(variant=sample_variant, context=context)
+    print('res')
     print(res)
+
+    res_all = \
+        mlmc.score_all(
+            variants=[sample_variant, sample_variant], context=context)
+    print('res_all')
+    print(res_all)
+
+    srtd_variants_w_scores = mlmc.sort(variants_w_scores=res_all)
+    print('srtd_variants_w_scores')
+    print(srtd_variants_w_scores)
+
+    best_choice = mlmc.choose(srtd_variants_w_scores=srtd_variants_w_scores)
+    print('best_choice')
+    print(best_choice)
