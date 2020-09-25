@@ -3,24 +3,25 @@ import json
 import numpy as np
 from typing import Dict, List
 
-from feature_encoder import FeatureEncoder
+from choosers.basic_choosers import BasicChooser
+from transformers.feature_encoder import FeatureEncoder
 
 
-class BasicMLModelChooser:
+class BasicMLModelChooser(BasicChooser):
 
     @property
-    def des_mlmodel(self) -> ct.models.MLModel:
-        return self._des_mlmodel
+    def usd_model(self) -> ct.models.MLModel:
+        return self._usd_model
 
-    @des_mlmodel.setter
-    def des_mlmodel(self, new_val: ct.models.MLModel):
-        self._des_mlmodel = new_val
+    @usd_model.setter
+    def usd_model(self, new_val: ct.models.MLModel):
+        self._usd_model = new_val
 
     def __init__(self):
         # initialize
-        self.des_mlmodel = None
+        self.usd_model = None
 
-    def load_mlmodel(self, pth_to_model: str, verbose: bool = True):
+    def load_model(self, pth_to_model: str, verbose: bool = True):
         """
         Loads desired model from input path.
 
@@ -41,7 +42,7 @@ class BasicMLModelChooser:
         try:
             if verbose:
                 print('Attempting to load: {} model'.format(pth_to_model))
-            self.des_mlmodel = ct.models.MLModel(pth_to_model)
+            self.usd_model = ct.models.MLModel(pth_to_model)
             if verbose:
                 print('Model: {} successfully loaded'.format(pth_to_model))
         except Exception as exc:
@@ -161,7 +162,7 @@ class BasicMLModelChooser:
                 context_table_features_idx=context_table_features_idx)
 
         score = \
-            self.des_mlmodel.predict(
+            self.usd_model.predict(
                 dict(zip(feature_names, list(encoded_features.values()))))\
             .get(mlmodel_score_res_key, None)
 
@@ -231,14 +232,14 @@ class BasicMLModelChooser:
         return srtd_variants_w_scores
 
     def choose(
-            self, srtd_variants_w_scores: np.ndarray,
+            self, variants_w_scores: np.ndarray,
             scores_col_idx: int = 1) -> np.ndarray:
         """
         Chooses the variant with the highest score. Randomly breaks ties
 
         Parameters
         ----------
-        srtd_variants_w_scores: np.ndarray
+        variants_w_scores: np.ndarray
             2D array of (variant, score) rows
         scores_col_idx: int
             int indicating column with scores
@@ -251,8 +252,8 @@ class BasicMLModelChooser:
         """
         # must break ties
 
-        scores = srtd_variants_w_scores[:, scores_col_idx]
-        top_variants_w_scores = srtd_variants_w_scores[scores == scores.max()]
+        scores = variants_w_scores[:, scores_col_idx]
+        top_variants_w_scores = variants_w_scores[scores == scores.max()]
         chosen_top_variant_idx = \
             np.random.randint(top_variants_w_scores.shape[0])
 
@@ -264,9 +265,9 @@ if __name__ == '__main__':
     mlmc = BasicMLModelChooser()
 
     test_model_pth = 'model.mlmodel'
-    mlmc.load_mlmodel(pth_to_model=test_model_pth)
+    mlmc.load_model(pth_to_model=test_model_pth)
 
-    with open('model.json', 'r') as mj:
+    with open('../test_artifacts/model.json', 'r') as mj:
         json_str = mj.readline()
         context = json.loads(json_str)
 
@@ -291,6 +292,6 @@ if __name__ == '__main__':
     print('srtd_variants_w_scores')
     print(srtd_variants_w_scores)
 
-    best_choice = mlmc.choose(srtd_variants_w_scores=srtd_variants_w_scores)
+    best_choice = mlmc.choose(variants_w_scores=srtd_variants_w_scores)
     print('best_choice')
     print(best_choice)
