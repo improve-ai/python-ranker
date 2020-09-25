@@ -254,7 +254,9 @@ if __name__ == '__main__':
     assert hasattr(im, pa.method_call)
 
     des_method = getattr(im, pa.method_call)
-    res = des_method(**{'variants': pa.variants, 'context': pa.context})
+    res = \
+        des_method(**{
+            'variants': pa.variants, 'context': pa.context, 'cli_call': True})
     print('Result of method call: {} \n on variants: {} \n with model: {} \n '
           'and context: {} is: \n\n {}'
           .format(pa.method_call, pa.variants, pa.model_pth, pa.context, res))
