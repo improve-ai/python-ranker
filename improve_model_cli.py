@@ -11,12 +11,12 @@ from utils.gen_purp_utils import constant
 class ImproveModel:
 
     @property
-    def usd_chooser(self) -> BasicChooser:
-        return self._usd_chooser
+    def chooser(self) -> BasicChooser:
+        return self._chooser
 
-    @usd_chooser.setter
-    def usd_chooser(self, new_val: BasicChooser):
-        self._usd_chooser = new_val
+    @chooser.setter
+    def chooser(self, new_val: BasicChooser):
+        self._chooser = new_val
 
     @property
     def model_kind(self) -> str:
@@ -34,22 +34,22 @@ class ImproveModel:
     def pth_to_model(self, new_val: str):
         self._pth_to_model = new_val
 
-    @staticmethod
     @constant
     def SUPPORTED_MODEL_KINDS():
         return ['mlmodel', 'xgb_native']
 
-    @staticmethod
     @constant
     def SUPPORTED_CALLS():
         return ['score', 'sort', 'choose']
 
     def __init__(self, model_kind: str, model_pth: str):
-        self.usd_chooser = None
+        self.chooser = None
         self.model_kind = model_kind
         self.pth_to_model = model_pth
+        self._set_chooser()
+        self._load_choosers_model()
 
-    def _set_usd_chooser(self):
+    def _set_chooser(self):
         """
         Sets desired chooser
 
@@ -60,9 +60,9 @@ class ImproveModel:
         """
 
         if self.model_kind == 'mlmodel':
-            self.usd_chooser = BasicMLModelChooser()
+            self.chooser = BasicMLModelChooser()
         elif self.model_kind == 'xgb_native':
-            self.usd_chooser = BasicNativeXGBChooser()
+            self.chooser = BasicNativeXGBChooser()
 
     def _load_choosers_model(self):
         """
@@ -73,7 +73,7 @@ class ImproveModel:
         None
 
         """
-        self.usd_chooser.load_model(pth_to_model=self.pth_to_model)
+        self.chooser.load_model(pth_to_model=self.pth_to_model)
 
     def _get_json_frm_str(self, json_str) -> list or dict or None:
         """
@@ -145,7 +145,11 @@ class ImproveModel:
         if not cli_call:
             return input_val
         else:
-            return json.dumps(input_val)
+            dumped_val = input_val
+            if isinstance(dumped_val, np.ndarray):
+                dumped_val = input_val.tolist()
+
+            return json.dumps(dumped_val)
 
     def score(
             self, variants: str, context: str,
@@ -167,18 +171,27 @@ class ImproveModel:
 
         """
         variants_json = self._get_json_frm_str(json_str=variants)
+        context_json = self._get_json_frm_str(json_str=context)
         is_single_variant = \
             self._check_if_single_variant(variants_json=variants_json)
         if is_single_variant:
             variants_w_scores = \
-                self.usd_chooser.score(variant=variants_json, context=context)
+                self.chooser.score(variant=variants_json, context=context_json)
         else:
             variants_w_scores = \
-                self.usd_chooser.score_all(
-                    variants=variants_json, context=context)
+                self.chooser.score_all(
+                    variants=variants_json, context=context_json)
+
+        ret_variants_w_scores = variants_w_scores
+        if isinstance(variants_w_scores, float):
+            ret_variants_w_scores = \
+                np.array([[variants_json, variants_w_scores]]).reshape((1, 2))
+            # print(ret_variants_w_scores.shape)
+
+        print(ret_variants_w_scores)
 
         return self._get_as_is_or_json_str(
-            input_val=variants_w_scores, cli_call=cli_call)
+            input_val=ret_variants_w_scores, cli_call=cli_call)
 
     def sort(
             self, variants: str, context: str,
@@ -205,7 +218,7 @@ class ImproveModel:
         variants_w_scores = \
             self.score(variants=variants, context=context, cli_call=False)
         srtd_variants_w_scores = \
-            self.usd_chooser.sort(variants_w_scores=variants_w_scores)
+            self.chooser.sort(variants_w_scores=variants_w_scores)
 
         return self._get_as_is_or_json_str(
             input_val=srtd_variants_w_scores, cli_call=cli_call)
@@ -215,13 +228,25 @@ class ImproveModel:
         variants_w_scores = \
             self.score(variants=variants, context=context, cli_call=False)
         chosen_variant = \
-            self.usd_chooser.choose(variants_w_scores=variants_w_scores)
+            self.chooser.choose(variants_w_scores=variants_w_scores)
 
         return self._get_as_is_or_json_str(
             input_val=chosen_variant, cli_call=cli_call)
 
 
 if __name__ == '__main__':
+
+    DEFAULT_VARIANT = \
+        json.dumps(
+            [{"arrays": [0 for el in range(0, 32 + 130)]},
+             {"arrays": [2 for el in range(0, 32 + 130)]},
+             {"arrays": [1 for el in range(0, 32 + 130)]}]).replace(' ', '')
+    print(DEFAULT_VARIANT)
+
+    with open('test_artifacts/model.json', 'r') as mj:
+        context_str = mj.readline().replace(' ', '')
+
+    DEFAULT_CONTEXT = context_str
 
     ap = ArgumentParser()
     ap.add_argument(
@@ -233,23 +258,26 @@ if __name__ == '__main__':
         help='String indicating which model type would be used: mlmodel, '
              'xgb_native or tf_lite model')
     ap.add_argument('model_pth', help='Path to model file')
-    ap.add_argument('variants', help='JSON with variants to be scored')
-    ap.add_argument('context', help='JSON with context / lookup table')
+    ap.add_argument('--variants', help='JSON with variants to be scored',
+                    default=DEFAULT_VARIANT)
+    ap.add_argument(
+        '--context', help='JSON with context / lookup table',
+        default=DEFAULT_CONTEXT)
 
     pa = ap.parse_args()
 
-    if pa.method_call not in ImproveModel.SUPPORTED_CALLS:
+    im = ImproveModel(model_kind=pa.model_kind, model_pth=pa.model_pth)
+
+    if pa.method_call not in im.SUPPORTED_CALLS:
         raise ValueError(
             'CLI supported method_calls are {}. \n Provided method_calls: {}'
-            .format(','.join(ImproveModel.SUPPORTED_CALLS), pa.method_call))
+            .format(','.join(im.SUPPORTED_CALLS), pa.method_call))
 
-    if pa.model_kind not in ImproveModel.SUPPORTED_MODEL_KINDS:
+    if pa.model_kind not in im.SUPPORTED_MODEL_KINDS:
         raise ValueError(
             'Currently supported model kinds are: {} \n. '
             'You have provided following model kind: {}'
-            .format(','.join(ImproveModel.SUPPORTED_MODEL_KINDS), pa.model_kind))
-
-    im = ImproveModel(model_kind=pa.model_kind, model_pth=pa.model_pth)
+            .format(','.join(im.SUPPORTED_MODEL_KINDS), pa.model_kind))
 
     assert hasattr(im, pa.method_call)
 
@@ -257,7 +285,9 @@ if __name__ == '__main__':
     res = \
         des_method(**{
             'variants': pa.variants, 'context': pa.context, 'cli_call': True})
-    print('Result of method call: {} \n on variants: {} \n with model: {} \n '
-          'and context: {} is: \n\n {}'
-          .format(pa.method_call, pa.variants, pa.model_pth, pa.context, res))
-    print(res)
+    print('\n##################################################################\n\n'
+          'Result of method call: {} \n on variants: {} \n with model: {} \n\n'
+          '##################################################################\n\n'
+          'is: \n'
+          '{}'
+          .format(pa.method_call, pa.variants, pa.model_pth, res))

@@ -199,9 +199,10 @@ class BasicMLModelChooser(BasicChooser):
             scores.append(self.score(variant=variant, context=context))
 
         assert len(scores) == len(variants)
+
         variants_w_scores = \
-            np.array([variants, scores])\
-            .reshape((-1, 2)).T
+            np.array([variants, scores]).T
+
         return variants_w_scores
 
     def sort(
@@ -276,7 +277,7 @@ if __name__ == '__main__':
     feature_names = list(
         map(lambda i: 'f{}'.format(i), range(0, features_count)))
 
-    sample_variant = {"arrays": [el for el in range(0, features_count + 130)]}
+    sample_variant = {"arrays": [0 for el in range(0, features_count + 130)]}
 
     res = mlmc.score(variant=sample_variant, context=context)
     print('res')
