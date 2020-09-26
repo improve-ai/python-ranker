@@ -2,13 +2,13 @@ from abc import ABC, abstractmethod
 
 
 class BasicChooser(ABC):
-    @abstractmethod
     @property
+    @abstractmethod
     def usd_model(self) -> object:
         return self._usd_model
 
-    @abstractmethod
     @usd_model.setter
+    @abstractmethod
     def usd_model(self, new_val: object):
         self._usd_model = new_val
 

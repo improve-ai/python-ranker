@@ -4,7 +4,7 @@ import numpy as np
 from typing import Dict, List
 from xgboost import Booster, DMatrix
 
-from transformers.feature_encoder import FeatureEncoder
+from encoders.feature_encoder import FeatureEncoder
 
 
 class BasicNativeXGBChooser:

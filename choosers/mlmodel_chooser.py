@@ -4,7 +4,7 @@ import numpy as np
 from typing import Dict, List
 
 from choosers.basic_choosers import BasicChooser
-from transformers.feature_encoder import FeatureEncoder
+from encoders.feature_encoder import FeatureEncoder
 
 
 class BasicMLModelChooser(BasicChooser):
@@ -264,7 +264,7 @@ if __name__ == '__main__':
 
     mlmc = BasicMLModelChooser()
 
-    test_model_pth = 'model.mlmodel'
+    test_model_pth = '../test_artifacts/model.mlmodel'
     mlmc.load_model(pth_to_model=test_model_pth)
 
     with open('../test_artifacts/model.json', 'r') as mj:
