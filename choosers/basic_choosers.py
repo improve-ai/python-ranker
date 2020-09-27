@@ -4,13 +4,13 @@ from abc import ABC, abstractmethod
 class BasicChooser(ABC):
     @property
     @abstractmethod
-    def usd_model(self) -> object:
-        return self._usd_model
+    def model(self) -> object:
+        return self._model
 
-    @usd_model.setter
+    @model.setter
     @abstractmethod
-    def usd_model(self, new_val: object):
-        self._usd_model = new_val
+    def model(self, new_val: object):
+        self._model = new_val
 
     @abstractmethod
     def load_model(self, pth_to_model, **kwargs):

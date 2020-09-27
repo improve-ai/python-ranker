@@ -186,9 +186,6 @@ class ImproveModel:
         if isinstance(variants_w_scores, float):
             ret_variants_w_scores = \
                 np.array([[variants_json, variants_w_scores]]).reshape((1, 2))
-            # print(ret_variants_w_scores.shape)
-
-        print(ret_variants_w_scores)
 
         return self._get_as_is_or_json_str(
             input_val=ret_variants_w_scores, cli_call=cli_call)
@@ -238,10 +235,9 @@ if __name__ == '__main__':
 
     DEFAULT_VARIANT = \
         json.dumps(
-            [{"arrays": [0 for el in range(0, 32 + 130)]},
-             {"arrays": [2 for el in range(0, 32 + 130)]},
-             {"arrays": [1 for el in range(0, 32 + 130)]}]).replace(' ', '')
-    print(DEFAULT_VARIANT)
+            [{"arrays": [0 for el in range(0, 32 + 1000)]},
+             {"arrays": [2 for el in range(0, 32 + 1000)]},
+             {"arrays": [1 for el in range(0, 32 + 1000)]}]).replace(' ', '')
 
     with open('test_artifacts/model.json', 'r') as mj:
         context_str = mj.readline().replace(' ', '')
