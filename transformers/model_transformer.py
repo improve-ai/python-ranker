@@ -8,6 +8,39 @@ from io import BytesIO
 import shutil
 import pickle as pkl
 
+
+def get_model_objective(booster) -> str:
+  model_objective = ''
+  try:
+    model_cfg = json.loads(booster.save_config())
+    model_objective = \
+      model_cfg['learner']['learner_train_param']['objective'] \
+        .split(':')[0]
+  except Exception as exc:
+    print('Cannot extract objective info from booster`s config')
+
+  if model_objective not in ['reg', 'binary']:
+    raise ValueError(
+      'Unsupported booster objective: {}'.format(model_objective))
+  return model_objective
+
+
+def convert_xgb_to_mlmodel(booster, feature_names):
+
+  model_objective = get_model_objective(booster=booster)
+
+  if model_objective == 'reg':
+    conv_kwgs = {'mode': 'regressor', 'feature_names': feature_names}
+  elif model_objective == 'binary':
+    conv_kwgs = \
+      {'mode': 'classifier', 'feature_names': feature_names,
+       'class_labels': [0, 1]}
+  else:
+    raise ValueError(
+      'Unsupported conversion for {} objective'.format(model_objective))
+
+  return coremltools.converters.xgboost.convert(booster, **conv_kwgs)
+
 # Input:
 # `xgboost_tar_gz_buffer` is a data buffer for a tar.gz file
 # that contains a file named 'xgboost-model'
@@ -53,7 +86,10 @@ def transform_model(xgboost_tar_gz_buffer, metadata):
         columns_count = len(metadata['table'][1])
         feature_names = list(map(lambda i: 'f{}'.format(i), range(0, columns_count)))
 
-        cml_model = coremltools.converters.xgboost.convert(booster, feature_names)
+        # cml_model = coremltools.converters.xgboost.convert(booster, feature_names)
+        cml_model = \
+          convert_xgb_to_mlmodel(booster=booster, feature_names=feature_names)
+
         model_path = tmp_folder + "model.mlmodel"
         cml_model.save(model_path)
         output_tar.add(model_path, arcname="model.mlmodel")
