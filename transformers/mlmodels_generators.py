@@ -128,6 +128,17 @@ if __name__ == '__main__':
 
     bmlg.append_json_to_mlmodel()
 
+    print('\n\nGenerating large json list 0 - 14999999 -> about 140 MB')
+    with open('../test_artifacts/model_large.json', 'w') as mockup_big_json:
+        mockup_big_json.writelines(json.dumps([el for el in range(15000000)]))
+
+    print('Done!')
+
+    with open('../test_artifacts/model_large.json', 'r') as jsonf:
+        large_payload = jsonf.read()
+
+    bmlg.append_json_to_mlmodel(payload=large_payload, payload_key='json')
+
     bmlg.save_mlmodel(
         run_params[run_params_keys[2]], save_callable_attr_n='save')
 
@@ -147,6 +158,7 @@ if __name__ == '__main__':
 
     print('Asserting if original json is eequal to imputed one')
     assert json.dumps(bmlg.metadata_json) == cached_model.user_defined_metadata['appended_payload']
+    assert int(json.loads(cached_model.user_defined_metadata['json'])[1:-1].split(',')[-1]) == 15000000 - 1
     print('Assertion OK')
 
 
