@@ -152,7 +152,7 @@ class ImproveModel:
             return json.dumps(dumped_val)
 
     def score(
-            self, variants: str, context: str,
+            self, variants: str, context: str, model_metadata: str,
             cli_call: bool = False) -> np.ndarray or str:
         """
         Scores provided variants with provided context
@@ -172,15 +172,20 @@ class ImproveModel:
         """
         variants_json = self._get_json_frm_str(json_str=variants)
         context_json = self._get_json_frm_str(json_str=context)
+        model_metadata_json = self._get_json_frm_str(json_str=model_metadata)
+
         is_single_variant = \
             self._check_if_single_variant(variants_json=variants_json)
         if is_single_variant:
             variants_w_scores = \
-                self.chooser.score(variant=variants_json, context=context_json)
+                self.chooser.score(
+                    variant=variants_json, context=context_json,
+                    model_metadata=model_metadata_json)
         else:
             variants_w_scores = \
                 self.chooser.score_all(
-                    variants=variants_json, context=context_json)
+                    variants=variants_json, context=context_json,
+                    model_metadata=model_metadata_json)
 
         ret_variants_w_scores = variants_w_scores
         if isinstance(variants_w_scores, float):
@@ -191,7 +196,7 @@ class ImproveModel:
             input_val=ret_variants_w_scores, cli_call=cli_call)
 
     def sort(
-            self, variants: str, context: str,
+            self, variants: str, context: str, model_metadata: str,
             cli_call: bool = False) -> np.ndarray or str:
         """
         Scores and sorts provided variants and context
@@ -213,17 +218,23 @@ class ImproveModel:
         """
 
         variants_w_scores = \
-            self.score(variants=variants, context=context, cli_call=False)
+            self.score(
+                variants=variants, context=context,
+                model_metadata=model_metadata, cli_call=False)
         srtd_variants_w_scores = \
             self.chooser.sort(variants_w_scores=variants_w_scores)
 
         return self._get_as_is_or_json_str(
             input_val=srtd_variants_w_scores, cli_call=cli_call)
 
-    def choose(self, variants: str, context: str, cli_call: bool = False):
+    def choose(
+            self, variants: str, context: str, model_metadata: str,
+            cli_call: bool = False):
 
         variants_w_scores = \
-            self.score(variants=variants, context=context, cli_call=False)
+            self.score(
+                variants=variants, context=context,
+                model_metadata=model_metadata, cli_call=False)
         chosen_variant = \
             self.chooser.choose(variants_w_scores=variants_w_scores)
 
@@ -239,10 +250,16 @@ if __name__ == '__main__':
              {"arrays": [2 for el in range(0, 32 + 1000)]},
              {"arrays": [1 for el in range(0, 32 + 1000)]}]).replace(' ', '')
 
-    with open('test_artifacts/model.json', 'r') as mj:
-        context_str = mj.readline().replace(' ', '')
+    with open('test_artifacts/context.json', 'r') as mj:
+        context_str = mj.read()
 
     DEFAULT_CONTEXT = context_str
+
+    with open('test_artifacts/model.json', 'r') as mmd:
+        metadata_str = mmd.read()
+        # model_metadata = json.loads(metadata_str)
+
+    DEFAULT_MODEL_METADATA = metadata_str
 
     ap = ArgumentParser()
     ap.add_argument(
@@ -257,8 +274,10 @@ if __name__ == '__main__':
     ap.add_argument('--variants', help='JSON with variants to be scored',
                     default=DEFAULT_VARIANT)
     ap.add_argument(
-        '--context', help='JSON with context / lookup table',
-        default=DEFAULT_CONTEXT)
+        '--context', help='JSON with context', default=DEFAULT_CONTEXT)
+    ap.add_argument(
+        '--model_metadata', help='JSON with lookup table and seed',
+        default=DEFAULT_MODEL_METADATA)
 
     pa = ap.parse_args()
 
@@ -280,9 +299,12 @@ if __name__ == '__main__':
     des_method = getattr(im, pa.method_call)
     res = \
         des_method(**{
-            'variants': pa.variants, 'context': pa.context, 'cli_call': True})
+            'variants': pa.variants,
+            'context': pa.context,
+            'model_metadata': pa.model_metadata,
+            'cli_call': True})
     print('\n##################################################################\n\n'
-          'Result of method call: {} \n on variants: {} \n with model: {} \n\n'
+          'Result of method call: {} \non variants: {}\nwith model: {} \n\n'
           '##################################################################\n\n'
           'is: \n'
           '{}'

@@ -1,7 +1,7 @@
 import coremltools as ct
 import json
+import numpy as np
 import os
-import pandas as pd
 import pickle as pkl
 import tarfile
 from xgboost import Booster, XGBClassifier, XGBRegressor
