@@ -14,13 +14,14 @@ The prepared CLI takes as input:
     - *.mlmodel
     - *.xgb (xgboost native format)
  - path to desired model
- - JSON string with input data **without any whitespaces**
- - JSON string with metadata/context **without any whitespaces**
+ - JSON string with input data encapsulated with '' -> '<json string'
+ - JSON string with context encapsulated with '' -> '<json string'
+ - JSON string with model metadata encapsulated with '' -> '<json string'
 
 In order to use prepared ImproveModel CLI:
  - make sure to change directory to python-sdk folder
  - call improve_model_cli.py in the following fashion <br>
- python3.7 improve_model_cli.py [desired method name] [desired model type] [path to deired model] --variant [input JSON string] --context [metadata JSON string]
+ python3.7 improve_model_cli.py [desired method name] [desired model type] [path to deired model] --variant [input JSON string] --context [context JSON string] --model_metadata [metadata JSON string]
  
 To see example results please call: <br>
 python3.7 improve_model_cli.py score xgb_native test_artifacts/model.xgb
