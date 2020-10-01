@@ -246,9 +246,9 @@ if __name__ == '__main__':
 
     DEFAULT_VARIANT = \
         json.dumps(
-            [{"arrays": [0 for el in range(0, 32 + 1000)]},
-             {"arrays": [2 for el in range(0, 32 + 1000)]},
-             {"arrays": [1 for el in range(0, 32 + 1000)]}]).replace(' ', '')
+            [{"text": "Sanity check test 1"},
+             {"text": "Sanity check test 2"},
+             {"text": "Completely different sanity check"}])
 
     with open('test_artifacts/context.json', 'r') as mj:
         context_str = mj.read()

@@ -1,8 +1,10 @@
 from copy import deepcopy
 import json
 import numpy as np
+import pickle
 from typing import Dict, List
 from xgboost import Booster, DMatrix
+from xgboost.core import XGBoostError
 
 from choosers.basic_choosers import BasicChooser
 from utils.gen_purp_utils import constant, append_prfx_to_dict_keys, \
@@ -19,12 +21,21 @@ class BasicNativeXGBChooser(BasicChooser):
     def model(self, new_val: Booster):
         self._model = new_val
 
+    @property
+    def mlmodel_metadata_key(self):
+        return self._mlmodel_metadata_key
+
+    @mlmodel_metadata_key.setter
+    def mlmodel_metadata_key(self, new_val: str):
+        self._mlmodel_metadata_key = new_val
+
     @constant
     def SUPPORTED_OBJECTIVES() -> list:
         return ['reg', 'binary', 'multi']
 
-    def __init__(self):
+    def __init__(self, mlmodel_metadata_key: str = 'json'):
         self.model = None
+        self.mlmodel_metadata_key = mlmodel_metadata_key
 
     def load_model(self, pth_to_model: str, verbose: bool = True):
         """
@@ -44,28 +55,20 @@ class BasicNativeXGBChooser(BasicChooser):
         try:
             if verbose:
                 print('Attempting to load: {} model'.format(pth_to_model))
-                self.model = Booster()
-                self.model.load_model(pth_to_model)
+            self.model = Booster()
+            self.model.load_model(pth_to_model)
             if verbose:
                 print('Model: {} successfully loaded'.format(pth_to_model))
+        except XGBoostError as xgbe:
+            if verbose:
+                print('Attempting to read via pickle interface')
+            with open(pth_to_model, 'rb') as xgbl:
+                self.model = pickle.load(xgbl)
         except Exception as exc:
             if verbose:
                 print(
                     'When attempting to load the mode: {} the following error '
                     'occured: {}'.format(pth_to_model, exc))
-
-    def _get_model_metadata(
-            self, model_metadata: Dict[str, object] = None) -> dict:
-
-        ml_meta = model_metadata
-
-        if not ml_meta:
-            raise ValueError('Model metadata is empty!')
-
-        ret_ml_meta = \
-            json.loads(ml_meta) if isinstance(ml_meta, str) else ml_meta
-
-        return ret_ml_meta
 
     def score_all(
             self, variants: List[Dict[str, object]],
@@ -97,16 +100,30 @@ class BasicNativeXGBChooser(BasicChooser):
             2D numpy array which contains (variant, score) pair in each row
         """
 
-        encoded_features = []
+        encoded_variants = []
+
+        encoded_context = \
+            self._get_encoded_features(
+                encoded_dict={'context': context},
+                model_metadata=model_metadata,
+                lookup_table_key=lookup_table_key, seed_key=seed_key)
 
         for variant in variants:
 
-            rnmd_all_encoded_features = \
-                self._get_encoded_context_w_variant(
-                    variant=variant, context=context,
+            encoded_features = \
+                self._get_encoded_features(
+                    encoded_dict={'variant': variant},
                     model_metadata=model_metadata,
                     lookup_table_key=lookup_table_key, seed_key=seed_key)
-            encoded_features.append(rnmd_all_encoded_features)
+
+            all_encoded_features = deepcopy(encoded_context)
+            all_encoded_features.update(encoded_features)
+
+            rnmd_all_encoded_features = \
+                append_prfx_to_dict_keys(input_dict=all_encoded_features,
+                                         prfx='f')
+
+            encoded_variants.append(rnmd_all_encoded_features)
 
         # all_present_feature_names = list(np.unique(encoded_features_names))
 
@@ -116,7 +133,7 @@ class BasicNativeXGBChooser(BasicChooser):
                 lookup_table_features_idx=lookup_table_features_idx)
 
         imputed_encoded_features = []
-        for single_variant_features in encoded_features:
+        for single_variant_features in encoded_variants:
             imputed_single_variant_features = \
                 impute_missing_dict_keys(
                     all_des_keys=all_feature_names,
@@ -170,6 +187,9 @@ class BasicNativeXGBChooser(BasicChooser):
 
         rnmd_all_encoded_features = \
             append_prfx_to_dict_keys(input_dict=all_encoded_features, prfx='f')
+
+        print('rnmd_all_encoded_features')
+        print(rnmd_all_encoded_features)
 
         return rnmd_all_encoded_features
 
@@ -244,7 +264,7 @@ if __name__ == '__main__':
 
     mlmc = BasicNativeXGBChooser()
 
-    test_model_pth = '../test_artifacts/model.xgb'
+    test_model_pth = '../test_artifacts/model_appended.xgb'
     mlmc.load_model(pth_to_model=test_model_pth)
 
     with open('../test_artifacts/model.json', 'r') as mj:
@@ -269,7 +289,7 @@ if __name__ == '__main__':
                        {"arrays": [el for el in range(0, features_count + 10)]}]
 
     single_score = mlmc.score(
-        variant=sample_variants[0], context=context, model_metadata=model_metadata)
+        variant=sample_variants[0], context=context)
     print('single score')
     print(single_score)
 

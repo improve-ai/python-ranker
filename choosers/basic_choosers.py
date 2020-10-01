@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import json
 import numpy as np
 from typing import List, Dict
 
@@ -9,12 +10,24 @@ class BasicChooser(ABC):
     @property
     @abstractmethod
     def model(self) -> object:
-        return self._model
+        # return self._model
+        pass
 
     @model.setter
     @abstractmethod
     def model(self, new_val: object):
-        self._model = new_val
+        pass
+        # self._model = new_val
+
+    @property
+    @abstractmethod
+    def mlmodel_metadata_key(self):
+        pass
+
+    @mlmodel_metadata_key.setter
+    @abstractmethod
+    def mlmodel_metadata_key(self, new_val: str):
+        pass
 
     @abstractmethod
     def load_model(self, pth_to_model, **kwargs):
@@ -36,9 +49,21 @@ class BasicChooser(ABC):
     # def choose(self, variants_w_scores, **kwargs):
     #     pass
 
-    @abstractmethod
-    def _get_model_metadata(self, model_metadata, **kwargs):
-        pass
+    def _get_model_metadata(
+            self, model_metadata: Dict[str, object] = None) -> dict:
+
+        ml_meta = model_metadata
+
+        if not ml_meta:
+            assert hasattr(self.model, 'user_defined_metadata')
+            model_metadata = self.model.user_defined_metadata
+            assert self.mlmodel_metadata_key in model_metadata.keys()
+            ml_meta = model_metadata[self.mlmodel_metadata_key]
+
+        ret_ml_meta = \
+            json.loads(ml_meta) if isinstance(ml_meta, str) else ml_meta
+
+        return ret_ml_meta
 
     def _get_encoded_features(
             self, encoded_dict: Dict[str, object],
@@ -76,6 +101,8 @@ class BasicChooser(ABC):
             raise ValueError(
                 'Lookup table or model seed not present in context!')
 
+        # print('model_seed')
+        # print(model_seed)
         fe = FeatureEncoder(table=lookup_table, model_seed=model_seed)
 
         enc_feats = fe.encode_features(encoded_dict)

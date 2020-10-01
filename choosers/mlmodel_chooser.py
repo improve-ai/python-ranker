@@ -62,25 +62,10 @@ class BasicMLModelChooser(BasicChooser):
                     'When attempting to load the mode: {} the following error '
                     'occured: {}'.format(pth_to_model, exc))
 
-    def _get_model_metadata(
-            self, model_metadata: Dict[str, object] = None) -> dict:
-
-        ml_meta = model_metadata
-
-        if not ml_meta:
-            assert hasattr(self.model, 'user_defined_metadata')
-            model_metadata = self.model.user_defined_metadata
-            assert self.mlmodel_metadata_key in model_metadata.keys()
-            ml_meta = model_metadata[self.mlmodel_metadata_key]
-
-        ret_ml_meta = \
-            json.loads(ml_meta) if isinstance(ml_meta, str) else ml_meta
-
-        return ret_ml_meta
-
     def score(
             self, variant: Dict[str, object],
-            context: Dict[str, object],
+            context: Dict[str, object] = None,
+            encoded_context: Dict[str, object] = None,
             model_metadata: Dict[str, object] = None,
             lookup_table_key: str = "table",
             lookup_table_features_idx: int = 1, seed_key: str = "model_seed",
@@ -111,11 +96,15 @@ class BasicMLModelChooser(BasicChooser):
 
         """
 
-        encoded_context = \
-            self._get_encoded_features(
-                encoded_dict={'context': context},
-                model_metadata=model_metadata,
-                lookup_table_key=lookup_table_key, seed_key=seed_key)
+        if not encoded_context:
+            encoded_context = \
+                self._get_encoded_features(
+                    encoded_dict={'context': context},
+                    model_metadata=model_metadata,
+                    lookup_table_key=lookup_table_key, seed_key=seed_key)
+
+        # print(encoded_context)
+        # # 64: 0.025116502088750277, 46: 0.0255248728305653, 120: 0.025116502088750277, 237: 0.05000000074505806, 180: 80.0, 104: 1.0, 244: 1.0, 69: 1.0, 175: 1.0, 117: 0.025827039478405665, 136: 80.0, 98: 0.02553597409873252, 111: 0.027643948483414886, 211: 0.033118124819099, 220: 0.028558938988829326
 
         encoded_features = \
             self._get_encoded_features(
@@ -127,6 +116,8 @@ class BasicMLModelChooser(BasicChooser):
         all_encoded_features.update(encoded_features)
         rnmd_all_encoded_features = \
             append_prfx_to_dict_keys(input_dict=all_encoded_features, prfx='f')
+
+        print(rnmd_all_encoded_features)
 
         # rename features
         feature_names = \
@@ -212,10 +203,17 @@ class BasicMLModelChooser(BasicChooser):
 
         scores = []
 
+        encoded_context = \
+            self._get_encoded_features(
+                encoded_dict={'context': context},
+                model_metadata=model_metadata,
+                lookup_table_key=lookup_table_key, seed_key=seed_key)
+
         for variant in variants:
             scores.append(
                 self.score(
                     variant=variant, context=context,
+                    encoded_context=encoded_context,
                     model_metadata=model_metadata,
                     lookup_table_key=lookup_table_key,
                     lookup_table_features_idx=lookup_table_features_idx,
