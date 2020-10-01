@@ -24,13 +24,13 @@ class BasicMLModelChooser(BasicChooser):
         return self._mlmodel_metadata_key
 
     @mlmodel_metadata_key.setter
-    def mlmodel_metadata_key(self, new_val: str):
+    def model_metadata_key(self, new_val: str):
         self._mlmodel_metadata_key = new_val
 
     def __init__(self, mlmodel_metadata_key: str = 'json'):
         # initialize
         self.model = None
-        self.mlmodel_metadata_key = mlmodel_metadata_key
+        self.model_metadata_key = mlmodel_metadata_key
 
     def load_model(self, pth_to_model: str, verbose: bool = True):
         """
@@ -61,6 +61,22 @@ class BasicMLModelChooser(BasicChooser):
                 print(
                     'When attempting to load the mode: {} the following error '
                     'occured: {}'.format(pth_to_model, exc))
+
+    def _get_model_metadata(
+            self, model_metadata: Dict[str, object] = None) -> dict:
+
+        ml_meta = model_metadata
+
+        if not ml_meta:
+            assert hasattr(self.model, 'user_defined_metadata')
+            model_metadata = self.model.user_defined_metadata
+            assert self.mlmodel_metadata_key in model_metadata.keys()
+            ml_meta = model_metadata[self.mlmodel_metadata_key]
+
+        ret_ml_meta = \
+            json.loads(ml_meta) if isinstance(ml_meta, str) else ml_meta
+
+        return ret_ml_meta
 
     def score(
             self, variant: Dict[str, object],

@@ -22,11 +22,11 @@ class BasicNativeXGBChooser(BasicChooser):
         self._model = new_val
 
     @property
-    def mlmodel_metadata_key(self):
+    def model_metadata_key(self):
         return self._mlmodel_metadata_key
 
-    @mlmodel_metadata_key.setter
-    def mlmodel_metadata_key(self, new_val: str):
+    @model_metadata_key.setter
+    def model_metadata_key(self, new_val: str):
         self._mlmodel_metadata_key = new_val
 
     @constant
@@ -35,7 +35,7 @@ class BasicNativeXGBChooser(BasicChooser):
 
     def __init__(self, mlmodel_metadata_key: str = 'json'):
         self.model = None
-        self.mlmodel_metadata_key = mlmodel_metadata_key
+        self.model_metadata_key = mlmodel_metadata_key
 
     def load_model(self, pth_to_model: str, verbose: bool = True):
         """
@@ -69,6 +69,24 @@ class BasicNativeXGBChooser(BasicChooser):
                 print(
                     'When attempting to load the mode: {} the following error '
                     'occured: {}'.format(pth_to_model, exc))
+
+    def _get_model_metadata(
+            self, model_metadata: Dict[str, object] = None) -> dict:
+
+        model_metadata = model_metadata
+
+        if not model_metadata:
+            assert 'user_defined_metadata' in self.model.attributes().keys()
+
+            user_defined_metadata_str = self.model.attr('user_defined_metadata')
+            user_defined_metadata = json.loads(user_defined_metadata_str)
+            assert self.model_metadata_key in user_defined_metadata.keys()
+            model_metadata = user_defined_metadata[self.model_metadata_key]
+
+        # ret_ml_meta = \
+        #     json.loads(model_metadata) if isinstance(model_metadata, str) else model_metadata
+
+        return model_metadata  # ret_ml_meta
 
     def score_all(
             self, variants: List[Dict[str, object]],
@@ -188,8 +206,8 @@ class BasicNativeXGBChooser(BasicChooser):
         rnmd_all_encoded_features = \
             append_prfx_to_dict_keys(input_dict=all_encoded_features, prfx='f')
 
-        print('rnmd_all_encoded_features')
-        print(rnmd_all_encoded_features)
+        # print('rnmd_all_encoded_features')
+        # print(rnmd_all_encoded_features)
 
         return rnmd_all_encoded_features
 
@@ -222,6 +240,9 @@ class BasicNativeXGBChooser(BasicChooser):
         input_list = \
             [imptd_missing_encoded_features[key] for key in all_feature_names]
 
+        # print('pre predict save config')
+        # print(json.loads(self.model.save_config()))
+
         single_score_list = \
             self.model\
                 .predict(DMatrix(
@@ -235,6 +256,7 @@ class BasicNativeXGBChooser(BasicChooser):
 
     def _get_model_objective(self) -> str:
         model_objective = ''
+        # print(json.loads(self.model.save_config()))
         try:
             model_cfg = json.loads(self.model.save_config())
             model_objective = \
