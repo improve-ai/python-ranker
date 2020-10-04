@@ -5,7 +5,7 @@ import numpy as np
 from choosers.basic_choosers import BasicChooser
 from choosers.mlmodel_chooser import BasicMLModelChooser
 from choosers.xgb_chooser import BasicNativeXGBChooser
-from utils.gen_purp_utils import constant
+from utils.gen_purp_utils import constant, read_jsonstring_frm_file
 
 
 class ImproveModel:
@@ -274,10 +274,25 @@ if __name__ == '__main__':
     ap.add_argument('--variants', help='JSON with variants to be scored',
                     default=DEFAULT_VARIANT)
     ap.add_argument(
+        '--variants_pth',
+        help='Path to file with JSON with variants to be scored',
+        default='')
+    ap.add_argument(
         '--context', help='JSON with context', default=DEFAULT_CONTEXT)
+    ap.add_argument(
+        '--context_pth', help='Path to file with JSON with context',
+        default='')
     ap.add_argument(
         '--model_metadata', help='JSON with lookup table and seed',
         default=DEFAULT_MODEL_METADATA)
+    ap.add_argument(
+        '--model_metadata_pth',
+        help='Path to file with JSON with lookup table and seed',
+        default='')
+    ap.add_argument(
+        '--results_pth',
+        help='Path to file where JSON with prediction results will be dumped',
+        default='')
 
     pa = ap.parse_args()
 
@@ -296,16 +311,32 @@ if __name__ == '__main__':
 
     assert hasattr(im, pa.method_call)
 
+    # loading files
+    input_objects = {
+        'variants': pa.variants,
+        'context': pa.context,
+        'model_metadata': pa.model_metadata}
+
+    input_pths = [pa.variants_pth, pa.context_pth, pa.model_metadata_pth]
+
+    for input_obj_key, input_pth in zip(input_objects.keys(), input_pths):
+        if input_pth:
+            input_objects[input_obj_key] = read_jsonstring_frm_file(input_pth)
+
+    input_objects['cli_call'] = True
+
     des_method = getattr(im, pa.method_call)
+
     res = \
-        des_method(**{
-            'variants': pa.variants,
-            'context': pa.context,
-            'model_metadata': pa.model_metadata,
-            'cli_call': True})
+        des_method(**input_objects)
+
     print('\n##################################################################\n\n'
           'Result of method call: {} \non variants: {}\nwith model: {} \n\n'
           '##################################################################\n\n'
           'is: \n'
           '{}'
           .format(pa.method_call, pa.variants, pa.model_pth, res))
+
+    if pa.results_pth:
+        with open(pa.results_pth, 'w') as resf:
+            resf.writelines(res)

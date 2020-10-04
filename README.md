@@ -26,6 +26,9 @@ In order to use prepared ImproveModel CLI:
 To see example results please call: <br>
 python3.7 improve_model_cli.py score xgb_native test_artifacts/model.xgb
 
+To use CLI with files (i.e. for variants/context/model metadata/results) please use:
+python3.7 improve_model_cli.py score xgb_native test_artifacts/model.xgb --context_pth test_artifacts/context.json --model_metadata_pth test_artifacts/model.json --results_pth test_artifacts/res.json --variants_pth test_artifacts/meditations.json 
+
 ### Results
 Currently supported objectives:
  - regression - returns [input JSON string, score value, 0] for each observation
