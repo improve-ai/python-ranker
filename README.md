@@ -40,4 +40,14 @@ Results are always returned as a JSON strings: <br>
  - score method returns list of all inputs scored
  - sort method returns list of all inputs scored (if multiclass classification is the case then the list is sorted for each class from highest to lowest scores)
  - choose method returns best highest scored variant info ([input JSON string, value, label]). For binary classification best scores for class 1 are returned. For multiple classification best choices in each class are returned. Ties are broken randomly. 
-   
+
+
+### Model Conversion
+To convert **xgboost** model to **mlmodel** please use:
+
+python3.7 transformers/mlmodels_generators.py --src_model_pth test_artifacts/model.xgb --model_metadata_pth test_artifacts/model.json --trgt_model_pth test_artifacts/conv_model.mlmodel
+
+### XGBoost model appending
+To append **xgboost** model with desired model metadata please use:
+
+python3.7 transformers/xgb_model_generators.py --src_model_pth test_artifacts/model.xgb --model_metadata_pth test_artifacts/model.json --trgt_model_pth test_artifacts/conv_model.mlmodel 

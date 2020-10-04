@@ -1,3 +1,4 @@
+from argparse import ArgumentParser
 import coremltools as ct
 import json
 import numpy as np
@@ -88,20 +89,38 @@ def load_xgb_model(model_pth: str):
 
 
 if __name__ == '__main__':
+
+    ap = ArgumentParser()
+    ap.add_argument(
+        '--src_model_pth', default='../test_artifacts/model.xgb',
+        help='Path to model to be converted into mlmodel')
+    ap.add_argument(
+        '--model_metadata_pth', default='../test_artifacts/model.json',
+        help='Path to file with appended metadata')
+    ap.add_argument(
+        '--trgt_model_pth',
+        default='../test_artifacts/conv_model.mlmodel',
+        help='Path to saved model')
+
+    pa = ap.parse_args()
+
     bmlg = BasicMLModelGenerator()
 
-    src_model_fname = '../test_artifacts/model.xgb'
-    metadata_fname = '../test_artifacts/model.json'
-    conv_model_fname = '../test_artifacts/conv_model.mlmodel'
+    # src_model_fname = '../test_artifacts/model.xgb'
+    # metadata_fname = '../test_artifacts/model.json'
+    # conv_model_fname = '../test_artifacts/conv_model.mlmodel'
 
-    run_params_vals = [src_model_fname, metadata_fname, conv_model_fname]
+    run_params_vals = \
+        [pa.src_model_pth, pa.model_metadata_pth, pa.trgt_model_pth]
     run_params_keys = ['src_model_fname', 'metadata_fname', 'conv_model_fname']
 
     run_params = {}
 
     for fname, fname_key in zip(run_params_vals, run_params_keys):
-        run_params[fname_key] =\
-            os.sep.join(str(__file__).split(os.sep)[:-1] + [fname])
+        run_params[fname_key] = fname
+            # os.sep.join(str(__file__).split(os.sep)[:-1] + [fname])
+
+    print(run_params)
 
     bmlg.load_model(
         loader=load_xgb_model, pth_to_model=run_params[run_params_keys[0]])
@@ -126,18 +145,19 @@ if __name__ == '__main__':
             'mode': 'classifier', 'feature_names': feature_names,
             'force_32bit_float': False, 'class_labels': [0, 1]})
 
-    bmlg.append_json_to_mlmodel()
+    bmlg.append_json_to_mlmodel(payload_key='json')
 
-    print('\n\nGenerating large json list 0 - 14999999 -> about 140 MB')
-    with open('../test_artifacts/model_large.json', 'w') as mockup_big_json:
-        mockup_big_json.writelines(json.dumps([el for el in range(15000000)]))
-
-    print('Done!')
-
-    with open('../test_artifacts/model_large.json', 'r') as jsonf:
-        large_payload = jsonf.read()
-
-    bmlg.append_json_to_mlmodel(payload=large_payload, payload_key='json')
+    # this is section where appending large JSON for tests takes place
+    # print('\n\nGenerating large json list 0 - 14999999 -> about 140 MB')
+    # with open('../test_artifacts/model_large.json', 'w') as mockup_big_json:
+    #     mockup_big_json.writelines(json.dumps([el for el in range(15000000)]))
+    #
+    # print('Done!')
+    #
+    # with open('../test_artifacts/model_large.json', 'r') as jsonf:
+    #     large_payload = jsonf.read()
+    #
+    # bmlg.append_json_to_mlmodel(payload=large_payload, payload_key='json')
 
     bmlg.save_mlmodel(
         run_params[run_params_keys[2]], save_callable_attr_n='save')
