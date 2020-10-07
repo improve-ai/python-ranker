@@ -103,3 +103,23 @@ def read_jsonstring_frm_file(pth_to_file: str, mode: str = 'r') -> str:
 
     assert isinstance(contents, str)
     return contents
+
+
+def sigmoid(x: float, logit_const: float) -> float:
+    """
+    Calculate sigmoid value
+
+    Parameters
+    ----------
+    x: float
+        arg passed to sigmoid function
+    logit_const: float
+        constant added to sigmoid argument
+
+    Returns
+    -------
+    float
+        value of sigmoid function
+
+    """
+    return 1 / (1 + np.exp(logit_const - x))

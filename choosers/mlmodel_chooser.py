@@ -6,7 +6,7 @@ from typing import Dict, List
 
 from choosers.basic_choosers import BasicChooser
 from utils.gen_purp_utils import append_prfx_to_dict_keys, \
-    impute_missing_dict_keys
+    impute_missing_dict_keys, sigmoid
 
 
 class BasicMLModelChooser(BasicChooser):
@@ -64,6 +64,20 @@ class BasicMLModelChooser(BasicChooser):
 
     def _get_model_metadata(
             self, model_metadata: Dict[str, object] = None) -> dict:
+        """
+        Gets model metadata either from dict or from model attributed
+
+        Parameters
+        ----------
+        model_metadata: dict
+            user provided dict with metadata
+
+        Returns
+        -------
+        dict
+            metadata dict
+
+        """
 
         ml_meta = model_metadata
 
@@ -87,7 +101,9 @@ class BasicMLModelChooser(BasicChooser):
             lookup_table_features_idx: int = 1, seed_key: str = "model_seed",
             mlmodel_score_res_key: str = 'target',
             mlmodel_class_proba_key: str = 'classProbability',
-            target_class_label: int = 1, imputer_value: float = np.nan) -> list:
+            target_class_label: int = 1, imputer_value: float = np.nan,
+            sigmoid_correction: bool = True,
+            sigmoid_const: float = 0.5, **kwargs) -> list:
         """
         Performs scoring of a single variant using provided context and loaded
         model
@@ -104,6 +120,16 @@ class BasicMLModelChooser(BasicChooser):
             index of a lookup table storing features encoding info (?)
         seed_key: str
             context key storing model seed
+        mlmodel_score_res_key: str
+            key in mlmodel results dict under which result float is stored
+        mlmodel_class_proba_key: str
+            key storing dict with probas in mlmodel results dict
+        target_class_label: str
+            class label which is the <class 1>
+        imputer_value: float
+            value with which nans will be imputed
+        sigmoid_correction
+        kwargs
 
         Returns
         -------
@@ -133,8 +159,6 @@ class BasicMLModelChooser(BasicChooser):
         rnmd_all_encoded_features = \
             append_prfx_to_dict_keys(input_dict=all_encoded_features, prfx='f')
 
-        print(rnmd_all_encoded_features)
-
         # rename features
         feature_names = \
             self._get_feature_names(
@@ -158,25 +182,63 @@ class BasicMLModelChooser(BasicChooser):
                 variant=variant, score_dict=score_dict,
                 mlmodel_class_proba_key=mlmodel_class_proba_key,
                 mlmodel_score_res_key=mlmodel_score_res_key,
-                target_class_label=target_class_label)
+                target_class_label=target_class_label,
+                sigmoid_correction=sigmoid_correction,
+                sigmoid_const=sigmoid_const)
 
         return best_score
 
     def _get_processed_score(
             self, variant, score_dict, mlmodel_class_proba_key,
-            mlmodel_score_res_key, target_class_label) -> list:
+            mlmodel_score_res_key, target_class_label,
+            sigmoid_correction: bool = True,
+            sigmoid_const: float = 0.5) -> list:
+        """
+        Getter for object which would be returned with scores
+
+        Parameters
+        ----------
+        variant: dict
+            dict with scored variatn
+        score_dict: dict
+            dict with results
+        mlmodel_class_proba_key: str
+            string with mlmodel probability key in results dict
+        mlmodel_score_res_key: str
+            string with score key in results dict
+        target_class_label: object
+            desired class label of a target class
+        sigmoid_correction: bool
+            should sigmoid correction be applied
+        sigmoid_const: float
+            sigmoids intercept
+
+        Returns
+        -------
+        list
+            list with processed results
+
+        """
 
         if mlmodel_class_proba_key in score_dict.keys():
 
             if len(score_dict[mlmodel_class_proba_key].keys()) == 2:
-                return \
-                    [variant,
-                     score_dict[mlmodel_class_proba_key][target_class_label],
-                     target_class_label]
+
+                class_1_proba = \
+                    score_dict[mlmodel_class_proba_key][target_class_label]
+                if sigmoid_correction:
+                    class_1_proba = \
+                        sigmoid(x=class_1_proba, logit_const=sigmoid_const)
+
+                return [variant, class_1_proba, target_class_label]
+
+            class_1_probas = score_dict[mlmodel_class_proba_key].values()
 
             all_scores = \
                 np.array([
-                    list(score_dict[mlmodel_class_proba_key].values()),
+                    [sigmoid(x=val, logit_const=sigmoid_const)
+                     for val in class_1_probas] if sigmoid_correction
+                    else list(score_dict[mlmodel_class_proba_key].values()),
                     list(score_dict[mlmodel_class_proba_key].keys())]).T
             return \
                 [variant] + \
@@ -188,7 +250,9 @@ class BasicMLModelChooser(BasicChooser):
                 raise KeyError(
                     'There was no key named: {} in result of predict() method'
                     .format(mlmodel_score_res_key))
-            return [variant, score, 0]
+            return [variant,
+                    sigmoid(x=score, logit_const=sigmoid_const)
+                    if sigmoid_correction else score, 0]
 
     def score_all(
             self, variants: List[Dict[str, object]],
@@ -199,6 +263,8 @@ class BasicMLModelChooser(BasicChooser):
             mlmodel_score_res_key: str = 'target',
             mlmodel_class_proba_key: str = 'classProbability',
             target_class_label: int = 1, imputer_value: float = np.nan,
+            sigmoid_const: float = 0.5,
+            sigmoid_correction: bool = True,
             **kwargs) -> np.ndarray:
         """
         Scores all provided variants
@@ -207,7 +273,26 @@ class BasicMLModelChooser(BasicChooser):
         ----------
         variants: list
             list of variants to scores
+        context: dic        variant: dict
+            scored case / row as a dict
         context: dict
+            dict with lookup table and seed
+        lookup_table_key: str
+            context key storing lookup table
+        lookup_table_features_idx: int
+            index of a lookup table storing features encoding info (?)
+        seed_key: str
+            context key storing model seed
+        mlmodel_score_res_key: str
+            key in mlmodel results dict under which result float is stored
+        mlmodel_class_proba_key: str
+            key storing dict with probas in mlmodel results dict
+        target_class_label: str
+            class label which is the <class 1>
+        imputer_value: float
+            value with which nans will be imputed
+        sigmoid_correction
+        kwargs
             context dict needed for encoding
 
         Returns
@@ -237,7 +322,9 @@ class BasicMLModelChooser(BasicChooser):
                     mlmodel_score_res_key=mlmodel_score_res_key,
                     mlmodel_class_proba_key=mlmodel_class_proba_key,
                     target_class_label=target_class_label,
-                    imputer_value=imputer_value))
+                    imputer_value=imputer_value,
+                    sigmoid_correction=sigmoid_correction,
+                    sigmoid_const=sigmoid_const))
 
         ret_scores = np.array(scores)
 

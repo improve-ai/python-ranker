@@ -153,7 +153,9 @@ class ImproveModel:
 
     def score(
             self, variants: str, context: str, model_metadata: str,
-            cli_call: bool = False) -> np.ndarray or str:
+            cli_call: bool = False,
+            sigmoid_correction: bool = True, sigmoid_const: float = 0.5,
+            **kwargs) -> np.ndarray or str:
         """
         Scores provided variants with provided context
 
@@ -163,6 +165,8 @@ class ImproveModel:
             variant(s) to score
         context: dict
             dict with lookup table
+        sigmoid_correction: bool
+            should results be corrected with sigmoid
 
         Returns
         -------
@@ -174,18 +178,22 @@ class ImproveModel:
         context_json = self._get_json_frm_str(json_str=context)
         model_metadata_json = self._get_json_frm_str(json_str=model_metadata)
 
+        score_kwgs = {
+            'sigmoid_correction': sigmoid_correction,
+            'sigmoid_const': sigmoid_const}
+
         is_single_variant = \
             self._check_if_single_variant(variants_json=variants_json)
         if is_single_variant:
             variants_w_scores = \
                 self.chooser.score(
                     variant=variants_json, context=context_json,
-                    model_metadata=model_metadata_json)
+                    model_metadata=model_metadata_json, **score_kwgs)
         else:
             variants_w_scores = \
                 self.chooser.score_all(
                     variants=variants_json, context=context_json,
-                    model_metadata=model_metadata_json)
+                    model_metadata=model_metadata_json, **score_kwgs)
 
         ret_variants_w_scores = variants_w_scores
         if isinstance(variants_w_scores, float):
@@ -197,7 +205,8 @@ class ImproveModel:
 
     def sort(
             self, variants: str, context: str, model_metadata: str,
-            cli_call: bool = False) -> np.ndarray or str:
+            cli_call: bool = False, sigmoid_correction: bool = True,
+            sigmoid_const: float = 0.5, **kwargs) -> np.ndarray or str:
         """
         Scores and sorts provided variants and context
 
@@ -220,7 +229,9 @@ class ImproveModel:
         variants_w_scores = \
             self.score(
                 variants=variants, context=context,
-                model_metadata=model_metadata, cli_call=False)
+                model_metadata=model_metadata, cli_call=False,
+                sigmoid_correction=sigmoid_correction,
+                sigmoid_const=sigmoid_const)
         srtd_variants_w_scores = \
             self.chooser.sort(variants_w_scores=variants_w_scores)
 
@@ -229,12 +240,15 @@ class ImproveModel:
 
     def choose(
             self, variants: str, context: str, model_metadata: str,
-            cli_call: bool = False):
+            cli_call: bool = False, sigmoid_correction: bool = True,
+            sigmoid_const: float = 0.5, **kwargs):
 
         variants_w_scores = \
             self.score(
                 variants=variants, context=context,
-                model_metadata=model_metadata, cli_call=False)
+                model_metadata=model_metadata, cli_call=False,
+                sigmoid_correction=sigmoid_correction,
+                sigmoid_const=sigmoid_const)
         chosen_variant = \
             self.chooser.choose(variants_w_scores=variants_w_scores)
 
@@ -292,7 +306,28 @@ if __name__ == '__main__':
     ap.add_argument(
         '--results_pth',
         help='Path to file where JSON with prediction results will be dumped',
-        default='')
+        default='result_file.json')
+    ap.add_argument('--sigmoid_correction', action='store_true')
+    # ap.add_argument(
+    #     '--sigmoid_correction',
+    #     default=True,
+    #     action='store_true',
+    #     help='Type of returned score for mlModel')
+
+    ap.add_argument(
+        '--sigmoid_const',
+        help='Intercept for the sigmoid correction',
+        default=0.5)
+
+    ap.add_argument(
+        '--full_output',
+        action='store_true',
+        help='Form of output - full vs short')
+
+    ap.add_argument(
+        '--debug_print',
+        action='store_true',
+        help='Printing results on screen')
 
     pa = ap.parse_args()
 
@@ -315,7 +350,9 @@ if __name__ == '__main__':
     input_objects = {
         'variants': pa.variants,
         'context': pa.context,
-        'model_metadata': pa.model_metadata}
+        'model_metadata': pa.model_metadata,
+        'sigmoid_correction': pa.sigmoid_correction,
+        'sigmoid_const': float(pa.sigmoid_const)}
 
     input_pths = [pa.variants_pth, pa.context_pth, pa.model_metadata_pth]
 
@@ -330,12 +367,17 @@ if __name__ == '__main__':
     res = \
         des_method(**input_objects)
 
-    print('\n##################################################################\n\n'
-          'Result of method call: {} \non variants: {}\nwith model: {} \n\n'
-          '##################################################################\n\n'
-          'is: \n'
-          '{}'
-          .format(pa.method_call, pa.variants, pa.model_pth, res))
+    if not pa.full_output:
+        output_col = 1 if pa.method_call == "score" else 0
+        res = json.dumps([output[output_col] for output in json.loads(res)])
+
+    if pa.debug_print:
+        print('\n##################################################################\n\n'
+              'Result of method call: {} \non variants: {}\nwith model: {} \n\n'
+              '##################################################################\n\n'
+              'is: \n'
+              '{}'
+              .format(pa.method_call, pa.variants, pa.model_pth, res))
 
     if pa.results_pth:
         with open(pa.results_pth, 'w') as resf:

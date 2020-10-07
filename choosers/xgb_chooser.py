@@ -218,7 +218,7 @@ class BasicNativeXGBChooser(BasicChooser):
             lookup_table_key: str = "table",
             lookup_table_features_idx: int = 1,
             seed_key: str = "model_seed",
-            imputer_value: float = np.nan) -> list:
+            imputer_value: float = np.nan, **kwargs) -> list:
 
         rnmd_all_encoded_features = \
             self._get_encoded_context_w_variant(
