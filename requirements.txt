@@ -1,0 +1,7 @@
+xgboost==1.2.0
+mmh3==2.5.1
+coremltools==3.0
+numpy==1.19.2
+flatten_json==0.1.7
+m2cgen==0.9.0
+treelite==0.93
