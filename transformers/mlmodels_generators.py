@@ -102,6 +102,11 @@ if __name__ == '__main__':
         default='../test_artifacts/conv_model.mlmodel',
         help='Path to saved model')
 
+    ap.add_argument(
+        '--check_conv_model',
+        action='store_true',
+        help='Predicts on converted model with 0s. Works only on macOS or higher')
+
     pa = ap.parse_args()
 
     bmlg = BasicMLModelGenerator()
@@ -162,23 +167,18 @@ if __name__ == '__main__':
     bmlg.save_mlmodel(
         run_params[run_params_keys[2]], save_callable_attr_n='save')
 
-    #### Loading saved model ####
-
-    cached_model = ct.models.MLModel(run_params[run_params_keys[2]])
-
-    preds = \
-          cached_model.predict(dict(zip(feature_names, [0 for el in range(len(feature_names))])))
-
-    print('Predictions print')
-    print(preds)
-
-#    print(json.dumps(bmlg.metadata_json))
-#    print('#############)
-#    print(cached_model.user_defined_metadata['appended_payload'])
-
-    print('Asserting if original json is eequal to imputed one')
-    assert json.dumps(bmlg.metadata_json) == cached_model.user_defined_metadata['appended_payload']
-    assert int(json.loads(cached_model.user_defined_metadata['json'])[1:-1].split(',')[-1]) == 15000000 - 1
-    print('Assertion OK')
-
-
+    if pa.check_conv_model:
+        #### Loading saved model ####
+        cached_model = ct.models.MLModel(run_params[run_params_keys[2]])
+        preds = \
+            cached_model.predict(
+                dict(zip(feature_names, [0 for el in range(len(feature_names))])))
+        print('Predictions print')
+        print(preds)
+        print('Asserting if original json is eequal to imputed one')
+        assert json.dumps(bmlg.metadata_json) == \
+               cached_model.user_defined_metadata['appended_payload']
+        # assert int(
+        #     json.loads(cached_model.user_defined_metadata['json'])[1:-1]
+        #     .split(',')[-1]) == 15000000 - 1
+        print('Assertion OK')
