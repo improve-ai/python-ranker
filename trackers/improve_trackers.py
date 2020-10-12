@@ -116,7 +116,7 @@ class ImproveTracker:
     def api_key(self, new_val: str):
         self._api_key = new_val
 
-    def __init__(self, tracker_url: str, api_key: str):
+    def __init__(self, tracker_url: str, api_key: str = None):
         """
         Init w params
 
@@ -184,7 +184,7 @@ class ImproveTracker:
             self.TYPE_KEY: self.DECISION_TYPE,
             self.VARIANT_KEY: variant,
             self.MODEL_KEY: model_name,
-            self.REWARDS_KEY: usd_reward_key}
+            self.REWARD_KEY_KEY: usd_reward_key}
 
         if context:
             body[self.CONTEXT_KEY] = context
@@ -358,14 +358,15 @@ class ImproveTracker:
         body = {
             # was checked -> this convention seems to be accurate
             self.TIMESTAMP_KEY:
-                np.datetime_as_string(
-                    np.datetime64(datetime.now()), unit='ms', timezone='UTC'),
+                str(np.datetime_as_string(
+                    np.datetime64(datetime.now()), unit='ms', timezone='UTC')),
             self.HISTORY_ID_KEY: history_id,
             # TODO check if this is the desired uuid
-            self.MESSAGE_ID_KEY: uuid4()}
+            self.MESSAGE_ID_KEY: str(uuid4())}
 
         body.update(body_values)
 
+        # serialization is a must have for this requests
         try:
             payload_json = json.dumps(body)
         except Exception as exc:
@@ -375,7 +376,13 @@ class ImproveTracker:
         error = None
         resp = None
         try:
-            resp = rq.post(url=self.track_url, data=body, headers=headers)
+            # print('headers')
+            # print(headers)
+            # print('\n\n')
+            # print('body')
+            # print(body)
+            resp = \
+                rq.post(url=self.track_url, data=payload_json, headers=headers)
         except Exception as exc:
             error = exc
 
@@ -392,6 +399,7 @@ class ImproveTracker:
                 if content:
                     user_info[self.PAYLOAD_FOR_ERROR_KEY] = content
 
+                error = str(error) if not isinstance(error, str) else error
                 error += \
                     ' | when attempting to post to ai.improve got error with ' \
                     'code {} and user info: {}' \
@@ -409,3 +417,72 @@ class ImproveTracker:
             raise NotImplementedError(
                 'Both error and payload objects are None / empty - this should '
                 'not happen (?)')
+
+
+if __name__ == '__main__':
+
+    tracker_url = \
+        'https://u0cxvugtmi.execute-api.us-west-2.amazonaws.com/test/track'
+    api_key = 'xScYgcHJ3Y2hwx7oh5x02NcCTwqBonnumTeRHThI'
+
+    it = ImproveTracker(tracker_url=tracker_url, api_key=api_key)
+    example_history_id = str(uuid4())
+
+    with open('../test_artifacts/meditations.json', 'r') as medf:
+        variants = json.loads(''.join(medf.readlines()))
+
+    variant = variants[0]
+    model_name = 'py_test_post'
+
+    with open('../test_artifacts/context.json') as cf:
+        context = json.loads(''.join(cf.readlines()))
+
+    # sanity check print
+    # print('################')
+    # print('variants')
+    # print('################')
+    # print(variants)
+    # print('################')
+    # print('################\n')
+    #
+    # print('################')
+    # print('variants[0]')
+    # print('################')
+    # print(variants[0])
+    # print('################')
+    # print('################\n')
+    #
+    # print('################')
+    # print('context')
+    # print('################')
+    # print(context)
+    # print('################')
+    # print('################\n')
+    #
+    # print('################')
+    # print('example_history_id')
+    # print('################')
+    # print(example_history_id)
+    # print('################')
+    # print('################\n')
+
+    it.track_decision(
+        variant=variant, variants=variants, model_name=model_name,
+        reward_key=model_name, history_id=example_history_id, context=context)
+    # reward: float, reward_key: str, history_id:
+    it.add_reward(
+        reward=1.0, reward_key='py_add_reward_test',
+        history_id=example_history_id)
+
+    # rewards: Dict[str, float], completion_handler: callable = None,
+    # history_id: str = None
+    it.add_rewards(
+        rewards={'py_add_reward_test1': 1.0, 'py_add_reward_test2': 2.0},
+        history_id=example_history_id)
+
+    # event: str, properties: Dict[str, object],
+    # context: Dict[str, object] = None, history_id: str = None
+    it.track_analytics_event(
+        event='py_test_track_analytics_event',
+        properties={'prop_str': 1, 'prop_float': 1.0}, context=context,
+        history_id=example_history_id)
