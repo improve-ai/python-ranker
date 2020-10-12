@@ -1,6 +1,8 @@
+from copy import deepcopy
 from datetime import datetime
 import json
 import numpy as np
+import requests as rq
 from typing import Dict, List
 from uuid import uuid4
 from warnings import warn
@@ -11,80 +13,92 @@ from utils.gen_purp_utils import constant
 class ImproveTracker:
 
     @constant
-    def model_key() -> str:
+    def MODEL_KEY() -> str:
         return "model"
 
     @constant
-    def history_id_key() -> str: 
+    def HISTORY_ID_KEY() -> str:
         return "history_id"
 
     @constant
-    def timestamp_key() -> str:
+    def TIMESTAMP_KEY() -> str:
         return "timestamp"
 
     @constant
-    def message_id_key() -> str:
+    def MESSAGE_ID_KEY() -> str:
         return "message_id"
 
     @constant
-    def type_key() -> str:
+    def TYPE_KEY() -> str:
         return "type"
 
     @constant
-    def variant_key() -> str:
+    def VARIANT_KEY() -> str:
         return "variant"
 
     @constant
-    def context_key() -> str:
+    def CONTEXT_KEY() -> str:
         return "context"
 
     @constant
-    def rewards_key() -> str:
+    def REWARDS_KEY() -> str:
         return "rewards"
 
     @constant
-    def variants_count_key() -> str:
+    def VARIANTS_COUNT_KEY() -> str:
         return "variants_count"
 
     @constant
-    def variants_key() -> str:
+    def VARIANTS_KEY() -> str:
         return "variants"
 
     @constant
-    def sample_variant_key() -> str:
+    def SAMPLE_VARIANT_KEY() -> str:
         return "sample_variant"
 
     @constant
-    def reward_key_key() -> str:
+    def REWARD_KEY_KEY() -> str:
         return "reward_key"
 
     @constant
-    def event_key() -> str:
+    def EVENT_KEY() -> str:
         return "event"
 
     @constant
-    def properties_key() -> str:
+    def PROPERTIES_KEY() -> str:
         return "properties"
 
     @constant    
-    def decision_type() -> str:
+    def DECISION_TYPE() -> str:
         return "decision"
 
     @constant
-    def rewards_type() -> str:
+    def REWARDS_TYPE() -> str:
         return "rewards"
 
     @constant
-    def event_type() -> str:
+    def EVENT_TYPE() -> str:
         return "event"
 
     @constant
-    def api_key_header() -> str:
+    def API_KEY_HEADER() -> str:
         return "x-api-key"
 
     @constant
-    def history_id_defaults_key() -> str:
+    def HISTORY_ID_DEFAULTS_KEY() -> str:
         return "ai.improve.history_id"
+
+    @constant
+    def PAYLOAD_FOR_ERROR_KEY():
+        return 'ERROR_WITH_PAYLOAD'
+
+    @constant
+    def ERROR_CODE_KEY():
+        return 'PY_ERROR_MESSAGE'
+
+    @constant
+    def REQUEST_ERROR_CODE_KEY():
+        return 'REQUEST_ERROR_CODE'
 
     @property
     def track_url(self) -> str:
@@ -167,20 +181,20 @@ class ImproveTracker:
             usd_reward_key = model_name
 
         body = {
-            self.type_key: self.decision_type,
-            self.variant_key: variant,
-            self.model_key: model_name,
-            self.rewards_key: usd_reward_key}
+            self.TYPE_KEY: self.DECISION_TYPE,
+            self.VARIANT_KEY: variant,
+            self.MODEL_KEY: model_name,
+            self.REWARDS_KEY: usd_reward_key}
 
         if context:
-            body[self.context_key] = context
+            body[self.CONTEXT_KEY] = context
 
         if variants and len(variants) > 0:
-            body[self.variants_count_key] = len(variants)
+            body[self.VARIANTS_COUNT_KEY] = len(variants)
             if np.random.rand() > 1.0 / float(len(variants)):
-                body[self.sample_variant_key] = np.random.choice(variants)
+                body[self.SAMPLE_VARIANT_KEY] = np.random.choice(variants)
             else:
-                body[self.variants_key] = variants
+                body[self.VARIANTS_KEY] = variants
 
         # def semi_block(result, error):
         #     if error:
@@ -246,8 +260,8 @@ class ImproveTracker:
         if rewards:
             print("Tracking rewards: {}".format(rewards))
             track_body = {
-                self.type_key: self.rewards_type,
-                self.rewards_key: rewards}
+                self.TYPE_KEY: self.REWARDS_TYPE,
+                self.REWARDS_KEY: rewards}
 
             self.track(
                 body=track_body,
@@ -317,10 +331,10 @@ class ImproveTracker:
 
         """
 
-        body = {self.type_key: self.event_type}
+        body = {self.TYPE_KEY: self.EVENT_TYPE}
 
         for key, val in zip(
-                [self.event_key, self.properties_key, self.context_key],
+                [self.EVENT_KEY, self.PROPERTIES_KEY, self.CONTEXT_KEY],
                 [event, properties, context]):
             if val:
                 body[key] = val
@@ -339,17 +353,16 @@ class ImproveTracker:
         headers = {'Content-Type': 'application/json'}
 
         if self.api_key:
-            headers[self.api_key_header] = self.api_key
+            headers[self.API_KEY_HEADER] = self.api_key
 
         body = {
-            # TODO check if proper time format is returned -> implement
-            #  timestamp_from_date myby (?)
-            self.timestamp_key:
+            # was checked -> this convention seems to be accurate
+            self.TIMESTAMP_KEY:
                 np.datetime_as_string(
                     np.datetime64(datetime.now()), unit='ms', timezone='UTC'),
-            self.history_id_key: history_id,
+            self.HISTORY_ID_KEY: history_id,
             # TODO check if this is the desired uuid
-            self.message_id_key: uuid4()}
+            self.MESSAGE_ID_KEY: uuid4()}
 
         body.update(body_values)
 
@@ -358,4 +371,41 @@ class ImproveTracker:
         except Exception as exc:
             warn("Data serialization error: {}\nbody: {}".format(exc, body))
             return None
-        # TODO finish up
+
+        error = None
+        resp = None
+        try:
+            resp = rq.post(url=self.track_url, data=body, headers=headers)
+        except Exception as exc:
+            error = exc
+
+        if not block:
+            return None
+
+        if not error and isinstance(resp, rq.models.Response):
+
+            if resp.status_code >= 400:
+                user_info = dict(deepcopy(resp.headers))
+                user_info[self.REQUEST_ERROR_CODE_KEY] = str(resp.status_code)
+                content = json.dumps(body)
+
+                if content:
+                    user_info[self.PAYLOAD_FOR_ERROR_KEY] = content
+
+                error += \
+                    ' | when attempting to post to ai.improve got error with ' \
+                    'code {} and user info: {}' \
+                    .format(str(resp.status_code), json.dumps(user_info))
+
+        json_object = None
+        if not error:
+            json_object = json.dumps(body)
+
+        if error:
+            block(None, error)
+        elif json_object:
+            block(json_object, None)
+        else:
+            raise NotImplementedError(
+                'Both error and payload objects are None / empty - this should '
+                'not happen (?)')
