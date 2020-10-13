@@ -116,7 +116,16 @@ class ImproveTracker:
     def api_key(self, new_val: str):
         self._api_key = new_val
 
-    def __init__(self, tracker_url: str, api_key: str = None):
+    @property
+    def debug(self) -> bool:
+        return self._debug
+
+    @debug.setter
+    def debug(self, new_val: bool):
+        self._debug = new_val
+
+    def __init__(
+            self, tracker_url: str, api_key: str = None, debug: bool = False):
         """
         Init w params
 
@@ -130,6 +139,7 @@ class ImproveTracker:
 
         self.track_url = tracker_url
         self.api_key = api_key
+        self.debug = debug
 
     def track_decision(
             self, variant: Dict[str, str], variants: List[Dict[str, str]],
@@ -170,14 +180,15 @@ class ImproveTracker:
         if not self.track_url:
             return None
 
-        if not variant:
+        if not variant and self.debug:
             warn(
                 "Skipping trackDecision for nil variant. To track null values "
                 "use [NSNull null]")
 
         usd_reward_key = reward_key
         if not usd_reward_key:
-            warn("Using model name as rewardKey: {}".format(model_name))
+            if self.debug:
+                warn("Using model name as rewardKey: {}".format(model_name))
             usd_reward_key = model_name
 
         body = {
@@ -196,16 +207,11 @@ class ImproveTracker:
             else:
                 body[self.VARIANTS_KEY] = variants
 
-        # def semi_block(result, error):
-        #     if error:
-        #         warn("Improve.track error: {}".format(error))
-        #     if completion_handler:
-        #         completion_handler(error)
-
         self.post_improve_request(
             body_values=body,
             block=lambda result, error: (
-                warn("Improve.track error: {}".format(error)) if error else 0,
+                warn("Improve.track error: {}".format(error))
+                if error and self.debug else 0,
                 completion_handler(error) if completion_handler else 0),
             history_id=history_id)
 
@@ -258,7 +264,8 @@ class ImproveTracker:
         """
 
         if rewards:
-            print("Tracking rewards: {}".format(rewards))
+            if self.debug:
+                print("Tracking rewards: {}".format(rewards))
             track_body = {
                 self.TYPE_KEY: self.REWARDS_TYPE,
                 self.REWARDS_KEY: rewards}
@@ -269,7 +276,8 @@ class ImproveTracker:
                     completion_handler(error) if completion_handler else 0,
                 history_id=history_id)
         else:
-            print('Skipping trackRewards for nil rewards')
+            if self.debug:
+                print('Skipping trackRewards for nil rewards')
             completion_handler(None) if completion_handler else None
 
     def track(
@@ -301,7 +309,8 @@ class ImproveTracker:
         self.post_improve_request(
             body_values=body,
             block=lambda result, error: (
-                warn("Improve.track error: {}".format(error)) if error else 0,
+                warn("Improve.track error: {}".format(error))
+                if error and self.debug else 0,
                 completion_block(error) if completion_block else 0),
             history_id=history_id)
 
@@ -346,7 +355,8 @@ class ImproveTracker:
             history_id: str = None, **kwargs):
 
         if not history_id:
-            warn("historyId cannot be nil")
+            if self.debug:
+                warn("historyId cannot be nil")
             # TODO make sure what this clase in iOS-SDK does
             return None
 
@@ -370,17 +380,13 @@ class ImproveTracker:
         try:
             payload_json = json.dumps(body)
         except Exception as exc:
-            warn("Data serialization error: {}\nbody: {}".format(exc, body))
+            if self.debug:
+                warn("Data serialization error: {}\nbody: {}".format(exc, body))
             return None
 
         error = None
         resp = None
         try:
-            # print('headers')
-            # print(headers)
-            # print('\n\n')
-            # print('body')
-            # print(body)
             resp = \
                 rq.post(url=self.track_url, data=payload_json, headers=headers)
         except Exception as exc:
