@@ -174,6 +174,10 @@ class BasicMLModelChooser(BasicChooser):
 
         assert len(feature_names) == len(imputed_encoded_features.keys())
 
+        # print('#########')
+        # print(feature_names)
+        # print(imputed_encoded_features)
+
         score_dict = \
             self.model.predict(imputed_encoded_features)
 

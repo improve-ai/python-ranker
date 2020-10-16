@@ -269,11 +269,11 @@ if __name__ == '__main__':
 
     DEFAULT_CONTEXT = context_str
 
-    with open('test_artifacts/model.json', 'r') as mmd:
-        metadata_str = mmd.read()
-        # model_metadata = json.loads(metadata_str)
-
-    DEFAULT_MODEL_METADATA = metadata_str
+    # with open('test_artifacts/model.json', 'r') as mmd:
+    #     metadata_str = mmd.read()
+    #     # model_metadata = json.loads(metadata_str)
+    #
+    # DEFAULT_MODEL_METADATA = metadata_str
 
     ap = ArgumentParser()
     ap.add_argument(
@@ -298,7 +298,7 @@ if __name__ == '__main__':
         default='')
     ap.add_argument(
         '--model_metadata', help='JSON with lookup table and seed',
-        default=DEFAULT_MODEL_METADATA)
+        default='')
     ap.add_argument(
         '--model_metadata_pth',
         help='Path to file with JSON with lookup table and seed',

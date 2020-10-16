@@ -21,7 +21,7 @@ class FeatureEncoder:
     def encode_features_from_flattened(self, flattened):
         
         features = {}
-        noise = random.gauss(0,1) # use the same noise for all values in a variant (and all context values)
+        noise = -3  # random.gauss(0, -3) #  was (0, 1) use the same noise for all values in a variant (and all context values)
 
         for feature_name, value in flattened.items():
             column = lookup_column(self.table, feature_name, self.model_seed)

@@ -311,12 +311,12 @@ if __name__ == '__main__':
                        {"arrays": [el for el in range(0, features_count + 10)]}]
 
     single_score = mlmc.score(
-        variant=sample_variants[0], context=context)
+        variant=variants[0], context=context)
     print('single score')
     print(single_score)
 
     score_all = mlmc.score_all(
-        variants=sample_variants, context=context, model_metadata=model_metadata)
+        variants=variants, context=context, model_metadata=model_metadata)
     print('score_all')
     print(score_all)
 
