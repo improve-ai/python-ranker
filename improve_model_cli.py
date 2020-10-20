@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 import json
 import numpy as np
+import simplejson
 
 from choosers.basic_choosers import BasicChooser
 from choosers.mlmodel_chooser import BasicMLModelChooser
@@ -329,6 +330,11 @@ if __name__ == '__main__':
         action='store_true',
         help='Printing results on screen')
 
+    ap.add_argument(
+        '--prettify_json',
+        action='store_true',
+        help='Pretty dump to JSON')
+
     pa = ap.parse_args()
 
     im = ImproveModel(model_kind=pa.model_kind, model_pth=pa.model_pth)
@@ -369,7 +375,11 @@ if __name__ == '__main__':
 
     if not pa.full_output:
         output_col = 1 if pa.method_call == "score" else 0
-        res = json.dumps([output[output_col] for output in json.loads(res)])
+        if not pa.prettify_json:
+            res = json.dumps([output[output_col] for output in json.loads(res)])
+        else:
+            res = simplejson.dumps(
+                [output[output_col] for output in json.loads(res)], indent=4)
 
     if pa.debug_print:
         print('\n##################################################################\n\n'

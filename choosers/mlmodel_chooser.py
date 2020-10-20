@@ -20,12 +20,12 @@ class BasicMLModelChooser(BasicChooser):
         self._model = new_val
 
     @property
-    def mlmodel_metadata_key(self) -> str:
-        return self._mlmodel_metadata_key
+    def model_metadata_key(self) -> str:
+        return self._model_metadata_key
 
-    @mlmodel_metadata_key.setter
+    @model_metadata_key.setter
     def model_metadata_key(self, new_val: str):
-        self._mlmodel_metadata_key = new_val
+        self._model_metadata_key = new_val
 
     def __init__(self, mlmodel_metadata_key: str = 'json'):
         # initialize
@@ -84,8 +84,8 @@ class BasicMLModelChooser(BasicChooser):
         if not ml_meta:
             assert hasattr(self.model, 'user_defined_metadata')
             model_metadata = self.model.user_defined_metadata
-            assert self.mlmodel_metadata_key in model_metadata.keys()
-            ml_meta = model_metadata[self.mlmodel_metadata_key]
+            assert self.model_metadata_key in model_metadata.keys()
+            ml_meta = model_metadata[self.model_metadata_key]
 
         ret_ml_meta = \
             json.loads(ml_meta) if isinstance(ml_meta, str) else ml_meta

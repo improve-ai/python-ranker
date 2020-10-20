@@ -7,7 +7,7 @@ import simplejson
 if __name__ == '__main__':
 
     sorted_pth = \
-        '../results/14_10_2020_improve_messages_2_0_verse_sorting_results.json'
+        '../results/20_10_2020_improve_messages_2_0_verse_sorting_results.json'
 
     with open(sorted_pth, 'r') as json_in:
         sorted_str = ''.join(json_in.readlines())
@@ -86,7 +86,7 @@ if __name__ == '__main__':
     print(len(complete_list))
     print(len(raw_variants))
 
-    input('sanity check')
+    # input('sanity check')
 
     # pprint(sorted_variants[3])
     # pprint(complete_list[1001])
@@ -94,7 +94,7 @@ if __name__ == '__main__':
     # input('sanity check')
 
     trgt_pth = \
-        '../results/14_10_2020_improve_messages_2_0_verse_sorted_nl_01.json'
+        '../results/20_10_2020_improve_messages_2_0_verse_sorting_results_nl.json'
 
     with open(trgt_pth, 'w') as trgt_json:
         saved_str = simplejson.dumps(complete_list, indent=4)
