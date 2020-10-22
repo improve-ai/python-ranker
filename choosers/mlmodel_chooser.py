@@ -342,11 +342,11 @@ if __name__ == '__main__':
     test_model_pth = '../test_artifacts/improve-messages-2.0-3.mlmodel'
     mlmc.load_model(pth_to_model=test_model_pth)
 
-    with open('../test_artifacts/context.json', 'r') as mj:
+    with open('../artifacts/test_artifacts/context.json', 'r') as mj:
         json_str = mj.readline()
         context = json.loads(json_str)
 
-    with open('../test_artifacts/meditations.json', 'r') as vj:
+    with open('../artifacts/test_artifacts/meditations.json', 'r') as vj:
         json_str = vj.readlines()
         variants = json.loads(''.join(json_str))
 

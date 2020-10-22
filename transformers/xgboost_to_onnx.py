@@ -12,7 +12,7 @@ from xgboost import Booster, XGBRegressor
 if __name__ == '__main__':
 
     # b = Booster()
-    src_model_pth = '../test_artifacts/model.xgb'
+    src_model_pth = '../artifacts/test_artifacts/model.xgb'
     # b.load_model(src_model_pth)
     # metadata_pth = '../test_artifacts/model.json'
     # with open(metadata_pth, 'r') as mj:

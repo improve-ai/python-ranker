@@ -3,7 +3,7 @@ import json
 
 if __name__ == '__main__':
 
-    src_json_pth = '../data/real/bible_verses_full.json'
+    src_json_pth = '../artifacts/data/real/bible_verses_full.json'
 
     with open(src_json_pth, 'r') as srcj:
         read_str = ''.join(srcj.readlines())

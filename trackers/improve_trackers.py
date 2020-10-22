@@ -434,13 +434,13 @@ if __name__ == '__main__':
     it = ImproveTracker(tracker_url=tracker_url, api_key=api_key)
     example_history_id = str(uuid4())
 
-    with open('../test_artifacts/meditations.json', 'r') as medf:
+    with open('../artifacts/test_artifacts/meditations.json', 'r') as medf:
         variants = json.loads(''.join(medf.readlines()))
 
     variant = variants[0]
     model_name = 'py_test_post'
 
-    with open('../test_artifacts/context.json') as cf:
+    with open('../artifacts/test_artifacts/context.json') as cf:
         context = json.loads(''.join(cf.readlines()))
 
     # sanity check print
