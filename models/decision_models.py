@@ -1,5 +1,7 @@
+from frozendict import frozendict
 import json
 import numpy as np
+from typing import Dict, List, Tuple
 
 from choosers.basic_choosers import BasicChooser
 from choosers.mlmodel_chooser import BasicMLModelChooser
@@ -74,13 +76,14 @@ class DecisionModel:
         """
         self.chooser.load_model(pth_to_model=self.pth_to_model)
 
-    def _get_json_frm_str(self, json_str) -> list or dict or None:
+    def _get_json_frm_input(
+            self, input_val: str or list or tuple or None) -> list or dict or tuple or None:
         """
         Attempts to convert input json string into json
 
         Parameters
         ----------
-        json_str: str
+        input_val: str
             JSON string to be converted into list or dict
 
         Returns
@@ -89,13 +92,28 @@ class DecisionModel:
             JSON laoded from string or None if loading fails
 
         """
-        try:
-            loaded_json = json.loads(json_str)
-        except Exception as exc:
-            print(
-                'Failed to load json from provided JSON string: \n {}'
-                .format(json_str))
-            loaded_json = None
+
+        # TODO this logic maybe shoud be moved outside ?
+        if isinstance(input_val, str):
+            try:
+                loaded_json = json.loads(input_val)
+            except Exception as exc:
+                print(
+                    'Failed to load json from provided JSON string: \n {}'
+                    .format(input_val))
+                loaded_json = None
+        elif isinstance(input_val, list) or isinstance(input_val, dict):
+            loaded_json = input_val
+        elif isinstance(input_val, tuple):
+            loaded_json = list(input_val)
+        elif isinstance(input_val, frozendict):
+            loaded_json = dict(input_val)
+        elif input_val is None:
+            return None
+        else:
+            raise TypeError(
+                '`input_val` is of unsupported type: {}'
+                .format(type(input_val)))
         return loaded_json
 
     def _check_if_single_variant(self, variants_json) -> bool:
@@ -151,7 +169,9 @@ class DecisionModel:
             return json.dumps(dumped_val)
 
     def score(
-            self, variants: str, context: str, model_metadata: str = '',
+            self, variants: str or list or tuple or dict,
+            context: str or dict or frozendict,
+            model_metadata: str or dict or None = None,
             cli_call: bool = False, sigmoid_correction: bool = True,
             sigmoid_const: float = 0.5, return_plain_scores: bool = False,
             plain_scores_idx: int = 1, **kwargs) -> np.ndarray or str:
@@ -179,9 +199,9 @@ class DecisionModel:
             np.ndarray if this is not cli call else results as json string
 
         """
-        variants_json = self._get_json_frm_str(json_str=variants)
-        context_json = self._get_json_frm_str(json_str=context)
-        model_metadata_json = self._get_json_frm_str(json_str=model_metadata)
+        variants_json = self._get_json_frm_input(input_val=variants)
+        context_json = self._get_json_frm_input(input_val=context)
+        model_metadata_json = self._get_json_frm_input(input_val=model_metadata)
 
         score_kwgs = {
             'sigmoid_correction': sigmoid_correction,
@@ -210,6 +230,17 @@ class DecisionModel:
 
         return self._get_as_is_or_json_str(
             input_val=variants_w_scores, cli_call=cli_call)
+
+    def best_of(
+            self, variants: List[Dict[str, object]],
+            context: Dict[str, object]) -> frozendict:
+
+        scores: np.ndarray = \
+            self.score(
+                variants=variants, context=context,
+                return_plain_scores=True)
+
+        return frozendict(variants[int(np.argmax(scores))])
 
     def sort(
             self, variants: str, context: str, model_metadata: str,

@@ -1,4 +1,6 @@
+from collections.abc import Iterable
 from copy import deepcopy
+from frozendict import frozendict
 import numpy as np
 
 
@@ -123,3 +125,42 @@ def sigmoid(x: float, logit_const: float) -> float:
 
     """
     return 1 / (1 + np.exp(logit_const - x))
+
+
+def get_immutable_iterable(
+        input_val: dict or frozendict or Iterable) -> Iterable or None:
+    """
+    Attempts to make Iterable objects immutable
+
+    Parameters
+    ----------
+    input_val: dict or frozendict or Iterable
+        value to be checked and converted to immutable collection
+
+    Returns
+    -------
+    Iterable
+        Immutable collection
+
+    """
+
+    assert not isinstance(input_val, str)
+
+    if input_val is None:
+        return None
+
+    conv_new_val = input_val
+    if isinstance(input_val, frozendict):
+        pass
+    elif isinstance(input_val, dict):
+        conv_new_val = frozendict(input_val)
+    elif isinstance(input_val, Iterable):
+        # conv_new_val = new_val
+        if not all([isinstance(variant, frozendict) for variant in input_val]):
+            conv_new_val = \
+                tuple([frozendict(variant) for variant in input_val])
+        if not isinstance(conv_new_val, tuple):
+            conv_new_val = tuple(conv_new_val)
+    else:
+        raise TypeError('Unsupported vairants type: {}'.format(type(input_val)))
+    return conv_new_val

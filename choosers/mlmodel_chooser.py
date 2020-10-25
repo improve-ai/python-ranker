@@ -176,7 +176,8 @@ class BasicMLModelChooser(BasicChooser):
 
         # print('#########')
         # print(feature_names)
-        # print(imputed_encoded_features)
+        # print(variant)
+        # print(rnmd_all_encoded_features)
 
         score_dict = \
             self.model.predict(imputed_encoded_features)
@@ -330,7 +331,7 @@ class BasicMLModelChooser(BasicChooser):
                     sigmoid_correction=sigmoid_correction,
                     sigmoid_const=sigmoid_const))
 
-        ret_scores = np.array(scores)
+        ret_scores = np.array(scores, dtype=object)
 
         return ret_scores
 
