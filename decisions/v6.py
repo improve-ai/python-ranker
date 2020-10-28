@@ -256,7 +256,7 @@ class Decision(object):
         Parameters
         ----------
         new_val: object
-            value to be set for the attribuetd
+            value to be set for the attribute
         prot_mem_n: str
             name of protected member
 
