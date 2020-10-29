@@ -87,7 +87,6 @@
  - #### __set_protected_member_once
      - test if method allows for setting of desired parameter only once
      - test if possible to call from outside Decision
-     - test if possible to call from outside Decision class
  - #### __get_protected_member
      - test if gets desired protected member
      - test if throws error when attempt to get uninstantiated attribute
