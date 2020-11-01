@@ -186,7 +186,7 @@ class Decision(object):
         self.__set_variants(variants=variants, ranked_variants=ranked_variants)
 
         self.model = model
-        self.decision_model_name = model_name
+        self.model_name = model_name
         self.context = context
         self.max_runners_up = max_runners_up
         self.__set_track_runners_up()
@@ -269,7 +269,6 @@ class Decision(object):
 
         caller_class_details = \
             inspect.stack()[2][0].f_locals  # ['self'].__class__.__name__
-        # TODO finish this up
 
         if 'self' not in caller_class_details.keys():
             warn('Setting from outside of Decision class is not allowed')
