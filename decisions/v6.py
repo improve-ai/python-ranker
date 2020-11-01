@@ -54,7 +54,8 @@ class Decision(object):
 
         assert not isinstance(new_val, str)
 
-        conv_new_val = get_immutable_iterable(input_val=new_val)
+        # conv_new_val = get_immutable_iterable(input_val=new_val)
+        conv_new_val = Decision.__get_immutable(input_val=new_val)
 
         self.__set_protected_member_once(new_val=conv_new_val)
 
@@ -96,10 +97,12 @@ class Decision(object):
         # pprint(inspect.stack()[0][0].f_locals['self'].__class__.__name__)
         # pprint(inspect.stack()[1])
 
-        if new_val and not isinstance(new_val, frozendict):
-            new_val = frozendict(new_val)
+        # if new_val and not isinstance(new_val, frozendict):
+        #     new_val = frozendict(new_val)
 
-        self.__set_protected_member_once(new_val=new_val)
+        conv_new_val = Decision.__get_immutable(input_val=new_val)
+
+        self.__set_protected_member_once(new_val=conv_new_val)
 
     @property
     def max_runners_up(self) -> int or None:
@@ -207,6 +210,40 @@ class Decision(object):
             return
 
         super(Decision, self).__setattr__(key, value)
+
+    @staticmethod
+    def __get_immutable(
+            input_val: Union[
+                List[object], Tuple[object], Dict[str, object], frozendict]
+    ) -> List[object] or Tuple[object] or Dict[str, object] or frozendict:
+        if input_val is None:
+            return input_val
+
+        if isinstance(input_val, Iterable):
+            if isinstance(input_val, str):
+                return input_val
+            if isinstance(input_val, tuple) or isinstance(input_val, list):
+                to_be_tuple = []
+                for el in input_val:
+                    im_el = el
+                    if not isinstance(im_el, str) and isinstance(im_el, Iterable):
+                        im_el = Decision.__get_immutable(el)
+                    to_be_tuple.append(im_el)
+                return tuple(to_be_tuple)
+            elif isinstance(input_val, frozendict) or isinstance(input_val, dict):
+                to_be_frozendict = {}
+                for el_k, el in input_val.items():
+                    im_el = el
+                    if not isinstance(im_el, str) and isinstance(im_el, Iterable):
+                        im_el = Decision.__get_immutable(el)
+                    to_be_frozendict[el_k] = im_el
+                return frozendict(to_be_frozendict)
+            else:
+                raise TypeError(
+                    'Provided object of type: {}. Currently can make list, '
+                    'tuple, dicts and frozendicts immutable!')
+        else:
+            return input_val
 
     def __set_track_runners_up(self):
         """
@@ -333,7 +370,7 @@ class Decision(object):
             self.context converted to a dict
 
         """
-        return dict(self.context)
+        return dict(self.context) if isinstance(self.context, dict) else None
 
     def scores(self):
         """
@@ -469,10 +506,11 @@ class Decision(object):
 
         return None
 
-    def top_runners_up(self):
+    def top_runners_up(self) -> Tuple[Dict[str, object]] or None:
         return \
             self.memoized_ranked[1:min(
-                len(self.memoized_ranked), self.max_runners_up)]
+                len(self.memoized_ranked), self.max_runners_up)] \
+            if self.memoized_ranked else None
 
     @staticmethod
     def simple_context():

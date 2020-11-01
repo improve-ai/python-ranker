@@ -152,17 +152,43 @@ class TestDecisionProperties(TestCase):
             assert hasattr(curr_decision, attr_n)
             assert getattr(curr_decision, attr_n) == true_val
 
-    def _generic_test_getter_returns_immutable(
-            self, attr_names, dec_kwargs, kwargs_keys, type_checker):
-        true_vals_list = \
-            [d_kwgs.get(kwgs_k) for d_kwgs, kwgs_k
-             in zip(dec_kwargs.values(), kwargs_keys)]
+    def _generic_test_getter_outside_after_callable(
+            self, attr_names, dec_kwargs, callable_n):
 
-        for case, decision_kwgs, true_v, attr_n in zip(
-                dec_kwargs.keys(), dec_kwargs.values(),
-                true_vals_list, attr_names):
+        for case, decision_kwgs, attr_n in zip(
+                dec_kwargs.keys(), dec_kwargs.values(), attr_names):
+
+            print('asserting: {} with: {}'.format(case, callable_n))
+
+            curr_decision = Decision(**decision_kwgs)
+            assert hasattr(curr_decision, callable_n)
+            dec_callable = getattr(curr_decision, callable_n)
+            dec_callable()
+            assert hasattr(curr_decision, attr_n)
+            assert getattr(curr_decision, attr_n) is not None
+
+    def _generic_test_getter_returns_immutable(
+            self, attr_names, dec_kwargs, type_checker):
+
+        for case, decision_kwgs, attr_n in zip(
+                    dec_kwargs.keys(), dec_kwargs.values(), attr_names):
             print('asserting: {}'.format(case))
             curr_decision = Decision(**decision_kwgs)
+            type_checker(getattr(curr_decision, attr_n))
+
+    def _generic_test_getter_returns_immutable_after_callable(
+            self, attr_names, dec_kwargs, callable_n, type_checker):
+
+        for case, decision_kwgs, attr_n in zip(
+                dec_kwargs.keys(), dec_kwargs.values(), attr_names):
+
+            print('asserting: {}'.format(case))
+            curr_decision = Decision(**decision_kwgs)
+
+            assert hasattr(curr_decision, callable_n)
+            dec_callable = getattr(curr_decision, callable_n)
+            dec_callable()
+
             type_checker(getattr(curr_decision, attr_n))
 
     def _generic_test_set_once(
@@ -178,6 +204,22 @@ class TestDecisionProperties(TestCase):
 
             print('asserting: {}'.format(case))
             curr_decision = Decision(**decision_kwgs)
+            setattr(curr_decision, attr_n, set_attempt_v)
+            assert getattr(curr_decision, attr_n) != set_attempt_v
+
+    def _generic_test_set_once_after_callable(
+            self, attr_names, set_attempt_vals, dec_kwargs, callable_n):
+
+        for case, decision_kwgs, set_attempt_v, attr_n in zip(
+                dec_kwargs.keys(), dec_kwargs.values(),
+                set_attempt_vals, attr_names):
+
+            print('asserting: {}'.format(case))
+            curr_decision = Decision(**decision_kwgs)
+
+            dec_callable = getattr(curr_decision, callable_n)
+            dec_callable()
+
             setattr(curr_decision, attr_n, set_attempt_v)
             assert getattr(curr_decision, attr_n) != set_attempt_v
 
@@ -246,7 +288,6 @@ class TestDecisionProperties(TestCase):
 
         self._generic_test_getter_returns_immutable(
             attr_names=attr_names, dec_kwargs=self.decisions_kwargs,
-            kwargs_keys=kwargs_keys,
             type_checker=TestDecisionProperties._collection_immutable_type_checker)
 
     def test_variants_set_once(self):
@@ -303,7 +344,6 @@ class TestDecisionProperties(TestCase):
 
         self._generic_test_getter_returns_immutable(
             attr_names=kwargs_keys, dec_kwargs=modeln_dec_kwgs,
-            kwargs_keys=kwargs_keys,
             type_checker=TestDecisionProperties._modeln_type_checker)
 
     def test_modeln_set_once(self):
@@ -351,7 +391,6 @@ class TestDecisionProperties(TestCase):
 
         self._generic_test_getter_returns_immutable(
             attr_names=kwargs_keys, dec_kwargs=context_dec_kwargs,
-            kwargs_keys=kwargs_keys,
             type_checker=TestDecisionProperties._collection_immutable_type_checker)
 
     def test_context_set_once(self):
@@ -419,7 +458,6 @@ class TestDecisionProperties(TestCase):
 
         self._generic_test_getter_returns_immutable(
             attr_names=kwargs_keys, dec_kwargs=max_runners_up_dec_kwargs,
-            kwargs_keys=kwargs_keys,
             type_checker=TestDecisionProperties.max_runners_up_type_checker)
 
     def test_max_runners_up_set_once(self):
@@ -446,62 +484,110 @@ class TestDecisionProperties(TestCase):
             attr_names=kwargs_keys, set_attempt_vals=set_attempt_max_runners_up,
             dec_kwargs=max_runners_up_dec_kwargs, kwargs_keys=kwargs_keys)
 
-    def test_context_getter_outside(self):
-        context_dec_kwargs = \
-            dict((k, v) for k, v in self.decisions_kwargs.items()
-                 if k in self.context_dec_kwgs_keys)
+    def test_memoized_scores_getter_outside(self):
 
         kwargs_keys = \
-            ['context' for _ in range(4)]
+            ['memoized_scores' for _ in range(len(self.decisions_kwargs))]
 
-        self._generic_test_getter_outside(
-            attr_names=kwargs_keys, dec_kwargs=context_dec_kwargs,
-            kwargs_keys=kwargs_keys)
+        self._generic_test_getter_outside_after_callable(
+            attr_names=kwargs_keys, dec_kwargs=self.decisions_kwargs,
+            callable_n='scores')
 
-    def test_context_getter_returns_immutable(self):
-        context_dec_kwargs = \
-            dict((k, v) for k, v in self.decisions_kwargs.items()
-                 if k in self.context_dec_kwgs_keys)
+    def test_memoized_scores_getter_returns_immutable(self):
 
-        kwargs_keys = \
-            ['context' for _ in range(4)]
+        attr_names = \
+            ['memoized_scores' for _ in range(len(self.decisions_kwargs))]
 
-        self._generic_test_getter_returns_immutable(
-            attr_names=kwargs_keys, dec_kwargs=context_dec_kwargs,
-            kwargs_keys=kwargs_keys,
+        # attr_names, dec_kwargs, callable_n, type_checker
+
+        self._generic_test_getter_returns_immutable_after_callable(
+            attr_names=attr_names, dec_kwargs=self.decisions_kwargs,
+            callable_n='scores',
             type_checker=TestDecisionProperties._collection_immutable_type_checker)
 
-    def test_context_set_once(self):
-        context_dec_kwargs = \
-            dict((k, v) for k, v in self.decisions_kwargs.items()
-                 if k in self.context_dec_kwgs_keys)
+    def test_memoized_scores_set_once(self):
 
-        true_contexts = \
-            [v for k, v in self.decisions_kwargs.items()
-             if k in self.context_dec_kwgs_keys]  # + [None]
+        set_attempt_scores = \
+            [list(range(1000)) for _ in range(len(self.decisions_kwargs))]
+
+        attr_names = \
+            ['memoized_scores' for _ in range(len(self.decisions_kwargs))]
+
+        # self, attr_names, set_attempt_vals, dec_kwargs, callable_n
+
+        self._generic_test_set_once_after_callable(
+            attr_names=attr_names, set_attempt_vals=set_attempt_scores,
+            dec_kwargs=self.decisions_kwargs, callable_n='scores')
+
+    def test_memoized_ranked_getter_outside(self):
+
+        kwargs_keys = \
+            ['memoized_ranked' for _ in range(len(self.decisions_kwargs))]
+
+        self._generic_test_getter_outside_after_callable(
+            attr_names=kwargs_keys, dec_kwargs=self.decisions_kwargs,
+            callable_n='ranked')
+
+    def test_memoized_ranked_getter_returns_immutable(self):
+
+        attr_names = \
+            ['memoized_ranked' for _ in range(len(self.decisions_kwargs))]
+
+        # attr_names, dec_kwargs, callable_n, type_checker
+
+        self._generic_test_getter_returns_immutable_after_callable(
+            attr_names=attr_names, dec_kwargs=self.decisions_kwargs,
+            callable_n='ranked',
+            type_checker=TestDecisionProperties._collection_immutable_type_checker)
+
+    def test_memoized_ranked_set_once(self):
 
         set_attempt_contexts = \
-            [{'text': 'an example variant'}
-             for _ in range(len(context_dec_kwargs))]
+            [[{'text': 'Example variant'} for _ in range(10)]
+             for _ in range(len(self.decisions_kwargs))]
 
-        assert true_contexts != set_attempt_contexts
+        attr_names = \
+            ['memoized_ranked' for _ in range(len(self.decisions_kwargs))]
 
-        kwargs_keys = \
-            ['context' for _ in range(4)]
+        # self, attr_names, set_attempt_vals, dec_kwargs, callable_n
 
-        self._generic_test_set_once(
-            attr_names=kwargs_keys, set_attempt_vals=set_attempt_contexts,
-            dec_kwargs=context_dec_kwargs, kwargs_keys=kwargs_keys)
+        self._generic_test_set_once_after_callable(
+            attr_names=attr_names, set_attempt_vals=set_attempt_contexts,
+            dec_kwargs=self.decisions_kwargs, callable_n='ranked')
 
-    def test_context_set_mutable_get_immutable(self):
-        context_dec_kwargs = \
-            dict((k, v) for k, v in self.decisions_kwargs.items()
-                 if k in self.context_dec_kwgs_keys)
+    def test_memoized_best_getter_outside(self):
 
         kwargs_keys = \
-            ['context' for _ in range(4)]
+            ['memoized_best' for _ in range(len(self.decisions_kwargs))]
 
-        self._generic_test_set_mutable_get_immutable(
-            attr_names=kwargs_keys, dec_kwargs=context_dec_kwargs,
-            kwargs_keys=kwargs_keys, mutable_maker=lambda x: dict(x) if x else x,
+        self._generic_test_getter_outside_after_callable(
+            attr_names=kwargs_keys, dec_kwargs=self.decisions_kwargs,
+            callable_n='best')
+
+    def test_memoized_best_getter_returns_immutable(self):
+
+        attr_names = \
+            ['memoized_best' for _ in range(len(self.decisions_kwargs))]
+
+        # attr_names, dec_kwargs, callable_n, type_checker
+
+        self._generic_test_getter_returns_immutable_after_callable(
+            attr_names=attr_names, dec_kwargs=self.decisions_kwargs,
+            callable_n='best',
             type_checker=TestDecisionProperties._collection_immutable_type_checker)
+
+    def test_memoized_best_set_once(self):
+
+        set_attempt_contexts = \
+            [{'text': 'Example best variant'}
+             for _ in range(len(self.decisions_kwargs))]
+
+        attr_names = \
+            ['memoized_best' for _ in range(len(self.decisions_kwargs))]
+
+        # self, attr_names, set_attempt_vals, dec_kwargs, callable_n
+
+        self._generic_test_set_once_after_callable(
+            attr_names=attr_names, set_attempt_vals=set_attempt_contexts,
+            dec_kwargs=self.decisions_kwargs, callable_n='best')
+

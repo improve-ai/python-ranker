@@ -1,7 +1,16 @@
-xgboost==1.2.0
-mmh3==2.5.1
 coremltools==3.0
 numpy==1.19.2
+xgboost==1.2.0
+simplejson==3.17.2
+pandas==1.1.2
+mmh3==2.5.1
 flatten_json==0.1.7
+frozendict==1.2
+requests==2.24.0
 m2cgen==0.9.0
-treelite==0.93
+pytest==6.1.2
+# onnx==1.7.0
+# onnx_tf==1.5.0
+# onnxmltools==1.7.0
+# skl2onnx==1.7.0
+# treelite==0.93
