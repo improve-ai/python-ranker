@@ -7,7 +7,7 @@ import simplejson
 if __name__ == '__main__':
 
     sorted_pth = \
-        '../results/20_10_2020_improve_messages_2_0_verse_sorting_results.json'
+        '../artifacts/results/01_11_2020_improve_messages_2_0_verse_sorting_results.json'
 
     with open(sorted_pth, 'r') as json_in:
         sorted_str = ''.join(json_in.readlines())
@@ -16,7 +16,7 @@ if __name__ == '__main__':
     # print(sorted_variants[:10])
     # input('a')
 
-    raw_pth = '../data/real/bible_verses_full.json'
+    raw_pth = '../artifacts/data/real/bible_verses_full.json'
 
     with open(raw_pth, 'r') as raw_in:
         raw_str = ''.join(raw_in.readlines())
@@ -94,7 +94,7 @@ if __name__ == '__main__':
     # input('sanity check')
 
     trgt_pth = \
-        '../results/20_10_2020_improve_messages_2_0_verse_sorting_results_nl.json'
+        '../artifacts/results/01_11_2020_improve_messages_2_0_verse_sorting_results_nl.json'
 
     with open(trgt_pth, 'w') as trgt_json:
         saved_str = simplejson.dumps(complete_list, indent=4)
