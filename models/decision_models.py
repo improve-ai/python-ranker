@@ -210,11 +210,13 @@ class DecisionModel:
         is_single_variant = \
             self._check_if_single_variant(variants_json=variants_json)
         if is_single_variant:
+            # print('Single variant')
             variants_w_scores = \
                 self.chooser.score(
                     variant=variants_json, context=context_json,
                     model_metadata=model_metadata_json, **score_kwgs)
         else:
+            # print('Multiple variant')
             variants_w_scores = \
                 self.chooser.score_all(
                     variants=variants_json, context=context_json,

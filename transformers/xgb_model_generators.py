@@ -13,7 +13,7 @@ if __name__ == '__main__':
         help='Path to file with appended metadata')
     ap.add_argument(
         '--trgt_model_pth',
-        default='../test_artifacts/conv_model.mlmodel',
+        default='../test_artifacts/conv_model.xgb',
         help='Path to saved model')
 
     pa = ap.parse_args()

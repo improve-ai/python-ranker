@@ -2,11 +2,13 @@ from copy import deepcopy
 import json
 import numpy as np
 import pickle
+from time import time
 from typing import Dict, List
 from xgboost import Booster, DMatrix
 from xgboost.core import XGBoostError
 
 from choosers.basic_choosers import BasicChooser
+from encoders.feature_encoder import FeatureEncoder
 from utils.gen_purp_utils import constant, append_prfx_to_dict_keys, \
     impute_missing_dict_keys
 
@@ -22,6 +24,22 @@ class BasicNativeXGBChooser(BasicChooser):
         self._model = new_val
 
     @property
+    def model_metadata(self) -> Dict[str, object]:
+        return self._model_metadata
+
+    @model_metadata.setter
+    def model_metadata(self, new_val: Dict[str, object]):
+        self._model_metadata = new_val
+
+    @property
+    def feature_encoder(self) -> FeatureEncoder:
+        return self._feature_encoder
+
+    @feature_encoder.setter
+    def feature_encoder(self, new_val: FeatureEncoder):
+        self._feature_encoder = new_val
+
+    @property
     def model_metadata_key(self):
         return self._mlmodel_metadata_key
 
@@ -29,17 +47,49 @@ class BasicNativeXGBChooser(BasicChooser):
     def model_metadata_key(self, new_val: str):
         self._mlmodel_metadata_key = new_val
 
+    @property
+    def lookup_table_key(self) -> str:
+        return self._lookup_table_key
+
+    @lookup_table_key.setter
+    def lookup_table_key(self, new_val: str):
+        self._lookup_table_key = new_val
+
+    @property
+    def seed_key(self) -> str:
+        return self._seed_key
+
+    @seed_key.setter
+    def seed_key(self, new_val: str):
+        self._seed_key = new_val
+
+    @property
+    def model_objective(self) -> str:
+        return self._model_objective
+
+    @model_objective.setter
+    def model_objective(self, new_val: str):
+        self._model_objective = new_val
+
     @constant
     def SUPPORTED_OBJECTIVES() -> list:
         return ['reg', 'binary', 'multi']
 
-    def __init__(self, mlmodel_metadata_key: str = 'json'):
+    def __init__(
+            self, mlmodel_metadata_key: str = 'json',
+            lookup_table_key: str = 'table', seed_key: str = 'model_seed'):
         self.model = None
         self.model_metadata_key = mlmodel_metadata_key
+        self.feature_encoder = None
+        self.model_metadata = None
+        self.lookup_table_key = lookup_table_key
+        self.seed_key = seed_key
+        self.model_objective = None
 
     def load_model(self, pth_to_model: str, verbose: bool = True):
         """
         Loads desired model from input path.
+
         Parameters
         ----------
         pth_to_model: str
@@ -70,23 +120,39 @@ class BasicNativeXGBChooser(BasicChooser):
                     'When attempting to load the mode: {} the following error '
                     'occured: {}'.format(pth_to_model, exc))
 
-    def _get_model_metadata(
-            self, model_metadata: Dict[str, object] = None) -> dict:
+        self.model_metadata = self._get_model_metadata()
+        self.feature_encoder = self._get_feature_encoder()
+        self.model_objective = self._get_model_objective()
 
-        model_metadata = model_metadata
+    def _get_model_metadata(self) -> dict:
 
-        if not model_metadata:
-            assert 'user_defined_metadata' in self.model.attributes().keys()
+        assert 'user_defined_metadata' in self.model.attributes().keys()
+        user_defined_metadata_str = self.model.attr('user_defined_metadata')
+        user_defined_metadata = json.loads(user_defined_metadata_str)
+        assert self.model_metadata_key in user_defined_metadata.keys()
 
-            user_defined_metadata_str = self.model.attr('user_defined_metadata')
-            user_defined_metadata = json.loads(user_defined_metadata_str)
-            assert self.model_metadata_key in user_defined_metadata.keys()
-            model_metadata = user_defined_metadata[self.model_metadata_key]
+        return user_defined_metadata[self.model_metadata_key]
 
-        # ret_ml_meta = \
-        #     json.loads(model_metadata) if isinstance(model_metadata, str) else model_metadata
+    def _get_missings_filled_variants(
+            self, context: Dict[str, object], all_feats_count: int):
+        return np.array([
+            context[el] if context.get(el, None) is not None
+            else np.nan for el in np.arange(0, all_feats_count, 1)])\
+            .reshape(1, all_feats_count)
 
-        return model_metadata  # ret_ml_meta
+    def _get_nan_filled_encoded_variants(
+            self, variant: Dict[str, object], context: Dict[str, object],
+            all_feats_count: int):
+
+        context_copy = deepcopy(context)
+        enc_variant = self.feature_encoder.encode_features({'variant': variant})
+        context_copy.update(enc_variant)
+
+        missings_filled_v = \
+            self._get_missings_filled_variants(
+                context=context_copy, all_feats_count=all_feats_count)
+
+        return missings_filled_v
 
     def score_all(
             self, variants: List[Dict[str, object]],
@@ -118,98 +184,32 @@ class BasicNativeXGBChooser(BasicChooser):
             2D numpy array which contains (variant, score) pair in each row
         """
 
-        encoded_variants = []
-
         encoded_context = \
-            self._get_encoded_features(
-                encoded_dict={'context': context},
-                model_metadata=model_metadata,
-                lookup_table_key=lookup_table_key, seed_key=seed_key)
+            self.feature_encoder.encode_features({'context': context})
 
-        for variant in variants:
+        all_feats_count = self._get_features_count()
+        all_feat_names = \
+            np.array(['f{}'.format(el) for el in range(all_feats_count)])
 
-            encoded_features = \
-                self._get_encoded_features(
-                    encoded_dict={'variant': variant},
-                    model_metadata=model_metadata,
-                    lookup_table_key=lookup_table_key, seed_key=seed_key)
-
-            all_encoded_features = deepcopy(encoded_context)
-            all_encoded_features.update(encoded_features)
-
-            rnmd_all_encoded_features = \
-                append_prfx_to_dict_keys(input_dict=all_encoded_features,
-                                         prfx='f')
-
-            encoded_variants.append(rnmd_all_encoded_features)
-
-        # all_present_feature_names = list(np.unique(encoded_features_names))
-
-        all_feature_names = \
-            self._get_feature_names(
-                model_metadata=model_metadata, lookup_table_key=lookup_table_key,
-                lookup_table_features_idx=lookup_table_features_idx)
-
-        imputed_encoded_features = []
-        for single_variant_features in encoded_variants:
-            imputed_single_variant_features = \
-                impute_missing_dict_keys(
-                    all_des_keys=all_feature_names,
-                    imputed_dict=single_variant_features,
-                    imputer_value=imputer_value)
-            imputed_encoded_features.append(
-                [imputed_single_variant_features[key]
-                 for key in all_feature_names])
+        encoded_variants = \
+            np.array([self._get_nan_filled_encoded_variants(
+                variant=v, context=encoded_context,
+                all_feats_count=all_feats_count)
+                for v in variants]) \
+            .reshape((len(variants), len(all_feat_names)))
 
         scores = \
             self.model.predict(
-                DMatrix(
-                    np.array(imputed_encoded_features)
-                        .reshape(len(imputed_encoded_features),
-                                 len(imputed_encoded_features[0])),
-                    feature_names=all_feature_names))
+                DMatrix(encoded_variants, feature_names=all_feat_names))
+        # return scores
 
-        assert len(scores) == len(variants)
+        # TODO this needs either to be flagged or sped up
+        variants_w_scores_list = \
+            np.array(
+                [self._get_processed_score(score=score, variant=variant)
+                 for score, variant in zip(scores, variants)])
 
-        variants_w_scores_list = []
-
-        for score, variant in zip(scores, variants):
-            single_score_list = score if isinstance(score, list) else [score]
-            variants_w_scores_list.append(
-                self._get_processed_score(
-                    scores=single_score_list, variant=variant))
-
-        return np.array(variants_w_scores_list)  # np.column_stack([variants, scores])
-
-    def _get_encoded_context_w_variant(
-            self, variant: Dict[str, object],
-            context: Dict[str, object],
-            model_metadata: Dict[str, object] = None,
-            lookup_table_key: str = "table",
-            seed_key: str = "model_seed") -> dict:
-
-        encoded_context = \
-            self._get_encoded_features(
-                encoded_dict={'context': context},
-                model_metadata=model_metadata,
-                lookup_table_key=lookup_table_key, seed_key=seed_key)
-
-        encoded_features = \
-            self._get_encoded_features(
-                encoded_dict={'variant': variant},
-                model_metadata=model_metadata,
-                lookup_table_key=lookup_table_key, seed_key=seed_key)
-
-        all_encoded_features = deepcopy(encoded_context)
-        all_encoded_features.update(encoded_features)
-
-        rnmd_all_encoded_features = \
-            append_prfx_to_dict_keys(input_dict=all_encoded_features, prfx='f')
-
-        # print('rnmd_all_encoded_features')
-        # print(rnmd_all_encoded_features)
-
-        return rnmd_all_encoded_features
+        return variants_w_scores_list  # np.column_stack([variants, scores])
 
     def score(
             self, variant: Dict[str, object],
@@ -220,38 +220,31 @@ class BasicNativeXGBChooser(BasicChooser):
             seed_key: str = "model_seed",
             imputer_value: float = np.nan, **kwargs) -> list:
 
-        rnmd_all_encoded_features = \
-            self._get_encoded_context_w_variant(
-                variant=variant, context=context,
-                model_metadata=model_metadata,
-                lookup_table_key=lookup_table_key, seed_key=seed_key)
+        encoded_context = \
+            self.feature_encoder.encode_features({'context': context})
+        encoded_features = \
+            self.feature_encoder.encode_features({'variant': variant})
 
-        all_feature_names = \
-            self._get_feature_names(
-                model_metadata=model_metadata, lookup_table_key=lookup_table_key,
-                lookup_table_features_idx=lookup_table_features_idx)
+        all_encoded_features = deepcopy(encoded_context)
+        all_encoded_features.update(encoded_features)
 
-        imptd_missing_encoded_features = \
-            impute_missing_dict_keys(
-                    all_des_keys=all_feature_names,
-                    imputed_dict=rnmd_all_encoded_features,
-                    imputer_value=imputer_value)
+        all_feats_count = self._get_features_count()
+        all_feat_names = \
+            np.array(['f{}'.format(el) for el in range(all_feats_count)])
 
-        input_list = \
-            [imptd_missing_encoded_features[key] for key in all_feature_names]
+        missings_filled_v = \
+            self._get_missings_filled_variants(
+                context=encoded_features, all_feats_count=all_feats_count)
 
-        # print('pre predict save config')
-        # print(json.loads(self.model.save_config()))
+        single_score = \
+            self.model \
+                .predict(
+                    DMatrix(missings_filled_v, feature_names=all_feat_names))
 
-        single_score_list = \
-            self.model\
-                .predict(DMatrix(
-                    data=np.array(input_list).reshape(1,len(input_list)),
-                    feature_names=all_feature_names))
+        # print(single_score_list)
 
         score = \
-            self._get_processed_score(scores=single_score_list, variant=variant)
-
+            self._get_processed_score(score=single_score, variant=variant)
         return score
 
     def _get_model_objective(self) -> str:
@@ -270,23 +263,21 @@ class BasicNativeXGBChooser(BasicChooser):
                 'Unsupported booster objective: {}'.format(model_objective))
         return model_objective
 
-    def _get_processed_score(self, scores, variant):
+    def _get_processed_score(self, score, variant):
 
-        model_objective = self._get_model_objective()
-
-        if model_objective == 'reg':
-            return [variant, float(scores[0]), int(0)]
-        elif model_objective == 'binary':
-            return [variant, float(scores[0]), int(1)]
-        elif model_objective == 'multi':
-            return [variant, float(np.array(scores).max()), int(np.array(scores).argmax())]
+        if self.model_objective == 'reg':
+            return [variant, float(score), int(0)]
+        elif self.model_objective == 'binary':
+            return [variant, float(score), int(1)]
+        elif self.model_objective == 'multi':
+            return [variant, float(np.array(score).max()), int(np.array(score).argmax())]
 
 
 if __name__ == '__main__':
 
     mlmc = BasicNativeXGBChooser()
 
-    test_model_pth = '../test_artifacts/model_appended.xgb'
+    test_model_pth = '../artifacts/test_artifacts/model_w_metadata.xgb'
     mlmc.load_model(pth_to_model=test_model_pth)
 
     with open('../artifacts/test_artifacts/model.json', 'r') as mj:
@@ -301,22 +292,25 @@ if __name__ == '__main__':
         json_str = vj.readlines()
         variants = json.loads(''.join(json_str))
 
-    features_count = \
-        len(model_metadata["table"][1])
-    feature_names = list(
-        map(lambda i: 'f{}'.format(i), range(0, features_count)))
-
-    sample_variants = [{"arrays": [1 for el in range(0, features_count + 10)]},
-                       {"arrays": [el + 2 for el in range(0, features_count + 10)]},
-                       {"arrays": [el for el in range(0, features_count + 10)]}]
+    # features_count = \
+    #     len(model_metadata["table"][1])
+    # feature_names = list(
+    #     map(lambda i: 'f{}'.format(i), range(0, features_count)))
+    #
+    # sample_variants = [{"arrays": [1 for el in range(0, features_count + 10)]},
+    #                    {"arrays": [el + 2 for el in range(0, features_count + 10)]},
+    #                    {"arrays": [el for el in range(0, features_count + 10)]}]
 
     single_score = mlmc.score(
         variant=variants[0], context=context)
     print('single score')
     print(single_score)
 
+    st = time()
     score_all = mlmc.score_all(
         variants=variants, context=context, model_metadata=model_metadata)
+    et = time()
+    print(et - st)
     print('score_all')
     print(score_all)
 

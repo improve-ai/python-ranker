@@ -29,6 +29,46 @@ class BasicChooser(ABC):
     def model_metadata_key(self, new_val: str):
         pass
 
+    @property
+    @abstractmethod
+    def feature_encoder(self) -> FeatureEncoder:
+        pass
+
+    @feature_encoder.setter
+    @abstractmethod
+    def feature_encoder(self, new_val: FeatureEncoder):
+        pass
+
+    @property
+    @abstractmethod
+    def model_metadata(self) -> Dict[str, object]:
+        pass
+
+    @model_metadata.setter
+    @abstractmethod
+    def model_metadata(self, new_val: Dict[str, object]):
+        pass
+
+    @property
+    @abstractmethod
+    def lookup_table_key(self) -> str:
+        pass
+
+    @lookup_table_key.setter
+    @abstractmethod
+    def lookup_table_key(self, new_val: str):
+        pass
+
+    @property
+    @abstractmethod
+    def seed_key(self) -> str:
+        pass
+
+    @seed_key.setter
+    @property
+    def seed_key(self, new_val: str):
+        pass
+
     @abstractmethod
     def load_model(self, pth_to_model, **kwargs):
         pass
@@ -69,8 +109,28 @@ class BasicChooser(ABC):
     #
     #     return ret_ml_meta
 
+    def _get_features_count(self) -> int:
+        table = self.model_metadata.get(self.lookup_table_key, None)
+        return len(table[1])
+
+    def _get_feature_encoder(self) -> FeatureEncoder:
+
+        # metadata_getter = getattr(self, '_get_model_metadata')
+        #
+        # usd_model_metadata = metadata_getter()
+        #
+        lookup_table = self.model_metadata.get(self.lookup_table_key, None)
+        model_seed = self.model_metadata.get(self.seed_key, None)
+        if not lookup_table or not model_seed:
+            raise ValueError(
+                'Lookup table or model seed not present in context!')
+        # print('model_seed')
+        # print(model_seed)
+        return FeatureEncoder(table=lookup_table, model_seed=model_seed)
+
     def _get_encoded_features(
             self, encoded_dict: Dict[str, object],
+            feature_encoder: FeatureEncoder = None,
             model_metadata: Dict[str, object] = None,
             lookup_table_key: str = "table",
             seed_key: str = "model_seed") -> Dict[str, float]:
@@ -95,22 +155,10 @@ class BasicChooser(ABC):
 
         """
 
-        metadata_getter = getattr(self, '_get_model_metadata')
+        # TODO this should be deleted after mlmodel chooser has been
+        #  refactored
 
-        usd_model_metadata = metadata_getter(model_metadata=model_metadata)
-
-        lookup_table = usd_model_metadata.get(lookup_table_key, None)
-        model_seed = usd_model_metadata.get(seed_key, None)
-        if not lookup_table or not model_seed:
-            raise ValueError(
-                'Lookup table or model seed not present in context!')
-
-        # print('model_seed')
-        # print(model_seed)
-        fe = FeatureEncoder(table=lookup_table, model_seed=model_seed)
-
-        enc_feats = fe.encode_features(encoded_dict)
-        return enc_feats
+        return self.feature_encoder.encode_features(encoded_dict)
 
     def _get_feature_names(
             self, model_metadata: Dict[str, object],
