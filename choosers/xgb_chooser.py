@@ -2,13 +2,20 @@ from copy import deepcopy
 import json
 from numbers import Number
 import numpy as np
+import sys
 import pickle
+import pyximport
 from time import time
 from typing import Dict, List
 from xgboost import Booster, DMatrix
 from xgboost.core import XGBoostError
 
+pyximport.install()
+# sys.path.append('/home/os/Projects/upwork/python-sdk')
+
 from choosers.basic_choosers import BasicChooser
+from choosers.choosers_cython_utils.fast_feat_enc import get_all_feat_names, \
+    get_nan_filled_encoded_variants
 from encoders.feature_encoder import FeatureEncoder
 from utils.gen_purp_utils import constant, sigmoid
 
@@ -191,16 +198,22 @@ class BasicNativeXGBChooser(BasicChooser):
             self.feature_encoder.encode_features({'context': context})
 
         all_feats_count = self._get_features_count()
-        all_feat_names = \
-            np.array(['f{}'.format(el) for el in range(all_feats_count)])
+        # all_feat_names = \
+        #     np.array(['f{}'.format(el) for el in range(all_feats_count)])
+        all_feat_names = np.asarray(get_all_feat_names(all_feats_count))
 
         # st1 = time()
+        # encoded_variants = \
+        #     np.array([self._get_nan_filled_encoded_variant(
+        #         variant=v, context=encoded_context,
+        #         all_feats_count=all_feats_count, missing_filler=imputer_value)
+        #         for v in variants]) \
+        #     .reshape((len(variants), len(all_feat_names)))
+
         encoded_variants = \
-            np.array([self._get_nan_filled_encoded_variants(
-                variant=v, context=encoded_context,
-                all_feats_count=all_feats_count, missing_filler=imputer_value)
-                for v in variants]) \
-            .reshape((len(variants), len(all_feat_names)))
+            np.asarray(get_nan_filled_encoded_variants(
+                np.array(variants, dtype=dict), encoded_context, all_feats_count,
+                self.feature_encoder, imputer_value))
         # et1 = time()
         # print('Encoding took: {}'.format(et1 - st1))
 

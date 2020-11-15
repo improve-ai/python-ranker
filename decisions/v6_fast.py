@@ -287,19 +287,21 @@ if __name__ == '__main__':
     # print(d.memoized_scores)
     # print(d.memoized_ranked)
     # input('check')
-
-    Decision(variants=variants[:1000], model=dm, context=context).scores()
-
     # st = time()
-    # batch_size = 1000
-    # [Decision(variants=variants[:100], model=dm, context=context).ranked()
-    #  for _ in range(batch_size)]
-    # # for _ in range(batch_size):
-    # #     d = Decision(
-    # #         variants=variants[:300], model=dm, context=context).best()
-    # #     # d.best()
+    # Decision(variants=variants[:400], model=dm, context=context).scores()
     # et = time()
-    # print((et - st) / batch_size)
+    # print(et - st)
+
+    st = time()
+    batch_size = 1000
+    [Decision(variants=variants[:500], model=dm, context=context).ranked()
+     for _ in range(batch_size)]
+    # for _ in range(batch_size):
+    #     d = Decision(
+    #         variants=variants[:300], model=dm, context=context).best()
+    #     # d.best()
+    et = time()
+    print((et - st) / batch_size)
     # input('speed test')
     #
     # # d.scores(self=d, variants=variants[:3])

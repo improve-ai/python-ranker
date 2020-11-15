@@ -132,7 +132,7 @@ class BasicChooser(ABC):
             else missing_filler for el in np.arange(0, all_feats_count, 1)])  # \
             # .reshape(1, all_feats_count)
 
-    def _get_nan_filled_encoded_variants(
+    def _get_nan_filled_encoded_variant(
             self, variant: Dict[str, object], context: Dict[str, object],
             all_feats_count: int, missing_filler: float = np.nan) -> np.ndarray:
         """
