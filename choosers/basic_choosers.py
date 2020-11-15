@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
-import json
+from copy import deepcopy
 import numpy as np
+from time import time
 from typing import List, Dict
 
 from encoders.feature_encoder import FeatureEncoder
@@ -78,122 +79,113 @@ class BasicChooser(ABC):
         pass
 
     @abstractmethod
-    def score_all(self, variants, context, lookup_table, **kwargs):
+    def score_all(self, variants, context, **kwargs):
         pass
-
-    # @abstractmethod
-    # def sort(self, variants_w_scores, **kwargs):
-    #     pass
-    #
-    # @abstractmethod
-    # def choose(self, variants_w_scores, **kwargs):
-    #     pass
 
     @abstractmethod
     def _get_model_metadata(self, **kwargs):
         pass
-
-    # def _get_model_metadata(
-    #         self, model_metadata: Dict[str, object] = None) -> dict:
-    #
-    #     ml_meta = model_metadata
-    #
-    #     if not ml_meta:
-    #         assert hasattr(self.model, 'user_defined_metadata')
-    #         model_metadata = self.model.user_defined_metadata
-    #         assert self.mlmodel_metadata_key in model_metadata.keys()
-    #         ml_meta = model_metadata[self.mlmodel_metadata_key]
-    #
-    #     ret_ml_meta = \
-    #         json.loads(ml_meta) if isinstance(ml_meta, str) else ml_meta
-    #
-    #     return ret_ml_meta
 
     def _get_features_count(self) -> int:
         table = self.model_metadata.get(self.lookup_table_key, None)
         return len(table[1])
 
     def _get_feature_encoder(self) -> FeatureEncoder:
+        """
+        Getter for FeatureEncoder object
 
-        # metadata_getter = getattr(self, '_get_model_metadata')
-        #
-        # usd_model_metadata = metadata_getter()
-        #
+        Returns
+        -------
+        FeatureEncoder
+            feature encoder for current model
+
+        """
+
         lookup_table = self.model_metadata.get(self.lookup_table_key, None)
         model_seed = self.model_metadata.get(self.seed_key, None)
         if not lookup_table or not model_seed:
             raise ValueError(
                 'Lookup table or model seed not present in context!')
-        # print('model_seed')
-        # print(model_seed)
         return FeatureEncoder(table=lookup_table, model_seed=model_seed)
 
-    def _get_encoded_features(
-            self, encoded_dict: Dict[str, object],
-            feature_encoder: FeatureEncoder = None,
-            model_metadata: Dict[str, object] = None,
-            lookup_table_key: str = "table",
-            seed_key: str = "model_seed") -> Dict[str, float]:
+    def _get_missings_filled_variants(
+            self, input_dict: Dict[str, object], all_feats_count: int,
+            missing_filler: float = np.nan):
         """
-        Encodes features using existing FeatureEncoder class
+        Fast wrapper around missing filling procedure
 
         Parameters
         ----------
-        encoded_dict: dict
-            dict of features to be encoded
-        context: dict
-            dict with lookup table and seed
-        lookup_table_key: str
-            table key in context dict
-        seed_key: str
-            seed key in context dict
+        input_dict: Dict[str, object]
+            current scoring context
+        all_feats_count: int
+            definite number of features
 
         Returns
         -------
-        dict
-            encoded features dict
+        np.ndarray
+            array with values of missing features filled
 
         """
+        return np.array([
+            input_dict[el] if input_dict.get(el, None) is not None
+            else missing_filler for el in np.arange(0, all_feats_count, 1)])  # \
+            # .reshape(1, all_feats_count)
 
-        # TODO this should be deleted after mlmodel chooser has been
-        #  refactored
-
-        return self.feature_encoder.encode_features(encoded_dict)
-
-    def _get_feature_names(
-            self, model_metadata: Dict[str, object],
-            lookup_table_key: str = "table",
-            lookup_table_features_idx: int = 1) -> List[str]:
+    def _get_nan_filled_encoded_variants(
+            self, variant: Dict[str, object], context: Dict[str, object],
+            all_feats_count: int, missing_filler: float = np.nan) -> np.ndarray:
         """
-        Creates feature names from provided lookup table
+        Wrapper around fast filling missings in variant. This would be used in
+        case many variants need to be scored at once and predict() accepts numpy
+        array
 
         Parameters
         ----------
-        context: dict
-            context dict with lookup table and seed
-        lookup_table_key: sre
-            context lookup table key
-        lookup_table_features_idx: int
-            index in table storing features encoding representation (?)
+        variant: Dict[str, object]
+            single observation
+        context: Dict[str, object]
+            scoring context
+        all_feats_count: int
+            desired number of features in the model
+        missing_filler: float
+            value ot impute missings with
 
         Returns
         -------
-        list
-            list of feature names extracted from context
+        np.ndarray
+            np.ndarray of np.ndarrays of which each containes all features with
+            missings filled
 
         """
 
-        metadata_getter = getattr(self, '_get_model_metadata')
+        # st1 = time()
+        context_copy = deepcopy(context)
+        enc_variant = self.feature_encoder.encode_features({'variant': variant})
+        context_copy.update(enc_variant)
+        # et1 = time()
+        # print('Encoding features took: {}'.format(et1 - st1))
+        # print(context_copy)
 
-        usd_model_metadata = metadata_getter(model_metadata=model_metadata)
+        # st2 = time()
+        missings_filled_v = np.empty((1, all_feats_count))
+        # et2 = time()
+        # print('Initializing empty took: {}'.format(et2 - st2))
 
-        features_count = \
-            len(usd_model_metadata[
-                    lookup_table_key][lookup_table_features_idx])
-        feature_names = list(
-            map(lambda i: 'f{}'.format(i), range(0, features_count)))
+        # st = time()
+        missings_filled_v[0, :] = missing_filler
+        missings_filled_v[0, list(context_copy.keys())] = \
+            list(context_copy.values())
+        # et = time()
+        # print('Filling nans took: {}'.format(et - st))
+        # input('sanity check')
 
-        return feature_names
+        # missings_filled_v = \
+        #     self._get_missings_filled_variants(
+        #         input_dict=context_copy, all_feats_count=all_feats_count,
+        #         missing_filler=missing_filler)
+
+        return missings_filled_v
 
     def sort(
             self, variants_w_scores: np.ndarray,

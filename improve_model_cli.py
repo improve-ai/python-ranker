@@ -37,15 +37,9 @@ if __name__ == '__main__':
         default='')
     ap.add_argument(
         '--context', help='JSON with context', default=DEFAULT_CONTEXT)
+
     ap.add_argument(
         '--context_pth', help='Path to file with JSON with context',
-        default='')
-    ap.add_argument(
-        '--model_metadata', help='JSON with lookup table and seed',
-        default='')
-    ap.add_argument(
-        '--model_metadata_pth',
-        help='Path to file with JSON with lookup table and seed',
         default='')
     ap.add_argument(
         '--results_pth',
@@ -94,11 +88,10 @@ if __name__ == '__main__':
     input_objects = {
         'variants': pa.variants,
         'context': pa.context,
-        'model_metadata': pa.model_metadata,
         'sigmoid_correction': pa.sigmoid_correction,
         'sigmoid_const': float(pa.sigmoid_const)}
 
-    input_pths = [pa.variants_pth, pa.context_pth, pa.model_metadata_pth]
+    input_pths = [pa.variants_pth, pa.context_pth]
 
     for input_obj_key, input_pth in zip(input_objects.keys(), input_pths):
         if input_pth:

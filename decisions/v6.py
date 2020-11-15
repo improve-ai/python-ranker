@@ -401,7 +401,7 @@ class Decision(object):
                     tuple(self.model.score(
                         variants=self.__get_variants_for_model(),
                         context=self.__get_context_for_model(),
-                        return_plain_scores=True,
+                        return_plain_results=True,
                         plain_scores_idx=1))
         # self.cached_scores = cached_scores
         return self.memoized_scores

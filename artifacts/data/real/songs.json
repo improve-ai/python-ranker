@@ -1,0 +1,381 @@
+[
+    {
+        "alternativeSong": {
+            "title": "Letting Go Short",
+            "composer": "Christopher Lloyd Clarke",
+            "file": "Letting+Go+Short.mp3"
+        },
+        "title": "Letting Go",
+        "composer": "Christopher Lloyd Clarke",
+        "file": "Letting+Go+15min.mp3"
+    },
+    {
+        "title": "In Spiritus",
+        "composer": "Christopher Lloyd Clarke",
+        "file": "In+Spiritus+15min.mp3"
+    },
+    {
+        "title": "Tranquil Chambers",
+        "composer": "Christopher Lloyd Clarke",
+        "file": "01+Tranquil+Chambers.mp3"
+    },
+    {
+        "title": "The Core",
+        "composer": "Christopher Lloyd Clarke",
+        "file": "02+The+Core.mp3"
+    },
+    {
+        "title": "Adrift",
+        "composer": "Christopher Lloyd Clarke",
+        "file": "Adrift+15min.mp3"
+    },
+    {
+        "title": "Floating",
+        "composer": "Christopher Lloyd Clarke",
+        "file": "Floating+15min.mp3"
+    },
+    {
+        "title": "Gabriels Song",
+        "composer": "Christopher Lloyd Clarke",
+        "file": "Gabriels+Song+15min.mp3"
+    },
+    {
+        "title": "Pure of Heart",
+        "composer": "Christopher Lloyd Clarke",
+        "file": "Pure+of+Heart+-+Tranquil+Forest+Edition+-+15min.mp3"
+    },
+    {
+        "title": "Astral Voices - Subtle Edition",
+        "composer": "Christopher Lloyd Clarke",
+        "file": "Astral Voices - Subtle Edition - 15min.mp3"
+    },
+    {
+        "title": "Heaven and Earth",
+        "composer": "Christopher Lloyd Clarke",
+        "file": "Heaven and Earth 15min.mp3"
+    },
+    {
+        "title": "Deep Beneath the Dreaming",
+        "composer": "Christopher Lloyd Clarke",
+        "file": "Deep Beneath the Dreaming - Oceanic Edition - 15min.mp3"
+    },
+    {
+        "title": "Wandering in the Warmth",
+        "composer": "Christopher Lloyd Clarke",
+        "file": "Wandering in the Warmth 15min.mp3"
+    },
+    {
+        "title": "Beyond The Summit - Main Theme",
+        "composer": "Christopher Lloyd Clarke",
+        "file": "Beyond The Summit - Main Theme.mp3"
+    },
+    {
+        "title": "Beyond The Summit - Postlude",
+        "composer": "Christopher Lloyd Clarke",
+        "file": "Beyond The Summit - Postlude.mp3"
+    },
+    {
+        "title": "The Temple Gardens",
+        "composer": "Christopher Lloyd Clarke",
+        "file": "The Temple Gardens 15min.mp3"
+    },
+    {
+        "title": "Into The Deep",
+        "composer": "Christopher Lloyd Clarke",
+        "file": "Into The Deep 15min.mp3"
+    },
+    {
+        "title": "Adagio for Strings",
+        "composer": "Samuel Barber",
+        "file": "naxos-adagio_for_strings.mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Agnus Dei Op. 11",
+        "composer": "Samuel Barber",
+        "file": "naxos-agnus_dei.mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Symphony of Sorrowful Songs: III. Lento",
+        "composer": "Henryk Górecki",
+        "file": "naxos-gorecki_3.mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Fantasia on a Theme by Thomas Tallis",
+        "composer": "Ralph Vaughan Williams",
+        "file": "naxos-fantasia.mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Symphony of Sorrowful Songs: II. Lento",
+        "composer": "Henryk Górecki",
+        "file": "naxos-gorecki_2.mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Lux Aurumque",
+        "composer": "Eric Whitacre",
+        "file": "naxos-lux_aurumque.mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Spiegel im Spiegel",
+        "composer": "Arvo Pärt",
+        "file": "naxos-spiegel.mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Pieces en Concert - Prelude, La Tromba, Air de Diable",
+        "composer": "François Couperin",
+        "file": "Advent_Chamber_Orchestra_-_02_-_Couperin_-_Pieces_en_Concert_-_Prelude_La_Tromba_Air_de_Diable.mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Roumanian Folk Dances - Waistband Dance, Roumanian Polka, Maruntel",
+        "composer": "Béla Bartók",
+        "file": "Advent_Chamber_Orchestra_-_03_-_Bartok_-_Roumanian_Folk_Dances_-_Waistband_Dance_Roumanian_Polka_Maruntel.mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Serenade for Strings Op22 in E Major larghetto",
+        "composer": "Antonín Dvořák",
+        "file": "Advent_Chamber_Orchestra_-_05_-_Dvorak_-_Serenade_for_Strings_Op22_in_E_Major_larghetto.mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Concerto for Organ and Orchestra Op7 no1 mvt1",
+        "composer": "George Frideric Handel",
+        "file": "Advent_Chamber_Orchestra_-_05_-_Handel_-_Concerto_for_Organ_and_Orchestra_Op7_no1_mvt1.mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Concerto for Organ and Orchestra Op7 no1 mvt2",
+        "composer": "George Frideric Handel",
+        "file": "Advent_Chamber_Orchestra_-_06_-_Handel_-_Concerto_for_Organ_and_Orchestra_Op7_no1_mvt2.mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Concerto for Organ and Orchestra Op7 no1 mvt3",
+        "composer": "George Frideric Handel",
+        "file": "Advent_Chamber_Orchestra_-_07_-_Handel_-_Concerto_for_Organ_and_Orchestra_Op7_no1_mvt3.mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Concerto in C Major for Oboe and Orchestra andante",
+        "composer": "Antonio Vivaldi",
+        "file": "Advent_Chamber_Orchestra_-_08_-_Vivaldi_-_Concerto_in_C_Major_for_Oboe_and_Orchestra_andante.mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Concerto Grosso, Op6 no4",
+        "composer": "Arcangelo Corelli",
+        "file": "Advent_Chamber_Orchestra_-_09_-_Corelli_-_Concerto_Grosso_Op6_no4.mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Laudate Dominum",
+        "composer": "Wolfgang Amadeus Mozart",
+        "file": "Advent_Chamber_Orchestra_-_11_-_Mozart_-_Laudate_Dominum.mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Waltz Isabel",
+        "composer": "Francisco Tárrega",
+        "file": "SMS 805140 - WALTZ ISABEL (Artist - Classical Music Elegance).mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Nocturne No. 1 in E Flat Minor",
+        "composer": "Gabriel Fauré",
+        "file": "SMS 850366 - FAURE NOCTURNE NO 1 IN E FLAT MINOR AALIBRARY (Artist - Philharmonia La Seine).mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Nocturne No. 2 in B Major",
+        "composer": "Gabriel Fauré",
+        "file": "SMS 850367 - FAURE NOCTURNE NO 2 IN B MAJOR AALIBRARY (Artist - Philharmonia La Seine).mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Peer Gynt - Morning Mood",
+        "composer": "Edvard Grieg",
+        "file": "SMS 850378 - GRIEG PEER GYNT SUITE NO 1 MORNING MOOD AALIBRARY (Artist - Philharmonia La Seine).mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Peer Gynt - Solveig's Song",
+        "composer": "Edvard Grieg",
+        "file": "SMS 850383 - GRIEG PEER GYNT SUITE NO 2 SOLVEIG'S SONG AALIBRARY (Artist - Philharmonia La Seine).mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Peer Gynt - Lyric Piece",
+        "composer": "Edvard Grieg",
+        "file": "SMS 850537 - GRIEG LYRIC PIECE.mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "La Mer (Jeux de vagues)",
+        "composer": "Claude Debussy",
+        "file": "SMS 850486 - DEBUSSY LA MER JEUX DE VAGUES AALIBRARY (Artist - Philharmonia La Seine).mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Early One Morning",
+        "composer": "Cyril Scott",
+        "file": "SMS 850515 - CYRIL SCOTT EARLY ONE MORNING POEM FOR PIANO & ORC AALIBRARY (Artist - Philharmonia La Seine).mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Afternoon of the Faun",
+        "composer": "Claude Debussy",
+        "file": "SMS 850541 - DEBUSSY AFTERNOON OF THE FAUN AALIBRARY (Artist - Philharmonia La Seine).mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Recuerdos de la Alhambra",
+        "composer": "Francisco Tárrega",
+        "file": "SMS 860592 - TARREGA RECUERDOS DE LA ALHAMBRA AALIBRARY (Artist - Philharmonia La Seine).mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "The Swan",
+        "composer": "Camille Saint-Saëns",
+        "file": "SMS 860777 - SAINT-SAENS THE SWAN AALIBRARY (Artist - Philharmonia La Seine).mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Humoresque",
+        "composer": "Antonín Dvořák",
+        "file": "SMS 242208 - DVORAK HUMORESQUE AALIBRARY (Artist - Bartok Music).mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Clair de Lune",
+        "composer": "Claude Debussy",
+        "file": "SMS 805104 - CLAIR DE LUNE (Artist - Classical Music Elegance).mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Gnossiene No.1",
+        "composer": "Erik Satie",
+        "file": "SMS 805108 - GNOSSIENNE NO 1 (Artist - Classical Music Elegance).mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Gnossiene No.2",
+        "composer": "Erik Satie",
+        "file": "SMS 805109 - GNOSSIENNE NO 2 (Artist - Classical Music Elegance).mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Gnossiene No.3",
+        "composer": "Erik Satie",
+        "file": "SMS 805110 - GNOSSIENNE NO 3 (Artist - Classical Music Elegance).mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Gymnopedie No.1",
+        "composer": "Erik Satie",
+        "file": "SMS 805113 - GYMNOPEDIE NO 1 (Artist - Classical Music Elegance).mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Gymnopedie No.2",
+        "composer": "Erik Satie",
+        "file": "SMS 805114 - GYMNOPEDIE NO 2 (Artist - Classical Music Elegance).mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Gymnopedie No.3",
+        "composer": "Erik Satie",
+        "file": "SMS 805115 - GYMNOPEDIE NO 3 (Artist - Classical Music Elegance).mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Arabesque No.1",
+        "composer": "Claude Debussy",
+        "file": "SMS 834363 - DEBUSSY ARABESQUE NO 1 (Artist - Classical Music Elegance).mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Arabesque No.2",
+        "composer": "Claude Debussy",
+        "file": "SMS 834364 - DEBUSSY ARABESQUE NO 2 (Artist - Classical Music Elegance).mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Introit - Resurrexi et Adhuc Tecum Sum",
+        "composer": "The Tudor Consort",
+        "file": "The_Tudor_Consort_-_02_-_Introit_-_Resurrexi_et_Adhuc_Tecum_Sum.mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Kyrie Eleison",
+        "composer": "The Tudor Consort",
+        "file": "The_Tudor_Consort_-_03_-_Kyrie_Eleison.mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Gloria in Excelsis Deo",
+        "composer": "The Tudor Consort",
+        "file": "The_Tudor_Consort_-_04_-_Gloria_in_Excelsis_Deo.mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Alleluia - Pascha Nostrum",
+        "composer": "The Tudor Consort",
+        "file": "The_Tudor_Consort_-_08_-_Alleluia_-_Pascha_Nostrum.mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Sequence - Victimae Paschali Laudes",
+        "composer": "The Tudor Consort",
+        "file": "The_Tudor_Consort_-_09_-_Sequence_-_Victimae_Paschali_Laudes.mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Credo in Unum Deum",
+        "composer": "The Tudor Consort",
+        "file": "The_Tudor_Consort_-_11_-_Credo_in_Unum_Deum.mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Offertory - Terra Tremuit",
+        "composer": "The Tudor Consort",
+        "file": "The_Tudor_Consort_-_13_-_Offertory_-_Terra_Tremuit.mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Agnus Dei I",
+        "composer": "The Tudor Consort",
+        "file": "The_Tudor_Consort_-_19_-_Agnus_Dei_I.mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Agnus Dei II",
+        "composer": "The Tudor Consort",
+        "file": "The_Tudor_Consort_-_20_-_Agnus_Dei_II.mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Cylinder One",
+        "composer": "Chris Zabriskie",
+        "file": "Chris Zabriskie - Cylinders - 01 Cylinder One.mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Cylinder Six",
+        "composer": "Chris Zabriskie",
+        "file": "Chris Zabriskie - Cylinders - 06 Cylinder Six.mp3",
+        "preferredVolume": 1
+    },
+    {
+        "title": "Cylinder Nine",
+        "composer": "Chris Zabriskie",
+        "file": "Chris Zabriskie - Cylinders - 09 Cylinder Nine.mp3",
+        "preferredVolume": 1
+    }
+]

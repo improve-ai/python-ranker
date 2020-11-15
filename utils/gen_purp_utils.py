@@ -124,7 +124,8 @@ def sigmoid(x: float, logit_const: float) -> float:
         value of sigmoid function
 
     """
-    return 1 / (1 + np.exp(logit_const - x))
+    exp_arg = logit_const - x
+    return 1 / (1 + np.exp(exp_arg))
 
 
 def get_immutable_iterable(

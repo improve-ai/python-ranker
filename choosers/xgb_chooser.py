@@ -1,5 +1,6 @@
 from copy import deepcopy
 import json
+from numbers import Number
 import numpy as np
 import pickle
 from time import time
@@ -9,8 +10,7 @@ from xgboost.core import XGBoostError
 
 from choosers.basic_choosers import BasicChooser
 from encoders.feature_encoder import FeatureEncoder
-from utils.gen_purp_utils import constant, append_prfx_to_dict_keys, \
-    impute_missing_dict_keys
+from utils.gen_purp_utils import constant, sigmoid
 
 
 class BasicNativeXGBChooser(BasicChooser):
@@ -75,6 +75,10 @@ class BasicNativeXGBChooser(BasicChooser):
     def SUPPORTED_OBJECTIVES() -> list:
         return ['reg', 'binary', 'multi']
 
+    @constant
+    def TIEBREAKER_MULTIPLIER() -> float:
+        return 1e-6
+
     def __init__(
             self, mlmodel_metadata_key: str = 'json',
             lookup_table_key: str = 'table', seed_key: str = 'model_seed'):
@@ -125,6 +129,14 @@ class BasicNativeXGBChooser(BasicChooser):
         self.model_objective = self._get_model_objective()
 
     def _get_model_metadata(self) -> dict:
+        """
+        Model metadata (hash table, etc. getter)
+
+        Returns
+        -------
+        Dict[str, object]
+            dict with model metadata
+        """
 
         assert 'user_defined_metadata' in self.model.attributes().keys()
         user_defined_metadata_str = self.model.attr('user_defined_metadata')
@@ -133,51 +145,42 @@ class BasicNativeXGBChooser(BasicChooser):
 
         return user_defined_metadata[self.model_metadata_key]
 
-    def _get_missings_filled_variants(
-            self, context: Dict[str, object], all_feats_count: int):
-        return np.array([
-            context[el] if context.get(el, None) is not None
-            else np.nan for el in np.arange(0, all_feats_count, 1)])\
-            .reshape(1, all_feats_count)
-
-    def _get_nan_filled_encoded_variants(
-            self, variant: Dict[str, object], context: Dict[str, object],
-            all_feats_count: int):
-
-        context_copy = deepcopy(context)
-        enc_variant = self.feature_encoder.encode_features({'variant': variant})
-        context_copy.update(enc_variant)
-
-        missings_filled_v = \
-            self._get_missings_filled_variants(
-                context=context_copy, all_feats_count=all_feats_count)
-
-        return missings_filled_v
-
     def score_all(
             self, variants: List[Dict[str, object]],
             context: Dict[str, object],
-            model_metadata: Dict[str, object] = None,
-            lookup_table_key: str = "table",
-            lookup_table_features_idx: int = 1, seed_key: str = "model_seed",
             mlmodel_score_res_key: str = 'target',
             mlmodel_class_proba_key: str = 'classProbability',
             target_class_label: int = 1, imputer_value: float = np.nan,
+            sigmoid_correction: bool = False, sigmoid_const: float = 0.5,
+            return_plain_results: bool = False,
             **kwargs) -> np.ndarray:
+
         """
         Scores all provided variants
+
         Parameters
         ----------
         variants: list
             list of variants to scores
         context: dict
             context dict needed for encoding
-        context_table_key: str
-            context key storing lookup table
-        context_table_features_idx: int
-            index of a lookup table storing features encoding info (?)
-        seed_key: str
-            context key storing model seed
+                mlmodel_score_res_key
+        mlmodel_class_proba_key: str
+            param added for mlmodel api consistency
+        target_class_label: int
+            label of the target class
+        imputer_value: float
+            value with which missing valuse will be imputed
+        sigmoid_correction: bool
+            should sigmoid correction be applied (sigmoid function be applied
+            to model`s scores)
+        sigmoid_const: float
+            intercept of sigmoid
+        return_plain_results: bool
+            should raw results (with sigmoid correction) be returned from predict
+            added for speed optimization
+        kwargs
+
         Returns
         -------
         np.ndarray
@@ -191,19 +194,47 @@ class BasicNativeXGBChooser(BasicChooser):
         all_feat_names = \
             np.array(['f{}'.format(el) for el in range(all_feats_count)])
 
+        # st1 = time()
         encoded_variants = \
             np.array([self._get_nan_filled_encoded_variants(
                 variant=v, context=encoded_context,
-                all_feats_count=all_feats_count)
+                all_feats_count=all_feats_count, missing_filler=imputer_value)
                 for v in variants]) \
             .reshape((len(variants), len(all_feat_names)))
+        # et1 = time()
+        # print('Encoding took: {}'.format(et1 - st1))
 
+        # print(encoded_variants[0])
+        # print(all_feat_names)
+
+        # st1 = time()
         scores = \
             self.model.predict(
-                DMatrix(encoded_variants, feature_names=all_feat_names))
-        # return scores
+                DMatrix(encoded_variants, feature_names=all_feat_names))\
+            .astype('float64')
+        # et1 = time()
+        # print('Predicting took: {}'.format(et1 - st1))
 
-        # TODO this needs either to be flagged or sped up
+        if sigmoid_correction:
+            scores = sigmoid(scores, logit_const=sigmoid_const)
+
+        # st2 = time()
+        scores += \
+            np.array(
+                np.random.rand(len(encoded_variants)), dtype='float64') * \
+            self.TIEBREAKER_MULTIPLIER
+        # et2 = time()
+        # print('Breaking ties took {}'.format(et2 - st2))
+        # input('sanity check')
+
+        # TODO left for debugging sake - delete when no more neede
+        # assert any([fel == sel for sel in scores for fel in scores])
+        # print(scores)
+        # input('sanity check')
+
+        if return_plain_results:
+            return scores
+
         variants_w_scores_list = \
             np.array(
                 [self._get_processed_score(score=score, variant=variant)
@@ -214,11 +245,31 @@ class BasicNativeXGBChooser(BasicChooser):
     def score(
             self, variant: Dict[str, object],
             context: Dict[str, object],
-            model_metadata: Dict[str, object] = None,
-            lookup_table_key: str = "table",
-            lookup_table_features_idx: int = 1,
-            seed_key: str = "model_seed",
-            imputer_value: float = np.nan, **kwargs) -> list:
+            imputer_value: float = np.nan,
+            sigmoid_correction: bool = False, sigmoid_const: float = 0.5,
+            **kwargs) -> list:
+
+        """
+        Scores single variant
+
+        Parameters
+        ----------
+        variant: Dict[str, object]
+            single observation to be scored
+        context: Dict[str, object]
+            scoring context dict
+        imputer_value: float
+            value to impute missings with
+        sigmoid_correction: bool
+            should sigmoid function be applied to the predict`s result
+        sigmoid_const: float
+            intercept term of sigmoid
+        kwargs
+
+        Returns
+        -------
+
+        """
 
         encoded_context = \
             self.feature_encoder.encode_features({'context': context})
@@ -231,23 +282,56 @@ class BasicNativeXGBChooser(BasicChooser):
         all_feats_count = self._get_features_count()
         all_feat_names = \
             np.array(['f{}'.format(el) for el in range(all_feats_count)])
+        # feat_names = np.array(['f{}'.format(el) for el in all_encoded_features.keys()])
+        # values = np.array([el for el in all_encoded_features.values()])
+        # vals_count = len(values)
 
+        # st = time()
         missings_filled_v = \
             self._get_missings_filled_variants(
-                context=encoded_features, all_feats_count=all_feats_count)
+                input_dict=encoded_features, all_feats_count=all_feats_count,
+                missing_filler=imputer_value)
+        # et = time()
+        # print('Encoding features took: {}'.format(et - st))
 
+        # st1 = time()
         single_score = \
             self.model \
                 .predict(
-                    DMatrix(missings_filled_v, feature_names=all_feat_names))
+                    DMatrix(
+                        missings_filled_v
+                        if missings_filled_v.shape == (1, all_feats_count)
+                        else missings_filled_v.reshape((1, all_feats_count)),
+                        feature_names=all_feat_names, missing=np.nan
+                    )
+            ).astype('float64')
+        # et1 = time()
+        # print('Predicting took: {}'.format(et1 - st1))
+        # input('sanity check')
 
-        # print(single_score_list)
+        if sigmoid_correction:
+            single_score = sigmoid(single_score, logit_const=sigmoid_const)
+
+        single_score += \
+            np.array(
+                np.random.rand(), dtype='float64') * self.TIEBREAKER_MULTIPLIER
 
         score = \
             self._get_processed_score(score=single_score, variant=variant)
         return score
 
     def _get_model_objective(self) -> str:
+        """
+        Helper method for native xgboost -> retrieves objective from booster
+        object
+
+        Returns
+        -------
+        str
+            string representing task (check SUPPORTED_OBJECTIVES for currently
+            supported tasks)
+
+        """
         model_objective = ''
         # print(json.loads(self.model.save_config()))
         try:
@@ -264,13 +348,31 @@ class BasicNativeXGBChooser(BasicChooser):
         return model_objective
 
     def _get_processed_score(self, score, variant):
+        """
+        Prepares 'result row' based on booster`s objective
+
+        Parameters
+        ----------
+        score: float or np.ndarray
+            single observation`s score
+        variant: Dict[str, object]
+            single obervation`s input
+
+        Returns
+        -------
+        List[Number]
+            list representing single row:
+            [<variant>, <variant`s score>, <class>] (0 for regression task)
+
+        """
 
         if self.model_objective == 'reg':
             return [variant, float(score), int(0)]
         elif self.model_objective == 'binary':
             return [variant, float(score), int(1)]
         elif self.model_objective == 'multi':
-            return [variant, float(np.array(score).max()), int(np.array(score).argmax())]
+            return [variant, float(np.array(score).max()),
+                    int(np.array(score).argmax())]
 
 
 if __name__ == '__main__':
@@ -300,19 +402,26 @@ if __name__ == '__main__':
     # sample_variants = [{"arrays": [1 for el in range(0, features_count + 10)]},
     #                    {"arrays": [el + 2 for el in range(0, features_count + 10)]},
     #                    {"arrays": [el for el in range(0, features_count + 10)]}]
+    # 0.3775409052734039
 
     single_score = mlmc.score(
-        variant=variants[0], context=context)
+        variant=variants[0], context=context, sigmoid_correction=True)
     print('single score')
     print(single_score)
 
     st = time()
-    score_all = mlmc.score_all(
-        variants=variants, context=context, model_metadata=model_metadata)
+    batch_size = 100
+    for _ in range(batch_size):
+        score_all = mlmc.score_all(
+            variants=variants, context=context, sigmoid_correction=True,
+            return_plain_results=True)
+        score_all[-1] = 100
+        score_all[::-1].sort()
+        best = score_all[0]
     et = time()
-    print(et - st)
-    print('score_all')
-    print(score_all)
+    print(score_all[:10])
+    print((et - st) / batch_size)
+    input('score_all')
 
     sorted = mlmc.sort(variants_w_scores=score_all)
     print('sorted')

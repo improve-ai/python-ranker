@@ -171,10 +171,11 @@ class DecisionModel:
     def score(
             self, variants: str or list or tuple or dict,
             context: str or dict or frozendict,
-            model_metadata: str or dict or None = None,
             cli_call: bool = False, sigmoid_correction: bool = True,
-            sigmoid_const: float = 0.5, return_plain_scores: bool = False,
-            plain_scores_idx: int = 1, **kwargs) -> np.ndarray or str:
+            sigmoid_const: float = 0.5, return_plain_results: bool = False,
+            plain_scores_idx: int = 1,
+            be_quick: bool = False, **kwargs) -> np.ndarray or str:
+
         """
         Scores provided variants with provided context
 
@@ -184,14 +185,21 @@ class DecisionModel:
             variant(s) to score
         context: dict
             dict with lookup table
+        cli_call: bool
+            is this a CLI call or not
         sigmoid_correction: bool
             should results be corrected with sigmoid
-        return_plain_scores: bool
+        sigmoid_const: float
+            sigmoid`s intercept
+        return_plain_results: bool
             should plain floats be returned or tuples of
             (variant, score, class)
         plain_scores_idx: int
             index of 'column' containing plain float scores - maybe should be
-             refactored
+            refactored
+        be_quick: bool
+            should a quick path be taken (no type checks and conversions along
+            the way, also uses score_all)
 
         Returns
         -------
@@ -199,35 +207,49 @@ class DecisionModel:
             np.ndarray if this is not cli call else results as json string
 
         """
-        variants_json = self._get_json_frm_input(input_val=variants)
-        context_json = self._get_json_frm_input(input_val=context)
-        model_metadata_json = self._get_json_frm_input(input_val=model_metadata)
+
+        if not variants:
+            return None
+
+        if be_quick:
+            # scores: np.ndarray = \
+            #     self.chooser.score_all(
+            #         variants=variants, context=context,
+            #         return_plain_results=True,
+            #         sigmoid_const=sigmoid_const,
+            #         sigmoid_correction=sigmoid_correction)
+            return self.chooser.score_all(
+                    variants=variants, context=context,
+                    return_plain_results=True,
+                    sigmoid_const=sigmoid_const,
+                    sigmoid_correction=sigmoid_correction)
+
+        variants_ = self._get_json_frm_input(input_val=variants)
+        context = self._get_json_frm_input(input_val=context)
 
         score_kwgs = {
             'sigmoid_correction': sigmoid_correction,
             'sigmoid_const': sigmoid_const}
 
         is_single_variant = \
-            self._check_if_single_variant(variants_json=variants_json)
+            self._check_if_single_variant(variants_json=variants_)
         if is_single_variant:
             # print('Single variant')
             variants_w_scores = \
                 self.chooser.score(
-                    variant=variants_json, context=context_json,
-                    model_metadata=model_metadata_json, **score_kwgs)
+                    variant=variants_, context=context,  **score_kwgs)
         else:
             # print('Multiple variant')
             variants_w_scores = \
                 self.chooser.score_all(
-                    variants=variants_json, context=context_json,
-                    model_metadata=model_metadata_json, **score_kwgs)
+                    variants=variants_, context=context, **score_kwgs)
 
         # ret_variants_w_scores = variants_w_scores
         # if isinstance(variants_w_scores, float):
         #     ret_variants_w_scores = \
         #         np.array([[variants_json, variants_w_scores]]).reshape((1, 2))
 
-        if return_plain_scores:
+        if return_plain_results:
             return variants_w_scores[:, plain_scores_idx]
 
         return self._get_as_is_or_json_str(
@@ -235,14 +257,24 @@ class DecisionModel:
 
     def best_of(
             self, variants: List[Dict[str, object]],
-            context: Dict[str, object]) -> frozendict:
+            context: Dict[str, object], sigmoid_const: float = 0.5,
+            sigmoid_correction: bool = True) -> dict:
+
+        if not variants:
+            return None
+
+        if len(variants) == 1:
+            return variants[0]
 
         scores: np.ndarray = \
             self.score(
                 variants=variants, context=context,
-                return_plain_scores=True)
+                sigmoid_const=sigmoid_const,
+                sigmoid_correction=sigmoid_correction, be_quick=True)
 
-        return frozendict(variants[int(np.argmax(scores))])
+        # print(scores)
+
+        return variants[int(np.argmax(scores))]
 
     def sort(
             self, variants: str, context: str, model_metadata: str,

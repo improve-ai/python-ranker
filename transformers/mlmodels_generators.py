@@ -177,7 +177,7 @@ if __name__ == '__main__':
         print(preds)
         print('Asserting if original json is eequal to imputed one')
         assert json.dumps(bmlg.metadata_json) == \
-               cached_model.user_defined_metadata['appended_payload']
+               cached_model.user_defined_metadata['json']
         # assert int(
         #     json.loads(cached_model.user_defined_metadata['json'])[1:-1]
         #     .split(',')[-1]) == 15000000 - 1

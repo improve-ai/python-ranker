@@ -1,5 +1,6 @@
 from copy import deepcopy
 import json
+import numba as nb
 import numpy as np
 from time import time
 
@@ -30,7 +31,7 @@ if __name__ == '__main__':
     # model_kind = 'mlmodel'
     model_kind = 'xgb_native'
     # model_pth = '../artifacts/test_artifacts/'
-    xgb_model_pth = '../artifacts/xgb_models/conv_model.xgb'
+    # xgb_model_pth = '../artifacts/xgb_models/conv_model.xgb'
     # dm = DecisionModel(model_kind=model_kind, model_pth=xgb_model_pth)
 
     # context = frozendict({})
@@ -47,8 +48,8 @@ if __name__ == '__main__':
     # res = dm.score(variants=variants[:10], context=context)
 
     # print(res)
-    raw_xgb_model_pth = '../artifacts/xgb_models/model.xgb'
-    metadata_pth = '../artifacts/xgb_models/model.json'
+    xgb_model_pth = '../artifacts/models/12_11_2020_verses.xgb'
+    metadata_pth = '../artifacts/models/12_11_2020_verses_metadata.json'
     b = Booster()
     b.load_model(xgb_model_pth)
 
@@ -102,23 +103,26 @@ if __name__ == '__main__':
         np.vectorize(
             pyfunc=fill_nan, cache=True, otypes=[float], excluded=['enc_feats'])
 
-    def get_batch_score(variant, context, feat_count):
+    def get_batch_score(variant, context, feat_names):
 
         context_copy = deepcopy(context)
         enc_variant = fe.encode_features({'variant': variant})
         context_copy.update(enc_variant)
 
         # feat_count = max(all_feat_names_c.shape)
+        # print(variant)
+        # print(context)
+        # print(feat_names)
+        # input('sanity check')
 
-        # missings_filled_v = \
-        #     fill_nan_vectorized(
-        #         np.arange(0, feat_count, 1), context_copy)\
-        #     .reshape((1, feat_count))
+        missings_filled_v = \
+            fill_nan_vectorized(
+                feat_names, context_copy).reshape((1, max(feat_names.shape)))
 
-        missings_filled_v = np.array([
-            context_copy[el] if context_copy.get(el, None) is not None
-            else np.nan for el in np.arange(0, feat_count, 1)])\
-            .reshape(1, feat_count)
+        # missings_filled_v = np.array([
+        #     context_copy[el] if context_copy.get(el, None) is not None
+        #     else np.nan for el in np.arange(0, feat_count, 1)])\
+        #     .reshape(1, feat_count)
 
         # print(missings_filled_v)
         # input('sanity check')
@@ -150,6 +154,26 @@ if __name__ == '__main__':
     #
     # input('nparr vect vs list compr')
 
+
+    # @nb.vectorize(("str(int64)", ), target="cpu")
+    # def fast_prfx_appender(feat_idx):
+    #     # return 'f{}'.format(feat_idx)
+    #     return '1'
+
+
+    @nb.jit(forceobj=True)
+    def fast_prfx_appender():
+
+        # feat_names = np.array(['fX' for _ in range(len(feat_idxs))])
+        feat_idxs = np.arange(100).astype(str)
+        f = np.array('f', dtype=str)
+
+        for i in feat_idxs:
+            feat_names[i] = 'f' + str(feat_idxs)
+        return feat_names
+
+    # fast_appender_jit = nb.jit(fast_prfx_appender)
+
     enc_context = fe.encode_features({'context': context})
 
     start_time = time()
@@ -157,27 +181,50 @@ if __name__ == '__main__':
     #     append_prefix_vectorized(np.arange(0, len(table[1])), 'f')
     # this is faster
     batch_size = 500
+    feat_count = len(table[1])
     for _ in range(batch_size):
-        all_feat_names_c = np.array(['f{}'.format(el) for el in range(len(table[1]))])
+
+        stc = time()
+        all_feat_names_c = np.array(['f{}'.format(el) for el in range(feat_count)])
+        etc = time()
+
+        stn = time()
+        all_feat_names_c = fast_prfx_appender(np.arange(feat_count))
+        etn = time()
+
+        print('{} -> old | {} -> new'.format(etc - stc, etn - stn))
+        input('sanity check')
+
+        # print(all_feat_names_c)
+        # input('sanity check')
+
+
         # print(np.array(variants[:variants_count]).reshape(-1, 1).shape)
         # print(all_feat_names_c.reshape(-1, 1).shape)
         # print(variants_count)
         # input('sanity check')
-        # res = \
-        #     get_batch_score_v(
-        #         np.array(variants[:variants_count]).reshape(-1, 1),
-        #         enc_context,
-        #         all_feat_names_c.reshape(1, -1)) \
-        #     .reshape((variants_count, len(all_feat_names_c)))
+        st = time()
         res = \
-            np.array([get_batch_score(
-                variant=v, context=enc_context,
-                feat_count=max(all_feat_names_c.shape))
-                for v in variants[:variants_count]])\
+            get_batch_score_v(
+                np.array(variants[:variants_count]).reshape(-1, 1),
+                enc_context,
+                all_feat_names_c.reshape(1, -1)) \
             .reshape((variants_count, len(all_feat_names_c)))
+
+        # res = \
+        #     np.array([get_batch_score(
+        #         variant=v, context=enc_context,
+        #         feat_count=max(all_feat_names_c.shape))
+        #         for v in variants[:variants_count]])\
+        #     .reshape((variants_count, len(all_feat_names_c)))
+        et = time()
+        print('res lot of features takes: {} sec'.format(et - st))
         # print(res.shape)
         # input('sanity check')
+        st = time()
         preds = b.predict(DMatrix(res, feature_names=all_feat_names_c))
+        et = time()
+        print('a lot of features takes: {} sec'.format(et - st))
         preds[::-1].sort()
         # scores = b.predict(DMatrix(np.array(res.values())))
     end_time = time() - start_time

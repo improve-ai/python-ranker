@@ -1,7 +1,12 @@
 from collections.abc import Iterable
 import json
 import numpy as np
+from time import time
+import os
+import sys
 from typing import Dict, List, Tuple
+
+sys.path.append('/Users/os/Projs/python-sdk')
 
 # TODO -> this is just pre-refactor convenience alias
 from models.decision_models import DecisionModel
@@ -125,11 +130,12 @@ class Decision(object):
                 # TODO self.variants will be a list or a tuple -> DecisionModel
                 #  must support that
                 self.__memoized_scores = \
-                    tuple(self.model.score(
+                    self.model.score(
                         variants=self.__variants,
                         context=self.__context,
-                        return_plain_scores=True,
-                        plain_scores_idx=1))
+                        return_plain_results=True,
+                        plain_scores_idx=1, be_quick=True)
+
         # self.cached_scores = cached_scores
         return self.__memoized_scores
 
@@ -161,6 +167,12 @@ class Decision(object):
             if self.__memoized_scores is None:
                 self.scores()
             # this is the fast way
+
+            # print(self.__variants)
+            # print(self.__memoized_scores)
+            #
+            # print(any([fel == sel for fel in self.__memoized_scores for sel in self.__memoized_scores]))
+
             variants_w_scores = \
                 np.array(
                     [self.__variants, self.__memoized_scores]).T
@@ -254,71 +266,92 @@ if __name__ == '__main__':
     # model_kind = 'mlmodel'
     model_kind = 'xgb_native'
     # model_pth = '../artifacts/test_artifacts/'
-    xgb_model_pth = '../artifacts/xgb_models/conv_model.xgb'
+    xgb_model_pth = 'artifacts/models/12_11_2020_verses_conv.xgb'
     dm = DecisionModel(model_kind=model_kind, model_pth=xgb_model_pth)
 
     # context = frozendict({})
-    with open('../artifacts/test_artifacts/sorting_context.json', 'r') as cjson:
+    with open('artifacts/test_artifacts/sorting_context.json', 'r') as cjson:
         read_str = ''.join(cjson.readlines())
         context = json.loads(read_str)
 
-    with open('../artifacts/data/real/meditations.json') as mjson:
+    with open('artifacts/data/real/2bs_bible_verses_full.json') as mjson:
         read_str = ''.join(mjson.readlines())
         variants = json.loads(read_str)
 
-    d = Decision(
-        variants=variants[:10], model=dm, context=context)
+    # d = Decision(
+    #     variants=variants[:10], model=dm, context=context)
+    #
+    # d.ranked()
 
-    # d.scores(self=d, variants=variants[:3])
-    print(d.variants)
-
-    # print(d.scores())
+    # print(d.variants)
     # print(d.memoized_scores)
-    print('d.ranked()')
-    print(d.ranked())
-    # print('d.memoized_scores')
-    # print(d.memoized_scores)
-    # input('sanity check')
-    print(d.ranked()[0])
-    print(max(d.memoized_scores))
-    for el in d.scored():
-        print(el)
-    # print(d.scored())
-    print('getting best')
-    print(d.best())
+    # print(d.memoized_ranked)
+    # input('check')
 
-    print('###### NO VARIANTS CHECK ######')
-    d1 = Decision(variants=variants[:10])
-    print('\n####')
-    for variant in variants[:10]:
-        print(variant)
+    Decision(variants=variants[:1000], model=dm, context=context).scores()
 
-    input('sanity check')
-
-    print('\n#### SCORES CALL')
-    print(d1.scores())
-    print(np.median(d1.scores()))
-
-    print('\n#### RANKED CALL')
-    for ranked_v in d1.ranked():
-        print(ranked_v)
-
-    print('\n#### SCORED CALL 1')
-    for scored_v, score_val in zip(d1.scored(), d1.memoized_scores):
-        print('FIRST CALL {} -> {}'.format(scored_v, score_val))
-
-    print('\n#### SCORED CALL 2')
-    for scored_v, score_val in zip(d1.scored(), d1.memoized_scores):
-        print('SECOND CALL {} -> {}'.format(scored_v, score_val))
-
-    print('\n#### BEST CALL')
-    print(d1.best())
-    # print(d1.track_runners_up)
-
-    tc = 0
-    for _ in range(100):
-        _d = Decision(variants=variants[:10])
-        if _d.track_runners_up is True:
-            tc += 1
-            print('tracking')
-    print(tc)
+    # st = time()
+    # batch_size = 1000
+    # [Decision(variants=variants[:100], model=dm, context=context).ranked()
+    #  for _ in range(batch_size)]
+    # # for _ in range(batch_size):
+    # #     d = Decision(
+    # #         variants=variants[:300], model=dm, context=context).best()
+    # #     # d.best()
+    # et = time()
+    # print((et - st) / batch_size)
+    # input('speed test')
+    #
+    # # d.scores(self=d, variants=variants[:3])
+    # print(d.variants)
+    #
+    # # print(d.scores())
+    # # print(d.memoized_scores)
+    # print('d.ranked()')
+    # print(d.ranked())
+    # # print('d.memoized_scores')
+    # # print(d.memoized_scores)
+    # # input('sanity check')
+    # print(d.ranked()[0])
+    # print(max(d.memoized_scores))
+    # for el in d.scored():
+    #     print(el)
+    # # print(d.scored())
+    # print('getting best')
+    # print(d.best())
+    #
+    # print('###### NO VARIANTS CHECK ######')
+    # d1 = Decision(variants=variants[:10])
+    # print('\n####')
+    # for variant in variants[:10]:
+    #     print(variant)
+    #
+    # # input('sanity check')
+    #
+    # print('\n#### SCORES CALL')
+    # print(d1.scores())
+    # print(np.median(d1.scores()))
+    #
+    # print('\n#### RANKED CALL')
+    # for ranked_v in d1.ranked():
+    #     print(ranked_v)
+    #
+    # print('\n#### SCORED CALL 1')
+    # for scored_v, score_val in zip(d1.scored(), d1.memoized_scores):
+    #     print('FIRST CALL {} -> {}'.format(scored_v, score_val))
+    #
+    # print('\n#### SCORED CALL 2')
+    # for scored_v, score_val in zip(d1.scored(), d1.memoized_scores):
+    #     print('SECOND CALL {} -> {}'.format(scored_v, score_val))
+    #
+    # print('\n#### BEST CALL')
+    # print(d1.best())
+    # # print(d1.track_runners_up)
+    #
+    # tc = 0
+    # for _ in range(100):
+    #     _d = Decision(variants=variants[:10])
+    #     if _d.track_runners_up is True:
+    #         tc += 1
+    #         print('tracking')
+    # print(tc)
