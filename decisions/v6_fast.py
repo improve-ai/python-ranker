@@ -124,19 +124,15 @@ class Decision(object):
                 cached_scores = np.random.normal(size=len(self.__variants))
                 cached_scores[::-1].sort()
                 self.__memoized_scores = cached_scores
-                # ind = np.lexsort(-1 * random_scores)
-                # cached_scores = random_scores[ind]
+
             else:
-                # TODO self.variants will be a list or a tuple -> DecisionModel
-                #  must support that
                 self.__memoized_scores = \
                     self.model.score(
                         variants=self.__variants,
                         context=self.__context,
-                        return_plain_results=True,
-                        plain_scores_idx=1, be_quick=True)
+                        return_plain_results=True, sigmoid_correction=False,
+                        sigmoid_const=0.5, plain_scores_idx=1, be_quick=True)
 
-        # self.cached_scores = cached_scores
         return self.__memoized_scores
 
     def ranked(self) -> List[Dict[str, object]]:
@@ -266,7 +262,9 @@ if __name__ == '__main__':
     # model_kind = 'mlmodel'
     model_kind = 'xgb_native'
     # model_pth = '../artifacts/test_artifacts/'
-    xgb_model_pth = 'artifacts/models/12_11_2020_verses_conv.xgb'
+    # xgb_model_pth = 'artifacts/models/12_11_2020_verses_conv.xgb'
+    # xgb_model_pth = 'artifacts/models/improve-stories-2.0.xgb'
+    xgb_model_pth = 'artifacts/models/improve-messages-2.0.xgb'
     dm = DecisionModel(model_kind=model_kind, model_pth=xgb_model_pth)
 
     # context = frozendict({})
@@ -274,7 +272,11 @@ if __name__ == '__main__':
         read_str = ''.join(cjson.readlines())
         context = json.loads(read_str)
 
-    with open('artifacts/data/real/2bs_bible_verses_full.json') as mjson:
+    # with open('artifacts/data/real/2bs_bible_verses_full.json') as mjson:
+    #     read_str = ''.join(mjson.readlines())
+    #     variants = json.loads(read_str)
+
+    with open('artifacts/data/real/meditations.json') as mjson:
         read_str = ''.join(mjson.readlines())
         variants = json.loads(read_str)
 
@@ -294,14 +296,16 @@ if __name__ == '__main__':
 
     st = time()
     batch_size = 1000
-    [Decision(variants=variants[:500], model=dm, context=context).ranked()
-     for _ in range(batch_size)]
+    res = [Decision(variants=variants[:500], model=dm, context=context).scored()
+           for _ in range(batch_size)]
     # for _ in range(batch_size):
     #     d = Decision(
     #         variants=variants[:300], model=dm, context=context).best()
     #     # d.best()
     et = time()
     print((et - st) / batch_size)
+    for el in res[0]:
+        print(el)
     # input('speed test')
     #
     # # d.scores(self=d, variants=variants[:3])
