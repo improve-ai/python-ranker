@@ -1,5 +1,7 @@
-#!python
+#!python3
 #cython: language_level=3
+#include "/usr/local/lib/python3.7/site-packages/numpy/core/include/numpy/arrayobject.h"
+# distutils: define_macros=NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION
 
 import cython
 import numpy as np

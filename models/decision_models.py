@@ -277,9 +277,9 @@ class DecisionModel:
         return variants[int(np.argmax(scores))]
 
     def sort(
-            self, variants: str, context: str, model_metadata: str,
-            cli_call: bool = False, sigmoid_correction: bool = True,
-            sigmoid_const: float = 0.5, **kwargs) -> np.ndarray or str:
+            self, variants: str, context: str, cli_call: bool = False,
+            sigmoid_correction: bool = True, sigmoid_const: float = 0.5,
+            **kwargs) -> np.ndarray or str:
         """
         Scores and sorts provided variants and context
 
@@ -301,8 +301,7 @@ class DecisionModel:
 
         variants_w_scores = \
             self.score(
-                variants=variants, context=context,
-                model_metadata=model_metadata, cli_call=False,
+                variants=variants, context=context, cli_call=False,
                 sigmoid_correction=sigmoid_correction,
                 sigmoid_const=sigmoid_const)
         srtd_variants_w_scores = \
@@ -312,14 +311,13 @@ class DecisionModel:
             input_val=srtd_variants_w_scores, cli_call=cli_call)
 
     def choose(
-            self, variants: str, context: str, model_metadata: str,
-            cli_call: bool = False, sigmoid_correction: bool = True,
-            sigmoid_const: float = 0.5, **kwargs):
+            self, variants: str, context: str, cli_call: bool = False,
+            sigmoid_correction: bool = True, sigmoid_const: float = 0.5,
+            **kwargs):
 
         variants_w_scores = \
             self.score(
-                variants=variants, context=context,
-                model_metadata=model_metadata, cli_call=False,
+                variants=variants, context=context, cli_call=False,
                 sigmoid_correction=sigmoid_correction,
                 sigmoid_const=sigmoid_const)
         chosen_variant = \

@@ -1,7 +1,10 @@
 from copy import deepcopy
+from coremltools.models.utils import macos_version
+from Cython.Build import cythonize
 import json
 from numbers import Number
 import numpy as np
+from setuptools import Extension
 import sys
 import pickle
 import pyximport
@@ -10,12 +13,29 @@ from typing import Dict, List
 from xgboost import Booster, DMatrix
 from xgboost.core import XGBoostError
 
-pyximport.install()
+# pyximport.install(
+#     language_level="3",
+#     setup_args={
+#         "ext_modules":
+#             cythonize([
+#                 Extension(
+#                     "fast_enc",
+#                     ['/Users/os/Projs/python-sdk/choosers/choosers_cython_utils/fast_feat_enc.pyx'],
+#                     include_dirs=['/usr/local/lib/python3.7/site-packages/numpy/core/include/'],
+#                     # library_dirs=["/usr/local/lib/python3.7/site-packages/numpy"],
+#                     define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")])]),
+#         "install_requires": ["numpy"]},
+#     # inplace=True,
+#     # build_in_temp=False
+# )
+# setup_args={"include_dirs": np.get_include()}, reload_support=True)
 # sys.path.append('/home/os/Projects/upwork/python-sdk')
 
 from choosers.basic_choosers import BasicChooser
-from choosers.choosers_cython_utils.fast_feat_enc import get_all_feat_names, \
-    get_nan_filled_encoded_variants
+# from choosers.choosers_cython_utils.fast_feat_enc import get_all_feat_names, \
+#     get_nan_filled_encoded_variants
+if not macos_version():
+    import choosers.choosers_cython_utils.fast_feat_enc as ffe
 from encoders.feature_encoder import FeatureEncoder
 from utils.gen_purp_utils import constant, sigmoid
 
@@ -198,22 +218,23 @@ class BasicNativeXGBChooser(BasicChooser):
             self.feature_encoder.encode_features({'context': context})
 
         all_feats_count = self._get_features_count()
-        # all_feat_names = \
-        #     np.array(['f{}'.format(el) for el in range(all_feats_count)])
-        all_feat_names = np.asarray(get_all_feat_names(all_feats_count))
-
-        # st1 = time()
-        # encoded_variants = \
-        #     np.array([self._get_nan_filled_encoded_variant(
-        #         variant=v, context=encoded_context,
-        #         all_feats_count=all_feats_count, missing_filler=imputer_value)
-        #         for v in variants]) \
-        #     .reshape((len(variants), len(all_feat_names)))
-
-        encoded_variants = \
-            np.asarray(get_nan_filled_encoded_variants(
-                np.array(variants, dtype=dict), encoded_context, all_feats_count,
-                self.feature_encoder, imputer_value))
+        if macos_version():
+            pyximport.install()
+            all_feat_names = \
+                np.array(['f{}'.format(el) for el in range(all_feats_count)])
+            encoded_variants = \
+                np.array([self._get_nan_filled_encoded_variant(
+                    variant=v, context=encoded_context,
+                    all_feats_count=all_feats_count, missing_filler=imputer_value)
+                    for v in variants]) \
+                .reshape((len(variants), len(all_feat_names)))
+        else:
+            all_feat_names = np.asarray(ffe.get_all_feat_names(all_feats_count))
+            # st1 = time()
+            encoded_variants = \
+                np.asarray(ffe.get_nan_filled_encoded_variants(
+                    np.array(variants, dtype=dict), encoded_context, all_feats_count,
+                    self.feature_encoder, imputer_value))
         # et1 = time()
         # print('Encoding took: {}'.format(et1 - st1))
 
