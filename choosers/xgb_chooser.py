@@ -1,6 +1,7 @@
 from copy import deepcopy
 from coremltools.models.utils import macos_version
 from Cython.Build import cythonize
+from distutils.extension import Extension
 import json
 from numbers import Number
 import numpy as np
@@ -35,6 +36,23 @@ from choosers.basic_choosers import BasicChooser
 # from choosers.choosers_cython_utils.fast_feat_enc import get_all_feat_names, \
 #     get_nan_filled_encoded_variants
 if not macos_version():
+    fast_feat_enc_ext = \
+        Extension(
+            'fast_feat_enc',
+            sources=['choosers/choosers_cython_utils/fast_feat_enc.pyx'],
+            define_macros=[
+                ("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")],
+            include_dirs=[np.get_include()])
+
+    # print(fast_feat_enc_ext.__dict__)
+
+    pyximport.install(
+        setup_args={
+            'install_requires': ["numpy"],
+            'ext_modules': cythonize(
+                fast_feat_enc_ext,
+                language_level="3")})
+
     import choosers.choosers_cython_utils.fast_feat_enc as ffe
 from encoders.feature_encoder import FeatureEncoder
 from utils.gen_purp_utils import constant, sigmoid
@@ -219,7 +237,7 @@ class BasicNativeXGBChooser(BasicChooser):
 
         all_feats_count = self._get_features_count()
         if macos_version():
-            pyximport.install()
+
             all_feat_names = \
                 np.array(['f{}'.format(el) for el in range(all_feats_count)])
             encoded_variants = \

@@ -51,3 +51,8 @@ python3.7 transformers/mlmodels_generators.py --src_model_pth test_artifacts/mod
 To append **xgboost** model with desired model metadata please use:
 
 python3.7 transformers/xgb_model_generators.py --src_model_pth test_artifacts/model.xgb --model_metadata_pth test_artifacts/model.json --trgt_model_pth test_artifacts/conv_model.mlmodel 
+
+
+## Cython compatibility issues fix -> symlink numpy
+
+sudo ln -s /usr/lib/python3.7/dist-packages/numpy/core/include/numpy /usr/include/numpy
