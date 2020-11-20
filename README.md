@@ -16,7 +16,6 @@ The prepared CLI takes as input:
  - path to desired model
  - JSON string with input data encapsulated with '' -> '<json string>'
  - JSON string with context encapsulated with '' -> '<json string>'
- - JSON string with model metadata encapsulated with '' -> '<json string>'
 
 In order to use prepared ImproveModel CLI:
  - make sure to change directory to python-sdk folder
@@ -27,7 +26,7 @@ To see example results please call: <br>
 python3.7 improve_model_cli.py score xgb_native test_artifacts/model.xgb
 
 To use CLI with files (i.e. for variants/context/model metadata/results) please use:
-python3.7 improve_model_cli.py score xgb_native test_artifacts/model.xgb --context_pth test_artifacts/context.json --model_metadata_pth test_artifacts/model.json --results_pth test_artifacts/res.json --variants_pth test_artifacts/meditations.json 
+python3.7 improve_model_cli.py score xgb_native artifacts/models/improve-messages-2.0.xgb --variants_pth artifacts/data/real/meditations.json --context_pth artifacts/test_artifacts/sorting_context.json --results_pth artifacts/results/20_11_2020_meditations_sanity_check.json --prettify_json 
 
 ### Results
 Currently supported objectives:
