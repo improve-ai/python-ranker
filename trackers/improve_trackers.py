@@ -431,7 +431,7 @@ if __name__ == '__main__':
         'https://u0cxvugtmi.execute-api.us-west-2.amazonaws.com/test/track'
     api_key = 'xScYgcHJ3Y2hwx7oh5x02NcCTwqBonnumTeRHThI'
 
-    it = ImproveTracker(tracker_url=tracker_url, api_key=api_key)
+    it = ImproveTracker(tracker_url=tracker_url, api_key=api_key, debug=True)
     example_history_id = str(uuid4())
 
     with open('../artifacts/test_artifacts/meditations.json', 'r') as medf:

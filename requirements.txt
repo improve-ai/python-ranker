@@ -1,3 +1,4 @@
+Cython==0.29.14
 coremltools==3.0
 numpy==1.19.2
 xgboost==1.2.0

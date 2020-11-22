@@ -8,6 +8,7 @@ from uuid import uuid4
 from warnings import warn
 
 from decisions.v6_fast import Decision
+from models.decision_models import DecisionModel
 from utils.gen_purp_utils import constant
 
 
@@ -101,6 +102,18 @@ class DecisionTracker:
     def REQUEST_ERROR_CODE_KEY():
         return 'REQUEST_ERROR_CODE'
 
+    @constant
+    def RUNNERS_UP_KEY() -> str:
+        return 'runners_up'
+
+    @constant
+    def VARIANTS_COUNT_KEY() -> str:
+        return 'count'
+
+    @constant
+    def SAMPLE_KEY() -> str:
+        return 'sample'
+
     @property
     def track_url(self) -> str:
         return self._track_url
@@ -142,7 +155,7 @@ class DecisionTracker:
         self._history_id = new_val
 
     def __init__(
-            self, track_url: str, api_key: str, history_id: str,
+            self, track_url: str, api_key: str, history_id: str = None,
             debug: bool = False):
 
         self.track_url = track_url
@@ -155,8 +168,35 @@ class DecisionTracker:
     # TODO determine type of timestamp (str, int or datetime)
     def track_using_best_from(
             self, decision: Decision, message_id: str, history_id: str,
-            timestamp: object, **kwargs):
-        pass
+            timestamp: object, completion_handler: callable = None, **kwargs):
+
+        top_runners_up = \
+            decision.top_runners_up() if decision.track_runners_up else None
+
+        body_keys = \
+            [self.TYPE_KEY, self.MODEL_KEY, self.VARIANT_KEY,
+             self.RUNNERS_UP_KEY, self.VARIANTS_COUNT_KEY, self.SAMPLE_KEY,
+             self.CONTEXT_KEY]
+
+        body_vals = \
+            [self.DECISION_TYPE, decision.model_name, decision.best(),
+             top_runners_up, len(decision.variants),
+             self._get_sample(decision=decision), decision.context]
+
+        self.post_improve_request(
+            body_values=dict(
+                [(k, v) for k, v in zip(body_keys, body_vals) if v]),
+            block=lambda result, error: (
+                warn("Improve.track error: {}".format(error))
+                if error and self.debug else 0,
+                completion_handler(error) if completion_handler else 0),
+            message_id=message_id, history_id=history_id, timestamp=timestamp)
+
+        return decision.best()
+
+    def _get_sample(self, decision: Decision):
+
+        return None
 
     def track_using(
             self, variant: dict, model_name: str, context: dict = None,
@@ -164,25 +204,17 @@ class DecisionTracker:
             timestamp: object = None, completion_handler: callable = None,
             **kwargs):
 
-        # body = {
-        #     self.TYPE_KEY: self.DECISION_TYPE,
-        #     self.MODEL_KEY: model_name,
-        #     self.VARIANT_KEY: variant,
-        # }
-
-        body = dict([(k, v) for k, v in zip(
-            [self.TYPE_KEY, self.MODEL_KEY, self.VARIANT_KEY, self.CONTEXT_KEY],
-            [self.DECISION_TYPE, model_name, variant, context]) if v])
-
-        if context:
-            body[self.CONTEXT_KEY] = context
+        body_keys = \
+            [self.TYPE_KEY, self.MODEL_KEY, self.VARIANT_KEY, self.CONTEXT_KEY]
+        body_vals = [self.DECISION_TYPE, model_name, variant, context]
 
         # # TODO check if message ID should be added to the body
         # if message_id:
         #     body[self.MESSAGE_ID_KEY] = message_id
 
         self.post_improve_request(
-            body_values=body,
+            body_values=dict(
+                [(k, v) for k, v in zip(body_keys, body_vals) if v]),
             block=lambda result, error: (
                 warn("Improve.track error: {}".format(error))
                 if error and self.debug else 0,
@@ -305,6 +337,9 @@ class DecisionTracker:
         try:
             resp = \
                 rq.post(url=self.track_url, data=payload_json, headers=headers)
+
+            print(resp.status_code)
+
         except Exception as exc:
             error = exc
 
@@ -342,8 +377,32 @@ class DecisionTracker:
 
 
 if __name__ == '__main__':
+
+    model_kind = 'xgb_native'
+
+    xgb_model_pth = '../artifacts/models/12_11_2020_verses_conv.xgb'
+
+    dm = DecisionModel(model_kind=model_kind, model_pth=xgb_model_pth)
+
+    with open('../artifacts/test_artifacts/sorting_context.json', 'r') as cjson:
+        read_str = ''.join(cjson.readlines())
+        context = json.loads(read_str)
+
+    with open('../artifacts/data/real/meditations.json') as mjson:
+        read_str = ''.join(mjson.readlines())
+        variants = json.loads(read_str)
+
+    decision = Decision(variants=variants[:500], model=dm, context=context)
+
     track_url = \
         'https://u0cxvugtmi.execute-api.us-west-2.amazonaws.com/test/track'
     api_key = 'xScYgcHJ3Y2hwx7oh5x02NcCTwqBonnumTeRHThI'
 
-    dt = DecisionTracker(track_url=track_url, api_key=api_key)
+    dt = DecisionTracker(track_url=track_url, api_key=api_key, debug=True)
+
+    message_id = str(uuid4())
+    history_id = str(uuid4())
+
+    dt.track_using_best_from(
+        decision=decision, message_id=message_id, history_id=history_id,
+        timestamp=str(datetime.now()))

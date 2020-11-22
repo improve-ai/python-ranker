@@ -5,38 +5,15 @@ import json
 import numpy as np
 import os
 from pytest import fixture, raises
-from typing import List
+import sys
+from typing import Dict, List
 from unittest import TestCase
+
+sys.path.append(os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
 
 from decisions.v6_fast import Decision
 from models.decision_models import DecisionModel
 
-# All getters and setters should be tested for (aka. generic tests):
-#
-# getters:
-# test if attribute/property is accessible from the outside of Decision (should be)
-# test if attribute`s/property`s getter returns completely immutable data structure
-# (e.g. i python it should return tuple of frozendicts)
-#
-# setters:
-# test if it is possible to variants more than once per instance (should not be possible)
-# test if attribute/property can be mutated from inside of Decision class
-#
-# getters + setters:
-# test case: if setter is provided with mutable data structure (e.g. list of dicts)
-# does it get properly converted into immutable collection (e.g. tuple of frozendicts in py).
-# Both setter and getter probably need assertions for this test
-
-
-# class MyTest(unittest.TestCase):
-#     @pytest.fixture(autouse=True)
-#     def initdir(self, tmpdir):
-#         tmpdir.chdir() # change to pytest-provided temporary directory
-#         tmpdir.join("samplefile.ini").write("# testdata")
-#
-#     def test_method(self):
-#         s = open("samplefile.ini").read()
-#         assert "testdata" in s
 
 class TestDecisionProperties(TestCase):
 
@@ -88,6 +65,82 @@ class TestDecisionProperties(TestCase):
     def modeln_dec_kwgs_keys(self, new_val: List):
         self._modeln_dec_kwgs_keys = new_val
 
+    @property
+    def model_seed_tracks(self) -> int:
+        return self._model_seed_tracks
+
+    @model_seed_tracks.setter
+    def model_seed_tracks(self, new_val: int):
+        assert isinstance(new_val, int)
+        self._model_seed_tracks = new_val
+
+    @property
+    def model_seed_not_tracks(self) -> int:
+        return self._model_seed_not_tracks
+
+    @model_seed_not_tracks.setter
+    def model_seed_not_tracks(self, new_val: int):
+        assert isinstance(new_val, int)
+        self._model_seed_not_tracks = new_val
+
+    @property
+    def max_runners_up_test_val(self) -> int:
+        return self._max_runners_up_test_val
+
+    @max_runners_up_test_val.setter
+    def max_runners_up_test_val(self, new_val: int):
+        assert isinstance(new_val, int)
+        self._max_runners_up_test_val = new_val
+
+    @property
+    def scores_seed(self) -> int:
+        return self._scores_seed
+
+    @scores_seed.setter
+    def scores_seed(self, new_val: int):
+        assert isinstance(new_val, int)
+        self._scores_seed = new_val
+
+    @property
+    def model_scored_benchmark_variants(self) -> List[Dict[str, object]]:
+        return self._model_scored_benchmark_variants
+
+    @model_scored_benchmark_variants.setter
+    def model_scored_benchmark_variants(self, new_val: List[Dict[str, object]]):
+        self._model_scored_benchmark_variants = new_val
+
+    @property
+    def model_scored_benchmark_variants_scores(self) -> List[float]:
+        return self._model_scored_benchmark_variants_scores
+
+    @model_scored_benchmark_variants_scores.setter
+    def model_scored_benchmark_variants_scores(self, new_val: List[float]):
+        self._model_scored_benchmark_variants_scores = new_val
+
+    @property
+    def ranked_seed(self) -> List[Dict[str, object]]:
+        return self._ranked_seed
+
+    @ranked_seed.setter
+    def ranked_seed(self, new_val: List[Dict[str, object]]):
+        self._ranked_seed = new_val
+
+    @property
+    def model_ranked_benchmark_variants(self) -> List[Dict[str, object]]:
+        return self._model_ranked_benchmark_variants
+
+    @model_ranked_benchmark_variants.setter
+    def model_ranked_benchmark_variants(self, new_val: List[Dict[str, object]]):
+        self._model_ranked_benchmark_variants = new_val
+
+    @property
+    def model_ranked_benchmark_variants_scores(self) -> List[float]:
+        return self._model_ranked_benchmark_variants_scores
+
+    @model_ranked_benchmark_variants_scores.setter
+    def model_ranked_benchmark_variants_scores(self, new_val: List[float]):
+        self._model_ranked_benchmark_variants_scores = new_val
+
     @fixture(autouse=True)
     def prepare_env(self):
         model_kind = os.getenv('MODEL_KIND')
@@ -106,17 +159,18 @@ class TestDecisionProperties(TestCase):
 
         with open(os.getenv('VARIANTS_JSON_PTH')) as mjson:
             read_str = ''.join(mjson.readlines())
-            self.variants = \
-                tuple(frozendict(v) for v in json.loads(read_str))[:10]
+            # self.variants = \
+            #     tuple(frozendict(v) for v in json.loads(read_str))[:10]
+            self.variants = json.loads(read_str)[:10]
 
         self.decisions_kwargs = {
             # 'plain': Decision(),
-            'varaiants_model': {
+            'variants_model': {
                 'variants': self.variants, 'model': self.artifacts_model},
             'variants_model_context': {
                 'variants': self.variants, 'model': self.artifacts_model,
                 'context': self.context},
-            'variant_model_context_nulled': {
+            'variants_model_context_nulled': {
                 'variants': self.variants, 'model': self.artifacts_model,
                 'context': None},
             'ranked_variants_modeln': {
@@ -137,6 +191,30 @@ class TestDecisionProperties(TestCase):
             ['variants_model_context', 'variant_model_context_nulled',
              'ranked_variants_modeln_context',
              'ranked_variants_modeln_context_nulled']
+
+        with open(os.getenv('VARIANTS_FOR_MODEL_SCORES_PTH')) as tvmjson:
+            read_str = ''.join(tvmjson.readlines())
+            self.model_scored_benchmark_variants = json.loads(read_str)
+
+        with open(os.getenv('SCORES_FOR_MODEL_SCORES_PTH')) as tvsjson:
+            read_str = ''.join(tvsjson.readlines())
+            self.model_scored_benchmark_variants_scores = json.loads(read_str)
+
+        with open(os.getenv('RANKED_VARIANTS_FOR_MODEL_PTH')) as rvmjson:
+            read_str = ''.join(rvmjson.readlines())
+            self.model_ranked_benchmark_variants = json.loads(read_str)
+
+        with open(os.getenv('RANKED_SCORES_FOR_MODEL_PTH')) as rvsjson:
+            read_str = ''.join(rvsjson.readlines())
+            self.model_ranked_benchmark_variants_scores = json.loads(read_str)
+
+        self.model_seed_tracks = int(os.getenv("MODEL_SEED_TRACKS"))
+        self.model_seed_not_tracks = int(os.getenv("MODEL_SEED_NOT_TRACKS"))
+
+        self.scores_seed = int(os.getenv("SCORES_SEED"))
+        self.ranked_seed = int(os.getenv("RANKED_SEED"))
+
+        self.max_runners_up_test_val = int(os.getenv("MAX_RUNNERS_UP_TEST_VAL"))
 
     def _generic_test_getter_outside(
             self, attr_names, dec_kwargs, kwargs_keys):
@@ -189,6 +267,8 @@ class TestDecisionProperties(TestCase):
             assert hasattr(curr_decision, callable_n)
             dec_callable = getattr(curr_decision, callable_n)
             dec_callable()
+            print('############')
+            print(getattr(curr_decision, attr_n))
 
             type_checker(getattr(curr_decision, attr_n))
 
@@ -207,15 +287,11 @@ class TestDecisionProperties(TestCase):
             type_checker(res)
 
     def _generic_test_set_once(
-            self, attr_names, set_attempt_vals, dec_kwargs, kwargs_keys):
+            self, attr_names, set_attempt_vals, dec_kwargs):
 
-        true_vals_list = \
-            [d_kwgs.get(kwgs_k) for d_kwgs, kwgs_k
-             in zip(dec_kwargs.values(), kwargs_keys)]
-
-        for case, decision_kwgs, set_attempt_v, attr_n, true_v in zip(
+        for case, decision_kwgs, set_attempt_v, attr_n in zip(
                 dec_kwargs.keys(), dec_kwargs.values(),
-                set_attempt_vals, attr_names, true_vals_list):
+                set_attempt_vals, attr_names):
 
             print('asserting: {}'.format(case))
             curr_decision = Decision(**decision_kwgs)
@@ -299,6 +375,8 @@ class TestDecisionProperties(TestCase):
 
     @staticmethod
     def _memoized_best_type_checker(memoized_best):
+        print('### memoized_best ###')
+        print(memoized_best)
         assert isinstance(memoized_best, dict) \
                or isinstance(memoized_best, frozendict) or memoized_best is None
 
@@ -343,13 +421,13 @@ class TestDecisionProperties(TestCase):
         assert true_variants != set_attempt_variants
 
         attr_names = ['variants' for _ in range(6)]
-        kwargs_keys = \
-            ['variants' for _ in range(3)] + \
-            ['ranked_variants' for _ in range(3)]
+        # kwargs_keys = \
+        #     ['variants' for _ in range(3)] + \
+        #     ['ranked_variants' for _ in range(3)]
 
         self._generic_test_set_once(
             attr_names=attr_names, set_attempt_vals=set_attempt_variants,
-            dec_kwargs=self.decisions_kwargs, kwargs_keys=kwargs_keys)
+            dec_kwargs=self.decisions_kwargs)
 
     def test_modeln_getter_outside(self):
 
@@ -395,7 +473,7 @@ class TestDecisionProperties(TestCase):
 
         self._generic_test_set_once(
             attr_names=kwargs_keys, set_attempt_vals=set_attempt_modeln,
-            dec_kwargs=modeln_dec_kwgs, kwargs_keys=kwargs_keys)
+            dec_kwargs=modeln_dec_kwgs)
 
     def test_context_getter_outside(self):
 
@@ -444,7 +522,7 @@ class TestDecisionProperties(TestCase):
 
         self._generic_test_set_once(
             attr_names=kwargs_keys, set_attempt_vals=set_attempt_contexts,
-            dec_kwargs=context_dec_kwargs, kwargs_keys=kwargs_keys)
+            dec_kwargs=context_dec_kwargs)
 
     def test_max_runners_up_getter_outside(self):
 
@@ -498,7 +576,7 @@ class TestDecisionProperties(TestCase):
 
         self._generic_test_set_once(
             attr_names=kwargs_keys, set_attempt_vals=set_attempt_max_runners_up,
-            dec_kwargs=max_runners_up_dec_kwargs, kwargs_keys=kwargs_keys)
+            dec_kwargs=max_runners_up_dec_kwargs)
 
     def test_memoized_scores_getter_outside(self):
 
@@ -639,3 +717,406 @@ class TestDecisionProperties(TestCase):
             dec_kwargs=self.decisions_kwargs, callable_n='best',
             type_checker=TestDecisionProperties._memoized_best_type_checker)
 
+    def test_track_runners_up_set_once(self):
+
+        attr_names = \
+            ['track_runners_up' for _ in range(len(self.decisions_kwargs))]
+
+        set_attempt_variants = [-1 for _ in attr_names]
+
+        self._generic_test_set_once(
+            attr_names=attr_names, set_attempt_vals=set_attempt_variants,
+            dec_kwargs=self.decisions_kwargs)
+
+    def test_track_runners_up_return_value(self):
+
+        for case, dec_kwgs in self.decisions_kwargs.items():
+            np.random.seed(self.model_seed_not_tracks)
+            curr_dec = Decision(**dec_kwgs)
+            assert not curr_dec.track_runners_up
+
+        for case, dec_kwgs in self.decisions_kwargs.items():
+            np.random.seed(self.model_seed_tracks)
+            curr_dec = Decision(**dec_kwgs)
+            assert curr_dec.track_runners_up
+
+    def test_track_runners_up_return_value_single_variant(self):
+
+        variants_keys = \
+            ['variants' for _ in range(3)] + \
+            ['ranked_variants' for _ in range(3)]
+
+        for seed in [self.model_seed_not_tracks, self.model_seed_tracks]:
+            for case, dec_kwgs, v_key in zip(
+                    self.decisions_kwargs.keys(),
+                    self.decisions_kwargs.values(), variants_keys):
+                print(dec_kwgs[v_key][0])
+                dec_kwgs[v_key] = [dec_kwgs[v_key][0]]
+                np.random.seed(seed)
+                curr_dec = Decision(**dec_kwgs)
+                assert not curr_dec.track_runners_up
+
+    def test_top_runners_up_return_type(self):
+
+        for case, dec_kwgs in self.decisions_kwargs.items():
+            print('asserting: {}'.format(case))
+            np.random.seed(self.model_seed_tracks)
+            curr_dec = Decision(**dec_kwgs)
+            curr_dec.ranked()
+            tru = curr_dec.top_runners_up()
+
+            assert \
+                isinstance(tru, list) or isinstance(tru, np.ndarray) \
+                or tru is None
+
+            if isinstance(tru, list):
+                for v in tru:
+                    assert isinstance(v, dict)
+
+    def test_top_runners_up_return_value(self):
+
+        for case, dec_kwgs in self.decisions_kwargs.items():
+            np.random.seed(self.model_seed_not_tracks)
+            curr_dec = Decision(**dec_kwgs)
+            curr_dec.ranked()
+            runners_up = curr_dec.top_runners_up()
+            assert runners_up is not None
+
+        for case, dec_kwgs in self.decisions_kwargs.items():
+            np.random.seed(self.model_seed_tracks)
+            curr_dec = Decision(**dec_kwgs)
+            curr_dec.ranked()
+            runners_up = curr_dec.top_runners_up()
+            assert runners_up is not None
+
+    def test__set_track_runners_up_single_variant(self):
+
+        variants_keys = \
+            ['variants' for _ in range(3)] + \
+            ['ranked_variants' for _ in range(3)]
+
+        for case, dec_kwgs, v_key in zip(
+                self.decisions_kwargs.keys(), self.decisions_kwargs.values(),
+                variants_keys):
+            dec_kwgs[v_key] = [dec_kwgs[v_key][0]]
+            np.random.seed(self.model_seed_tracks)
+            curr_dec = Decision(**dec_kwgs)
+            assert not curr_dec.track_runners_up
+
+    def test_scores_first_call_no_model(self):
+        # this should return random numbers largest to smallest
+
+        des_decision_kwgs_keys = \
+            ['ranked_variants_modeln', 'ranked_variants_modeln_context',
+             'ranked_variants_modeln_context_nulled']
+
+        des_decision_kwgs = \
+            dict(zip(
+                des_decision_kwgs_keys,
+                [self.decisions_kwargs.get(k) for k in des_decision_kwgs_keys]))
+
+        np.random.seed(self.scores_seed)
+        benchmark_cached_scores = np.random.normal(size=len(self.variants))
+        benchmark_cached_scores[::-1].sort()
+
+        for case, dec_kwgs in des_decision_kwgs.items():
+
+            np.random.seed(self.scores_seed)
+            curr_dec = Decision(**dec_kwgs)
+            np.random.seed(self.scores_seed)
+            curr_scores = curr_dec.scores()
+
+            np.testing.assert_array_equal(benchmark_cached_scores, curr_scores)
+
+    def test_scores_second_call_no_model(self):
+
+        des_decision_kwgs_keys = \
+            ['ranked_variants_modeln', 'ranked_variants_modeln_context',
+             'ranked_variants_modeln_context_nulled']
+
+        des_decision_kwgs = \
+            dict(zip(
+                des_decision_kwgs_keys,
+                [self.decisions_kwargs.get(k) for k in des_decision_kwgs_keys]))
+
+        np.random.seed(self.scores_seed)
+        benchmark_cached_scores = np.random.normal(size=len(self.variants))
+        benchmark_cached_scores[::-1].sort()
+
+        for case, dec_kwgs in des_decision_kwgs.items():
+
+            np.random.seed(self.scores_seed)
+            curr_dec = Decision(**dec_kwgs)
+            np.random.seed(self.scores_seed)
+            first_call_curr_scores = curr_dec.scores()
+            second_call_curr_scores = curr_dec.scores()
+
+            assert second_call_curr_scores is not None
+
+            np.testing.assert_array_equal(
+                benchmark_cached_scores, first_call_curr_scores)
+
+            np.testing.assert_array_equal(
+                benchmark_cached_scores, second_call_curr_scores)
+
+            np.testing.assert_array_equal(
+                first_call_curr_scores, second_call_curr_scores)
+
+    def test_scores_first_call_w_model(self):
+
+        des_decision_kwgs_keys = \
+            ['variants_model', 'variants_model_context',
+             'variants_model_context_nulled']
+
+        des_decision_kwgs = \
+            dict(zip(
+                des_decision_kwgs_keys,
+                [self.decisions_kwargs.get(k) for k in des_decision_kwgs_keys]))
+
+        for case, dec_kwgs in des_decision_kwgs.items():
+            dec_kwgs['variants'] = self.model_scored_benchmark_variants
+            curr_dec = Decision(**dec_kwgs)
+            np.random.seed(self.scores_seed)
+            curr_scores = curr_dec.scores()
+
+            asserted_curr_scores = curr_scores
+            if not isinstance(asserted_curr_scores, list):
+                asserted_curr_scores = list(curr_scores)
+
+            np.testing.assert_array_almost_equal(
+                self.model_scored_benchmark_variants_scores,
+                asserted_curr_scores)
+
+    def test_scores_second_call_w_model(self):
+
+        des_decision_kwgs_keys = \
+            ['variants_model', 'variants_model_context',
+             'variants_model_context_nulled']
+
+        des_decision_kwgs = \
+            dict(zip(
+                des_decision_kwgs_keys,
+                [self.decisions_kwargs.get(k) for k in des_decision_kwgs_keys]))
+
+        for case, dec_kwgs in des_decision_kwgs.items():
+            dec_kwgs['variants'] = self.model_scored_benchmark_variants
+            curr_dec = Decision(**dec_kwgs)
+            np.random.seed(self.scores_seed)
+            first_call_curr_scores = curr_dec.scores()
+            second_call_curr_scores = curr_dec.scores()
+
+            assert second_call_curr_scores is not None
+
+            asserted_first_curr_scores_curr_scores = first_call_curr_scores
+            asserted_second_curr_scores_curr_scores = second_call_curr_scores
+
+            if not isinstance(asserted_first_curr_scores_curr_scores, list):
+                asserted_first_curr_scores_curr_scores = \
+                    list(first_call_curr_scores)
+
+            if not isinstance(asserted_second_curr_scores_curr_scores, list):
+                asserted_second_curr_scores_curr_scores = \
+                    list(second_call_curr_scores)
+
+            np.testing.assert_array_almost_equal(
+                self.model_scored_benchmark_variants_scores,
+                asserted_first_curr_scores_curr_scores)
+
+            np.testing.assert_array_almost_equal(
+                self.model_scored_benchmark_variants_scores,
+                asserted_second_curr_scores_curr_scores)
+
+    def test_ranked_first_call_no_scores_no_model(self):
+
+        des_decision_kwgs_keys = \
+            ['ranked_variants_modeln', 'ranked_variants_modeln_context',
+             'ranked_variants_modeln_context_nulled']
+
+        des_decision_kwgs = \
+            dict(zip(
+                des_decision_kwgs_keys,
+                [self.decisions_kwargs.get(k) for k in des_decision_kwgs_keys]))
+
+        np.random.seed(self.ranked_seed)
+        benchmark_cached_ranked_scores = np.random.normal(size=len(self.variants))
+        benchmark_cached_ranked_scores[::-1].sort()
+
+        for case, dec_kwgs in des_decision_kwgs.items():
+            curr_dec = Decision(**dec_kwgs)
+            np.random.seed(self.ranked_seed)
+            curr_ranked = curr_dec.ranked()
+            curr_scores = curr_dec.memoized_scores
+
+            assert curr_ranked is not None
+            assert curr_scores is not None
+
+            np.testing.assert_array_equal(
+                benchmark_cached_ranked_scores, curr_scores)
+            np.testing.assert_array_equal(
+                dec_kwgs['ranked_variants'], curr_ranked)
+
+    def test_ranked_second_call_no_scores_no_model(self):
+
+        des_decision_kwgs_keys = \
+            ['ranked_variants_modeln', 'ranked_variants_modeln_context',
+             'ranked_variants_modeln_context_nulled']
+
+        des_decision_kwgs = \
+            dict(zip(
+                des_decision_kwgs_keys,
+                [self.decisions_kwargs.get(k) for k in des_decision_kwgs_keys]))
+
+        np.random.seed(self.ranked_seed)
+        benchmark_cached_ranked_scores = \
+            np.random.normal(size=len(self.variants))
+        benchmark_cached_ranked_scores[::-1].sort()
+
+        for case, dec_kwgs in des_decision_kwgs.items():
+            curr_dec = Decision(**dec_kwgs)
+            np.random.seed(self.ranked_seed)
+            first_call_curr_ranked = deepcopy(curr_dec.ranked())
+            first_call_curr_scores = deepcopy(curr_dec.memoized_scores)
+            second_call_curr_ranked = deepcopy(curr_dec.ranked())
+            second_call_curr_scores = deepcopy(curr_dec.memoized_scores)
+
+            for el in [first_call_curr_ranked, first_call_curr_scores,
+                       second_call_curr_ranked, second_call_curr_scores]:
+                assert el is not None
+
+            np.testing.assert_array_equal(
+                benchmark_cached_ranked_scores, first_call_curr_scores)
+
+            np.testing.assert_array_equal(
+                benchmark_cached_ranked_scores, second_call_curr_scores)
+
+            np.testing.assert_array_equal(
+                dec_kwgs['ranked_variants'], first_call_curr_ranked)
+
+            np.testing.assert_array_equal(
+                dec_kwgs['ranked_variants'], second_call_curr_ranked)
+
+    def test_ranked_first_call_w_model(self):
+
+        des_decision_kwgs_keys = \
+            ['variants_model', 'variants_model_context',
+             'variants_model_context_nulled']
+
+        des_decision_kwgs = \
+            dict(zip(
+                des_decision_kwgs_keys,
+                [self.decisions_kwargs.get(k) for k in des_decision_kwgs_keys]))
+
+        for case, dec_kwgs in des_decision_kwgs.items():
+            dec_kwgs['variants'] = self.model_scored_benchmark_variants
+            curr_dec = Decision(**dec_kwgs)
+            np.random.seed(self.scores_seed)
+            curr_ranked = curr_dec.ranked()
+            curr_scores = curr_dec.memoized_scores
+
+            assert curr_ranked is not None
+            assert curr_dec.memoized_ranked is not None
+
+            asserted_curr_ranked = curr_ranked
+            if not isinstance(asserted_curr_ranked, list):
+                asserted_curr_ranked = list(curr_ranked)
+
+            np.testing.assert_array_equal(
+                self.model_ranked_benchmark_variants,
+                asserted_curr_ranked)
+
+            np.testing.assert_array_equal(
+                curr_dec.memoized_ranked
+                if isinstance(curr_dec.memoized_ranked, list)
+                else list(curr_dec.memoized_ranked),
+                asserted_curr_ranked)
+
+            np.testing.assert_array_almost_equal(
+                [el for el in
+                 reversed(sorted(curr_scores if isinstance(curr_scores, list)
+                                 else list(curr_scores)))],
+                self.model_ranked_benchmark_variants_scores)
+
+    def test_ranked_second_call_w_model(self):
+
+        des_decision_kwgs_keys = \
+            ['variants_model', 'variants_model_context',
+             'variants_model_context_nulled']
+
+        des_decision_kwgs = \
+            dict(zip(
+                des_decision_kwgs_keys,
+                [self.decisions_kwargs.get(k) for k in des_decision_kwgs_keys]))
+
+        for case, dec_kwgs in des_decision_kwgs.items():
+            dec_kwgs['variants'] = self.model_scored_benchmark_variants
+            curr_dec = Decision(**dec_kwgs)
+            np.random.seed(self.scores_seed)
+
+            first_call_curr_ranked = deepcopy(curr_dec.ranked())
+            first_call_curr_scores = deepcopy(curr_dec.memoized_scores)
+            second_call_curr_ranked = deepcopy(curr_dec.ranked())
+            second_call_curr_scores = deepcopy(curr_dec.memoized_scores)
+
+            for el in [first_call_curr_ranked, first_call_curr_scores,
+                       second_call_curr_ranked, second_call_curr_scores]:
+                assert el is not None
+
+            asserted_first_call_curr_ranked = first_call_curr_ranked
+            if not isinstance(asserted_first_call_curr_ranked, list):
+                asserted_first_call_curr_ranked = list(first_call_curr_ranked)
+
+            asserted_first_call_curr_scores = first_call_curr_scores
+            if not isinstance(asserted_first_call_curr_scores, list):
+                asserted_first_call_curr_scores = list(first_call_curr_scores)
+
+            asserted_second_call_curr_ranked = second_call_curr_ranked
+            if not isinstance(asserted_second_call_curr_ranked, list):
+                asserted_second_call_curr_ranked = list(second_call_curr_ranked)
+
+            asserted_second_call_curr_scores = second_call_curr_scores
+            if not isinstance(asserted_second_call_curr_scores, list):
+                asserted_second_call_curr_scores = list(second_call_curr_scores)
+
+            np.testing.assert_array_equal(
+                self.model_ranked_benchmark_variants,
+                asserted_first_call_curr_ranked)
+
+            np.testing.assert_array_equal(
+                self.model_ranked_benchmark_variants,
+                asserted_second_call_curr_ranked)
+
+            np.testing.assert_array_equal(
+                curr_dec.memoized_ranked
+                if isinstance(curr_dec.memoized_ranked, list)
+                else list(curr_dec.memoized_ranked),
+                asserted_first_call_curr_ranked)
+
+            np.testing.assert_array_equal(
+                curr_dec.memoized_ranked
+                if isinstance(curr_dec.memoized_ranked, list)
+                else list(curr_dec.memoized_ranked),
+                asserted_first_call_curr_ranked)
+
+            np.testing.assert_array_almost_equal(
+                [el for el in
+                 reversed(sorted(
+                     asserted_first_call_curr_scores
+                     if isinstance(asserted_first_call_curr_scores, list)
+                     else list(asserted_first_call_curr_scores)))],
+                self.model_ranked_benchmark_variants_scores)
+
+            np.testing.assert_array_almost_equal(
+                [el for el in
+                 reversed(sorted(
+                     asserted_second_call_curr_scores
+                     if isinstance(asserted_second_call_curr_scores, list)
+                     else list(asserted_second_call_curr_scores)))],
+                self.model_ranked_benchmark_variants_scores)
+
+            np.testing.assert_array_almost_equal(
+                [el for el in
+                 reversed(sorted(
+                     curr_dec.memoized_scores
+                     if isinstance(curr_dec.memoized_scores, list)
+                     else list(curr_dec.memoized_scores)))],
+                self.model_ranked_benchmark_variants_scores)

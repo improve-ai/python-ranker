@@ -1,12 +1,11 @@
-from copy import deepcopy
 from coremltools.models.utils import macos_version
+from copy import deepcopy
 from Cython.Build import cythonize
-from distutils.extension import Extension
 import json
 from numbers import Number
 import numpy as np
+import os
 from setuptools import Extension
-import sys
 import pickle
 import pyximport
 from time import time
@@ -14,37 +13,21 @@ from typing import Dict, List
 from xgboost import Booster, DMatrix
 from xgboost.core import XGBoostError
 
-# pyximport.install(
-#     language_level="3",
-#     setup_args={
-#         "ext_modules":
-#             cythonize([
-#                 Extension(
-#                     "fast_enc",
-#                     ['/Users/os/Projs/python-sdk/choosers/choosers_cython_utils/fast_feat_enc.pyx'],
-#                     include_dirs=['/usr/local/lib/python3.7/site-packages/numpy/core/include/'],
-#                     # library_dirs=["/usr/local/lib/python3.7/site-packages/numpy"],
-#                     define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")])]),
-#         "install_requires": ["numpy"]},
-#     # inplace=True,
-#     # build_in_temp=False
-# )
-# setup_args={"include_dirs": np.get_include()}, reload_support=True)
-# sys.path.append('/home/os/Projects/upwork/python-sdk')
-
 from choosers.basic_choosers import BasicChooser
-# from choosers.choosers_cython_utils.fast_feat_enc import get_all_feat_names, \
-#     get_nan_filled_encoded_variants
+
 if not macos_version():
+
+    pth_str = \
+        '{}/choosers_cython_utils/fast_feat_enc.pyx'\
+        .format(os.sep.join(str(os.path.relpath(__file__)).split(os.sep)[:-1]))
+
     fast_feat_enc_ext = \
         Extension(
             'fast_feat_enc',
-            sources=['choosers/choosers_cython_utils/fast_feat_enc.pyx'],
+            sources=[pth_str],
             define_macros=[
                 ("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")],
             include_dirs=[np.get_include()])
-
-    # print(fast_feat_enc_ext.__dict__)
 
     pyximport.install(
         setup_args={
@@ -54,6 +37,7 @@ if not macos_version():
                 language_level="3")})
 
     import choosers.choosers_cython_utils.fast_feat_enc as ffe
+
 from encoders.feature_encoder import FeatureEncoder
 from utils.gen_purp_utils import constant, sigmoid
 

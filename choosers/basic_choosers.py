@@ -199,6 +199,9 @@ class BasicChooser(ABC):
             array with variant, scores rows
         scores_col_idx: int
             the index of column with scores
+        class_cols_idx: int
+            index of the class label in a single row
+
 
         Returns
         -------
@@ -229,6 +232,8 @@ class BasicChooser(ABC):
             2D array of (variant, score) rows
         scores_col_idx: int
             int indicating column with scores
+        class_cols_idx: int
+            index of the class label in a single row
 
         Returns
         -------

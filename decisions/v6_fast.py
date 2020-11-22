@@ -87,15 +87,18 @@ class Decision(object):
         """
 
         if len(self.__variants) == 1:
-            return False
-
-        self.__track_runners_up = \
-            np.random.rand() < 1 / min(
-                len(self.__variants) - 1, self.__max_runners_up)
+            self.__track_runners_up = False
+        else:
+            self.__track_runners_up = \
+                np.random.rand() < 1 / min(
+                    len(self.__variants) - 1, self.__max_runners_up)
 
     def __set_variants(
             self, variants: List[Dict[str, object]] or None,
             ranked_variants: List[Dict[str, object]] or None):
+
+        # TODO maybe assert for type? Dict has length but is not a list.
+        #  Would this break any functionality?
 
         if ranked_variants is not None:
             self.__variants = ranked_variants
@@ -121,6 +124,8 @@ class Decision(object):
         if self.__memoized_scores is None:
             # call score from model
             if self.__model is None:
+                # TODO is this valid when ranked_variants are provided ?
+                #  I suppose so
                 cached_scores = np.random.normal(size=len(self.__variants))
                 cached_scores[::-1].sort()
                 self.__memoized_scores = cached_scores
@@ -248,6 +253,7 @@ class Decision(object):
         return None
 
     def top_runners_up(self) -> Iterable or None:
+
         return \
             self.__memoized_ranked[1:min(
                 len(self.__memoized_ranked), self.__max_runners_up)] \
@@ -262,9 +268,9 @@ if __name__ == '__main__':
     # model_kind = 'mlmodel'
     model_kind = 'xgb_native'
     # model_pth = '../artifacts/test_artifacts/'
-    # xgb_model_pth = 'artifacts/models/12_11_2020_verses_conv.xgb'
+    xgb_model_pth = 'artifacts/models/12_11_2020_verses_conv.xgb'
     # xgb_model_pth = 'artifacts/models/improve-stories-2.0.xgb'
-    xgb_model_pth = 'artifacts/models/improve-messages-2.0.xgb'
+    # xgb_model_pth = 'artifacts/models/improve-messages-2.0.xgb'
     dm = DecisionModel(model_kind=model_kind, model_pth=xgb_model_pth)
 
     # context = frozendict({})
@@ -296,16 +302,23 @@ if __name__ == '__main__':
 
     st = time()
     batch_size = 1000
-    res = [Decision(variants=variants[:500], model=dm, context=context).scored()
-           for _ in range(batch_size)]
-    # for _ in range(batch_size):
-    #     d = Decision(
-    #         variants=variants[:300], model=dm, context=context).best()
-    #     # d.best()
+    # res = [Decision(variants=variants[:500], model=dm, context=context).scored()
+    #        for _ in range(batch_size)]
+    for seed in range(batch_size):
+
+        np.random.seed(seed)
+        d = Decision(variants=variants[:300], model=dm, context=context)
+
+        if d.track_runners_up:
+            print(seed)
+            break
+
+        # d.best()
+
     et = time()
-    print((et - st) / batch_size)
-    for el in res[0]:
-        print(el)
+    # print((et - st) / batch_size)
+    # for el in res[0]:
+    #     print(el)
     # input('speed test')
     #
     # # d.scores(self=d, variants=variants[:3])
