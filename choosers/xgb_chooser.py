@@ -309,11 +309,11 @@ class BasicNativeXGBChooser(BasicChooser):
 
         encoded_context = \
             self.feature_encoder.encode_features({'context': context})
-        encoded_features = \
-            self.feature_encoder.encode_features({'variant': variant})
-
-        all_encoded_features = deepcopy(encoded_context)
-        all_encoded_features.update(encoded_features)
+        # encoded_features = \
+        #     self.feature_encoder.encode_features({'variant': variant})
+        #
+        # all_encoded_features = deepcopy(encoded_context)
+        # all_encoded_features.update(encoded_features)
 
         all_feats_count = self._get_features_count()
         all_feat_names = \
@@ -323,10 +323,15 @@ class BasicNativeXGBChooser(BasicChooser):
         # vals_count = len(values)
 
         # st = time()
+        # missings_filled_v = \
+        #     self._get_missings_filled_variants(
+        #         input_dict=encoded_features, all_feats_count=all_feats_count,
+        #         missing_filler=imputer_value)
+
         missings_filled_v = \
-            self._get_missings_filled_variants(
-                input_dict=encoded_features, all_feats_count=all_feats_count,
-                missing_filler=imputer_value)
+            self._get_nan_filled_encoded_variant(
+                variant=variant, context=encoded_context,
+                all_feats_count=all_feats_count, missing_filler=imputer_value)
         # et = time()
         # print('Encoding features took: {}'.format(et - st))
 
@@ -335,9 +340,9 @@ class BasicNativeXGBChooser(BasicChooser):
             self.model \
                 .predict(
                     DMatrix(
-                        missings_filled_v
-                        if missings_filled_v.shape == (1, all_feats_count)
-                        else missings_filled_v.reshape((1, all_feats_count)),
+                        missings_filled_v,
+                        # if missings_filled_v.shape == (1, all_feats_count)
+                        # else missings_filled_v.reshape((1, all_feats_count)),
                         feature_names=all_feat_names, missing=np.nan
                     )
             ).astype('float64')

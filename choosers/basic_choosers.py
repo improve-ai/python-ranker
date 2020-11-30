@@ -108,29 +108,29 @@ class BasicChooser(ABC):
                 'Lookup table or model seed not present in context!')
         return FeatureEncoder(table=lookup_table, model_seed=model_seed)
 
-    def _get_missings_filled_variants(
-            self, input_dict: Dict[str, object], all_feats_count: int,
-            missing_filler: float = np.nan):
-        """
-        Fast wrapper around missing filling procedure
-
-        Parameters
-        ----------
-        input_dict: Dict[str, object]
-            current scoring context
-        all_feats_count: int
-            definite number of features
-
-        Returns
-        -------
-        np.ndarray
-            array with values of missing features filled
-
-        """
-        return np.array([
-            input_dict[el] if input_dict.get(el, None) is not None
-            else missing_filler for el in np.arange(0, all_feats_count, 1)])  # \
-            # .reshape(1, all_feats_count)
+    # def _get_missings_filled_variants(
+    #         self, input_dict: Dict[str, object], all_feats_count: int,
+    #         missing_filler: float = np.nan):
+    #     """
+    #     Fast wrapper around missing filling procedure
+    #
+    #     Parameters
+    #     ----------
+    #     input_dict: Dict[str, object]
+    #         current scoring context
+    #     all_feats_count: int
+    #         definite number of features
+    #
+    #     Returns
+    #     -------
+    #     np.ndarray
+    #         array with values of missing features filled
+    #
+    #     """
+    #     return np.array([
+    #         input_dict[el] if input_dict.get(el, None) is not None
+    #         else missing_filler for el in np.arange(0, all_feats_count, 1)])  # \
+    #         # .reshape(1, all_feats_count)
 
     def _get_nan_filled_encoded_variant(
             self, variant: Dict[str, object], context: Dict[str, object],

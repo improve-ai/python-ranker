@@ -171,21 +171,29 @@ class BasicMLModelChooser(BasicChooser):
         if not encoded_context:
             encoded_context = \
                 self.feature_encoder.encode_features({'context': context})
-        encoded_features = \
-            self.feature_encoder.encode_features({'variant': variant})
-
-        all_encoded_features = deepcopy(encoded_context)
-        all_encoded_features.update(encoded_features)
+        # encoded_features = \
+        #     self.feature_encoder.encode_features({'variant': variant})
+        #
+        # all_encoded_features = deepcopy(encoded_context)
+        # all_encoded_features.update(encoded_features)
 
         all_feats_count = self._get_features_count()
         all_feat_names = \
             np.array(['f{}'.format(el) for el in range(all_feats_count)])
 
         # rename features
+        # missings_filled_v = \
+        #     self._get_missings_filled_variants(
+        #         input_dict=encoded_features, all_feats_count=all_feats_count,
+        #         missing_filler=imputer_value)
+
+        # _get_nan_filled_encoded_variant
+
         missings_filled_v = \
-            self._get_missings_filled_variants(
-                input_dict=encoded_features, all_feats_count=all_feats_count,
-                missing_filler=imputer_value)
+            self._get_nan_filled_encoded_variant(
+                variant=variant, context=encoded_context,
+                all_feats_count=all_feats_count, missing_filler=imputer_value)\
+            .reshape((all_feats_count, ))
 
         assert len(all_feat_names) == len(missings_filled_v)
 
