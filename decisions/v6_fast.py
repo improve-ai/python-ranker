@@ -218,7 +218,7 @@ class Decision(object):
 
         """
 
-        if self.__track_runners_up and self.__memoized_ranked is not None:
+        if self.__track_runners_up and self.__memoized_ranked is None:
             self.ranked()
 
         # if result already cached return it
