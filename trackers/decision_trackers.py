@@ -194,9 +194,51 @@ class DecisionTracker:
 
         return decision.best()
 
-    def _get_sample(self, decision: Decision):
+    def _get_sample(self, decision: Decision, sample_size: int = 1):
 
-        return None
+        dec_variants = decision.variants
+        # TODO check if best() should be called here - I don't think so
+        dec_best = decision.memoized_best
+
+        # TODO If there is only one variant, which is the best, then there is
+        #  no sample.
+        if len(dec_variants) == 1:
+            if dec_variants[0] == dec_best:
+                return None
+            else:
+                # TODO Is this even possible? What to do in such case
+                raise NotImplementedError(
+                    'This is case where decision has a single variant ant it is'
+                    ' not equal to best - best is None which means best() has '
+                    'not yet been called')
+
+        # TODO If there are no runners up, then sample is a random sample
+        #  from variants with just best excluded.
+        if not decision.track_runners_up:
+            variants_to_be_sampled = \
+                np.array([v for v in dec_variants if v != dec_best])
+            sample = \
+                list(np.random.choice(variants_to_be_sampled, size=sample_size))
+            return sample
+
+        # TODO If there are no remaining variants after best and runners up,
+        #  then there is no sample.
+
+        sample_excluded_variants = list(decision.top_runners_up())
+        sample_excluded_variants.append(dec_best)
+
+        variants_to_be_sampled = \
+            np.array(
+                [v for v in dec_variants if v not in sample_excluded_variants])
+
+        if variants_to_be_sampled.size == 0:
+            return None
+
+        # TODO If there are runners up, then sample is a random sample from
+        #  variants with best and runners up excluded.
+        sample = \
+            list(np.random.choice(variants_to_be_sampled, size=sample_size))
+        return sample
 
     def track_using(
             self, variant: dict, model_name: str, context: dict = None,

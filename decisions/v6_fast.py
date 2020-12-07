@@ -46,9 +46,9 @@ class Decision(object):
     def memoized_ranked(self) -> List[Dict[str, object]] or None:
         return self.__memoized_ranked
 
-    @property
-    def memoized_top_runners_up(self) -> List[Dict[str, object]] or None:
-        return self.__memoized_top_runners_up
+    # @property
+    # def memoized_top_runners_up(self) -> List[Dict[str, object]] or None:
+    #     return self.__memoized_top_runners_up
 
     @property
     def memoized_best(self) -> dict or None:
@@ -72,7 +72,7 @@ class Decision(object):
         self.__set_track_runners_up()
         self.__memoized_scores = None
         self.__memoized_ranked = None
-        self.__memoized_top_runners_up = None
+        # self.__memoized_top_runners_up = None
         self.__memoized_best = None
 
     def __set_track_runners_up(self):
@@ -254,9 +254,12 @@ class Decision(object):
 
     def top_runners_up(self) -> Iterable or None:
 
+        # TODO ask if max_runners_up should indicate index or ocount -
+        #  I would assume count
+
         return \
             self.__memoized_ranked[1:min(
-                len(self.__memoized_ranked), self.__max_runners_up)] \
+                len(self.__memoized_ranked), (self.__max_runners_up + 1))] \
             if self.__memoized_ranked is not None else None
 
     @staticmethod
