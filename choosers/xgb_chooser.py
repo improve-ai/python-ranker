@@ -1,4 +1,4 @@
-from coremltools.models.utils import macos_version
+# from coremltools.models.utils import macos_version
 from copy import deepcopy
 from Cython.Build import cythonize
 import json
@@ -14,6 +14,12 @@ from xgboost import Booster, DMatrix
 from xgboost.core import XGBoostError
 
 from choosers.basic_choosers import BasicChooser
+
+try:
+    # This is done for backward compatibilty
+    from coremltools.models.utils import macos_version
+except Exception as exc:
+    from coremltools.models.utils import _macos_version as macos_version
 
 if not macos_version():
 
