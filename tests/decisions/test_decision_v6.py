@@ -812,6 +812,32 @@ class TestDecision(TestCase):
             curr_dec = Decision(**dec_kwgs)
             assert not curr_dec.track_runners_up
 
+    def test__set_track_runners_up_tracks(self):
+
+        variants_keys = \
+            ['variants' for _ in range(3)] + \
+            ['ranked_variants' for _ in range(3)]
+
+        for case, dec_kwgs, v_key in zip(
+                self.decisions_kwargs.keys(), self.decisions_kwargs.values(),
+                variants_keys):
+            np.random.seed(self.model_seed_tracks)
+            curr_dec = Decision(**dec_kwgs)
+            assert curr_dec.track_runners_up
+
+    def test__set_track_runners_up_not_tracks(self):
+
+        variants_keys = \
+            ['variants' for _ in range(3)] + \
+            ['ranked_variants' for _ in range(3)]
+
+        for case, dec_kwgs, v_key in zip(
+                self.decisions_kwargs.keys(), self.decisions_kwargs.values(),
+                variants_keys):
+            np.random.seed(self.model_seed_not_tracks)
+            curr_dec = Decision(**dec_kwgs)
+            assert not curr_dec.track_runners_up
+
     def test_scores_first_call_no_model(self):
         # this should return random numbers largest to smallest
 
