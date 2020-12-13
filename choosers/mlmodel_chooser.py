@@ -390,6 +390,8 @@ if __name__ == '__main__':
     mlmc = BasicMLModelChooser()
 
     test_model_pth = '../artifacts/test_artifacts/improve-messages-2.0-3.mlmodel'
+    # test_model_pth = "https://improve-v5-resources-prod-models-117097735164.s3-us-west-2.amazonaws.com/models/mindful/latest/improve-messages-2.0.mlmodel"
+    # test_model_pth = "/Users/os/Downloads/improve-messages-2.0.mlmodel.gz"
     mlmc.load_model(inupt_model_src=test_model_pth)
 
     with open('../artifacts/test_artifacts/context.json', 'r') as mj:
