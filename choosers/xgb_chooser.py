@@ -1,5 +1,3 @@
-# from coremltools.models.utils import macos_version
-from copy import deepcopy
 from Cython.Build import cythonize
 import json
 from numbers import Number
@@ -10,10 +8,9 @@ import pickle
 import pyximport
 from time import time
 from typing import Dict, List
+from traceback import print_exc
 from xgboost import Booster, DMatrix
 from xgboost.core import XGBoostError
-
-from choosers.basic_choosers import BasicChooser
 
 try:
     # This is done for backward compatibilty
@@ -23,9 +20,14 @@ except Exception as exc:
 
 if not macos_version():
 
+    rel_pth_prfx = \
+        os.sep.join(str(os.path.relpath(__file__)).split(os.sep)[:-1])
+
     pth_str = \
-        '{}/choosers_cython_utils/fast_feat_enc.pyx'\
-        .format(os.sep.join(str(os.path.relpath(__file__)).split(os.sep)[:-1]))
+        '{}{}choosers_cython_utils/fast_feat_enc.pyx'\
+        .format(
+            os.sep.join(str(os.path.relpath(__file__)).split(os.sep)[:-1]),
+            '' if not rel_pth_prfx else os.sep)
 
     fast_feat_enc_ext = \
         Extension(
@@ -44,6 +46,7 @@ if not macos_version():
 
     import choosers.choosers_cython_utils.fast_feat_enc as ffe
 
+from choosers.basic_choosers import BasicChooser
 from encoders.feature_encoder import FeatureEncoder
 from utils.gen_purp_utils import constant, sigmoid
 
@@ -125,13 +128,13 @@ class BasicNativeXGBChooser(BasicChooser):
         self.seed_key = seed_key
         self.model_objective = None
 
-    def load_model(self, pth_to_model: str, verbose: bool = True):
+    def load_model(self, inupt_model_src: str, verbose: bool = True):
         """
         Loads desired model from input path.
 
         Parameters
         ----------
-        pth_to_model: str
+        inupt_model_src: str
             path to desired model
         verbose: bool
             should I print msgs
@@ -143,21 +146,30 @@ class BasicNativeXGBChooser(BasicChooser):
 
         try:
             if verbose:
-                print('Attempting to load: {} model'.format(pth_to_model))
+                print('Attempting to load: {} model'.format(inupt_model_src))
+
+            raw_model_src = self._get_model_src(model_src=inupt_model_src)
+
+            model_src = \
+                raw_model_src if isinstance(raw_model_src, str) \
+                else bytearray(raw_model_src)
+
             self.model = Booster()
-            self.model.load_model(pth_to_model)
+            self.model.load_model(model_src)
             if verbose:
-                print('Model: {} successfully loaded'.format(pth_to_model))
+                print('Model: {} successfully loaded'.format(inupt_model_src))
         except XGBoostError as xgbe:
             if verbose:
                 print('Attempting to read via pickle interface')
-            with open(pth_to_model, 'rb') as xgbl:
+            with open(inupt_model_src, 'rb') as xgbl:
                 self.model = pickle.load(xgbl)
+            print_exc()
         except Exception as exc:
             if verbose:
                 print(
-                    'When attempting to load the mode: {} the following error '
-                    'occured: {}'.format(pth_to_model, exc))
+                    'When attempting to load the model: {} the following error '
+                    'occured: {}'.format(inupt_model_src, exc))
+            print_exc()
 
         self.model_metadata = self._get_model_metadata()
         self.feature_encoder = self._get_feature_encoder()
@@ -426,12 +438,13 @@ if __name__ == '__main__':
 
     mlmc = BasicNativeXGBChooser()
 
-    test_model_pth = '../artifacts/test_artifacts/model_w_metadata.xgb'
-    mlmc.load_model(pth_to_model=test_model_pth)
+    # test_model_pth = '../artifacts/models/12_11_2020_verses_conv.xgb'
+    test_model_pth = "https://improve-v5-resources-prod-models-117097735164.s3-us-west-2.amazonaws.com/models/mindful/latest/improve-stories-2.0.xgb.gz"
+    mlmc.load_model(inupt_model_src=test_model_pth)
 
-    with open('../artifacts/test_artifacts/model.json', 'r') as mj:
-        json_str = mj.readline()
-        model_metadata = json.loads(json_str)
+    # with open('../artifacts/test_artifacts/model.json', 'r') as mj:
+    #     json_str = mj.readline()
+    #     model_metadata = json.loads(json_str)
 
     with open('../artifacts/test_artifacts/context.json', 'r') as mj:
         json_str = mj.readline()

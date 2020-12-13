@@ -1,10 +1,15 @@
 from abc import ABC, abstractmethod
 from copy import deepcopy
+import gzip
 import numpy as np
+import os
+import requests as rq
 from time import time
-from typing import List, Dict
+from typing import List, Dict, Union
 
 from encoders.feature_encoder import FeatureEncoder
+from utils.url_utils import is_path_http_addr, get_model_bytes_from_url
+from utils.gz_utils import check_and_get_unzpd_model
 
 
 class BasicChooser(ABC):
@@ -66,12 +71,12 @@ class BasicChooser(ABC):
         pass
 
     @seed_key.setter
-    @property
+    @abstractmethod
     def seed_key(self, new_val: str):
         pass
 
     @abstractmethod
-    def load_model(self, pth_to_model, **kwargs):
+    def load_model(self, inupt_model_src, **kwargs):
         pass
 
     @abstractmethod
@@ -85,6 +90,28 @@ class BasicChooser(ABC):
     @abstractmethod
     def _get_model_metadata(self, **kwargs):
         pass
+
+    def _get_model_src(self, model_src: str or bytes) -> str or bytes:
+        """
+        Gets model src from provided input path, url or bytes
+        
+        Parameters
+        ----------
+        model_src: str or bytes
+            pth to model, url or bytes
+
+        Returns
+        -------
+        str or bytes
+            path or downloaded model
+
+        """
+        raw_model_src = model_src
+        if is_path_http_addr(pth_to_model=model_src):
+            raw_model_src = get_model_bytes_from_url(model_url=model_src)
+
+        unzpd_model_src = check_and_get_unzpd_model(model_src=raw_model_src)
+        return unzpd_model_src
 
     def _get_features_count(self) -> int:
         table = self.model_metadata.get(self.lookup_table_key, None)
@@ -107,30 +134,6 @@ class BasicChooser(ABC):
             raise ValueError(
                 'Lookup table or model seed not present in context!')
         return FeatureEncoder(table=lookup_table, model_seed=model_seed)
-
-    # def _get_missings_filled_variants(
-    #         self, input_dict: Dict[str, object], all_feats_count: int,
-    #         missing_filler: float = np.nan):
-    #     """
-    #     Fast wrapper around missing filling procedure
-    #
-    #     Parameters
-    #     ----------
-    #     input_dict: Dict[str, object]
-    #         current scoring context
-    #     all_feats_count: int
-    #         definite number of features
-    #
-    #     Returns
-    #     -------
-    #     np.ndarray
-    #         array with values of missing features filled
-    #
-    #     """
-    #     return np.array([
-    #         input_dict[el] if input_dict.get(el, None) is not None
-    #         else missing_filler for el in np.arange(0, all_feats_count, 1)])  # \
-    #         # .reshape(1, all_feats_count)
 
     def _get_nan_filled_encoded_variant(
             self, variant: Dict[str, object], context: Dict[str, object],
@@ -232,7 +235,7 @@ class BasicChooser(ABC):
             2D array of (variant, score) rows
         scores_col_idx: int
             int indicating column with scores
-        class_cols_idx: int
+        class_col_idx: int
             index of the class label in a single row
 
         Returns

@@ -74,7 +74,7 @@ class DecisionModel:
         None
 
         """
-        self.chooser.load_model(pth_to_model=self.pth_to_model)
+        self.chooser.load_model(inupt_model_src=self.pth_to_model)
 
     def _get_json_frm_input(
             self, input_val: str or list or tuple or None) -> list or dict or tuple or None:

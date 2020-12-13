@@ -2,6 +2,7 @@ import coremltools as ct
 from copy import deepcopy
 import json
 import numpy as np
+import os
 from time import time
 from typing import Dict, List
 
@@ -76,13 +77,41 @@ class BasicMLModelChooser(BasicChooser):
         self.seed_key = seed_key
         self.model_objective = None
 
-    def load_model(self, pth_to_model: str, verbose: bool = True):
+    def _load_buffered_model(self, model_bytes: bytes):
+        """
+        # TODO make this in memory 
+        Loads mlmodel using temp cache file  
+        
+        Parameters
+        ----------
+        model_bytes: bytes
+            model bytes
+
+        Returns
+        -------
+
+        """
+
+        # user_home_dir = os.path.expanduser('~')
+        # tmp_model_pth = user_home_dir + os.sep + 'tmp.mlmodel'
+        #
+        # with open(tmp_model_pth, 'wb') as tmp_mlmodel:
+        #     tmp_mlmodel.write(model_bytes)
+        #
+        # loaded_model_specs = ct.models.MLModel(tmp_model_pth)._spec
+        # os.remove(tmp_model_pth)
+
+        spec = ct.proto.Model_pb2.Model()
+        spec.ParseFromString(model_bytes)
+        return ct.models.MLModel(spec)
+
+    def load_model(self, inupt_model_src: str, verbose: bool = True):
         """
         Loads desired model from input path.
 
         Parameters
         ----------
-        pth_to_model: str
+        inupt_model_src: str
             path to desired model
         verbose: bool
             should I print msgs
@@ -96,15 +125,23 @@ class BasicMLModelChooser(BasicChooser):
 
         try:
             if verbose:
-                print('Attempting to load: {} model'.format(pth_to_model))
-            self.model = ct.models.MLModel(pth_to_model)
+                print('Attempting to load: {} model'.format(inupt_model_src))
+
+            raw_model_src = self._get_model_src(model_src=inupt_model_src)
+
+            # model_src = self._load_buffered_model(model_bytes=raw_model_src)
+
+            self.model = \
+                ct.models.MLModel(raw_model_src) \
+                if not isinstance(raw_model_src, bytes) \
+                else self._load_buffered_model(model_bytes=raw_model_src)
             if verbose:
-                print('Model: {} successfully loaded'.format(pth_to_model))
+                print('Model: {} successfully loaded'.format(inupt_model_src))
         except Exception as exc:
             if verbose:
                 print(
                     'When attempting to load the mode: {} the following error '
-                    'occured: {}'.format(pth_to_model, exc))
+                    'occured: {}'.format(inupt_model_src, exc))
 
         self.model_metadata = self._get_model_metadata()
         self.feature_encoder = self._get_feature_encoder()
@@ -353,7 +390,7 @@ if __name__ == '__main__':
     mlmc = BasicMLModelChooser()
 
     test_model_pth = '../artifacts/test_artifacts/improve-messages-2.0-3.mlmodel'
-    mlmc.load_model(pth_to_model=test_model_pth)
+    mlmc.load_model(inupt_model_src=test_model_pth)
 
     with open('../artifacts/test_artifacts/context.json', 'r') as mj:
         json_str = mj.readline()
