@@ -39,6 +39,7 @@ cpdef double[:,:] fast_get_nan_filled_encoded_variant(
     return missings_filled_v
 
 
+# TODO check if passing encode_features() method makes this faster !!!
 @cython.boundscheck(False)
 cpdef double[:,:] get_nan_filled_encoded_variants(
         dict[:] variants, dict context, int all_feats_count,

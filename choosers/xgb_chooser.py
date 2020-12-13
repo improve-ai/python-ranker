@@ -163,6 +163,7 @@ class BasicNativeXGBChooser(BasicChooser):
                 print('Attempting to read via pickle interface')
             with open(inupt_model_src, 'rb') as xgbl:
                 self.model = pickle.load(xgbl)
+            print('### TRACEBACK ###')
             print_exc()
         except Exception as exc:
             if verbose:
@@ -251,6 +252,7 @@ class BasicNativeXGBChooser(BasicChooser):
         else:
             all_feat_names = np.asarray(ffe.get_all_feat_names(all_feats_count))
             # st1 = time()
+            # TODO check if passing encode_features() method makes this faster !!!
             encoded_variants = \
                 np.asarray(ffe.get_nan_filled_encoded_variants(
                     np.array(variants, dtype=dict), encoded_context, all_feats_count,
@@ -439,7 +441,8 @@ if __name__ == '__main__':
     mlmc = BasicNativeXGBChooser()
 
     # test_model_pth = '../artifacts/models/12_11_2020_verses_conv.xgb'
-    test_model_pth = "https://improve-v5-resources-prod-models-117097735164.s3-us-west-2.amazonaws.com/models/mindful/latest/improve-stories-2.0.xgb.gz"
+    # test_model_pth = "https://improve-v5-resources-prod-models-117097735164.s3-us-west-2.amazonaws.com/models/mindful/latest/improve-stories-2.0.xgb.gz"
+    test_model_pth = "/Users/os/Downloads/model.gz"
     mlmc.load_model(inupt_model_src=test_model_pth)
 
     # with open('../artifacts/test_artifacts/model.json', 'r') as mj:
