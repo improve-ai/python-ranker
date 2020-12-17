@@ -1379,7 +1379,6 @@ class TestDecision(TestCase):
                 [el[1] for el in second_sorted],
                 [el[1] for el in benchmark_sorted_list])
 
-    # TODO test best()
     def test_best_first_call_no_track_runners_up_no_model(self):
 
         des_decision_kwgs_keys = \

@@ -213,8 +213,8 @@ class Decision(object):
 
         Returns
         -------
-        frozendict or None
-            frozendict with best variant or None
+        dict or None
+            dict with best variant or None
 
         """
 

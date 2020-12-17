@@ -276,7 +276,7 @@ class TestDecisionTracker(TestCase):
             np.random.seed(self.model_seed_not_tracks)
             curr_dec = Decision(**dec_kwargs)
 
-            np.random.seed(self.model_seed_tracks)
+            np.random.seed(self.scores_seed)
             curr_best = curr_dec.best()
 
             assert curr_best is not None
