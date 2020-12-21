@@ -1,8 +1,8 @@
 import json
 from time import time
 
-from decisions.v6_fast import Decision
-from models.decision_models import DecisionModel
+from improve_ai.decisions.v6 import Decision
+from improve_ai.models.decision_models import DecisionModel
 
 
 if __name__ == '__main__':

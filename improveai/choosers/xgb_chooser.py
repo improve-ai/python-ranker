@@ -29,6 +29,8 @@ if not macos_version():
             os.sep.join(str(os.path.relpath(__file__)).split(os.sep)[:-1]),
             '' if not rel_pth_prfx else os.sep)
 
+    print(pth_str)
+
     fast_feat_enc_ext = \
         Extension(
             'fast_feat_enc',

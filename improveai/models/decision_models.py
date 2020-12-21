@@ -1,7 +1,7 @@
 from frozendict import frozendict
 import json
 import numpy as np
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 from choosers.basic_choosers import BasicChooser
 from choosers.mlmodel_chooser import BasicMLModelChooser
@@ -212,12 +212,6 @@ class DecisionModel:
             return None
 
         if be_quick:
-            # scores: np.ndarray = \
-            #     self.chooser.score_all(
-            #         variants=variants, context=context,
-            #         return_plain_results=True,
-            #         sigmoid_const=sigmoid_const,
-            #         sigmoid_correction=sigmoid_correction)
             return self.chooser.score_all(
                     variants=variants, context=context,
                     return_plain_results=True,

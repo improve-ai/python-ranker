@@ -1,11 +1,7 @@
 from argparse import ArgumentParser
 import coremltools as ct
 import json
-import numpy as np
-import os
-import pickle as pkl
-import tarfile
-from xgboost import Booster, XGBClassifier, XGBRegressor
+from xgboost import Booster
 
 
 class BasicMLModelGenerator:

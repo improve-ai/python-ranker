@@ -70,7 +70,7 @@ class ImproveTracker:
 
     @constant    
     def DECISION_TYPE() -> str:
-        return "decision"
+        return "decisions"
 
     @constant
     def REWARDS_TYPE() -> str:
@@ -168,7 +168,7 @@ class ImproveTracker:
             rewardKey is set to the namespace. track_rewards() must also use
             this key to assign rewards to this chosen variant.
         completion_handler: callable
-            Called after sending the decision to the server.
+            Called after sending the decisions to the server.
             <not sure yet>
         kwargs
 

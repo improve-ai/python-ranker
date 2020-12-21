@@ -1,11 +1,7 @@
 from abc import ABC, abstractmethod
 from copy import deepcopy
-import gzip
 import numpy as np
-import os
-import requests as rq
-from time import time
-from typing import List, Dict, Union
+from typing import Dict
 
 from encoders.feature_encoder import FeatureEncoder
 from utils.url_utils import is_path_http_addr, get_model_bytes_from_url

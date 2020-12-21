@@ -1,8 +1,6 @@
 import coremltools as ct
-from copy import deepcopy
 import json
 import numpy as np
-import os
 from time import time
 from typing import Dict, List
 

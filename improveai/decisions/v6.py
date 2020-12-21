@@ -2,7 +2,6 @@ from collections.abc import Iterable
 import json
 import numpy as np
 from time import time
-import os
 import sys
 from typing import Dict, List, Tuple
 
@@ -272,6 +271,7 @@ if __name__ == '__main__':
     model_kind = 'xgb_native'
     # model_pth = '../artifacts/test_artifacts/'
     xgb_model_pth = 'artifacts/models/12_11_2020_verses_conv.xgb'
+    # xgb_model_pth = "https://improve-v5-resources-prod-models-117097735164.s3-us-west-2.amazonaws.com/models/mindful/latest/improve-stories-2.0.xgb.gz"
     # xgb_model_pth = 'artifacts/models/improve-stories-2.0.xgb'
     # xgb_model_pth = 'artifacts/models/improve-messages-2.0.xgb'
     dm = DecisionModel(model_kind=model_kind, model_pth=xgb_model_pth)
@@ -303,6 +303,8 @@ if __name__ == '__main__':
     # et = time()
     # print(et - st)
 
+    # print(variants)
+
     st = time()
     batch_size = 1000
     # res = [Decision(variants=variants[:500], model=dm, context=context).scored()
@@ -319,10 +321,10 @@ if __name__ == '__main__':
         # d.best()
 
     et = time()
-    # print((et - st) / batch_size)
+    print((et - st) / batch_size)
     # for el in res[0]:
     #     print(el)
-    # input('speed test')
+    input('speed test')
     #
     # # d.scores(self=d, variants=variants[:3])
     # print(d.variants)

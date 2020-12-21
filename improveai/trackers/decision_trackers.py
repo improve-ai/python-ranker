@@ -7,7 +7,7 @@ from typing import Dict, List
 from uuid import uuid4
 from warnings import warn
 
-from decisions.v6_fast import Decision
+from decisions.v6 import Decision
 from models.decision_models import DecisionModel
 from utils.gen_purp_utils import constant
 
@@ -72,7 +72,7 @@ class DecisionTracker:
 
     @constant
     def DECISION_TYPE() -> str:
-        return "decision"
+        return "decisions"
 
     @constant
     def REWARDS_TYPE() -> str:
@@ -155,7 +155,7 @@ class DecisionTracker:
         self._history_id = new_val
 
     def __init__(
-            self, track_url: str, api_key: str, history_id: str = None,
+            self, track_url: str, api_key: str = None, history_id: str = None,
             debug: bool = False):
 
         self.track_url = track_url
@@ -208,7 +208,7 @@ class DecisionTracker:
             else:
                 # TODO Is this even possible? What to do in such case
                 raise NotImplementedError(
-                    'This is case where decision has a single variant ant it is'
+                    'This is case where decisions has a single variant ant it is'
                     ' not equal to best - best is None which means best() has '
                     'not yet been called')
 
@@ -338,6 +338,74 @@ class DecisionTracker:
         self.track(
             body=body, message_id=message_id, history_id=history_id,
             timestamp=timestamp)
+
+    def add_reward(
+            self, reward: float, reward_key: str, message_id: str = None,
+            history_id: str = None, timestamp: object = None, **kwargs):
+        """
+        Adds provided reward for a input reward_key (model?)
+
+        Parameters
+        ----------
+        reward: float
+            rewards to be awarded to reward_key / model
+        reward_key: str
+            reward target
+        history_id: str
+            <not sure what this represents yet>
+
+        Returns
+        -------
+        None
+            None
+
+        """
+        single_rewards = {reward_key: reward}
+        self.add_rewards(
+            rewards=single_rewards, completion_handler=None,
+            message_id=message_id, history_id=history_id, timestamp=timestamp)
+
+    def add_rewards(
+            self, rewards: Dict[str, float], completion_handler: callable = None,
+            message_id: str = None, history_id: str = None,
+            timestamp: object = None, **kwargs):
+        """
+        Adds multiple rewards
+
+        Parameters
+        ----------
+        rewards: Dict[str, float]
+            dict with reward_key -> reward mapping
+        completion_handler: callable
+            callable to be executed on completion (?)
+        history_id: str
+            <not sure yet>
+        kwargs
+
+        Returns
+        -------
+        None
+            None
+
+        """
+
+        if rewards:
+            if self.debug:
+                print("Tracking rewards: {}".format(rewards))
+            track_body = {
+                self.TYPE_KEY: self.REWARDS_TYPE,
+                self.REWARDS_KEY: rewards}
+
+            self.track(
+                body=track_body,
+                completion_block=lambda error:
+                    completion_handler(error) if completion_handler else 0,
+                message_id=message_id, history_id=history_id,
+                timestamp=timestamp)
+        else:
+            if self.debug:
+                print('Skipping trackRewards for nil rewards')
+            completion_handler(None) if completion_handler else None
 
     def post_improve_request(
             self, body_values: Dict[str, object], block: callable,
