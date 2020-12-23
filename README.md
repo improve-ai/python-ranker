@@ -262,19 +262,6 @@ tracker.add_reward(
 
  ### Sort Stuff
 
-```objc
-// No human could ever make this decision, but math can.
-NSArray *sortedDogs = [improve sort:@[@"German Shepard", @"Border Collie", @"Labrador Retriever"] context:context];
-
-
-// With sort, training is done just as before, on one individual variant at a time.
-NSString *topDog = [sortedDogs objectAtIndex:0];
-[improve trackDecision:topDog context:context rewardKey:@"dog"];
-
-// ... 
-[improve addReward:@1000 forKey:@"dog"];
-```
-
 ```python
 from improveai.models.decision_models import DecisionModel
 from improveai.decisions.v6 import Decision
