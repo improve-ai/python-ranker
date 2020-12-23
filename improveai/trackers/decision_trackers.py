@@ -407,6 +407,42 @@ class DecisionTracker:
                 print('Skipping trackRewards for nil rewards')
             completion_handler(None) if completion_handler else None
 
+    def track_analytics_event(
+            self, event: str, properties: Dict[str, object],
+            context: Dict[str, object] = None, history_id: str = None, **kwargs):
+        """
+        Executes post_improve_request constructing body from input params:
+        event, properties and context
+
+        Parameters
+        ----------
+        event: str
+            JSON serialied event (?)
+        properties: Dict[str, object]
+           part fo payload (?)
+        context: Dict[str, object]
+            context dict for a given event
+        history_id: str
+            TBD
+        kwargs
+
+        Returns
+        -------
+        None
+            None
+
+        """
+
+        body = {self.TYPE_KEY: self.EVENT_TYPE}
+
+        for key, val in zip(
+                [self.EVENT_KEY, self.PROPERTIES_KEY, self.CONTEXT_KEY],
+                [event, properties, context]):
+            if val:
+                body[key] = val
+
+        self.track(body=body, history_id=history_id)
+
     def post_improve_request(
             self, body_values: Dict[str, object], block: callable,
             timestamp: object = None, message_id: str = None,
