@@ -5,8 +5,9 @@ from time import time
 from typing import Dict, List
 
 from choosers.basic_choosers import BasicChooser
-from encoders.feature_encoder import FeatureEncoder
-from utils.gen_purp_utils import constant, sigmoid
+# from feature_encoders.v5 import FeatureEncoder
+from feature_encoders.v6 import FeatureEncoder
+from utils.general_purpose_utils import constant, sigmoid
 
 
 class BasicMLModelChooser(BasicChooser):
@@ -43,13 +44,13 @@ class BasicMLModelChooser(BasicChooser):
     def model_metadata_key(self, new_val: str):
         self._model_metadata_key = new_val
 
-    @property
-    def lookup_table_key(self) -> str:
-        return self._lookup_table_key
-
-    @lookup_table_key.setter
-    def lookup_table_key(self, new_val: str):
-        self._lookup_table_key = new_val
+    # @property
+    # def lookup_table_key(self) -> str:
+    #     return self._lookup_table_key
+    #
+    # @lookup_table_key.setter
+    # def lookup_table_key(self, new_val: str):
+    #     self._lookup_table_key = new_val
 
     @property
     def seed_key(self) -> str:
@@ -59,21 +60,38 @@ class BasicMLModelChooser(BasicChooser):
     def seed_key(self, new_val: str):
         self._seed_key = new_val
 
+    @property
+    def model_feature_names_key(self):
+        return self._model_feature_names_key
+
+    @model_feature_names_key.setter
+    def model_feature_names_key(self, new_val):
+        self._model_feature_names_key = new_val
+
+    @property
+    def model_feature_names(self) -> np.ndarray:
+        return self._model_feature_names
+
+    @model_feature_names.setter
+    def model_feature_names(self, new_val):
+        self._model_feature_names = new_val
+
     @constant
     def TIEBREAKER_MULTIPLIER() -> float:
         return 1e-7
 
     def __init__(
             self, mlmodel_metadata_key: str = 'json',
-            lookup_table_key: str = 'table', seed_key: str = 'model_seed'):
+            model_feature_names_key: str = 'feature_names',
+            seed_key: str = 'model_seed'):
         # initialize
         self.model = None
         self.model_metadata_key = mlmodel_metadata_key
         self.feature_encoder = None
         self.model_metadata = None
-        self.lookup_table_key = lookup_table_key
         self.seed_key = seed_key
         self.model_objective = None
+        self.model_feature_names_key = model_feature_names_key
 
     def _load_buffered_model(self, model_bytes: bytes):
         """
@@ -143,6 +161,7 @@ class BasicMLModelChooser(BasicChooser):
 
         self.model_metadata = self._get_model_metadata()
         self.feature_encoder = self._get_feature_encoder()
+        self.model_feature_names = self._get_model_feature_names()
 
     def _get_model_metadata(self) -> dict:
         """
@@ -161,7 +180,7 @@ class BasicMLModelChooser(BasicChooser):
             self.model.user_defined_metadata[self.model_metadata_key])
 
     def score(
-            self, variant: Dict[str, object],
+            self, variant: Dict[str, object], noise: float,
             context: Dict[str, object] = None,
             encoded_context: Dict[str, object] = None,
             mlmodel_score_res_key: str = 'target',
@@ -203,37 +222,58 @@ class BasicMLModelChooser(BasicChooser):
 
         """
 
-        if not encoded_context:
-            encoded_context = \
-                self.feature_encoder.encode_features({'context': context})
-        # encoded_features = \
+        # if not encoded_context:
+            # encoded_context = \
+            #     self.feature_encoder.encode_features({'context': context})
+
+        # encoded_jsonlines = \
         #     self.feature_encoder.encode_features({'variant': variant})
         #
         # all_encoded_features = deepcopy(encoded_context)
-        # all_encoded_features.update(encoded_features)
+        # all_encoded_features.update(encoded_jsonlines)
 
-        all_feats_count = self._get_features_count()
-        all_feat_names = \
-            np.array(['f{}'.format(el) for el in range(all_feats_count)])
+        # all_feats_count = self._get_features_count()
+        # all_feat_names = \
+        #     np.array(['f{}'.format(el) for el in range(all_feats_count)])
 
-        # rename features
+        # rename feature_names
         # missings_filled_v = \
         #     self._get_missings_filled_variants(
-        #         input_dict=encoded_features, all_feats_count=all_feats_count,
+        #         input_dict=encoded_jsonlines, all_feats_count=all_feats_count,
         #         missing_filler=imputer_value)
 
         # _get_nan_filled_encoded_variant
 
-        missings_filled_v = \
-            self._get_nan_filled_encoded_variant(
-                variant=variant, context=encoded_context,
-                all_feats_count=all_feats_count, missing_filler=imputer_value)\
-            .reshape((all_feats_count, ))
+        # noise = np.random.rand()
 
-        assert len(all_feat_names) == len(missings_filled_v)
+        if not encoded_context:
+            encoded_context = \
+                self.feature_encoder.encode_context(
+                    context=context, noise=noise)
+
+        encoded_variant = \
+            self.feature_encoder.encode_variant(variant=variant, noise=noise)
+
+        encoded_variant_and_context = \
+            {k: encoded_context.get(k, 0) + encoded_variant.get(k, 0)
+             for k in set(encoded_context) | set(encoded_variant)}
+
+        missings_filled_v = \
+            self.feature_encoder.fill_missing_features_single_variant(
+                encoded_variant=encoded_variant_and_context,
+                feature_names=self.model_feature_names)
+
+        # missings_filled_v = \
+        #     self._get_nan_filled_encoded_variant(
+        #         variant=variant, context=encoded_context,
+        #         all_feats_count=all_feats_count, missing_filler=imputer_value)\
+        #     .reshape((all_feats_count, ))
+
+        assert len(self.model_feature_names) == len(missings_filled_v)
 
         score_dict = \
-            self.model.predict(dict(zip(all_feat_names, missings_filled_v)))
+            self.model.predict(
+                dict(zip(self.model_feature_names, missings_filled_v)))
 
         best_score = \
             self._get_processed_score(
@@ -365,12 +405,16 @@ class BasicMLModelChooser(BasicChooser):
 
         """
 
+        # encoded_context = \
+        #     self.feature_encoder.encode_features({'context': context})
+
+        noise = np.random.rand()
         encoded_context = \
-            self.feature_encoder.encode_features({'context': context})
+            self.feature_encoder.encode_context(context=context, noise=noise)
 
         scores = \
             np.array([self.score(
-                variant=variant, context=context,
+                variant=variant, noise=noise, context=context,
                 encoded_context=encoded_context,
                 mlmodel_score_res_key=mlmodel_score_res_key,
                 mlmodel_class_proba_key=mlmodel_class_proba_key,
@@ -387,7 +431,8 @@ if __name__ == '__main__':
 
     mlmc = BasicMLModelChooser()
 
-    test_model_pth = '../artifacts/test_artifacts/improve-messages-2.0-3.mlmodel'
+    # test_model_pth = '../artifacts/test_artifacts/improve-messages-2.0-3.mlmodel'
+    test_model_pth = '../artifacts/models/v6_conv_model.mlmodel'
     # test_model_pth = "https://improve-v5-resources-prod-models-117097735164.s3-us-west-2.amazonaws.com/models/mindful/latest/improve-messages-2.0.mlmodel"
     # test_model_pth = "/Users/os/Downloads/improve-messages-2.0.mlmodel.gz"
     mlmc.load_model(inupt_model_src=test_model_pth)
@@ -400,7 +445,8 @@ if __name__ == '__main__':
         json_str = vj.readlines()
         variants = json.loads(''.join(json_str))
 
-    res = mlmc.score(variant=variants[0], context=context)
+    noise = np.random.rand()
+    res = mlmc.score(variant=variants[0], context=context, noise=noise)
     print('res')
     print(res)
     # 0.0012913734900291936

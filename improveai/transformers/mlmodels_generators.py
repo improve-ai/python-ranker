@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+from collections.abc import Iterable
 import coremltools as ct
 import json
 from xgboost import Booster
@@ -65,6 +66,26 @@ class BasicMLModelGenerator:
             print('Appending mlmodel with desired JSON failed')
             print(exc)
 
+    def get_metadata_from_source_model(
+            self, metadata_key: str = 'user_defined_metadata') -> str:
+        metadata = json.loads(self.src_model.attr(metadata_key)).get('json', None)
+        if not metadata:
+            return {}
+        return metadata
+
+    def get_feature_names_from_model_metadata(
+            self, model_metadata_string: str,
+            feature_names_key: str = 'feature_names') -> Iterable:
+
+        loaded_metadata = json.loads(model_metadata_string).get('json', None)
+        if not loaded_metadata:
+            raise ValueError('No metadata stored under `json` key!')
+
+        feature_names = loaded_metadata.get(feature_names_key, None)
+        if not feature_names:
+            raise ValueError('Provided model has no feature names info!')
+        return feature_names
+
     def save_mlmodel(
             self, conv_model_pth: str,
             save_callable_attr_n: str = 'save_model'):
@@ -88,15 +109,22 @@ if __name__ == '__main__':
 
     ap = ArgumentParser()
     ap.add_argument(
-        '--src_model_pth', default='../test_artifacts/model.xgb',
+        '--src_model_pth', default='../artifacts/models/dummy_v6.xgb',
         help='Path to model to be converted into mlmodel')
     ap.add_argument(
-        '--model_metadata_pth', default='../test_artifacts/model.json',
+        '--model_metadata_pth', default='../artifacts/test_artifacts/model_metadata.json',
         help='Path to file with appended metadata')
     ap.add_argument(
         '--trgt_model_pth',
-        default='../test_artifacts/conv_model.mlmodel',
+        default='../artifacts/models/v6_conv_model.mlmodel',
         help='Path to saved model')
+
+    ap.add_argument(
+        '--api_version', default='v6', help='Which API version should be used')
+
+    ap.add_argument(
+        '--feature_names_key', default='feature_names',
+        help='Metadata`s key which stores feature names')
 
     ap.add_argument(
         '--check_conv_model',
@@ -126,39 +154,62 @@ if __name__ == '__main__':
     bmlg.load_model(
         loader=load_xgb_model, pth_to_model=run_params[run_params_keys[0]])
 
-    bmlg.load_metadata_json(run_params[run_params_keys[1]])
+    if pa.api_version == 'v5':
+        bmlg.load_metadata_json(run_params[run_params_keys[1]])
 
-    columns_count = len(bmlg.metadata_json['table'][1])
-    feature_names = list(
-        map(lambda i: 'f{}'.format(i), range(0, columns_count)))
+        columns_count = len(bmlg.metadata_json['table'][1])
+        feature_names = list(
+            map(lambda i: 'f{}'.format(i), range(0, columns_count)))
 
-#    for i in range(columns_count):
-#        # print(bmlg.metadata_json['table'][1][i])
-#        print('#####################################')
-#        print('Printing info about the {}th feature'.format(i))
-#        print(len(bmlg.metadata_json['table'][1][i][0]))
-#        print(len(bmlg.metadata_json['table'][1][i][1]))
+    #    for i in range(columns_count):
+    #        # print(bmlg.metadata_json['table'][1][i])
+    #        print('#####################################')
+    #        print('Printing info about the {}th feature'.format(i))
+    #        print(len(bmlg.metadata_json['table'][1][i][0]))
+    #        print(len(bmlg.metadata_json['table'][1][i][1]))
 
-    converter = ct.converters.xgboost
-    bmlg.convert_src_model_to_mlmodel(
-        converter=converter,
-        converter_kwargs={
-            'mode': 'classifier', 'feature_names': feature_names,
-            'force_32bit_float': False, 'class_labels': [0, 1]})
+        converter = ct.converters.xgboost
+        bmlg.convert_src_model_to_mlmodel(
+            converter=converter,
+            converter_kwargs={
+                'mode': 'classifier', 'feature_names': feature_names,
+                'force_32bit_float': False, 'class_labels': [0, 1]})
 
-    bmlg.append_json_to_mlmodel(payload_key='json')
+        bmlg.append_json_to_mlmodel(payload_key='json')
 
-    # this is section where appending large JSON for tests takes place
-    # print('\n\nGenerating large json list 0 - 14999999 -> about 140 MB')
-    # with open('../test_artifacts/model_large.json', 'w') as mockup_big_json:
-    #     mockup_big_json.writelines(json.dumps([el for el in range(15000000)]))
-    #
-    # print('Done!')
-    #
-    # with open('../test_artifacts/model_large.json', 'r') as jsonf:
-    #     large_payload = jsonf.read()
-    #
-    # bmlg.append_json_to_mlmodel(payload=large_payload, payload_key='json')
+        # this is section where appending large JSON for tests takes place
+        # print('\n\nGenerating large json list 0 - 14999999 -> about 140 MB')
+        # with open('../test_artifacts/model_large.json', 'w') as mockup_big_json:
+        #     mockup_big_json.writelines(json.dumps([el for el in range(15000000)]))
+        #
+        # print('Done!')
+        #
+        # with open('../test_artifacts/model_large.json', 'r') as jsonf:
+        #     large_payload = jsonf.read()
+        #
+        # bmlg.append_json_to_mlmodel(payload=large_payload, payload_key='json')
+    elif pa.api_version == 'v6':
+
+        # extract JSON metadata from xgb model
+        model_metadata = \
+            bmlg.get_metadata_from_source_model(
+                metadata_key='user_defined_metadata')
+        # get feature names
+        feature_names = model_metadata.get(pa.feature_names_key, None)
+
+        if not feature_names:
+            raise ValueError('No feature names in provided xgb model.')
+
+        # convert xgb -> mlmodel
+        converter = ct.converters.xgboost
+        bmlg.convert_src_model_to_mlmodel(
+            converter=converter,
+            converter_kwargs={
+                'mode': 'classifier', 'feature_names': feature_names,
+                'force_32bit_float': False, 'class_labels': [0, 1]})
+        bmlg.append_json_to_mlmodel(
+            payload=model_metadata, payload_key='json')
+        # append payload to mlmodel instance
 
     bmlg.save_mlmodel(
         run_params[run_params_keys[2]], save_callable_attr_n='save')

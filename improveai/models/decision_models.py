@@ -6,7 +6,7 @@ from typing import Dict, List
 from choosers.basic_choosers import BasicChooser
 from choosers.mlmodel_chooser import BasicMLModelChooser
 from choosers.xgb_chooser import BasicNativeXGBChooser
-from utils.gen_purp_utils import constant
+from utils.general_purpose_utils import constant
 
 
 class DecisionModel:

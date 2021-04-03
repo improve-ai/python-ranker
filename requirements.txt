@@ -14,3 +14,4 @@ requests==2.24.0
 coremltools==3.0
 scikit_learn==0.23.2
 wheel==0.36.2
+xxhash==2.0.0

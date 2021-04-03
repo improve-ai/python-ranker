@@ -9,7 +9,7 @@ from warnings import warn
 
 from decisions.v6 import Decision
 from models.decision_models import DecisionModel
-from utils.gen_purp_utils import constant
+from utils.general_purpose_utils import constant
 
 
 class DecisionTracker:

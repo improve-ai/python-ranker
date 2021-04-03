@@ -3,7 +3,7 @@ import json
 import simplejson
 
 from models.decision_models import DecisionModel
-from utils.gen_purp_utils import read_jsonstring_frm_file
+from utils.general_purpose_utils import read_jsonstring_from_file
 
 
 if __name__ == '__main__':
@@ -95,7 +95,7 @@ if __name__ == '__main__':
 
     for input_obj_key, input_pth in zip(input_objects.keys(), input_pths):
         if input_pth:
-            input_objects[input_obj_key] = read_jsonstring_frm_file(input_pth)
+            input_objects[input_obj_key] = read_jsonstring_from_file(input_pth)
 
     input_objects['cli_call'] = True
 

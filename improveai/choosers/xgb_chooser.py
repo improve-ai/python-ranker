@@ -49,8 +49,9 @@ if not macos_version():
     import choosers.choosers_cython_utils.fast_feat_enc as ffe
 
 from choosers.basic_choosers import BasicChooser
-from encoders.feature_encoder import FeatureEncoder
-from utils.gen_purp_utils import constant, sigmoid
+# from feature_encoders.v5 import FeatureEncoder
+from feature_encoders.v6 import FeatureEncoder
+from utils.general_purpose_utils import constant, sigmoid
 
 
 class BasicNativeXGBChooser(BasicChooser):
@@ -87,13 +88,13 @@ class BasicNativeXGBChooser(BasicChooser):
     def model_metadata_key(self, new_val: str):
         self._mlmodel_metadata_key = new_val
 
-    @property
-    def lookup_table_key(self) -> str:
-        return self._lookup_table_key
-
-    @lookup_table_key.setter
-    def lookup_table_key(self, new_val: str):
-        self._lookup_table_key = new_val
+    # @property
+    # def lookup_table_key(self) -> str:
+    #     return self._lookup_table_key
+    #
+    # @lookup_table_key.setter
+    # def lookup_table_key(self, new_val: str):
+    #     self._lookup_table_key = new_val
 
     @property
     def seed_key(self) -> str:
@@ -102,6 +103,22 @@ class BasicNativeXGBChooser(BasicChooser):
     @seed_key.setter
     def seed_key(self, new_val: str):
         self._seed_key = new_val
+
+    @property
+    def model_feature_names_key(self) -> str:
+        return self._model_feature_names_key
+
+    @model_feature_names_key.setter
+    def model_feature_names_key(self, new_val: str):
+        self._model_feature_names_key = new_val
+
+    @property
+    def model_feature_names(self) -> np.ndarray:
+        return self._model_feature_names
+
+    @model_feature_names.setter
+    def model_feature_names(self, new_val: np.ndarray):
+        self._model_feature_names = new_val
 
     @property
     def model_objective(self) -> str:
@@ -121,12 +138,15 @@ class BasicNativeXGBChooser(BasicChooser):
 
     def __init__(
             self, mlmodel_metadata_key: str = 'json',
-            lookup_table_key: str = 'table', seed_key: str = 'model_seed'):
+            model_feature_names_key: str = 'feature_names',
+            seed_key: str = 'model_seed'):
         self.model = None
         self.model_metadata_key = mlmodel_metadata_key
         self.feature_encoder = None
         self.model_metadata = None
-        self.lookup_table_key = lookup_table_key
+        # self.lookup_table_key = lookup_table_key
+        self.model_feature_names_key = model_feature_names_key
+        self.model_feature_names = np.empty(shape=(1,))
         self.seed_key = seed_key
         self.model_objective = None
 
@@ -175,6 +195,7 @@ class BasicNativeXGBChooser(BasicChooser):
             print_exc()
 
         self.model_metadata = self._get_model_metadata()
+        self.model_feature_names = self._get_model_feature_names()
         self.feature_encoder = self._get_feature_encoder()
         self.model_objective = self._get_model_objective()
 
@@ -237,28 +258,42 @@ class BasicNativeXGBChooser(BasicChooser):
             2D numpy array which contains (variant, score) pair in each row
         """
 
-        encoded_context = \
-            self.feature_encoder.encode_features({'context': context})
-
-        all_feats_count = self._get_features_count()
+        # encoded_context = \
+        #     self.feature_encoder.encode_features({'context': context})
+        #
+        # all_feats_count = self._get_features_count()
         if macos_version():
+            raise NotImplementedError(
+                'Running on macOS - make sure cython works!')
 
-            all_feat_names = \
-                np.array(['f{}'.format(el) for el in range(all_feats_count)])
-            encoded_variants = \
-                np.array([self._get_nan_filled_encoded_variant(
-                    variant=v, context=encoded_context,
-                    all_feats_count=all_feats_count, missing_filler=imputer_value)
-                    for v in variants]) \
-                .reshape((len(variants), len(all_feat_names)))
+            # TODO old version
+            # all_feat_names = \
+            #     np.array(['f{}'.format(el) for el in range(all_feats_count)])
+            # encoded_variants = \
+            #     np.array([self._get_nan_filled_encoded_variant(
+            #         variant=v, context=encoded_context,
+            #         all_feats_count=all_feats_count, missing_filler=imputer_value)
+            #         for v in variants]) \
+            #     .reshape((len(variants), len(all_feat_names)))
         else:
-            all_feat_names = np.asarray(ffe.get_all_feat_names(all_feats_count))
-            # st1 = time()
-            # TODO check if passing encode_features() method makes this faster !!!
+            # TODO old version
+            # all_feat_names = np.asarray(ffe.get_all_feat_names(all_feats_count))
+            # # st1 = time()
+            # # TODO check if passing encode_features() method makes this faster !!!
+            # encoded_variants = \
+            #     np.asarray(ffe.get_nan_filled_encoded_variants(
+            #         np.array(variants, dtype=dict), encoded_context, all_feats_count,
+            #         self.feature_encoder, imputer_value))
             encoded_variants = \
-                np.asarray(ffe.get_nan_filled_encoded_variants(
-                    np.array(variants, dtype=dict), encoded_context, all_feats_count,
-                    self.feature_encoder, imputer_value))
+                self.feature_encoder.encode_variants(
+                    variants=np.array(variants, dtype=dict), contexts=context,
+                    noise=np.random.rand())
+
+            missings_filled_v = \
+                self.feature_encoder.fill_missing_features(
+                    encoded_variants=encoded_variants,
+                    feature_names=self.model_feature_names)
+
         # et1 = time()
         # print('Encoding took: {}'.format(et1 - st1))
 
@@ -268,7 +303,8 @@ class BasicNativeXGBChooser(BasicChooser):
         # st1 = time()
         scores = \
             self.model.predict(
-                DMatrix(encoded_variants, feature_names=all_feat_names))\
+                DMatrix(
+                    missings_filled_v, feature_names=self.model_feature_names))\
             .astype('float64')
         # et1 = time()
         # print('Predicting took: {}'.format(et1 - st1))
@@ -329,43 +365,54 @@ class BasicNativeXGBChooser(BasicChooser):
 
         """
 
-        encoded_context = \
-            self.feature_encoder.encode_features({'context': context})
-        # encoded_features = \
-        #     self.feature_encoder.encode_features({'variant': variant})
+        # encoded_context = \
+        #     self.feature_encoder.encode_context({'context': context})
+        # # encoded_jsonlines = \
+        # #     self.feature_encoder.encode_features({'variant': variant})
+        # #
+        # # all_encoded_features = deepcopy(encoded_context)
+        # # all_encoded_features.update(encoded_jsonlines)
         #
-        # all_encoded_features = deepcopy(encoded_context)
-        # all_encoded_features.update(encoded_features)
-
-        all_feats_count = self._get_features_count()
-        all_feat_names = \
-            np.array(['f{}'.format(el) for el in range(all_feats_count)])
-        # feat_names = np.array(['f{}'.format(el) for el in all_encoded_features.keys()])
-        # values = np.array([el for el in all_encoded_features.values()])
-        # vals_count = len(values)
-
-        # st = time()
+        # all_feats_count = self._get_features_count()
+        # all_feat_names = \
+        #     np.array(['f{}'.format(el) for el in range(all_feats_count)])
+        # # feat_names = np.array(['f{}'.format(el) for el in all_encoded_features.keys()])
+        # # values = np.array([el for el in all_encoded_features.values()])
+        # # vals_count = len(values)
+        #
+        # # st = time()
+        # # missings_filled_v = \
+        # #     self._get_missings_filled_variants(
+        # #         input_dict=encoded_jsonlines, all_feats_count=all_feats_count,
+        # #         missing_filler=imputer_value)
+        #
         # missings_filled_v = \
-        #     self._get_missings_filled_variants(
-        #         input_dict=encoded_features, all_feats_count=all_feats_count,
-        #         missing_filler=imputer_value)
+        #     self._get_nan_filled_encoded_variant(
+        #         variant=variant, context=encoded_context,
+        #         all_feats_count=all_feats_count, missing_filler=imputer_value)
+        # # et = time()
+        # # print('Encoding feature_names took: {}'.format(et - st))
+
+        noise = np.random.rand()
+
+        encoded_variant = \
+            self.feature_encoder.encode_variants(
+                variants=np.array([variant]), contexts=context, noise=noise)
 
         missings_filled_v = \
-            self._get_nan_filled_encoded_variant(
-                variant=variant, context=encoded_context,
-                all_feats_count=all_feats_count, missing_filler=imputer_value)
-        # et = time()
-        # print('Encoding features took: {}'.format(et - st))
+            self.feature_encoder.fill_missing_features(
+                encoded_variants=encoded_variant,
+                feature_names=self.model_feature_names)
 
         # st1 = time()
         single_score = \
             self.model \
                 .predict(
                     DMatrix(
-                        missings_filled_v,
+                        missings_filled_v.reshape(1, -1),
                         # if missings_filled_v.shape == (1, all_feats_count)
                         # else missings_filled_v.reshape((1, all_feats_count)),
-                        feature_names=all_feat_names, missing=np.nan
+                        feature_names=self.model_feature_names, missing=np.nan
                     )
             ).astype('float64')
         # et1 = time()
@@ -445,6 +492,8 @@ if __name__ == '__main__':
     # test_model_pth = '../artifacts/models/12_11_2020_verses_conv.xgb'
     # test_model_pth = "https://improve-v5-resources-prod-models-117097735164.s3-us-west-2.amazonaws.com/models/mindful/latest/improve-stories-2.0.xgb.gz"
     test_model_pth = "/Users/os/Downloads/model.gz"
+    test_model_pth = \
+        '/home/os/Projects/upwork/python-sdk/improveai/artifacts/models/dummy_v6.xgb'
     mlmc.load_model(inupt_model_src=test_model_pth)
 
     # with open('../artifacts/test_artifacts/model.json', 'r') as mj:
@@ -487,6 +536,10 @@ if __name__ == '__main__':
     print(score_all[:10])
     print((et - st) / batch_size)
     input('score_all')
+
+    score_all = mlmc.score_all(
+        variants=variants, context=context, sigmoid_correction=False,
+        return_plain_results=False)
 
     sorted = mlmc.sort(variants_w_scores=score_all)
     print('sorted')

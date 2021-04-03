@@ -3,7 +3,8 @@ from copy import deepcopy
 import numpy as np
 from typing import Dict
 
-from encoders.feature_encoder import FeatureEncoder
+# from feature_encoders.v5 import FeatureEncoder
+from feature_encoders.v6 import FeatureEncoder
 from utils.url_utils import is_path_http_addr, get_model_bytes_from_url
 from utils.gz_utils import check_and_get_unzpd_model
 
@@ -12,14 +13,12 @@ class BasicChooser(ABC):
     @property
     @abstractmethod
     def model(self) -> object:
-        # return self._model
         pass
 
     @model.setter
     @abstractmethod
     def model(self, new_val: object):
         pass
-        # self._model = new_val
 
     @property
     @abstractmethod
@@ -51,15 +50,15 @@ class BasicChooser(ABC):
     def model_metadata(self, new_val: Dict[str, object]):
         pass
 
-    @property
-    @abstractmethod
-    def lookup_table_key(self) -> str:
-        pass
-
-    @lookup_table_key.setter
-    @abstractmethod
-    def lookup_table_key(self, new_val: str):
-        pass
+    # @property
+    # @abstractmethod
+    # def lookup_table_key(self) -> str:
+    #     pass
+    #
+    # @lookup_table_key.setter
+    # @abstractmethod
+    # def lookup_table_key(self, new_val: str):
+    #     pass
 
     @property
     @abstractmethod
@@ -69,6 +68,26 @@ class BasicChooser(ABC):
     @seed_key.setter
     @abstractmethod
     def seed_key(self, new_val: str):
+        pass
+
+    @property
+    @abstractmethod
+    def model_feature_names_key(self):
+        return
+
+    @model_feature_names_key.setter
+    @abstractmethod
+    def model_feature_names_key(self, value):
+        pass
+
+    @property
+    @abstractmethod
+    def model_feature_names(self):
+        return
+
+    @model_feature_names.setter
+    @abstractmethod
+    def model_feature_names(self, value):
         pass
 
     @abstractmethod
@@ -120,16 +139,39 @@ class BasicChooser(ABC):
         Returns
         -------
         FeatureEncoder
-            feature encoder for current model
+            feature feature_encoder for current model
 
         """
 
-        lookup_table = self.model_metadata.get(self.lookup_table_key, None)
+        # lookup_table = self.model_metadata.get(self.lookup_table_key, None)
         model_seed = self.model_metadata.get(self.seed_key, None)
-        if not lookup_table or not model_seed:
-            raise ValueError(
-                'Lookup table or model seed not present in context!')
-        return FeatureEncoder(table=lookup_table, model_seed=model_seed)
+        # if not lookup_table or not model_seed:
+        #     raise ValueError(
+        #         'Lookup table or model seed not present in context!')
+        # return FeatureEncoder(table=lookup_table, model_seed=model_seed)
+        return FeatureEncoder(model_seed=model_seed)
+
+    def _get_model_feature_names(self):
+        """
+        Getter for model features
+
+        Returns
+        -------
+        dict
+            dict with feature names extracted from model metadata
+
+        """
+
+        if not self.model_metadata:
+            raise ValueError('Model metadata empty or None!')
+
+        feature_names = \
+            self.model_metadata.get(self.model_feature_names_key, None)
+
+        if not feature_names:
+            raise ValueError('Feature names not in model metadata!')
+        
+        return np.array(feature_names)
 
     def _get_nan_filled_encoded_variant(
             self, variant: Dict[str, object], context: Dict[str, object],
@@ -146,14 +188,14 @@ class BasicChooser(ABC):
         context: Dict[str, object]
             scoring context
         all_feats_count: int
-            desired number of features in the model
+            desired number of feature_names in the model
         missing_filler: float
             value ot impute missings with
 
         Returns
         -------
         np.ndarray
-            np.ndarray of np.ndarrays of which each containes all features with
+            np.ndarray of np.ndarrays of which each containes all feature_names with
             missings filled
 
         """
@@ -163,7 +205,7 @@ class BasicChooser(ABC):
         enc_variant = self.feature_encoder.encode_features({'variant': variant})
         context_copy.update(enc_variant)
         # et1 = time()
-        # print('Encoding features took: {}'.format(et1 - st1))
+        # print('Encoding feature_names took: {}'.format(et1 - st1))
         # print(context_copy)
 
         # st2 = time()

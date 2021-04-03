@@ -80,13 +80,14 @@ def impute_missing_dict_keys(
     return prcsd_encoded_features
 
 
-def read_jsonstring_frm_file(pth_to_file: str, mode: str = 'r') -> str:
+def read_jsonstring_from_file(
+        path_to_file: str, mode: str = 'r', method: str = 'readlines') -> str:
     """
     Safely reads desired file with json wrapper
 
     Parameters
     ----------
-    pth_to_file: str
+    path_to_file: str
         pth to loaded file
     mode: str
         read mode
@@ -97,8 +98,13 @@ def read_jsonstring_frm_file(pth_to_file: str, mode: str = 'r') -> str:
         read json string
 
     """
-    with open(pth_to_file, mode) as rf:
-        contents = rf.readlines()
+    with open(path_to_file, mode) as rf:
+        if method == 'readlines':
+            contents = rf.readlines()
+        elif method == 'read':
+            contents = rf.read()
+        else:
+            raise ValueError('Wrong reading method value: {}'.format(method))
 
     if isinstance(contents, list):
         contents = ''.join(contents)
