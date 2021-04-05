@@ -62,6 +62,11 @@ class FeatureEncoder:
     def encode_context(self, context, noise):
         features = {}
 
+        if context and not isinstance(context, dict):
+            raise TypeError(
+                "Only dict type is supported for context encoding. {} type was "
+                "provided.".format(type(context)))
+
         encode(context, self.context_seed, shrink(noise), features)
 
         return features
@@ -392,6 +397,9 @@ if __name__ == '__main__':
         ('_'.join(generate(2)), generate(4) if idx != 3 else [0, 1, 2, 3])
         for idx in range(4))
 
+    print('context')
+    print(context)
+
     encoded_context = fe.encode_context(context, noise=noise)
 
     def check_if_keys_overlap(value):
@@ -413,6 +421,14 @@ if __name__ == '__main__':
         .compute()
 
     print(colliders)
+
+    with open('collisions.json', 'w') as cj:
+        collisions_json = json.dumps({
+            'context': context,
+            'colliders': colliders
+        })
+
+        cj.write(collisions_json)
 
     # for _ in range(int(1e6)):
     #     keys_count = np.random.randint(2, 5)

@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 import json
 import simplejson
 
-from models.decision_models import DecisionModel
+from models.v6 import DecisionModel
 from utils.general_purpose_utils import read_jsonstring_from_file
 
 
