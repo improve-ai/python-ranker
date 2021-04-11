@@ -1,1 +1,0 @@
-{"test_case": "string", "variant_test_output": {"5e9f9c59": 5001.034073535794, "f98a98ec": 23638.161028450973}, "context_test_output": {"47aca0c9": 18468.125810502188, "218ec4b9": 22682.154516195842}, "model_seed": 1, "noise": 0.8928601514360016, "variant_seed": 2675988294294598568, "value_seed": 6818340268807889528, "context_seed": 5164679660109946987}
