@@ -1,3 +1,4 @@
+from codecs import decode
 from collections.abc import Iterable
 from copy import deepcopy
 from frozendict import frozendict
@@ -81,7 +82,8 @@ def impute_missing_dict_keys(
 
 
 def read_jsonstring_from_file(
-        path_to_file: str, mode: str = 'r', method: str = 'readlines') -> str:
+        path_to_file: str, mode: str = 'r', method: str = 'readlines',
+        decode_escape_char: bool = False) -> str:
     """
     Safely reads desired file with json wrapper
 
@@ -91,6 +93,8 @@ def read_jsonstring_from_file(
         pth to loaded file
     mode: str
         read mode
+    decode_escape_char: bool
+        should double escape be repalced by single ?
 
     Returns
     -------
@@ -108,6 +112,9 @@ def read_jsonstring_from_file(
 
     if isinstance(contents, list):
         contents = ''.join(contents)
+
+    if decode_escape_char:
+        contents = decode(contents, 'unicode_escape')
 
     assert isinstance(contents, str)
     return contents
