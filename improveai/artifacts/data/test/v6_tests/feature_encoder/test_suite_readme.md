@@ -2,7 +2,8 @@
 
 ### Test Case
 
-Each test case is a JSON file which looks as follows
+All v6 FeatureEncoder test cases are placed in a `test_suite` folder.
+Each test case is a JSON file which looks as follows:
 
 ```python
 
@@ -23,7 +24,8 @@ Each test case is a JSON file which looks as follows
 ```
 
 `"test_case"` entry of a test case JSON always contains tested input (sometimes it might have only
-`"variant"` key, sometimes it may have both - `"variant"` and `"context"`)
+`"variant"` key, but also may have both - `"variant"` and `"context"`)
+
 
 `"test_output"` entry always contains the result of complete encoding of the input (encoding of a 
 `"context"` + encoding of the `"variant"`). If there are any collisions in dictionaries obtained by 
@@ -76,7 +78,7 @@ a test case JSON should match those calculated on FeatureEncoder's instantiation
 ### Remarks
 
 It is important to note that (for a fixed `model_seed` and `noise` value):
- - complete encoding of ```{"test_case": {"variant": <primitive / non-dict type>}}``` and 
+  - complete encoding of ```{"test_case": {"variant": <primitive / non-dict type>}}``` and 
    with  ```{"test_case": {"variant": {"$value": <primitive / non-dict type>}}}``` should yield
    identical results
  - context encoding method (encode_context() for python) should raise TypeError on an attempt to 
@@ -84,6 +86,8 @@ It is important to note that (for a fixed `model_seed` and `noise` value):
  - 0, 0.0 and false should all yield identical encoding results
  - 1, 1.0, and true should all yield identical encoding results
  - empty list, empty dict / map and null / NaN should all encode to empty dict / map
+ - `dict_foo_bar.json` test case might be tricky - I had problems loading json from a 
+   string with a single escape character (`\`) so I hardcoded this test case into tests 
 
 ### Python specific test cases
 
