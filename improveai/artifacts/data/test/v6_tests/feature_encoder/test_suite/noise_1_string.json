@@ -1,0 +1,14 @@
+{
+    "test_case": {
+        "variant": "string"
+    },
+    "test_output": {
+        "5e9f9c59": 5001.0381622315035,
+        "f98a98ec": 23638.180351257382
+    },
+    "model_seed": 1,
+    "noise": 1.0,
+    "variant_seed": 2675988294294598568,
+    "value_seed": 6818340268807889528,
+    "context_seed": 5164679660109946987
+}

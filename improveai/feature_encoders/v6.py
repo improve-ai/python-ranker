@@ -5,6 +5,7 @@ import numpy as np
 import os
 import pyximport
 from setuptools import Extension
+from uuid import uuid4
 import xxhash
 
 
@@ -59,7 +60,15 @@ class FeatureEncoder:
         self.value_seed = xxhash3("$value", seed=self.variant_seed)
         self.context_seed = xxhash3("context", seed=model_seed)
 
+    def _check_noise_value(self, noise: float):
+        if noise > 1.0 or noise < 0.0:
+            raise ValueError(
+                'Provided `noise` is out of allowed bounds <0.0, 1.0>')
+
     def encode_context(self, context, noise):
+
+        self._check_noise_value(noise=noise)
+
         features = {}
 
         if context is not None and not isinstance(context, dict):
@@ -72,6 +81,9 @@ class FeatureEncoder:
         return features
 
     def encode_variant(self, variant, noise):
+
+        self._check_noise_value(noise=noise)
+
         features = {}
 
         small_noise = shrink(noise)
@@ -89,7 +101,6 @@ class FeatureEncoder:
         """
         Cythonized loop over provided variants and context(s).
         Returns array of encoded dicts.
-
         Parameters
         ----------
         variants: Iterable
@@ -101,12 +112,10 @@ class FeatureEncoder:
             noise param from 0-1 uniform distribution
         verbose: bool
             debug prints toggle
-
         Returns
         -------
         np.ndarray
             array of encoded dicts
-
         """
 
         used_variants = variants
@@ -151,7 +160,6 @@ class FeatureEncoder:
             context_key: str, verbose: bool = False,  **kwargs) -> np.ndarray:
         """
         Wrapper around cythonized jsonlines encoder
-
         Parameters
         ----------
         jsonlines: Iterable
@@ -163,12 +171,10 @@ class FeatureEncoder:
         verbose: bool
             debug prints toggle
         kwargs
-
         Returns
         -------
         np.ndarray
             array of encoded variants
-
         """
 
         if not variant_key or not context_key:
@@ -193,7 +199,6 @@ class FeatureEncoder:
             **kwargs) -> np.ndarray:
         """
         Wrapper around cythonized single-context variant encoder
-
         Parameters
         ----------
         variants: Iterable
@@ -202,12 +207,10 @@ class FeatureEncoder:
             context to be encoded
         kwargs: dict
             kwargs
-
         Returns
         -------
         np.ndarray
             array of encoded variants
-
         """
 
         return cfe.encode_variants_single_context(
@@ -221,7 +224,6 @@ class FeatureEncoder:
 
         """
         Wrapper around cythonized multi-context variant encoder
-
         Parameters
         ----------
         variants: Iterable
@@ -230,12 +232,10 @@ class FeatureEncoder:
             collection of contexts to encode
         kwargs: dict
             kwargs
-
         Returns
         -------
         np.ndarray
             array of encoded variants
-
         """
 
         return cfe.encode_variants_multiple_contexts(
@@ -345,3 +345,4 @@ def shrink(noise):
 
 def sprinkle(x, small_noise):
     return (x + small_noise) * (1 + small_noise)
+

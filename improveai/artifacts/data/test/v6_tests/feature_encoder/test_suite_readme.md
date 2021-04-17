@@ -34,7 +34,7 @@ encoding `"variant"` and `"context"` values stored under colliding keys should b
 ```python
 
 example_complete_test_case = {
-    "test_case": {"variant": {...}, "context": {...}},
+    "test_case": {"variant": {...}, "givens": {...}},
     "test_output": {...},
     "model_seed": ...,
     "noise": ...,
@@ -53,7 +53,7 @@ noise = example_complete_test_case.get("noise")
 encoded_variant = fe.encode_variant(variant=test_input.get("variant"), noise=noise)
 # lets assume encoded_variant = {'a': 1, 'b': 2}
 
-encoded_context = fe.encode_context(context=test_input.get("context"), noise=noise)
+encoded_context = fe.encode_context(context=test_input.get("givens"), noise=noise)
 # lets assume encoded_context = {'b': 1, 'c': 2}
 
 # in such case the following code:

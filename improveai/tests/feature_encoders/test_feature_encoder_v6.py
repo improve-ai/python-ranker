@@ -2,6 +2,7 @@ from codecs import decode
 import json
 import numpy as np
 import os
+from pprint import pprint
 from pytest import fixture, raises
 import sys
 from unittest import TestCase
@@ -147,6 +148,10 @@ class TestEncoder(TestCase):
                 variants=[variant_input], contexts=context_input,
                 noise=self.noise)
 
+        # print(variant_input)
+        # print(expected_output)
+        # print(tested_record_output)
+
         assert expected_output == tested_record_output
 
     def _generic_test_encode_record_for_same_output_from_json_data(
@@ -176,7 +181,7 @@ class TestEncoder(TestCase):
         first_variant_input = first_test_input.get(variant_key, None)
         first_context_inputs = first_test_input.get(context_key, None)
 
-        print(first_variant_input)
+        pprint(first_variant_input)
 
         if first_variant_input is None:
             raise ValueError(
@@ -204,6 +209,8 @@ class TestEncoder(TestCase):
 
         second_variant_input = second_test_input.get(variant_key, None)
         second_context_input = second_test_input.get(context_key, None)
+
+        print(second_variant_input)
 
         if second_variant_input is None:
             raise ValueError(
@@ -494,6 +501,90 @@ class TestEncoder(TestCase):
             test_case_filename=os.getenv(
                 "V6_FEATURE_ENCODER_TEST_SMALL_FLOAT_JSON"))
 
+    def test_special_characters_string(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_SPECIAL_CHARACTERS_STRING_JSON"))
+
+    def test_special_characters_in_key_string(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_SPECIAL_CHARACTERS_IN_KEY_STRING_JSON"))
+
+    def test_unicode_emoji_01(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_UNICODE_EMOJI_01_JSON"))
+
+    def test_unicode_emoji_02(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_UNICODE_EMOJI_02_JSON"))
+
+    def test_unicode_emoji_in_key(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_UNICODE_EMOJI_IN_KEY_JSON"))
+
+    def test_unicode_string_01(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_UNICODE_STRING_01_JSON"))
+
+    def test_unicode_string_02(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_UNICODE_STRING_02_JSON"))
+
+    def test_unicode_string_with_u0000(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_UNICODE_STRING_WITH_U0000_JSON"))
+
+    def test_unicode_u0000(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_UNICODE_U0000_JSON"))
+
+    def test_unicode_zero_length_string(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_ZERO_LENGTH_STRING_JSON"))
+
+    def test_newline_tab_return_symbols_string(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_NEWLINE_TAB_RETURN_SYMBOLS_STRING_JSON"))
+
+    def test_noise_0_with_string(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_NOISE_0_WITH_STRING_JSON"))
+
+    def test_noise_1_with_string(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_NOISE_1_WITH_STRING_JSON"))
+
+    def test_noise_out_of_bounds_raises(self):
+        fe = FeatureEncoder(model_seed=0)
+
+        with raises(ValueError) as high_noise_variant_error:
+            fe.encode_variant({}, noise=99)
+            assert str(high_noise_variant_error.value)
+
+        with raises(ValueError) as low_noise_variant_error:
+            fe.encode_variant({}, noise=-1.0)
+            assert str(low_noise_variant_error.value)
+            
+        with raises(ValueError) as high_noise_context_error:
+            fe.encode_context({}, noise=99)
+            assert str(high_noise_context_error.value)
+
+        with raises(ValueError) as low_noise_context_error:
+            fe.encode_context({}, noise=-1.0)
+            assert str(low_noise_context_error.value)
+
     def test_same_output_int_bool_1(self):
 
         self._generic_test_encode_record_for_same_output_from_json_data(
@@ -528,6 +619,61 @@ class TestEncoder(TestCase):
         self._generic_test_encode_record_for_same_output_from_json_data(
             first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_FLOAT_0_JSON'),
             second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_FLOAT_0_JSON'))
+
+    def test_same_output_special_characters_string(self):
+
+        self._generic_test_encode_record_for_same_output_from_json_data(
+            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_SPECIAL_CHARACTERS_STRING_JSON'),
+            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_SPECIAL_CHARACTERS_STRING_JSON'))
+
+    def test_same_output_unicode_emoji_01(self):
+
+        self._generic_test_encode_record_for_same_output_from_json_data(
+            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_UNICODE_EMOJI_01_JSON'),
+            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_EMOJI_01_JSON'))
+
+    def test_same_output_unicode_emoji_02(self):
+
+        self._generic_test_encode_record_for_same_output_from_json_data(
+            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_UNICODE_EMOJI_02_JSON'),
+            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_EMOJI_02_JSON'))
+
+    def test_same_output_unicode_string_01(self):
+
+        self._generic_test_encode_record_for_same_output_from_json_data(
+            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_UNICODE_STRING_01_JSON'),
+            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_STRING_01_JSON'))
+
+    def test_same_output_unicode_string_02(self):
+
+        self._generic_test_encode_record_for_same_output_from_json_data(
+            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_UNICODE_STRING_02_JSON'),
+            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_STRING_02_JSON'))
+
+    def test_same_output_unicode_string_with_u0000(self):
+
+        self._generic_test_encode_record_for_same_output_from_json_data(
+            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_UNICODE_STRING_WITH_U0000_JSON'),
+            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_STRING_WITH_U0000_JSON'))
+
+    def test_same_output_unicode_u0000(self):
+
+        self._generic_test_encode_record_for_same_output_from_json_data(
+            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_UNICODE_U0000_JSON'),
+            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_U0000_JSON'))
+
+    def test_same_output_zero_length_string(self):
+
+        self._generic_test_encode_record_for_same_output_from_json_data(
+            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_ZERO_LENGTH_STRING_JSON'),
+            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_ZERO_LENGTH_STRING_JSON'))
+
+    def test_same_output_newline_tab_return_symbols_string(self):
+
+        self._generic_test_encode_record_for_same_output_from_json_data(
+            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_NEWLINE_TAB_RETURN_SYMBOLS_STRING_JSON'),
+            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_NEWLINE_TAB_RETURN_SYMBOLS_STRING_JSON'))
+
 
     # Test all primitive dicts: "string", true, false, 0, 0.0, 1, 1.0, -1, -1.0
     def test_primitive_dict_big_float(self):
@@ -617,31 +763,32 @@ class TestEncoder(TestCase):
 
     def test_foo_bar_dict_equals_list(self):
 
-        foo_bar_dict_test_case = \
-            {
-                "test_case": {
-                    "variant": {"$value":
-                                {"\0\0\0\0\0\0\0\0": "foo",
-                                 "\0\0\0\0\0\0\0\1": "bar"}}
-                },
-                "test_output": {
-                    "fb2b2ee3": -4750.032350104165,
-                    "90804277": 2851.019427773728,
-                    "627617c9": 13673.093147046791,
-                    "e9bac36b": 11840.080660683132
-                },
-                "model_seed": 1,
-                "noise": 0.8928601514360016,
-                "variant_seed": 2675988294294598568,
-                "value_seed": 6818340268807889528,
-                "context_seed": 5164679660109946987
-            }
+        # foo_bar_dict_test_case = \
+        #     {
+        #         "test_case": {
+        #             "variant": {"$value":
+        #                         {"\0\0\0\0\0\0\0\0": "foo",
+        #                          "\0\0\0\0\0\0\0\1": "bar"}}
+        #         },
+        #         "test_output": {
+        #             "fb2b2ee3": -4750.032350104165,
+        #             "90804277": 2851.019427773728,
+        #             "627617c9": 13673.093147046791,
+        #             "e9bac36b": 11840.080660683132
+        #         },
+        #         "model_seed": 1,
+        #         "noise": 0.8928601514360016,
+        #         "variant_seed": 2675988294294598568,
+        #         "value_seed": 6818340268807889528,
+        #         "context_seed": 5164679660109946987
+        #     }
 
         self._generic_test_encode_record_for_same_output_from_json_data(
             first_test_case_filename=os.getenv(
                 'V6_FEATURE_ENCODER_TEST_FOO_BAR_JSON'),
-            second_test_case_filename='',
-            provided_second_test_case=foo_bar_dict_test_case)
+            second_test_case_filename=os.getenv(
+                'V6_FEATURE_ENCODER_TEST_DICT_FOO_BAR_JSON'))  # ,
+            # provided_second_test_case=foo_bar_dict_test_case)
 
     def test_same_output_string_dict(self):
 
@@ -673,6 +820,51 @@ class TestEncoder(TestCase):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
                 "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_STRING_JSON"))
+
+    def test_primitive_dict_special_characters_string(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_SPECIAL_CHARACTERS_STRING_JSON"))
+
+    def test_primitive_dict_unicode_emoji_01(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_EMOJI_01_JSON"))
+
+    def test_primitive_dict_unicode_emoji_02(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_EMOJI_02_JSON"))
+
+    def test_primitive_dict_unicode_string_01(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_STRING_01_JSON"))
+
+    def test_primitive_dict_unicode_string_02(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_STRING_02_JSON"))
+
+    def test_primitive_dict_unicode_string_with_u0000(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_STRING_WITH_U0000_JSON"))
+
+    def test_primitive_dict_unicode_u0000(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_U0000_JSON"))
+
+    def test_primitive_dict_zero_length_string(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_ZERO_LENGTH_STRING_JSON"))
+
+    def test_primitive_dict_newline_tab_return_symbols_string(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_NEWLINE_TAB_RETURN_SYMBOLS_STRING_JSON"))
 
     def test_nested_list(self):
         self._generic_test_encode_record_from_json_data(
