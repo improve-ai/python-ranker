@@ -15,6 +15,7 @@ try:
 except Exception as exc:
     from coremltools.models.utils import _macos_version as macos_version
 
+
 if not macos_version():
 
     rel_pth_prfx = \
@@ -189,10 +190,28 @@ class FeatureEncoder:
                     'attempting to convert')
             jsonlines = np.array(jsonlines)
 
-        return cfe.encode_jsonlines(
-            jsonlines=jsonlines, noise=noise, variant_key=variant_key,
-            context_key=context_key, feature_encoder=self.encode_variant,
-            context_encoder=self.encode_context)
+        if not macos_version():
+            return cfe.encode_jsonlines(
+                jsonlines=jsonlines, noise=noise, variant_key=variant_key,
+                context_key=context_key, feature_encoder=self.encode_variant,
+                context_encoder=self.encode_context)
+        else:
+            return self._encode_jsonlines_numpy(
+                jsonlines=jsonlines, noise=noise, variant_key=variant_key,
+                context_key=context_key)
+
+    def _encode_jsonlines_numpy(
+            self, jsonlines: np.ndarray, noise: float, variant_key: str,
+            context_key: str):
+
+        encoded_variants = np.empty(len(jsonlines), dtype=object)
+        encoded_variants[:] = [
+            self.fully_encode_single_variant(
+                variant=record.get(variant_key, None),
+                context=record.get(context_key, None), noise=noise)
+            for record in jsonlines]
+
+        return encoded_variants
 
     def _encode_variants_single_context(
             self, variants: Iterable, context: dict, noise: float,
@@ -213,10 +232,24 @@ class FeatureEncoder:
             array of encoded variants
         """
 
-        return cfe.encode_variants_single_context(
-            variants=variants, context=context, noise=noise,
-            feature_encoder=self.encode_variant,
-            context_encoder=self.encode_context)
+        if not macos_version():
+            return cfe.encode_variants_single_context(
+                variants=variants, context=context, noise=noise,
+                feature_encoder=self.encode_variant,
+                context_encoder=self.encode_context)
+        else:
+            return self._encode_variants_single_context_numpy(
+                variants=variants, context=context, noise=noise)
+
+    def _encode_variants_single_context_numpy(
+            self, variants: np.ndarray, context: dict, noise: float):
+        encoded_variants = np.empty(len(variants), dtype=object)
+        encoded_variants[:] = [
+            self.fully_encode_single_variant(
+                variant=variant, context=context, noise=noise)
+            for variant in variants]
+
+        return encoded_variants
 
     def _encode_variants_multiple_contexts(
             self, variants: Iterable, contexts: Iterable, noise: float,
@@ -238,16 +271,44 @@ class FeatureEncoder:
             array of encoded variants
         """
 
-        return cfe.encode_variants_multiple_contexts(
-            variants=variants, contexts=contexts, noise=noise,
-            feature_encoder=self.encode_variant,
-            context_encoder=self.encode_context)
+        if not macos_version():
+            return cfe.encode_variants_multiple_contexts(
+                variants=variants, contexts=contexts, noise=noise,
+                feature_encoder=self.encode_variant,
+                context_encoder=self.encode_context)
+        else:
+            return self._encode_variants_multiple_context_numpy(
+                variants=variants, contexts=contexts, noise=noise)
+
+    def _encode_variants_multiple_context_numpy(
+            self, variants: np.ndarray, contexts: dict, noise: float):
+        encoded_variants = np.empty(len(variants), dtype=object)
+        encoded_variants[:] = [
+            self.fully_encode_single_variant(
+                variant=variant, context=context, noise=noise)
+            for variant, context in zip(variants, contexts)]
+
+        return encoded_variants
 
     def fill_missing_features(
             self, encoded_variants: np.ndarray,
             feature_names: np.ndarray) -> np.ndarray:
-        return cfe.fill_missing_features(
-            encoded_variants=encoded_variants, feature_names=feature_names)
+        if not macos_version():
+            return cfe.fill_missing_features(
+                encoded_variants=encoded_variants, feature_names=feature_names)
+        else:
+            return self._fill_missing_features_numpy(
+                encoded_variants=encoded_variants, feature_names=feature_names)
+
+    def _fill_missing_features_numpy(
+            self, encoded_variants: np.ndarray, feature_names: np.ndarray):
+        no_missing_features_variants = \
+            np.empty((len(encoded_variants), len(feature_names)))
+        no_missing_features_variants[:] = [
+            self.fill_missing_features_single_variant(
+                encoded_variant=encoded_variant, feature_names=feature_names)
+            for encoded_variant in encoded_variants]
+        return no_missing_features_variants
 
     def fully_encode_single_variant(
             self, variant: dict, context: dict, noise: float,
@@ -275,6 +336,7 @@ class FeatureEncoder:
         hash_index_map = \
             {feature_hash: index for index, feature_hash
              in enumerate(feature_names)}
+
         filler = \
             np.array(
                 [(hash_index_map.get(feature_name, None), value)
