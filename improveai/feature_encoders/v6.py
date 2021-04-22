@@ -202,7 +202,28 @@ class FeatureEncoder:
 
     def _encode_jsonlines_numpy(
             self, jsonlines: np.ndarray, noise: float, variant_key: str,
-            context_key: str):
+            context_key: str) -> np.ndarray:
+        """
+        Numpy based jsonlines batch encoder. Slower than cython but used for now
+        due to macOS - numpy - cython problems
+
+        Parameters
+        ----------
+        jsonlines: np.ndarray
+            array of jsonlines to be encoded
+        noise: float
+            noise parameter for encoding
+        variant_key: str
+            key to extract variant from jsonline / record
+        context_key: str
+            key to extract context form jsonline / record
+
+        Returns
+        -------
+        np.ndarray
+            array of dicts with encoded records
+
+        """
 
         encoded_variants = np.empty(len(jsonlines), dtype=object)
         encoded_variants[:] = [
@@ -243,6 +264,26 @@ class FeatureEncoder:
 
     def _encode_variants_single_context_numpy(
             self, variants: np.ndarray, context: dict, noise: float):
+        """
+        Encodes variants with single context using numpy. Slower than cython
+        implementation; Needed for now for macOS compat.
+
+        Parameters
+        ----------
+        variants: np.ndarray
+            array of variants to be encoded
+        context: dict
+            context dict
+        noise: float
+            noise parameter for the encoding
+
+        Returns
+        -------
+        np.ndarray
+            array of encoded variants
+
+        """
+
         encoded_variants = np.empty(len(variants), dtype=object)
         encoded_variants[:] = [
             self.fully_encode_single_variant(
@@ -281,7 +322,26 @@ class FeatureEncoder:
                 variants=variants, contexts=contexts, noise=noise)
 
     def _encode_variants_multiple_context_numpy(
-            self, variants: np.ndarray, contexts: dict, noise: float):
+            self, variants: np.ndarray, contexts: dict, noise: float) -> np.ndarray:
+        """
+        Encodes variants with multiple contexts using numpy. Slower than cython
+        implementation; Needed for now for macOS compat.
+
+        Parameters
+        ----------
+        variants: np.ndarray
+            array of variants to be encoded
+        contexts: np.ndarray
+            array of context dicts
+        noise: float
+            noise parameter for the encoding
+
+        Returns
+        -------
+        np.ndarray
+            array of encoded variants
+
+        """
         encoded_variants = np.empty(len(variants), dtype=object)
         encoded_variants[:] = [
             self.fully_encode_single_variant(
@@ -293,6 +353,23 @@ class FeatureEncoder:
     def fill_missing_features(
             self, encoded_variants: np.ndarray,
             feature_names: np.ndarray) -> np.ndarray:
+        """
+        Fills missing features in provided encoded variants. Needs model feature
+        names. Missings are filled with np.nan
+
+        Parameters
+        ----------
+        encoded_variants: np.ndarray
+            array of encoded vairants
+        feature_names: np.ndarray
+            array of feature names from model which will be used for predictions
+
+        Returns
+        -------
+        np.ndarray
+            array of (num. variants, num. features) shape
+
+        """
         if not macos_version():
             return cfe.fill_missing_features(
                 encoded_variants=encoded_variants, feature_names=feature_names)
@@ -301,7 +378,24 @@ class FeatureEncoder:
                 encoded_variants=encoded_variants, feature_names=feature_names)
 
     def _fill_missing_features_numpy(
-            self, encoded_variants: np.ndarray, feature_names: np.ndarray):
+            self, encoded_variants: np.ndarray,
+            feature_names: np.ndarray) -> np.ndarray:
+        """
+        Plain numpy missing features filler. Used for macOS compat
+
+        Parameters
+        ----------
+        encoded_variants: np.ndarray
+            array of encoded vairants
+        feature_names: np.ndarray
+            array of feature names from model which will be used for predictions
+
+        Returns
+        -------
+        np.ndarray
+            array of (num. variants, num. features) shape
+
+        """
         no_missing_features_variants = \
             np.empty((len(encoded_variants), len(feature_names)))
         no_missing_features_variants[:] = [
@@ -313,6 +407,27 @@ class FeatureEncoder:
     def fully_encode_single_variant(
             self, variant: dict, context: dict, noise: float,
             verbose: bool = False) -> dict:
+        """
+        Encodes variant and context and 'concatenates' results of encoding
+        (sums values in case of key collision)
+
+        Parameters
+        ----------
+        variant: dict
+            variant to be encoded
+        context: dict
+            context to be encoded
+        noise: float
+            noise parameter for the encoding
+        verbose: bool
+            logging parameter
+
+        Returns
+        -------
+        dict
+            result of context and variant encoding
+
+        """
 
         # encode context
         encoded_context = {}
@@ -330,6 +445,23 @@ class FeatureEncoder:
     def fill_missing_features_single_variant(
             self, encoded_variant: dict,
             feature_names: np.ndarray) -> np.ndarray:
+        """
+        Fills missing features in a single variant
+
+        Parameters
+        ----------
+        encoded_variant: dict
+            fully encoded single variant
+        feature_names: np.ndarray
+            array of feature names from model which will be used for predictions
+
+        Returns
+        -------
+        np.ndarray
+            single row of a shape (1, num. features) which contains fully
+            encoded variant
+
+        """
 
         result = np.empty(shape=(len(feature_names), ))
         result[:] = np.nan
