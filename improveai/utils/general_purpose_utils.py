@@ -102,6 +102,7 @@ def read_jsonstring_from_file(
         read json string
 
     """
+
     with open(path_to_file, mode) as rf:
         if method == 'readlines':
             contents = rf.readlines()

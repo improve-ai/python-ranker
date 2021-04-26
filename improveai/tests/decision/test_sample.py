@@ -10,7 +10,7 @@ sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
 
 from decisions.v6 import Decision
-from models.decision_models import DecisionModel
+from models.v6 import DecisionModel
 from trackers.decision_trackers import DecisionTracker
 
 
@@ -202,10 +202,10 @@ class TestDecisionTracker(TestCase):
                 'max_runners_up': self.max_runners_up},
             'variants_model_context': {
                 'variants': self.variants[1], 'model': self.artifacts_model,
-                'context': self.context, 'max_runners_up': self.max_runners_up},
+                'givens': self.context, 'max_runners_up': self.max_runners_up},
             'variants_model_context_nulled': {
                 'variants': self.variants[2], 'model': self.artifacts_model,
-                'context': None, 'max_runners_up': self.max_runners_up},
+                'givens': None, 'max_runners_up': self.max_runners_up},
             'ranked_variants_modeln': {
                 'ranked_variants': self.variants[3],
                 'model_name': self.artifacts_modeln,
@@ -213,10 +213,10 @@ class TestDecisionTracker(TestCase):
             'ranked_variants_modeln_context': {
                 'ranked_variants': self.variants[4],
                 'model_name': self.artifacts_modeln,
-                'context': self.context, 'max_runners_up': self.max_runners_up},
+                'givens': self.context, 'max_runners_up': self.max_runners_up},
             'ranked_variants_modeln_context_nulled':
                 {'ranked_variants': self.variants[5],
-                 'model_name': self.artifacts_modeln, 'context': None,
+                 'model_name': self.artifacts_modeln, 'givens': None,
                  'max_runners_up': self.max_runners_up}}
 
         self.variants_keys = \
