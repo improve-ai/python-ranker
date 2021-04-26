@@ -13,7 +13,7 @@ sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
 
 from decisions.v6 import Decision
-from models.decision_models import DecisionModel
+from models.v6 import DecisionModel
 
 
 class TestDecision(TestCase):
@@ -161,7 +161,7 @@ class TestDecision(TestCase):
         self.artifacts_modeln = \
             self.artifacts_model.chooser._get_model_metadata()['model']
 
-        # context = frozendict({})
+        # givens = frozendict({})
         with open(os.getenv('CONTEXT_JSON_PTH'), 'r') as cjson:
             read_str = ''.join(cjson.readlines())
             self.context = json.loads(read_str)
@@ -178,19 +178,19 @@ class TestDecision(TestCase):
                 'variants': self.variants, 'model': self.artifacts_model},
             'variants_model_context': {
                 'variants': self.variants, 'model': self.artifacts_model,
-                'context': self.context},
+                'givens': self.context},
             'variants_model_context_nulled': {
                 'variants': self.variants, 'model': self.artifacts_model,
-                'context': None},
+                'givens': None},
             'ranked_variants_modeln': {
                 'ranked_variants': self.variants,
                 'model_name': self.artifacts_modeln},
             'ranked_variants_modeln_context': {
                 'ranked_variants': self.variants,
-                'model_name': self.artifacts_modeln, 'context': self.context},
+                'model_name': self.artifacts_modeln, 'givens': self.context},
             'ranked_variants_modeln_context_nulled':
                 {'ranked_variants': self.variants,
-                 'model_name': self.artifacts_modeln, 'context': None}}
+                 'model_name': self.artifacts_modeln, 'givens': None}}
 
         self.modeln_dec_kwgs_keys = \
             ['ranked_variants_modeln', 'ranked_variants_modeln_context',
@@ -357,7 +357,7 @@ class TestDecision(TestCase):
 
     @staticmethod
     def _context_type_checker(context):
-        # print(context)
+        # print(givens)
         assert isinstance(context, dict) or isinstance(context, frozendict) \
                or context is None
 
@@ -492,7 +492,7 @@ class TestDecision(TestCase):
                  if k in self.context_dec_kwgs_keys)
 
         kwargs_keys = \
-            ['context' for _ in range(4)]
+            ['givens' for _ in range(4)]
 
         self._generic_test_getter_outside(
             attr_names=kwargs_keys, dec_kwargs=context_dec_kwargs,
@@ -505,7 +505,7 @@ class TestDecision(TestCase):
                  if k in self.context_dec_kwgs_keys)
 
         kwargs_keys = \
-            ['context' for _ in range(4)]
+            ['givens' for _ in range(4)]
 
         self._generic_test_getter_returns_des_type(
             attr_names=kwargs_keys, dec_kwargs=context_dec_kwargs,
@@ -528,7 +528,7 @@ class TestDecision(TestCase):
         assert true_contexts != set_attempt_contexts
 
         kwargs_keys = \
-            ['context' for _ in range(4)]
+            ['givens' for _ in range(4)]
 
         self._generic_test_set_once(
             attr_names=kwargs_keys, set_attempt_vals=set_attempt_contexts,
