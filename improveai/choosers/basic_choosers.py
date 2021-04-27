@@ -62,12 +62,40 @@ class BasicChooser(ABC):
 
     @property
     @abstractmethod
-    def seed_key(self) -> str:
+    def model_seed_key(self) -> str:
         pass
 
-    @seed_key.setter
+    @model_seed_key.setter
     @abstractmethod
-    def seed_key(self, new_val: str):
+    def model_seed_key(self, new_val: str):
+        pass
+    
+    @property
+    @abstractmethod
+    def model_seed(self):
+        pass 
+    
+    @model_seed.setter
+    @abstractmethod
+    def model_seed(self, value):
+        pass
+    
+    @property
+    @abstractmethod
+    def model_name_key(self):
+        pass
+    
+    @model_name_key.setter
+    def model_name_key(self, value):
+        pass
+
+    @property
+    @abstractmethod
+    def model_name(self):
+        pass
+
+    @model_name.setter
+    def model_name(self, value):
         pass
 
     @property
@@ -106,7 +134,8 @@ class BasicChooser(ABC):
     def _get_model_metadata(self, **kwargs):
         pass
 
-    def _get_model_src(self, model_src: str or bytes) -> str or bytes:
+    @staticmethod
+    def get_model_src(model_src: str or bytes) -> str or bytes:
         """
         Gets model src from provided input path, url or bytes
         
@@ -144,7 +173,7 @@ class BasicChooser(ABC):
         """
 
         # lookup_table = self.model_metadata.get(self.lookup_table_key, None)
-        model_seed = self.model_metadata.get(self.seed_key, None)
+        model_seed = self.model_metadata.get(self.model_seed_key, None)
         # if not lookup_table or not model_seed:
         #     raise ValueError(
         #         'Lookup table or model seed not present in context!')
@@ -172,6 +201,30 @@ class BasicChooser(ABC):
             raise ValueError('Feature names not in model metadata!')
         
         return np.array(feature_names)
+
+    def _get_model_seed(self):
+        if not self.model_metadata:
+            raise ValueError('Model metadata empty or None!')
+
+        model_seed = \
+            self.model_metadata.get(self.model_seed_key, None)
+
+        if not model_seed:
+            raise ValueError('Feature names not in model metadata!')
+
+        return model_seed
+
+    def _get_model_name(self):
+        if not self.model_metadata:
+            raise ValueError('Model metadata empty or None!')
+
+        model_name = \
+            self.model_metadata.get(self.model_name_key, None)
+
+        if not model_name:
+            raise ValueError('Feature names not in model metadata!')
+
+        return model_name
 
     def _get_nan_filled_encoded_variant(
             self, variant: Dict[str, object], context: Dict[str, object],

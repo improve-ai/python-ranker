@@ -5,17 +5,16 @@ from frozendict import frozendict
 import json
 import numpy as np
 import os
-from pytest import fixture, raises
+from pytest import fixture
 import sys
-from typing import Dict, List
 from unittest import TestCase
 import xgboost as xgb
 
 sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
 
-from decisions.v6_1 import Decision
-from models.v6_1 import DecisionModel
+import models.v6_1 as dm
+# from models.v6_1 import DecisionModel
 from utils.general_purpose_utils import read_jsonstring_from_file
 
 
@@ -113,13 +112,13 @@ class TestDecisionModel(TestCase):
             ('{}' + os.sep + '{}').format(
                 self.predictors_fs_directory, predictor_filename)
         # loading model
-        dm = DecisionModel.load_model(model_url=model_url)
+        decision_model = dm.DecisionModel.load_model(model_url=model_url)
 
         # is returned object a decision model
-        assert isinstance(dm, DecisionModel)
+        assert isinstance(decision_model, dm.DecisionModel)
 
         # is predictor of a desired type
-        predictor = dm.chooser.model
+        predictor = decision_model.chooser.model
         assert isinstance(predictor, expected_predictor_type)
 
         # has predictor got all desired metadata
@@ -179,11 +178,11 @@ class TestDecisionModel(TestCase):
             ('{}' + os.sep + '{}').format(
                 self.predictors_fs_directory, predictor_filename)
         # loading model
-        dm = DecisionModel.load_model(model_url=model_url)
+        decision_model = dm.DecisionModel.load_model(model_url=model_url)
 
         # is returned object a decision model
-        assert isinstance(dm, DecisionModel)
-        assert dm.chooser is None
+        assert isinstance(decision_model, dm.DecisionModel)
+        assert decision_model.chooser is None
 
     def _generic_test_loaded_url_none_model(
             self, test_data_filename: str, test_case_key: str = 'test_case',
@@ -208,11 +207,11 @@ class TestDecisionModel(TestCase):
             raise ValueError('Model filename can`t be None')
 
         # loading model
-        dm = DecisionModel.load_model(model_url=predictor_url)
+        decision_model = dm.DecisionModel.load_model(model_url=predictor_url)
 
         # is returned object a decision model
-        assert isinstance(dm, DecisionModel)
-        assert dm.chooser is None
+        assert isinstance(decision_model, dm.DecisionModel)
+        assert decision_model.chooser is None
 
     # test model loading
     def test_load_model_sync_native_fs(self):
@@ -316,10 +315,10 @@ class TestDecisionModel(TestCase):
             ('{}' + os.sep + '{}').format(
                 self.predictors_fs_directory, predictor_filename)
 
-        dm = DecisionModel.load_model(model_url=model_url)
+        decision_model = dm.DecisionModel.load_model(model_url=model_url)
 
         np.random.seed(score_seed)
-        calculated_scores = dm.score(**empty_callable_kwargs)
+        calculated_scores = decision_model.score(**empty_callable_kwargs)
 
         if evaluated_method_name == 'score':
 
@@ -331,7 +330,7 @@ class TestDecisionModel(TestCase):
             empty_callable_kwargs[scores_key] = calculated_scores
 
         np.random.seed(score_seed)
-        evaluated_callable = getattr(DecisionModel, evaluated_method_name)
+        evaluated_callable = getattr(dm.DecisionModel, evaluated_method_name)
         calculated_output = evaluated_callable(**empty_callable_kwargs)
 
         if isinstance(expected_output, list):
@@ -415,7 +414,7 @@ class TestDecisionModel(TestCase):
 
         np.random.seed(score_seed)
         calculated_gaussians = \
-            DecisionModel.generate_descending_gaussians(count=variants_count)
+            dm.DecisionModel.generate_descending_gaussians(count=variants_count)
 
         np.testing.assert_array_equal(calculated_gaussians, expected_output)
 

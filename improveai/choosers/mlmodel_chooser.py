@@ -53,12 +53,36 @@ class BasicMLModelChooser(BasicChooser):
     #     self._lookup_table_key = new_val
 
     @property
-    def seed_key(self) -> str:
-        return self._seed_key
+    def model_seed_key(self) -> str:
+        return self._model_seed_key
 
-    @seed_key.setter
-    def seed_key(self, new_val: str):
-        self._seed_key = new_val
+    @model_seed_key.setter
+    def model_seed_key(self, new_val: str):
+        self._model_seed_key = new_val
+
+    @property
+    def model_seed(self):
+        return self._model_seed
+
+    @model_seed.setter
+    def model_seed(self, value):
+        self._model_seed = value
+
+    @property
+    def model_name_key(self):
+        return self._model_name_key
+
+    @model_name_key.setter
+    def model_name_key(self, value):
+        self._model_name_key = value
+
+    @property
+    def model_name(self):
+        return self._model_name
+
+    @model_name.setter
+    def model_name(self, value):
+        self._model_name = value
 
     @property
     def model_feature_names_key(self):
@@ -83,15 +107,25 @@ class BasicMLModelChooser(BasicChooser):
     def __init__(
             self, mlmodel_metadata_key: str = 'json',
             model_feature_names_key: str = 'feature_names',
-            seed_key: str = 'model_seed'):
+            model_seed_key: str = 'model_seed',
+            model_name_key: str = 'model_name'):
         # initialize
         self.model = None
         self.model_metadata_key = mlmodel_metadata_key
-        self.feature_encoder = None
         self.model_metadata = None
-        self.seed_key = seed_key
+
+        self.feature_encoder = None
+
+        self.model_seed_key = model_seed_key
+        self.model_seed = None
+
+        self.model_name_key = model_name_key
+        self.model_name = None
+
         self.model_objective = None
+
         self.model_feature_names_key = model_feature_names_key
+        self.model_feature_names = np.empty(shape=(1,))
 
     def _load_buffered_model(self, model_bytes: bytes):
         """
@@ -121,13 +155,13 @@ class BasicMLModelChooser(BasicChooser):
         spec.ParseFromString(model_bytes)
         return ct.models.MLModel(spec)
 
-    def load_model(self, inupt_model_src: str, verbose: bool = True):
+    def load_model(self, input_model_src: str, verbose: bool = True):
         """
         Loads desired model from input path.
 
         Parameters
         ----------
-        inupt_model_src: str
+        input_model_src: str
             path to desired model
         verbose: bool
             should I print msgs
@@ -141,9 +175,9 @@ class BasicMLModelChooser(BasicChooser):
 
         try:
             if verbose:
-                print('Attempting to load: {} model'.format(inupt_model_src))
+                print('Attempting to load: {} model'.format(input_model_src))
 
-            raw_model_src = self._get_model_src(model_src=inupt_model_src)
+            raw_model_src = self.get_model_src(model_src=input_model_src)
 
             # model_src = self._load_buffered_model(model_bytes=raw_model_src)
 
@@ -152,14 +186,17 @@ class BasicMLModelChooser(BasicChooser):
                 if not isinstance(raw_model_src, bytes) \
                 else self._load_buffered_model(model_bytes=raw_model_src)
             if verbose:
-                print('Model: {} successfully loaded'.format(inupt_model_src))
+                print('Model: {} successfully loaded'.format(input_model_src))
         except Exception as exc:
             if verbose:
                 print(
                     'When attempting to load the mode: {} the following error '
-                    'occured: {}'.format(inupt_model_src, exc))
+                    'occured: {}'.format(input_model_src, exc))
 
         self.model_metadata = self._get_model_metadata()
+        self.model_seed = self._get_model_seed()
+        self.model_name = self._get_model_name()
+
         self.feature_encoder = self._get_feature_encoder()
         self.model_feature_names = self._get_model_feature_names()
 
@@ -435,7 +472,7 @@ if __name__ == '__main__':
     test_model_pth = '../artifacts/models/v6_conv_model.mlmodel'
     # test_model_pth = "https://improve-v5-resources-prod-models-117097735164.s3-us-west-2.amazonaws.com/models/mindful/latest/improve-messages-2.0.mlmodel"
     # test_model_pth = "/Users/os/Downloads/improve-messages-2.0.mlmodel.gz"
-    mlmc.load_model(inupt_model_src=test_model_pth)
+    mlmc.load_model(input_model_src=test_model_pth)
 
     with open('../artifacts/test_artifacts/context.json', 'r') as mj:
         json_str = mj.readline()

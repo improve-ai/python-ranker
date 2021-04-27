@@ -97,12 +97,36 @@ class BasicNativeXGBChooser(BasicChooser):
     #     self._lookup_table_key = new_val
 
     @property
-    def seed_key(self) -> str:
-        return self._seed_key
+    def model_seed_key(self) -> str:
+        return self._model_seed_key
 
-    @seed_key.setter
-    def seed_key(self, new_val: str):
-        self._seed_key = new_val
+    @model_seed_key.setter
+    def model_seed_key(self, new_val: str):
+        self._model_seed_key = new_val
+
+    @property
+    def model_seed(self):
+        return self._model_seed
+
+    @model_seed.setter
+    def model_seed(self, value):
+        self._model_seed = value
+
+    @property
+    def model_name_key(self):
+        return self._model_name_key
+
+    @model_name_key.setter
+    def model_name_key(self, value):
+        self._model_name_key = value
+
+    @property
+    def model_name(self):
+        return self._model_name
+
+    @model_name.setter
+    def model_name(self, value):
+        self._model_name = value
 
     @property
     def model_feature_names_key(self) -> str:
@@ -139,24 +163,33 @@ class BasicNativeXGBChooser(BasicChooser):
     def __init__(
             self, mlmodel_metadata_key: str = 'json',
             model_feature_names_key: str = 'feature_names',
-            seed_key: str = 'model_seed'):
+            model_seed_key: str = 'model_seed',
+            model_name_key: str = 'model_name'):
+
         self.model = None
         self.model_metadata_key = mlmodel_metadata_key
-        self.feature_encoder = None
         self.model_metadata = None
+
+        self.feature_encoder = None
         # self.lookup_table_key = lookup_table_key
         self.model_feature_names_key = model_feature_names_key
         self.model_feature_names = np.empty(shape=(1,))
-        self.seed_key = seed_key
+
+        self.model_seed_key = model_seed_key
+        self.model_seed = None
+
+        self.model_name_key = model_name_key
+        self.model_name = None
+
         self.model_objective = None
 
-    def load_model(self, inupt_model_src: str, verbose: bool = True):
+    def load_model(self, input_model_src: str, verbose: bool = True):
         """
         Loads desired model from input path.
 
         Parameters
         ----------
-        inupt_model_src: str
+        input_model_src: str
             path to desired model
         verbose: bool
             should I print msgs
@@ -168,9 +201,9 @@ class BasicNativeXGBChooser(BasicChooser):
 
         try:
             if verbose:
-                print('Attempting to load: {} model'.format(inupt_model_src))
+                print('Attempting to load: {} model'.format(input_model_src))
 
-            raw_model_src = self._get_model_src(model_src=inupt_model_src)
+            raw_model_src = self.get_model_src(model_src=input_model_src)
 
             model_src = \
                 raw_model_src if isinstance(raw_model_src, str) \
@@ -179,11 +212,11 @@ class BasicNativeXGBChooser(BasicChooser):
             self.model = Booster()
             self.model.load_model(model_src)
             if verbose:
-                print('Model: {} successfully loaded'.format(inupt_model_src))
+                print('Model: {} successfully loaded'.format(input_model_src))
         except XGBoostError as xgbe:
             if verbose:
                 print('Attempting to read via pickle interface')
-            with open(inupt_model_src, 'rb') as xgbl:
+            with open(input_model_src, 'rb') as xgbl:
                 self.model = pickle.load(xgbl)
             print('### TRACEBACK ###')
             print_exc()
@@ -191,10 +224,13 @@ class BasicNativeXGBChooser(BasicChooser):
             if verbose:
                 print(
                     'When attempting to load the model: {} the following error '
-                    'occured: {}'.format(inupt_model_src, exc))
+                    'occured: {}'.format(input_model_src, exc))
             print_exc()
 
         self.model_metadata = self._get_model_metadata()
+        self.model_seed = self._get_model_seed()
+        self.model_name = self._get_model_name()
+
         self.model_feature_names = self._get_model_feature_names()
         self.feature_encoder = self._get_feature_encoder()
         self.model_objective = self._get_model_objective()
@@ -494,7 +530,7 @@ if __name__ == '__main__':
     test_model_pth = "/Users/os/Downloads/model.gz"
     test_model_pth = \
         '/home/os/Projects/upwork/python-sdk/improveai/artifacts/models/dummy_v6.xgb'
-    mlmc.load_model(inupt_model_src=test_model_pth)
+    mlmc.load_model(input_model_src=test_model_pth)
 
     # with open('../artifacts/test_artifacts/model.json', 'r') as mj:
     #     json_str = mj.readline()

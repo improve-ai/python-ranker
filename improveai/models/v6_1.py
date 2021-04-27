@@ -341,65 +341,67 @@ class DecisionModel:
         return d.Decision(decision_model=self).choose_from(variants=variants)
 
 
-# if __name__ == '__main__':
-#     import json
-#     import simplejson
-#
-#     # url = "https://improve-v5-resources-prod-models-117097735164.s3-us-west-2.amazonaws.com/models/bible/latest/improve-messages-2.0.xgb.gz"
-#     # url = '../artifacts/models/dummy_v6_w_name.xgb'
-#     url = '../artifacts/models/dummy_v6.xgb'
-#
-#     with open('../artifacts/data/test/v6_tests/feature_encoder/python_specific/test_batch_encoding_jsonlies.json', 'r') as rj:
-#         test_data = json.loads(rj.read())
-#
-#     records = test_data.get("test_case", None)
-#
-#     input_variants = [r['variant'] for r in records]
-#     context = records[0]['context']
-#     print('context')
-#     print(context)
-#
-#     # url = ''
-#
-#     np.random.seed(1)
-#     scores = \
-#         DecisionModel.load_model(model_url=url)\
-#         .score(variants=input_variants, givens=context)
-#
-#     ranked = \
-#         DecisionModel.rank(variants=np.array(input_variants), scores=scores)
-#
-#     print(scores)
-#     print(ranked)
-#
-#     # print('[{}]'.format(', '.join([str(el) for el in scores])))
-#
-#     test_data = {
-#         "test_case": {
-#             "variants": input_variants,
-#             "givens": context
-#         },
-#         "test_output": ranked.tolist(),  # scores.tolist(),
-#         "model_seed": 1,
-#         "scores_seed": 1
-#
-#     }
-#     #
-#     # # # test_data = {
-#     # # #     "test_case": {
-#     # # #         "count": len(input_variants),
-#     # # #     },
-#     # # #     "test_output": [1.74481176421648, 1.6243453636632417, 0.8654076293246785, 0.31903909605709857, -0.2493703754774101, -0.5281717522634557, -0.6117564136500754, -0.7612069008951028, -1.0729686221561705, -2.3015386968802827],
-#     # # #     "model_seed": 1,
-#     # # #     "scores_seed": 1
-#     # # #
-#     # # # }
-#
-#     written_str = \
-#         simplejson.dumps(test_data, indent=4)
-#
-#     test_case_path = \
-#         '../artifacts/data/test/v6_tests/decision_model/ranked_native.json'
-#
-#     with open(test_case_path, 'w') as wj:
-#         wj.write(written_str)
+if __name__ == '__main__':
+    import json
+    import simplejson
+
+    # url = "https://improve-v5-resources-prod-models-117097735164.s3-us-west-2.amazonaws.com/models/bible/latest/improve-messages-2.0.xgb.gz"
+    # url = '../artifacts/models/dummy_v6_w_name.xgb'
+    url = '../artifacts/models/dummy_v6.mlmodel'
+
+    with open('../artifacts/data/test/v6_tests/feature_encoder/python_specific/test_batch_encoding_jsonlies.json', 'r') as rj:
+        test_data = json.loads(rj.read())
+
+    records = test_data.get("test_case", None)
+
+    input_variants = [r['variant'] for r in records]
+    context = records[0]['context']
+    print('context')
+    print(context)
+
+    # url = ''
+
+    np.random.seed(1)
+    scores = \
+        DecisionModel.load_model(model_url=url)\
+        .score(variants=input_variants, givens=context)
+
+    input('sanity check')
+
+    ranked = \
+        DecisionModel.rank(variants=np.array(input_variants), scores=scores)
+
+    print(scores)
+    print(ranked)
+
+    # print('[{}]'.format(', '.join([str(el) for el in scores])))
+
+    test_data = {
+        "test_case": {
+            "variants": input_variants,
+            "givens": context
+        },
+        "test_output": ranked.tolist(),  # scores.tolist(),
+        "model_seed": 1,
+        "scores_seed": 1
+
+    }
+    #
+    # # # test_data = {
+    # # #     "test_case": {
+    # # #         "count": len(input_variants),
+    # # #     },
+    # # #     "test_output": [1.74481176421648, 1.6243453636632417, 0.8654076293246785, 0.31903909605709857, -0.2493703754774101, -0.5281717522634557, -0.6117564136500754, -0.7612069008951028, -1.0729686221561705, -2.3015386968802827],
+    # # #     "model_seed": 1,
+    # # #     "scores_seed": 1
+    # # #
+    # # # }
+
+    written_str = \
+        simplejson.dumps(test_data, indent=4)
+
+    test_case_path = \
+        '../artifacts/data/test/v6_tests/decision_model/ranked_native.json'
+
+    with open(test_case_path, 'w') as wj:
+        wj.write(written_str)
