@@ -13,8 +13,8 @@ import xgboost as xgb
 sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
 
+import decisions.v6_1 as d
 import models.v6_1 as dm
-# from models.v6_1 import DecisionModel
 from utils.general_purpose_utils import read_jsonstring_from_file
 
 
@@ -418,3 +418,72 @@ class TestDecisionModel(TestCase):
 
         np.testing.assert_array_equal(calculated_gaussians, expected_output)
 
+    def test_choose_from(self):
+
+        path_to_test_json = \
+            ('{}' + os.sep + '{}').format(
+                self.test_cases_directory,
+                os.getenv('V6_DECISION_MODEL_TEST_CHOOSE_FROM_JSON'))
+
+        test_data = \
+            self._get_test_data(
+                path_to_test_json=path_to_test_json, method='read')
+
+        test_case = test_data.get("test_case", None)
+
+        if test_case is None:
+            raise ValueError('Test case can`t be None')
+
+        variants = test_case.get("variants", None)
+
+        if variants is None:
+            raise ValueError('Variants can`t be None')
+
+        expected_output = test_data.get("test_output", None)
+
+        if expected_output is None:
+            raise ValueError('`test_output` can`t be None')
+
+        decision = \
+            dm.DecisionModel(model_name='test_choose_from_model')\
+            .choose_from(variants=variants)
+
+        assert isinstance(decision, d.Decision)
+        assert hasattr(decision, 'variants')
+        np.testing.assert_array_equal(decision.variants, expected_output)
+        assert decision.givens is None
+
+    def test_given(self):
+        path_to_test_json = \
+            ('{}' + os.sep + '{}').format(
+                self.test_cases_directory,
+                os.getenv('V6_DECISION_MODEL_TEST_GIVEN_JSON'))
+
+        test_data = \
+            self._get_test_data(
+                path_to_test_json=path_to_test_json, method='read')
+
+        test_case = test_data.get("test_case", None)
+
+        if test_case is None:
+            raise ValueError('Test case can`t be None')
+
+        givens = test_case.get("givens", None)
+
+        if givens is None:
+            raise ValueError('givens can`t be None')
+
+        expected_output = test_data.get("test_output", None)
+
+        if expected_output is None:
+            raise ValueError('`test_output` can`t be None')
+
+        decision = \
+            dm.DecisionModel(model_name='test_choose_from_model') \
+            .given(givens=givens)
+
+        assert isinstance(decision, d.Decision)
+        assert hasattr(decision, 'givens')
+        assert isinstance(decision.givens, dict)
+        assert decision.givens == expected_output
+        assert decision.variants is None
