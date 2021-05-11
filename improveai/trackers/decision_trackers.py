@@ -7,9 +7,9 @@ from typing import Dict, List
 from uuid import uuid4
 from warnings import warn
 
-from decisions.v6 import Decision
-from models.decision_models import DecisionModel
-from utils.gen_purp_utils import constant
+from improveai.decisions.v6 import Decision
+from improveai.models.decision_models import DecisionModel
+from improveai.utils.gen_purp_utils import constant
 
 
 class DecisionTracker:

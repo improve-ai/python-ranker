@@ -46,11 +46,11 @@ if not macos_version():
                 fast_feat_enc_ext,
                 language_level="3")})
 
-    import choosers.choosers_cython_utils.fast_feat_enc as ffe
+    import improveai.choosers.choosers_cython_utils.fast_feat_enc as ffe
 
-from choosers.basic_choosers import BasicChooser
-from encoders.feature_encoder import FeatureEncoder
-from utils.gen_purp_utils import constant, sigmoid
+from improveai.choosers.basic_choosers import BasicChooser
+from improveai.encoders.feature_encoder import FeatureEncoder
+from improveai.utils.gen_purp_utils import constant, sigmoid
 
 
 class BasicNativeXGBChooser(BasicChooser):

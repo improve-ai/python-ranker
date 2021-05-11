@@ -9,9 +9,9 @@ from unittest import TestCase
 sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
 
-from decisions.v6 import Decision
-from models.decision_models import DecisionModel
-from trackers.decision_trackers import DecisionTracker
+from improveai.decisions.v6 import Decision
+from improveai.models.decision_models import DecisionModel
+from improveai.trackers.decision_trackers import DecisionTracker
 
 
 class TestDecisionTracker(TestCase):

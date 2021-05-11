@@ -3,10 +3,10 @@ import json
 import numpy as np
 from typing import Dict, List
 
-from choosers.basic_choosers import BasicChooser
-from choosers.mlmodel_chooser import BasicMLModelChooser
-from choosers.xgb_chooser import BasicNativeXGBChooser
-from utils.gen_purp_utils import constant
+from improveai.choosers.basic_choosers import BasicChooser
+from improveai.choosers.mlmodel_chooser import BasicMLModelChooser
+from improveai.choosers.xgb_chooser import BasicNativeXGBChooser
+from improveai.utils.gen_purp_utils import constant
 
 
 class DecisionModel:

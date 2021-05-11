@@ -8,7 +8,7 @@ from typing import Dict, List, Tuple
 sys.path.append('/Users/os/Projs/python-sdk')
 
 # TODO -> this is just pre-refactor convenience alias
-from models.decision_models import DecisionModel
+from improveai.models.decision_models import DecisionModel
 
 
 class Decision(object):

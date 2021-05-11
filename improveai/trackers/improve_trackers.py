@@ -7,7 +7,7 @@ from typing import Dict, List
 from uuid import uuid4
 from warnings import warn
 
-from utils.gen_purp_utils import constant
+from improveai.utils.gen_purp_utils import constant
 
 
 class ImproveTracker:

@@ -2,8 +2,8 @@ from argparse import ArgumentParser
 import json
 import simplejson
 
-from models.decision_models import DecisionModel
-from utils.gen_purp_utils import read_jsonstring_frm_file
+from improveai.models.decision_models import DecisionModel
+from improveai.utils.gen_purp_utils import read_jsonstring_frm_file
 
 
 if __name__ == '__main__':

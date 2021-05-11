@@ -4,9 +4,9 @@ import numpy as np
 from time import time
 from typing import Dict, List
 
-from choosers.basic_choosers import BasicChooser
-from encoders.feature_encoder import FeatureEncoder
-from utils.gen_purp_utils import constant, sigmoid
+from improveai.choosers.basic_choosers import BasicChooser
+from improveai.encoders.feature_encoder import FeatureEncoder
+from improveai.utils.gen_purp_utils import constant, sigmoid
 
 
 class BasicMLModelChooser(BasicChooser):
