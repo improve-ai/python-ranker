@@ -1,8 +1,9 @@
+from collections.abc import Iterable
 import numpy as np
 from typing import Dict, List
+from warnings import warn
 
-import models.v6_1 as dm
-# from models.v6_1 import DecisionModel
+import improveai.model as dm
 
 
 class Decision:
@@ -27,34 +28,72 @@ class Decision:
     def memoized_variant(self) -> dict or None:
         return self.__memoized_variant
 
-    def __init__(self, decision_model):
+    def __init__(self, decision_model: object):
+
+        if decision_model is None:
+            raise ValueError('`decision_model` can`t be None')
+
         self.__model = decision_model
         self.__chosen = False
 
-        self.__variants = None
+        self.__variants = [None]
         self.__givens = None
         self.__memoized_variant = None
 
+        self.__variants__set = False
+        self.__givens_set = False
+
     def given(self, givens: dict):
 
+        if not isinstance(givens, dict):
+            raise TypeError('`givens` should be a dict')
+
         if self.chosen:
-            print('The best variant has already been chosen')
+            warn('The best variant has already been chosen')
+            return self
+
+        if self.__givens_set:
+            warn('`givens` have already been set - ignoring this call')
             return self
 
         self.__givens = givens
+        self.__givens_set = True
+
         return self
 
     def choose_from(self, variants: list or np.ndarray):
+
+        if variants is None or variants == [None]:
+            return self
+
+        if isinstance(variants, str) or isinstance(variants, dict):
+            raise TypeError(
+                '`variants` should be a collection of some sort '
+                '(list, np.ndarray, set, tuple) not a: {}'
+                .format(type(variants)))
+        elif not isinstance(variants, Iterable):
+            raise TypeError(
+                '`variants` should be a collection of some sort '
+                '(list, np.ndarray, set, tuple) not a: {}'
+                .format(type(variants)))
+
         if self.chosen:
-            print('The best variant has already been chosen')
+            warn('The best variant has already been chosen')
+            return self
+
+        if self.__variants__set:
+            warn('`variants` have already been set - ignoring this call')
             return self
 
         self.__variants = variants
+        self.__variants__set = True
+
         return self
 
     def get(self):
+
         if self.chosen:
-            print('The best variant has already been chosen')
+            warn('The best variant has already been chosen')
             return self.memoized_variant
 
         scores = self.model.score(variants=self.variants, givens=self.givens)
@@ -63,7 +102,7 @@ class Decision:
 
         # TODO make sure this is bit is executed only once per Decision's
         #  lifetime
-        if len(self.variants) != 0:
+        if self.variants is not None and len(self.variants) != 0:
             # there should be no difference between effect of those 2 conditions
             # since this  clause is reached only once
             # if self.model.tracker and not self.tracked:
@@ -71,7 +110,8 @@ class Decision:
 
                 if self.model.tracker.should_track_runners_up(len(self.variants)):
                     ranked_variants = \
-                        dm.DecisionModel.rank(variants=self.variants, scores=scores)
+                        dm.DecisionModel.rank(
+                            variants=self.variants, scores=scores)
                     self.__memoized_variant = ranked_variants[0]
 
                     self.model.tracker.track(
@@ -92,5 +132,6 @@ class Decision:
                 self.__memoized_variant = \
                     dm.DecisionModel.top_scoring_variant(
                         variants=self.variants, scores=scores)
+
         self.__chosen = True
         return self.memoized_variant

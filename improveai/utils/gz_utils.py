@@ -28,7 +28,7 @@ def is_gz_bytes(chkd_bytes: bytes) -> bool:
             f.read(1)
             return True
         except Exception as exc:
-            print(exc)
+            # print(exc)
             return False
 
 

@@ -1,21 +1,20 @@
-from collections.abc import Iterable
-from copy import deepcopy
 import coremltools as ct
-from frozendict import frozendict
 import json
 import numpy as np
 import os
-from pytest import fixture
+from pytest import fixture, raises
 import sys
+import time
 from unittest import TestCase
 import xgboost as xgb
 
 sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
 
-import decisions.v6_1 as d
-import models.v6_1 as dm
-from utils.general_purpose_utils import read_jsonstring_from_file
+import improveai.decision as d
+import improveai.model as dm
+import improveai.tracker as dt
+from improveai.utils.general_purpose_utils import read_jsonstring_from_file
 
 
 class TestDecisionModel(TestCase):
@@ -88,7 +87,7 @@ class TestDecisionModel(TestCase):
             test_output_model_name_key: str = 'model_name',
             test_output_model_seed_key: str = 'model_seed',
             test_output_version_key: str = 'version',
-            model_filename_key: str = 'model_filename'):
+            model_filename_key: str = 'model_filename', load_mode: str = 'sync'):
 
         path_to_test_json = \
             ('{}' + os.sep + '{}').format(
@@ -112,12 +111,21 @@ class TestDecisionModel(TestCase):
             ('{}' + os.sep + '{}').format(
                 self.predictors_fs_directory, predictor_filename)
         # loading model
-        decision_model = dm.DecisionModel.load_model(model_url=model_url)
+        if load_mode == 'sync':
+            decision_model = dm.DecisionModel.load(model_url=model_url)
+        elif load_mode == 'async':
+            decision_model = dm.DecisionModel(model_name='dummy-model-0')
+            decision_model.load_async(model_url=model_url)
+            time.sleep(3)
+        else:
+            raise ValueError('Allowed values for `load_mode` are sync and async')
 
         # is returned object a decision model
         assert isinstance(decision_model, dm.DecisionModel)
 
         # is predictor of a desired type
+        print('decision_model.chooser')
+        print(decision_model.chooser)
         predictor = decision_model.chooser.model
         assert isinstance(predictor, expected_predictor_type)
 
@@ -137,6 +145,8 @@ class TestDecisionModel(TestCase):
         if test_output is None:
             raise ValueError('Test output can`t be None')
 
+        print(test_output)
+
         self._assert_metadata_entries_equal(
             tested_metadata=metadata, expected_metadata=test_output,
             asserted_key=test_output_feature_names_key)
@@ -155,7 +165,7 @@ class TestDecisionModel(TestCase):
 
     def _generic_test_loaded_fs_none_model(
             self, test_data_filename: str, test_case_key: str = 'test_case',
-            model_filename_key: str = 'model_filename'):
+            model_filename_key: str = 'model_filename', load_mode: str = 'sync'):
         path_to_test_json = \
             ('{}' + os.sep + '{}').format(
                 self.test_cases_directory, test_data_filename)
@@ -177,16 +187,30 @@ class TestDecisionModel(TestCase):
         model_url = \
             ('{}' + os.sep + '{}').format(
                 self.predictors_fs_directory, predictor_filename)
+
         # loading model
-        decision_model = dm.DecisionModel.load_model(model_url=model_url)
+        with raises(ValueError) as verr:
+            if load_mode == 'sync':
+                decision_model = dm.DecisionModel.load(model_url=model_url)
+            elif load_mode == 'async':
+                decision_model = dm.DecisionModel(model_name='dummy-model')
+                decision_model.load_async(model_url=model_url)
+                time.sleep(3)
+            else:
+                raise RuntimeError(
+                    'Allowed values for `load_mode` are sync and async')
+
+            # print(verr)
+            assert False
+            assert str(verr.value)
 
         # is returned object a decision model
-        assert isinstance(decision_model, dm.DecisionModel)
-        assert decision_model.chooser is None
+        # assert isinstance(decision_model, DecisionModel)
+        # assert decision_model.chooser is None
 
     def _generic_test_loaded_url_none_model(
             self, test_data_filename: str, test_case_key: str = 'test_case',
-            model_url_key: str = 'model_url'):
+            model_url_key: str = 'model_url', load_mode: str = 'sync'):
 
         path_to_test_json = \
             ('{}' + os.sep + '{}').format(
@@ -201,17 +225,27 @@ class TestDecisionModel(TestCase):
         if test_case is None:
             raise ValueError('Test case can`t be None')
 
-        predictor_url = test_case.get(model_url_key, None)
+        model_url = test_case.get(model_url_key, None)
 
-        if predictor_url is None:
+        if model_url is None:
             raise ValueError('Model filename can`t be None')
 
         # loading model
-        decision_model = dm.DecisionModel.load_model(model_url=predictor_url)
+        with raises(ValueError) as verr:
+            if load_mode == 'sync':
+                decision_model = dm.DecisionModel.load(model_url=model_url)
+            elif load_mode == 'async':
+                decision_model = dm.DecisionModel(model_name='dummy-model')
+                decision_model.load_async(model_url=model_url)
+            else:
+                raise RuntimeError(
+                    'Allowed values for `load_mode` are sync and async')
+
+            assert str(verr.value)
 
         # is returned object a decision model
-        assert isinstance(decision_model, dm.DecisionModel)
-        assert decision_model.chooser is None
+        # assert isinstance(decision_model, DecisionModel)
+        # assert decision_model.chooser is None
 
     # test model loading
     def test_load_model_sync_native_fs(self):
@@ -247,17 +281,19 @@ class TestDecisionModel(TestCase):
             test_data_filename=os.getenv(
                 'V6_DECISION_MODEL_TEST_LOAD_MODEL_URL_NO_MODEL_JSON'))
 
-    # TODO  why did I put those here in the first place ?
-    # def test_predictior_load_model_native(self):
-    #     pass
-    #
-    # def test_predictior_load_model_mlmodel(self):
-    #     pass
-    #
-    # def test_predictior_load_model_no_model(self):
-    #     pass
+    # ASYNC tests
+    # test model loading
+    def test_load_model_async_native_fs(self):
+        self._generic_test_loaded_model(
+            test_data_filename=os.getenv(
+                'V6_DECISION_MODEL_TEST_LOAD_MODEL_FS_NATIVE_JSON'),
+            expected_predictor_type=xgb.Booster, load_mode='async')
 
-    # test scoring
+    def test_load_model_async_mlmodel_fs(self):
+        self._generic_test_loaded_model(
+            test_data_filename=os.getenv(
+                'V6_DECISION_MODEL_TEST_LOAD_MODEL_FS_MLMODEL_JSON'),
+            expected_predictor_type=ct.models.MLModel, load_mode='async')
 
     def _generic_desired_decision_model_method_call(
             self, test_data_filename: str, evaluated_method_name: str,
@@ -315,7 +351,83 @@ class TestDecisionModel(TestCase):
             ('{}' + os.sep + '{}').format(
                 self.predictors_fs_directory, predictor_filename)
 
-        decision_model = dm.DecisionModel.load_model(model_url=model_url)
+        decision_model = dm.DecisionModel.load(model_url=model_url)
+
+        np.random.seed(score_seed)
+        calculated_scores = decision_model.score(**empty_callable_kwargs)
+
+        if evaluated_method_name == 'score':
+
+            np.testing.assert_array_equal(
+                calculated_scores.tolist(), expected_output)
+            return
+
+        if scores_key in empty_callable_kwargs:
+            empty_callable_kwargs[scores_key] = calculated_scores
+
+        np.random.seed(score_seed)
+        evaluated_callable = getattr(dm.DecisionModel, evaluated_method_name)
+        calculated_output = evaluated_callable(**empty_callable_kwargs)
+
+        if isinstance(expected_output, list):
+            np.testing.assert_array_equal(
+                expected_output, calculated_output)
+        else:
+            assert expected_output == calculated_output
+
+    def _generic_desired_decision_model_method_call_no_model(
+            self, test_data_filename: str, evaluated_method_name: str,
+            empty_callable_kwargs: dict, test_case_key: str = 'test_case',
+            test_output_key: str = 'test_output',
+            variants_key: str = 'variants', givens_key: str = 'givens',
+            predictor_filename_key: str = 'model_filename',
+            scores_key: str = 'scores', scores_seed_key: str = 'scores_seed'):
+
+        path_to_test_json = \
+            ('{}' + os.sep + '{}').format(
+                self.test_cases_directory, test_data_filename)
+
+        test_data = \
+            self._get_test_data(
+                path_to_test_json=path_to_test_json, method='read')
+
+        test_case = test_data.get(test_case_key, None)
+
+        if test_case is None:
+            raise ValueError('Test case can`t be None')
+
+        variants = test_case.get(variants_key, None)
+
+        if variants_key in empty_callable_kwargs:
+            empty_callable_kwargs[variants_key] = variants
+
+        if variants is None:
+            raise ValueError('Variants can`t be None')
+
+        context = test_case.get(givens_key, None)
+
+        if givens_key in empty_callable_kwargs:
+            empty_callable_kwargs[givens_key] = context
+
+        if context is None:
+            raise ValueError('Context can`t be None')
+
+        score_seed = test_data.get(scores_seed_key, None)
+
+        if score_seed is None:
+            raise ValueError('`scores_seed` can`t be empty')
+
+        predictor_filename = test_case.get(predictor_filename_key, None)
+
+        if predictor_filename is None:
+            raise ValueError('`model_filename` can`t be empty')
+
+        expected_output = test_data.get(test_output_key, None)
+
+        if expected_output is None:
+            raise ValueError('`test_output` can`t be None')
+
+        decision_model = dm.DecisionModel(model_name='dummy-model')
 
         np.random.seed(score_seed)
         calculated_scores = decision_model.score(**empty_callable_kwargs)
@@ -340,7 +452,7 @@ class TestDecisionModel(TestCase):
             assert expected_output == calculated_output
 
     def test_score_no_model(self):
-        self._generic_desired_decision_model_method_call(
+        self._generic_desired_decision_model_method_call_no_model(
             test_data_filename=os.getenv(
                 'V6_DECISION_MODEL_TEST_SCORE_NATIVE_NO_MODEL_JSON'),
             evaluated_method_name='score',
@@ -354,7 +466,7 @@ class TestDecisionModel(TestCase):
             empty_callable_kwargs={'variants': None, 'givens': None})
 
     def test_top_scoring_variant_no_model(self):
-        self._generic_desired_decision_model_method_call(
+        self._generic_desired_decision_model_method_call_no_model(
             test_data_filename=os.getenv(
                 'V6_DECISION_MODEL_TEST_TOP_SCORING_VARIANT_NATIVE_NO_MODEL_JSON'),
             evaluated_method_name='top_scoring_variant',
@@ -370,7 +482,7 @@ class TestDecisionModel(TestCase):
                 'variants': None, 'givens': None, 'scores': None})
 
     def test_ranked_no_model(self):
-        self._generic_desired_decision_model_method_call(
+        self._generic_desired_decision_model_method_call_no_model(
             test_data_filename=os.getenv(
                 'V6_DECISION_MODEL_TEST_RANK_NATIVE_NO_MODEL_JSON'),
             evaluated_method_name='rank',
@@ -486,4 +598,29 @@ class TestDecisionModel(TestCase):
         assert hasattr(decision, 'givens')
         assert isinstance(decision.givens, dict)
         assert decision.givens == expected_output
-        assert decision.variants is None
+        assert decision.variants == [None]
+
+    def test_set_tracker(self):
+        tracker = dt.DecisionTracker(track_url='dummy_tracker_url')
+        decision_model = \
+            dm.DecisionModel(model_name='test_choose_from_model')
+
+        assert decision_model.tracker is None
+
+        decision_model.set_tracker(tracker=tracker)
+
+        assert decision_model.tracker is not None
+        assert decision_model.tracker == tracker
+
+    def test_set_tracker_raises(self):
+        decision_model = \
+            dm.DecisionModel(model_name='test_choose_from_model')
+
+        assert decision_model.tracker is None
+
+        with raises(TypeError) as terr:
+
+            decision_model.set_tracker(tracker=None)
+
+            assert str(terr.value)
+

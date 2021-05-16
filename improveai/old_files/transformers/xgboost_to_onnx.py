@@ -12,8 +12,8 @@ from xgboost import Booster, XGBRegressor
 if __name__ == '__main__':
 
     # b = Booster()
-    src_model_pth = '../artifacts/test_artifacts/model.xgb'
-    # b.load_model(src_model_pth)
+    src_model_pth = '../../artifacts/test_artifacts/model.xgb'
+    # b.load(src_model_pth)
     # metadata_pth = '../test_artifacts/model.json'
     # with open(metadata_pth, 'r') as mj:
     #     json_str = mj.readline()
@@ -26,7 +26,7 @@ if __name__ == '__main__':
     # onnx_types = [(fn, FloatType) for fn in feature_names]
 
     # xgbm = XGBRegressor()
-    # xgbm.load_model(src_model_pth)
+    # xgbm.load(src_model_pth)
     #
     # X = np.array([[1, 2, 3], [3, 2, 1], [1, 1, 1]])
     # y = np.array([1, 2, 3])

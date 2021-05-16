@@ -10,7 +10,7 @@
             "history_id": "49a82cf7",
             "message_id": "729904c4d2874a",
             "timestamp": "2021-02-07 21:33:23.403871232",
-            "context": {
+            "given": {
                 "device_manufacturer": "Apple",
                 "version_name": "4.3",
                 "os_name": "ios",
@@ -33,7 +33,7 @@
             "history_id": "49a82cf7",
             "message_id": "729904c4d2874a",
             "timestamp": "2021-02-07 21:33:23.403871232",
-            "context": {
+            "given": {
                 "device_manufacturer": "Apple",
                 "version_name": "4.3",
                 "os_name": "ios",
@@ -135,7 +135,7 @@
             "timestamp": "2021-02-07 21:33:23.405177344"
         }
     ],
-    "single_context_test_output": [
+    "single_given_test_output": [
         {
             "343947a": 30272.206219141928,
             "3ff9d0fa": -2451.016689356727,
@@ -377,7 +377,7 @@
             "865daab3": 31928.21749978471
         }
     ],
-    "multiple_context_test_output": [
+    "multiple_given_test_output": [
         {
             "343947a": 30272.206219141928,
             "3ff9d0fa": -2451.016689356727,

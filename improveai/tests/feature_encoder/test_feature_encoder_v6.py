@@ -1,4 +1,3 @@
-from codecs import decode
 import json
 import numpy as np
 import os
@@ -11,8 +10,8 @@ import xgboost as xgb
 sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
 
-from feature_encoders.v6 import FeatureEncoder
-from utils.general_purpose_utils import read_jsonstring_from_file
+from improveai.feature_encoder import FeatureEncoder
+from improveai.utils.general_purpose_utils import read_jsonstring_from_file
 
 
 class TestEncoder(TestCase):
@@ -116,7 +115,7 @@ class TestEncoder(TestCase):
 
     def _generic_test_encode_record_from_json_data(
             self, test_case_filename: str, input_data_key: str = 'test_case',
-            variant_key: str = 'variant', context_key: str = 'context',
+            variant_key: str = 'variant', given_key: str = 'context',
             expected_output_data_key: str = 'test_output'):
 
         test_case_path = os.sep.join(
@@ -136,7 +135,7 @@ class TestEncoder(TestCase):
         if variant_input is None:
             raise ValueError('Test input for variant is empty')
 
-        context_input = test_input.get(context_key, None)
+        given_input = test_input.get(given_key, None)
 
         expected_output = test_case.get(expected_output_data_key, None)
 
@@ -145,8 +144,7 @@ class TestEncoder(TestCase):
 
         tested_record_output = \
             self.feature_encoder.encode_variants(
-                variants=[variant_input], contexts=context_input,
-                noise=self.noise)
+                variants=[variant_input], context=given_input, noise=self.noise)
 
         # print(variant_input)
         # print(expected_output)
@@ -159,7 +157,7 @@ class TestEncoder(TestCase):
             provided_first_test_case: dict = None,
             provided_second_test_case: dict = None,
             input_data_key: str = 'test_case', variant_key: str = 'variant',
-            context_key: str = 'context'):
+            given_key: str = 'context'):
 
         first_test_case_path = os.sep.join(
             [self.v6_test_suite_data_directory, first_test_case_filename])
@@ -179,7 +177,7 @@ class TestEncoder(TestCase):
                 "First test input for is empty")
 
         first_variant_input = first_test_input.get(variant_key, None)
-        first_context_inputs = first_test_input.get(context_key, None)
+        first_given_inputs = first_test_input.get(given_key, None)
 
         pprint(first_variant_input)
 
@@ -189,7 +187,7 @@ class TestEncoder(TestCase):
 
         first_output = \
             self.feature_encoder.encode_variants(
-                variants=[first_variant_input], contexts=first_context_inputs,
+                variants=[first_variant_input], context=first_given_inputs,
                 noise=self.noise)
 
         second_test_case_path = os.sep.join(
@@ -208,7 +206,7 @@ class TestEncoder(TestCase):
                 "Second test input for is empty")
 
         second_variant_input = second_test_input.get(variant_key, None)
-        second_context_input = second_test_input.get(context_key, None)
+        second_given_input = second_test_input.get(given_key, None)
 
         print(second_variant_input)
 
@@ -218,16 +216,16 @@ class TestEncoder(TestCase):
 
         second_output = \
             self.feature_encoder.encode_variants(
-                variants=[second_variant_input], contexts=second_context_input,
+                variants=[second_variant_input], context=second_given_input,
                 noise=self.noise)
 
         assert first_output == second_output
 
     def _generic_test_batch_input_encoding(
             self, test_case_filename: str, input_data_key: str = 'test_case',
-            expected_output_data_key: str = 'single_context_test_output',
-            variant_key: str = 'variant', context_key: str = 'context',
-            single_context_encoding: bool = True,
+            expected_output_data_key: str = 'single_given_test_output',
+            variant_key: str = 'variant', given_key: str = 'given',
+            single_given_encoding: bool = True,
             plain_jsonlines_encoding: bool = False,
             data_read_method: str = 'read'):
 
@@ -246,11 +244,11 @@ class TestEncoder(TestCase):
             raise ValueError("Test jsonlines are empty")
 
         test_variants = np.array([jl[variant_key] for jl in test_jsonlines])
-        test_contexts = \
-            np.array([jl.get(context_key, {}) for jl in test_jsonlines])
+        test_givens = \
+            np.array([jl.get(given_key, {}) for jl in test_jsonlines])
 
-        if single_context_encoding:
-            test_contexts = test_contexts[0]
+        if single_given_encoding:
+            test_givens = test_givens[0]
 
         expected_output = test_case.get(expected_output_data_key, None)
 
@@ -260,20 +258,20 @@ class TestEncoder(TestCase):
         if not plain_jsonlines_encoding:
             tested_output = \
                 self.feature_encoder.encode_variants(
-                    variants=test_variants, contexts=test_contexts,
+                    variants=test_variants, context=test_givens,
                     noise=self.noise)
         else:
             tested_output = \
                 self.feature_encoder.encode_jsonlines(
                     jsonlines=np.array(test_jsonlines), noise=self.noise,
-                    variant_key=variant_key, context_key=context_key)
+                    variant_key=variant_key, context_key=given_key)
 
         np.testing.assert_array_equal(expected_output, tested_output)
 
     def _generic_test_external_collisions(
             self, test_case_filename: str, input_data_key: str = 'test_case',
             expected_output_data_key: str = 'test_output',
-            variant_key: str = 'variant', context_key: str = 'context',
+            variant_key: str = 'variant', given_key: str = 'context',
             data_read_method: str = 'read'):
 
         test_case_path = os.sep.join(
@@ -291,10 +289,10 @@ class TestEncoder(TestCase):
             raise ValueError("Test jsonlines are empty")
 
         variant = test_case_input.get(variant_key, None)
-        context = test_case_input.get(context_key, None)
+        given = test_case_input.get(given_key, None)
 
-        if variant is None or context is None:
-            raise ValueError("variant or context are empty")
+        if variant is None or given is None:
+            raise ValueError("variant or given are empty")
 
         expected_output = test_case.get(expected_output_data_key, None)
 
@@ -303,34 +301,34 @@ class TestEncoder(TestCase):
 
         encoded_variant = \
             self.feature_encoder.encode_variant(variant=variant, noise=self.noise)
-        encoded_context = \
-            self.feature_encoder.encode_context(context=context, noise=self.noise)
+        encoded_given = \
+            self.feature_encoder.encode_context(context=given, noise=self.noise)
 
         common_keys = \
-            set(encoded_variant.keys()).intersection(set(encoded_context.keys()))
+            set(encoded_variant.keys()).intersection(set(encoded_given.keys()))
 
         assert len(common_keys) > 0
 
         fully_encoded_variant = \
             self.feature_encoder.encode_variants(
-                variants=[variant], contexts=context, noise=self.noise)[0]
+                variants=[variant], context=given, noise=self.noise)[0]
 
         np.testing.assert_array_equal(expected_output, fully_encoded_variant)
 
         single_common_key = list(common_keys)[0]
 
         assert single_common_key in encoded_variant.keys() \
-               and single_common_key in encoded_context.keys() \
+               and single_common_key in encoded_given.keys() \
                and single_common_key in fully_encoded_variant.keys()
 
         assert encoded_variant.get(single_common_key, None) + \
-               encoded_context.get(single_common_key, None) == \
+               encoded_given.get(single_common_key, None) == \
                fully_encoded_variant.get(single_common_key, None)
 
     def _generic_test_internal_collisions(
             self, test_case_filename: str, input_data_key: str = 'test_case',
             expected_output_data_key: str = 'test_output',
-            variant_key: str = 'variant', context_key: str = 'context',
+            variant_key: str = 'variant', given_key: str = 'context',
             data_read_method: str = 'read'):
 
         test_case_path = os.sep.join(
@@ -348,10 +346,10 @@ class TestEncoder(TestCase):
             raise ValueError("Test jsonlines are empty")
 
         variant = test_case_input.get(variant_key, None)
-        context = test_case_input.get(context_key, None)
+        given = test_case_input.get(given_key, None)
 
-        if variant is None or context is None:
-            raise ValueError("variant or context are empty")
+        if variant is None or given is None:
+            raise ValueError("variant or given are empty")
 
         expected_output = test_case.get(expected_output_data_key, None)
 
@@ -360,7 +358,7 @@ class TestEncoder(TestCase):
 
         fully_encoded_variant = \
             self.feature_encoder.encode_variants(
-                variants=[variant], contexts=context, noise=self.noise)[0]
+                variants=[variant], context=given, noise=self.noise)[0]
 
         assert fully_encoded_variant == expected_output
 
@@ -368,7 +366,7 @@ class TestEncoder(TestCase):
     def test_none_variant(self):
 
         variant_input = None
-        context_input = None
+        given_input = None
 
         test_case_path = os.sep.join(
             [self.v6_test_suite_data_directory,
@@ -386,7 +384,7 @@ class TestEncoder(TestCase):
 
         tested_output = \
             self.feature_encoder.encode_variants(
-                variants=[variant_input],contexts=context_input, noise=self.noise)
+                variants=[variant_input], context=given_input, noise=self.noise)
 
         assert expected_output == tested_output
 
@@ -474,7 +472,7 @@ class TestEncoder(TestCase):
                 "Input data for `test_big_float_variant` can`t be empty")
 
         variant_input = test_input.get('variant', None)
-        context_input = test_input.get('context', None)
+        given_input = test_input.get('given', None)
 
         if variant_input is None:
             raise ValueError(
@@ -491,7 +489,7 @@ class TestEncoder(TestCase):
 
         tested_output = \
             self.feature_encoder.encode_variants(
-                variants=[variant_input], contexts=context_input,
+                variants=[variant_input], context=given_input,
                 noise=self.noise)
 
         assert expected_output == tested_output
@@ -577,13 +575,13 @@ class TestEncoder(TestCase):
             fe.encode_variant({}, noise=-1.0)
             assert str(low_noise_variant_error.value)
             
-        with raises(ValueError) as high_noise_context_error:
+        with raises(ValueError) as high_noise_given_error:
             fe.encode_context({}, noise=99)
-            assert str(high_noise_context_error.value)
+            assert str(high_noise_given_error.value)
 
-        with raises(ValueError) as low_noise_context_error:
+        with raises(ValueError) as low_noise_given_error:
             fe.encode_context({}, noise=-1.0)
-            assert str(low_noise_context_error.value)
+            assert str(low_noise_given_error.value)
 
     def test_same_output_int_bool_1(self):
 
@@ -674,7 +672,6 @@ class TestEncoder(TestCase):
             first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_NEWLINE_TAB_RETURN_SYMBOLS_STRING_JSON'),
             second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_NEWLINE_TAB_RETURN_SYMBOLS_STRING_JSON'))
 
-
     # Test all primitive dicts: "string", true, false, 0, 0.0, 1, 1.0, -1, -1.0
     def test_primitive_dict_big_float(self):
 
@@ -694,7 +691,7 @@ class TestEncoder(TestCase):
                 "Input data for `test_big_float_variant` can`t be empty")
 
         variant_input = test_input.get('variant', None)
-        context_input = test_input.get('context', None)
+        given_input = test_input.get('given', None)
 
         if variant_input is None:
             raise ValueError(
@@ -711,7 +708,7 @@ class TestEncoder(TestCase):
 
         tested_output = \
             self.feature_encoder.encode_variants(
-                variants=[variant_input], contexts=context_input,
+                variants=[variant_input], context=given_input,
                 noise=self.noise)
 
         assert expected_output == tested_output
@@ -876,32 +873,32 @@ class TestEncoder(TestCase):
             test_case_filename=os.getenv(
                 "V6_FEATURE_ENCODER_TEST_NESTED_DICT_STRING_KEYS_JSON"))
 
-    def test_batch_variants_encoding_with_single_context(self):
+    def test_batch_variants_encoding_with_single_given(self):
         self._generic_test_batch_input_encoding(
             test_case_filename=os.getenv(
                 "V6_FEATURE_ENCODER_TEST_BATCH_ENCODING_JSONLINES"),
-            expected_output_data_key="single_context_test_output",
-            single_context_encoding=True, data_read_method='read')
+            expected_output_data_key="single_given_test_output",
+            single_given_encoding=True, data_read_method='read')
 
-    def test_batch_variants_encoding_with_multiple_contexts(self):
+    def test_batch_variants_encoding_with_multiple_givens(self):
         self._generic_test_batch_input_encoding(
             test_case_filename=os.getenv(
                 "V6_FEATURE_ENCODER_TEST_BATCH_ENCODING_JSONLINES"),
-            expected_output_data_key="multiple_context_test_output",
-            single_context_encoding=False, data_read_method='read')
+            expected_output_data_key="multiple_given_test_output",
+            single_given_encoding=False, data_read_method='read')
 
     def test_batch_jsonlines_encoding(self):
         self._generic_test_batch_input_encoding(
             test_case_filename=os.getenv(
                 "V6_FEATURE_ENCODER_TEST_BATCH_ENCODING_JSONLINES"),
             expected_output_data_key="plain_jsonlines_test_output",
-            single_context_encoding=False, plain_jsonlines_encoding=True,
+            single_given_encoding=False, plain_jsonlines_encoding=True,
             data_read_method='read')
 
-    def test_missing_features_filler_method(self):
+    def test_missing_features_filler_method_01(self):
         test_case_path = os.sep.join(
             [self.v6_test_python_specific_data_directory,
-             os.getenv("V6_FEATURE_ENCODER_TEST_BATCH_FILLING_MISSING_FEATURES")])
+             os.getenv("V6_FEATURE_ENCODER_TEST_BATCH_FILLING_MISSING_FEATURES_01")])
 
         test_case = \
             self._get_test_data(path_to_test_json=test_case_path, method="read")
@@ -914,7 +911,7 @@ class TestEncoder(TestCase):
             raise ValueError("Test input empty")
 
         test_variants = np.array([jl["variant"] for jl in test_jsonlines])
-        test_contexts = [jl.get("context", {}) for jl in test_jsonlines][0]
+        test_givens = [jl.get("given", {}) for jl in test_jsonlines][0]
 
         expected_output = test_case.get("test_output", None)
 
@@ -923,7 +920,40 @@ class TestEncoder(TestCase):
 
         encoded_variants = \
             self.feature_encoder.encode_variants(
-                variants=test_variants, contexts=test_contexts,
+                variants=test_variants, context=test_givens,
+                noise=self.noise)
+
+        missings_filled_array = self.feature_encoder.fill_missing_features(
+            encoded_variants=encoded_variants, feature_names=self.feature_names)
+
+        np.testing.assert_array_equal(expected_output, missings_filled_array)
+
+    def test_missing_features_filler_method_02(self):
+        test_case_path = os.sep.join(
+            [self.v6_test_python_specific_data_directory,
+             os.getenv("V6_FEATURE_ENCODER_TEST_BATCH_FILLING_MISSING_FEATURES_02")])
+
+        test_case = \
+            self._get_test_data(path_to_test_json=test_case_path, method="read")
+
+        self._set_model_properties_from_test_case(test_case=test_case)
+
+        test_jsonlines = test_case.get("test_case", None)
+
+        if test_jsonlines is None:
+            raise ValueError("Test input empty")
+
+        test_variants = np.array([jl["variant"] for jl in test_jsonlines])
+        test_givens = [jl.get("given", {}) for jl in test_jsonlines][0]
+
+        expected_output = test_case.get("test_output", None)
+
+        if expected_output is None:
+            raise ValueError("Expected output is empty")
+
+        encoded_variants = \
+            self.feature_encoder.encode_variants(
+                variants=test_variants, context=test_givens,
                 noise=self.noise)
 
         missings_filled_array = self.feature_encoder.fill_missing_features(
@@ -966,7 +996,7 @@ class TestEncoder(TestCase):
             input_data_key='test_case', expected_output_data_key='test_output',
             data_read_method='read')
 
-    def test_context_primitive_type_raises_type_error(self):
+    def test_given_primitive_type_raises_type_error(self):
 
         model_seed = 0
         noise = 0

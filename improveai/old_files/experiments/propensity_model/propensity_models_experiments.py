@@ -10,7 +10,7 @@ from xgboost import XGBClassifier
 
 sys.path.append('/home/os/Projects/upwork/python-sdk/improveai')
 
-from models.decision_models import DecisionModel
+from models.legacy.decision_models import DecisionModel
 
 if __name__ == '__main__':
 

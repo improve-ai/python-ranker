@@ -4,10 +4,10 @@ import numpy as np
 from time import time
 from typing import Dict, List
 
-from choosers.basic_choosers import BasicChooser
-# from feature_encoders.v5 import FeatureEncoder
-from feature_encoders.v6 import FeatureEncoder
-from utils.general_purpose_utils import constant, sigmoid
+
+from improveai.choosers.basic_choosers import BasicChooser
+from improveai.feature_encoder import FeatureEncoder
+from improveai.utils.general_purpose_utils import constant, sigmoid
 
 
 class BasicMLModelChooser(BasicChooser):
@@ -142,20 +142,11 @@ class BasicMLModelChooser(BasicChooser):
 
         """
 
-        # user_home_dir = os.path.expanduser('~')
-        # tmp_model_pth = user_home_dir + os.sep + 'tmp.mlmodel'
-        #
-        # with open(tmp_model_pth, 'wb') as tmp_mlmodel:
-        #     tmp_mlmodel.write(model_bytes)
-        #
-        # loaded_model_specs = ct.models.MLModel(tmp_model_pth)._spec
-        # os.remove(tmp_model_pth)
-
         spec = ct.proto.Model_pb2.Model()
         spec.ParseFromString(model_bytes)
         return ct.models.MLModel(spec)
 
-    def load_model(self, input_model_src: str, verbose: bool = True):
+    def load_model(self, input_model_src: str, verbose: bool = False):
         """
         Loads desired model from input path.
 
@@ -173,9 +164,13 @@ class BasicMLModelChooser(BasicChooser):
 
         """
 
+        failed_to_load = False
         try:
             if verbose:
-                print('Attempting to load: {} model'.format(input_model_src))
+                print('Attempting to load: {} model'.format(
+                    input_model_src if len(input_model_src) < 100 else
+                    str(input_model_src[:10]) + ' ... ' + str(
+                        input_model_src[-10:])))
 
             raw_model_src = self.get_model_src(model_src=input_model_src)
 
@@ -185,13 +180,19 @@ class BasicMLModelChooser(BasicChooser):
                 ct.models.MLModel(raw_model_src) \
                 if not isinstance(raw_model_src, bytes) \
                 else self._load_buffered_model(model_bytes=raw_model_src)
-            if verbose:
-                print('Model: {} successfully loaded'.format(input_model_src))
+
+            if verbose and not failed_to_load:
+                print('Model: {} successfully loaded'.format(
+                    input_model_src if len(input_model_src) < 100 else
+                    str(input_model_src[:10]) + ' ... ' + str(input_model_src[-10:])))
         except Exception as exc:
             if verbose:
                 print(
                     'When attempting to load the mode: {} the following error '
                     'occured: {}'.format(input_model_src, exc))
+
+        if failed_to_load:
+            raise RuntimeError('Model failed to load')
 
         self.model_metadata = self._get_model_metadata()
         self.model_seed = self._get_model_seed()

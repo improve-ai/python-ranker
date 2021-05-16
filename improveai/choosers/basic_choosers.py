@@ -4,9 +4,10 @@ import numpy as np
 from typing import Dict
 
 # from feature_encoders.v5 import FeatureEncoder
-from feature_encoders.v6 import FeatureEncoder
-from utils.url_utils import is_path_http_addr, get_model_bytes_from_url
-from utils.gz_utils import check_and_get_unzpd_model
+from improveai.feature_encoder import FeatureEncoder
+from improveai.utils.url_utils import is_path_http_addr, \
+    get_model_bytes_from_url
+from improveai.utils.gz_utils import check_and_get_unzpd_model
 
 
 class BasicChooser(ABC):

@@ -5,7 +5,6 @@ import numpy as np
 import os
 import pyximport
 from setuptools import Extension
-from uuid import uuid4
 import xxhash
 
 
@@ -22,7 +21,7 @@ if not macos_version():
         os.sep.join(str(os.path.relpath(__file__)).split(os.sep)[:-1])
 
     pth_str = \
-        '{}{}encoders_cython_utils/cythonized_feature_encoding.pyx'\
+        '{}{}encoder_cython_utils/cythonized_feature_encoding.pyx'\
         .format(
             os.sep.join(str(os.path.relpath(__file__)).split(os.sep)[:-1]),
             '' if not rel_pth_prfx else os.sep)
@@ -42,8 +41,7 @@ if not macos_version():
                 fast_feat_enc_ext,
                 language_level="3")})
 
-    import feature_encoders.encoders_cython_utils.cythonized_feature_encoding \
-        as cfe
+    import improveai.encoder_cython_utils.cythonized_feature_encoding as cfe
 
 
 xxhash3 = xxhash.xxh3_64_intdigest
@@ -54,7 +52,8 @@ class FeatureEncoder:
     def __init__(self, model_seed):
         if (model_seed < 0):
             raise TypeError(
-                "xxhash3_64 takes an unsigned 64-bit integer as seed. Seed must be greater than or equal to 0.")
+                "xxhash3_64 takes an unsigned 64-bit integer as seed. "
+                "Seed must be greater than or equal to 0.")
 
         # memoize commonly used seeds
         self.variant_seed = xxhash3("variant", seed=model_seed)
@@ -97,7 +96,7 @@ class FeatureEncoder:
         return features
 
     def encode_variants(
-            self, variants: Iterable, contexts: Iterable or dict or None,
+            self, variants: Iterable, context: Iterable or dict or None,
             noise: float, verbose: bool = False) -> Iterable:
         """
         Cythonized loop over provided variants and context(s).
@@ -106,7 +105,7 @@ class FeatureEncoder:
         ----------
         variants: Iterable
             collection of input variants to be encoded
-        contexts: Iterable or dict or None
+        context: Iterable or dict or None
             collection or a single item of input contexts to be encoded with
             variants
         noise: float
@@ -133,28 +132,30 @@ class FeatureEncoder:
             'variants': used_variants,
             'noise': noise}
 
-        if isinstance(contexts, dict) or contexts is None or contexts is {}:
+        if isinstance(context, dict) or context is None or context is {}:
             # process with single context
             encoder_method = self._encode_variants_single_context
-            encoder_method_kwargs['context'] = contexts
+            encoder_method_kwargs['context'] = context
 
-        elif not isinstance(contexts, str) and isinstance(contexts, Iterable):
-            used_contexts = contexts
+        elif not isinstance(context, str) and isinstance(context, Iterable):
+            used_contexts = context
             if not isinstance(variants, np.ndarray):
                 if verbose:
                     print(
                         'Provided `contexts` is Iterable and not of np.ndarray '
                         'type - attempting to convert')
-                used_contexts = np.array(contexts)
+                used_contexts = np.array(context)
 
             encoder_method = self._encode_variants_multiple_contexts
             encoder_method_kwargs['contexts'] = used_contexts
 
         else:
             raise TypeError(
-                'Unsupported contexts` type: {}'.format(type(contexts)))
+                'Unsupported contexts` type: {}'.format(type(context)))
 
-        return encoder_method(**encoder_method_kwargs)
+        encoded_variants = encoder_method(**encoder_method_kwargs)
+
+        return encoded_variants
 
     def encode_jsonlines(
             self, jsonlines: Iterable, noise: float, variant_key: str,
@@ -322,7 +323,8 @@ class FeatureEncoder:
                 variants=variants, contexts=contexts, noise=noise)
 
     def _encode_variants_multiple_context_numpy(
-            self, variants: np.ndarray, contexts: dict, noise: float) -> np.ndarray:
+            self, variants: np.ndarray, contexts: dict,
+            noise: float) -> np.ndarray:
         """
         Encodes variants with multiple contexts using numpy. Slower than cython
         implementation; Needed for now for macOS compat.
@@ -370,6 +372,7 @@ class FeatureEncoder:
             array of (num. variants, num. features) shape
 
         """
+
         if not macos_version():
             return cfe.fill_missing_features(
                 encoded_variants=encoded_variants, feature_names=feature_names)
@@ -474,7 +477,8 @@ class FeatureEncoder:
                 [(hash_index_map.get(feature_name, None), value)
                  for feature_name, value in encoded_variant.items()
                  if hash_index_map.get(feature_name, None)])
-        result[filler[:, 0].astype(int)] = filler[:, 1]
+        if len(filler) > 0:
+            result[filler[:, 0].astype(int)] = filler[:, 1]
 
         return result
 

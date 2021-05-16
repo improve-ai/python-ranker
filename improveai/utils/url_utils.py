@@ -44,7 +44,7 @@ def get_model_bytes_from_url(model_url: str) -> bytes:
             raise ('Unable to load model from: {} path'.format(model_url))
     except Exception as exc:
         print('While getting model got: {} error'.format(exc))
-        raise ('Unable to load model from: {} path'.format(model_url))
+        raise ValueError('Unable to load model from: {} path'.format(model_url))
 
     dled_model = model_resp.content
 

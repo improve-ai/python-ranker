@@ -144,8 +144,9 @@ cpdef np.ndarray fill_missing_features(
         #          for idx, val in enumerate(feature_names)
         #          if processed_variant.get(val, None)])
 
-        encoded_variants_array[encoded_variant_ixd, filler[:, 0].astype(int)] =\
-            filler[:, 1]
+        if len(filler) > 0:
+            encoded_variants_array[encoded_variant_ixd, filler[:, 0]\
+                .astype(int)] = filler[:, 1]
 
     return encoded_variants_array
 

@@ -46,12 +46,9 @@ if not macos_version():
                 fast_feat_enc_ext,
                 language_level="3")})
 
-    import choosers.choosers_cython_utils.fast_feat_enc as ffe
-
-from choosers.basic_choosers import BasicChooser
-# from feature_encoders.v5 import FeatureEncoder
-from feature_encoders.v6 import FeatureEncoder
-from utils.general_purpose_utils import constant, sigmoid
+from improveai.choosers.basic_choosers import BasicChooser
+from improveai.feature_encoder import FeatureEncoder
+from improveai.utils.general_purpose_utils import constant, sigmoid
 
 
 class BasicNativeXGBChooser(BasicChooser):
@@ -183,7 +180,7 @@ class BasicNativeXGBChooser(BasicChooser):
 
         self.model_objective = None
 
-    def load_model(self, input_model_src: str, verbose: bool = True):
+    def load_model(self, input_model_src: str, verbose: bool = False):
         """
         Loads desired model from input path.
 
@@ -201,7 +198,10 @@ class BasicNativeXGBChooser(BasicChooser):
 
         try:
             if verbose:
-                print('Attempting to load: {} model'.format(input_model_src))
+                print('Attempting to load: {} model'.format(
+                    input_model_src if len(input_model_src) < 100 else
+                    str(input_model_src[:10]) + ' ... ' + str(
+                        input_model_src[-10:])))
 
             raw_model_src = self.get_model_src(model_src=input_model_src)
 
@@ -212,7 +212,10 @@ class BasicNativeXGBChooser(BasicChooser):
             self.model = Booster()
             self.model.load_model(model_src)
             if verbose:
-                print('Model: {} successfully loaded'.format(input_model_src))
+                print('Model: {} successfully loaded'.format(
+                    input_model_src if len(input_model_src) < 100 else
+                    str(input_model_src[:10]) + ' ... ' + str(
+                        input_model_src[-10:])))
         except XGBoostError as xgbe:
             if verbose:
                 print('Attempting to read via pickle interface')
@@ -322,7 +325,7 @@ class BasicNativeXGBChooser(BasicChooser):
             #         self.feature_encoder, imputer_value))
             encoded_variants = \
                 self.feature_encoder.encode_variants(
-                    variants=np.array(variants, dtype=dict), contexts=context,
+                    variants=np.array(variants, dtype=dict), context=context,
                     noise=np.random.rand())
 
             missings_filled_v = \
@@ -433,7 +436,7 @@ class BasicNativeXGBChooser(BasicChooser):
 
         encoded_variant = \
             self.feature_encoder.encode_variants(
-                variants=np.array([variant]), contexts=context, noise=noise)
+                variants=np.array([variant]), context=context, noise=noise)
 
         missings_filled_v = \
             self.feature_encoder.fill_missing_features(

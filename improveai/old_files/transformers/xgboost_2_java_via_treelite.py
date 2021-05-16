@@ -5,7 +5,7 @@ import m2cgen as m2c
 
 if __name__ == '__main__':
     b = Booster()
-    src_model_pth = '../artifacts/test_artifacts/model.xgb'
+    src_model_pth = '../../artifacts/test_artifacts/model.xgb'
     b.load_model(src_model_pth)
 
     m = tl.Model.load(src_model_pth, model_format='xgboost')
