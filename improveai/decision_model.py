@@ -9,7 +9,7 @@ from improveai.choosers.basic_choosers import BasicChooser
 from improveai.choosers.mlmodel_chooser import BasicMLModelChooser
 from improveai.choosers.xgb_chooser import BasicNativeXGBChooser
 import improveai.decision as d
-import improveai.tracker as dt
+import improveai.decision_tracker as dt
 
 
 class DecisionModel:

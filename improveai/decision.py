@@ -3,7 +3,7 @@ import numpy as np
 from typing import Dict, List
 from warnings import warn
 
-import improveai.model as dm
+import improveai.decision_model as dm
 
 
 class Decision:

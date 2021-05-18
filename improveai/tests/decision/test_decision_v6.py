@@ -12,8 +12,8 @@ sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
 
 import improveai.decision as d
-import improveai.model as dm
-import improveai.tracker as dt
+import improveai.decision_model as dm
+import improveai.decision_tracker as dt
 from improveai.utils.general_purpose_utils import read_jsonstring_from_file
 
 
@@ -583,51 +583,3 @@ class TestDecisionV61(TestCase):
         expected_output = test_data.get('test_output', None)
 
         assert memoized_variant == expected_output
-
-    # TODO test get() with tracker to get achieve 100% coverage
-    # TODO determine message_id and history_id
-
-    # def test_get_with_tracker_track_runners_up(self):
-    #     decision = d.Decision(decision_model=self.decision_model_with_tracker)
-    #
-    #     assert decision.chosen is False
-    #     assert decision.model.tracker.track_runners_up is None
-    #
-    #     variants = np.ndarray([el for el in range(50)])
-    #
-    #     expected_track_body = {
-    #         self.tracker.TIMESTAMP_KEY: self.dummy_timestamp,
-    #         self.tracker.HISTORY_ID_KEY: self.dummy_history_id,
-    #         self.tracker.MESSAGE_ID_KEY: self.dummy_message_id,
-    #         self.tracker.TYPE_KEY: self.tracker.DECISION_TYPE,
-    #         self.tracker.MODEL_KEY: self.dummy_model_name,
-    #         self.tracker.VARIANT_KEY: variants[0],
-    #         self.tracker.VARIANTS_COUNT_KEY: len(variants),
-    #         self.tracker.RUNNERS_UP_KEY: top_runners_up,
-    #         self.tracker.SAMPLE_KEY: expected_sample,
-    #         self.tracker.GIVEN_KEY: givens}
-    #
-    #     def custom_matcher(request):
-    #         if request.text != expected_request_json:
-    #             print('request body:')
-    #             print(request.text)
-    #             print('expected body:')
-    #             print(expected_request_json)
-    #             return None
-    #         return True
-    #
-    #     with rqm.Mocker() as m:
-    #         m.post(self.track_url, text='success',
-    #                additional_matcher=custom_matcher)
-    #         np.random.seed(self.tracks_seed)
-    #         memoized_variant = \
-    #             decision.choose_from(variants=[None]).given(givens={}).get()
-    #
-    #         assert decision.model.tracker.track_runners_up is True
-    #
-    #     assert decision.chosen is True
-    #     assert memoized_variant is None
-    #
-    # def test_get_with_tracker_not_tracks_runners_up(self):
-    #     pass
-    #

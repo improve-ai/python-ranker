@@ -9,7 +9,7 @@ import sys
 sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
 
-import improveai.tracker as dtr
+import improveai.decision_tracker as dtr
 
 
 class TestDecisionTracker:

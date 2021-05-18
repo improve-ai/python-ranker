@@ -12,8 +12,8 @@ sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
 
 import improveai.decision as d
-import improveai.model as dm
-import improveai.tracker as dt
+import improveai.decision_model as dm
+import improveai.decision_tracker as dt
 from improveai.utils.general_purpose_utils import read_jsonstring_from_file
 
 

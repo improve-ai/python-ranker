@@ -4,7 +4,7 @@ import numpy as np
 import os
 import simplejson
 
-from improveai.model import DecisionModel
+from improveai.decision_model import DecisionModel
 from utils.general_purpose_utils import read_jsonstring_from_file
 
 
