@@ -228,7 +228,7 @@ class TestDecisionTracker:
 
         assert len(top_runners_up) == len(self.ranked_variants) - 1
         np.testing.assert_array_equal(
-            top_runners_up, self.ranked_variants[1:len(self.ranked_variants)])
+            top_runners_up, self.ranked_variants[1:])
 
     def test_get_sample_single_variant(self):
 

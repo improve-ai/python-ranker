@@ -361,6 +361,7 @@ class TestDecisionV61(TestCase):
 
             with warnings.catch_warnings(record=True) as w:
                 warnings.simplefilter("always")
+                np.random.seed(self.tracks_seed)
                 memoized_variant = \
                     decision.choose_from(variants=[None])\
                     .given(givens={}).get()
