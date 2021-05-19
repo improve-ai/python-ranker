@@ -439,6 +439,16 @@ class TestEncoder(TestCase):
             test_case_filename=os.getenv(
                 "V6_FEATURE_ENCODER_TEST_INT_1_JSON"))
 
+    def test_int64_small(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_INT64_SMALL_JSON"))
+
+    def test_int64_big(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_INT64_BIG_JSON"))
+
     def test_float_1(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
@@ -589,6 +599,18 @@ class TestEncoder(TestCase):
             first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_INT_1_JSON'),
             second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_BOOL_TRUE_JSON'))
 
+    def test_same_output_big_int64_primitive_dict_big_int64(self):
+
+        self._generic_test_encode_record_for_same_output_from_json_data(
+            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_INT64_BIG_JSON'),
+            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT64_BIG_JSON'))
+
+    def test_same_output_small_int64_primitive_dict_small_int64(self):
+
+        self._generic_test_encode_record_for_same_output_from_json_data(
+            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_INT64_SMALL_JSON'),
+            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT64_SMALL_JSON'))
+
     def test_same_output_int_bool_0(self):
         self._generic_test_encode_record_for_same_output_from_json_data(
             first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_INT_0_JSON'),
@@ -722,6 +744,16 @@ class TestEncoder(TestCase):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
                 "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_BIG_INT_POSITIVE_JSON"))
+
+    def test_primitive_dict_big_int64(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT64_BIG_JSON"))
+
+    def test_primitive_dict_small_int64(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT64_SMALL_JSON"))
 
     def test_primitive_dict_bool_false(self):
         self._generic_test_encode_record_from_json_data(

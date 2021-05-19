@@ -34,13 +34,13 @@ encoding `"variant"` and `"context"` values stored under colliding keys should b
 ```python
 
 example_complete_test_case = {
-    "test_case": {"variant": {...}, "givens": {...}},
-    "test_output": {...},
-    "model_seed": ...,
-    "noise": ...,
-    "variant_seed": ...,
-    "value_seed": ...,
-    "context_seed": ...
+   "test_case": {"variant": {...}, "givens": {...}},
+   "test_output": {...},
+   "model_seed": ...,
+   "noise": ...,
+   "variant_seed": ...,
+   "value_seed": ...,
+   "context_seed": ...
 }
 # example_complete_test_case.get("model_seed") 
 # will fetch value for "model_seed" key from example_complete_test_case 
@@ -50,24 +50,26 @@ test_input = example_complete_test_case.get("test_case")
 
 noise = example_complete_test_case.get("noise")
 
-encoded_variant = fe.encode_variant(variant=test_input.get("variant"), noise=noise)
+encoded_variant = fe.encode_variant(variant=test_input.get("variant"),
+                                    noise=noise)
 # lets assume encoded_variant = {'a': 1, 'b': 2}
 
-encoded_context = fe.encode_context(context=test_input.get("givens"), noise=noise)
+encoded_context = fe.encode_context(context=test_input.get("givens"),
+                                    noise=noise)
 # lets assume encoded_context = {'b': 1, 'c': 2}
 
 # in such case the following code:
 fully_encoded_variant = {}
 for k in set(encoded_context) | set(encoded_variant):
-    fully_encoded_variant[k] = \
-        encoded_context.get(k, 0) + encoded_variant.get(k, 0)
+   fully_encoded_variant[k] =
+   encoded_context.get(k, 0) + encoded_variant.get(k, 0)
 # should result in completely encoded test case
 # fully_encoded_variant = \ 
 #   {'a': 1, #  'a' comes from encoded_variant
 #    'b': 2 + 1,  #  'b' is a sum of values for key 'b' from both encoded_variant and encoded_context
 #    'c': 2 #  'c' comes from encoded_context
 #    }
- 
+
 
 ```
 
