@@ -28,16 +28,19 @@ To install python-sdk for Improve.ai:
 ## Import and initialize the SDK.
 
 ```python
-from improveai.trackers.decision_trackers import DecisionTracker
+from improveai import DecisionTracker
 
 endpoint_url = '<desired tracker endpoint url>'
+history_id = '<desired history id>'
 
 # Call with no API key
-tracker = DecisionTracker(track_url=endpoint_url)
+tracker = DecisionTracker(track_url=endpoint_url, history_id=history_id)
 
 # Call with API key
 api_key = '<API key for endpoint_url>'
-tracker = DecisionTracker(track_url=endpoint_url, api_key=api_key)
+tracker = \
+        DecisionTracker(
+            track_url=endpoint_url, api_key=api_key, history_id=history_id)
 ```
 
 To obtain the model bundle URL and api key, first deploy an Improve Model Gateway (link).
@@ -52,12 +55,13 @@ Currently SDK supports:
 To load desired model / model from desired endpoint (Improve.ai trains new model daily).
 
 ```python
-from improveai.models.decision_models import DecisionModel
+from improveai import DecisionModel
 
-model_kind = 'xgb_native'  # other allowed model type is `mlmodel` 
-model_pth = '<path / or / URL / to / model>'
+ 
+model_name = '<desired model name>'
+model_url = '<path / or / URL / to / model>'
 
-dm = DecisionModel(model_pth=model_pth, model_kind=model_kind)
+dm = DecisionModel(model_name=model_name).load(model_url=model_url)
 ```
 
 ### Hello World!
@@ -65,17 +69,16 @@ dm = DecisionModel(model_pth=model_pth, model_kind=model_kind)
 What is the best greeting?
 
 ```python
-from improveai.models.decision_models import DecisionModel
-from improveai.decisions.v6 import Decision
+from improveai import Decision, DecisionModel
+
 
 dm = None
 # If you already have a trained model you might want to use one 
 i_have_model = False
 if i_have_model:
-    model_kind = 'xgb_native'
-    model_pth = '<path / or / URL / to / model>'
+    model_url = '<path / or / URL / to / model>'
     
-    dm = DecisionModel(model_pth=model_pth, model_kind=model_kind)
+    dm = DecisionModel(model_url=model_url)
 
 # prepare JSON encodable variants to choose from:
 hello_variants = [
@@ -83,15 +86,13 @@ hello_variants = [
     {'text': "Hi World!"},
     {'text': "Howdy World!"}]
 
-d = Decision(variants=hello_variants, model=dm, model_name='greetings')
+d = Decision(model=dm)
 
 # Get the best greeting
 best_hello_world = d.best()
 
 # Train model using decision
-tracker.track_using_best_from(
-    decision=d, message_id='<unique msg id>', history_id='<unique history id>', 
-    timestamp='<datetime64 timestamp or None>')
+tracker.track(decision=d, timestamp='<datetime64 timestamp or None>')
 
 best_hello_world_revenue = 1  # award / revenue assigned to the 'best' variant
 
@@ -114,7 +115,8 @@ Namespace strings are opaque and can be any format you wish.
 How many bonus gems should we offer on our In App Purchase?
 
 ```python
-from improveai.decisions.v6 import Decision
+from improveai import Decision
+
 
 # prepare JSON encodable variants to choose from:
 gems_variants = [{'number': 1000}, {'number': 2000}, {'number': 3000}]
@@ -139,8 +141,8 @@ tracker.add_reward(
 ### Complex Objects
 
 ```python
-from improveai.models.decision_models import DecisionModel
-from improveai.decisions.v6 import Decision
+from improveai import Decision, DecisionModel
+
 
 dm = None
 # If you already have a trained model you might want to use one
@@ -170,8 +172,8 @@ Variants can be any JSON encodeable object of arbitrary complexity.
 If language is "cowboy", which greeting is best?
 
 ```python
-from improveai.models.decision_models import DecisionModel
-from improveai.decisions.v6 import Decision
+from improveai import Decision, DecisionModel
+ 
 
 dm = None
 # If you already have a trained model you might want to use one
@@ -206,9 +208,6 @@ You can think of contexts like: If `<context>` then `<variant>`.
 Instead of tracking rewards for every seperate decision namespace, we can assign a custom rewardKey during trackDecision for that specific decision to be trained on.
 
 ```python
-from improveai.decisions.v6 import Decision
-
-
 tracked_variant = {'song': "Hey Jude"}
 tracked_variant_context = {}  # some context for a given variant
 
@@ -226,8 +225,8 @@ tracker.track_using(
 
 
 ```python
-from improveai.models.decision_models import DecisionModel
-from improveai.decisions.v6 import Decision
+from improveai import Decision, DecisionModel
+ 
 
 dm = None
 # If you already have a trained model you might want to use one
@@ -263,8 +262,8 @@ tracker.add_reward(
  ### Sort Stuff
 
 ```python
-from improveai.models.decision_models import DecisionModel
-from improveai.decisions.v6 import Decision
+from improveai import Decision, DecisionModel
+ 
 
 dm = None
 # If you already have a trained model you might want to use one
