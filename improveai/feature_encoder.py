@@ -224,14 +224,23 @@ class FeatureEncoder:
 
         Parameters
         ----------
-        encoded_variants
-        extra_features
+        encoded_variants: list or np.ndarray
+            collection of encoded variants to be updated with extra features
+        extra_features: list or dict
+            payload to be appended to encoded variants
 
         Returns
         -------
+        None
+            None
 
         """
+
+        if extra_features is None:
+            return
+
         if isinstance(extra_features, dict):
+
             [encoded_variant.update(extra_features)
              for encoded_variant in encoded_variants]
             return
