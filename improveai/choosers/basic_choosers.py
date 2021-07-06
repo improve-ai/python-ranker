@@ -3,11 +3,10 @@ from copy import deepcopy
 import numpy as np
 from typing import Dict
 
-# from feature_encoders.v5 import FeatureEncoder
 from improveai.feature_encoder import FeatureEncoder
-from improveai.utils.url_utils import is_path_http_addr, \
+from improveai.utils.url_tools import is_path_http_addr, \
     get_model_bytes_from_url
-from improveai.utils.gz_utils import check_and_get_unzpd_model
+from improveai.utils.gzip_tools import check_and_get_unzpd_model
 
 
 class BasicChooser(ABC):
@@ -124,12 +123,12 @@ class BasicChooser(ABC):
         pass
 
     @abstractmethod
-    def score(self, variant, context, lookup_table, **kwargs):
+    def score(self, variants, givens, **kwargs):
         pass
 
-    @abstractmethod
-    def score_all(self, variants, context, **kwargs):
-        pass
+    # @abstractmethod
+    # def score_all(self, variants, context, **kwargs):
+    #     pass
 
     @abstractmethod
     def _get_model_metadata(self, **kwargs):
@@ -173,12 +172,8 @@ class BasicChooser(ABC):
 
         """
 
-        # lookup_table = self.model_metadata.get(self.lookup_table_key, None)
         model_seed = self.model_metadata.get(self.model_seed_key, None)
-        # if not lookup_table or not model_seed:
-        #     raise ValueError(
-        #         'Lookup table or model seed not present in context!')
-        # return FeatureEncoder(table=lookup_table, model_seed=model_seed)
+
         return FeatureEncoder(model_seed=model_seed)
 
     def _get_model_feature_names(self):
@@ -201,7 +196,7 @@ class BasicChooser(ABC):
         if not feature_names:
             raise ValueError('Feature names not in model metadata!')
         
-        return np.array(feature_names)
+        return feature_names
 
     def _get_model_seed(self):
         if not self.model_metadata:

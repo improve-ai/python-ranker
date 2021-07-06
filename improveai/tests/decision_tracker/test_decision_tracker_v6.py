@@ -180,8 +180,7 @@ class TestDecisionTracker:
         top_runners_up = \
             decision_tracker.top_runners_up(ranked_variants=[])
 
-        assert len(top_runners_up) == 0
-        np.testing.assert_array_equal(top_runners_up, [])
+        assert top_runners_up is None
 
     def test_top_runners_up_single_variant(self):
 
@@ -195,8 +194,7 @@ class TestDecisionTracker:
         top_runners_up = \
             decision_tracker.top_runners_up(ranked_variants=ranked_variants)
 
-        assert len(top_runners_up) == 0
-        np.testing.assert_array_equal(top_runners_up, [])
+        assert top_runners_up is None
 
     def test_top_runners_up_none_variant(self):
 
@@ -210,8 +208,7 @@ class TestDecisionTracker:
         top_runners_up = \
             decision_tracker.top_runners_up(ranked_variants=ranked_variants)
 
-        assert len(top_runners_up) == 0
-        np.testing.assert_array_equal(top_runners_up, [])
+        assert top_runners_up is None
 
     def test_top_runners_up_less_variants_than_runners_up(self):
 
@@ -349,7 +346,6 @@ class TestDecisionTracker:
         expected_track_body = {
             decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
             decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
-            # decision_tracker.MESSAGE_ID_KEY: self.dummy_message_id,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: None,
@@ -382,8 +378,6 @@ class TestDecisionTracker:
                 variants=[None],
                 givens=None, model_name=self.dummy_model_name,
                 variants_ranked_and_track_runners_up=False,
-                message_id=self.dummy_message_id,
-                history_id=self.dummy_history_id,
                 timestamp=self.dummy_timestamp)
 
             if resp is None:
@@ -406,7 +400,6 @@ class TestDecisionTracker:
         expected_track_body = {
             decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
             decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
-            # decision_tracker.MESSAGE_ID_KEY: self.dummy_message_id,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variant,
@@ -439,8 +432,6 @@ class TestDecisionTracker:
                 variants=variants,
                 givens=None, model_name=self.dummy_model_name,
                 variants_ranked_and_track_runners_up=False,
-                message_id=self.dummy_message_id,
-                history_id=self.dummy_history_id,
                 timestamp=self.dummy_timestamp)
 
             if resp is None:
@@ -464,7 +455,6 @@ class TestDecisionTracker:
         expected_track_body = {
             decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
             decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
-            # decision_tracker.MESSAGE_ID_KEY: self.dummy_message_id,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variants[0],
@@ -498,8 +488,6 @@ class TestDecisionTracker:
                 variants=variants,
                 givens=None, model_name=self.dummy_model_name,
                 variants_ranked_and_track_runners_up=True,
-                message_id=self.dummy_message_id,
-                history_id=self.dummy_history_id,
                 timestamp=self.dummy_timestamp)
 
             if resp is None:
@@ -524,7 +512,6 @@ class TestDecisionTracker:
         expected_track_body = {
             decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
             decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
-            # decision_tracker.MESSAGE_ID_KEY: None,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variants[0],
@@ -560,8 +547,6 @@ class TestDecisionTracker:
                 variants=variants,
                 givens=givens, model_name=self.dummy_model_name,
                 variants_ranked_and_track_runners_up=True,
-                message_id=self.dummy_message_id,
-                history_id=self.dummy_history_id,
                 timestamp=self.dummy_timestamp)
 
             if resp is None:
@@ -586,7 +571,6 @@ class TestDecisionTracker:
         expected_track_body = {
             decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
             decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
-            # decision_tracker.MESSAGE_ID_KEY: self.dummy_message_id,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variants[0],
@@ -621,8 +605,6 @@ class TestDecisionTracker:
                 variants=np.array(variants),
                 givens=givens, model_name=self.dummy_model_name,
                 variants_ranked_and_track_runners_up=True,
-                message_id=self.dummy_message_id,
-                history_id=self.dummy_history_id,
                 timestamp=self.dummy_timestamp)
 
             if resp is None:
@@ -642,7 +624,6 @@ class TestDecisionTracker:
         expected_track_body = {
             decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
             decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
-            # decision_tracker.MESSAGE_ID_KEY: self.dummy_message_id,
             decision_tracker.TYPE_KEY: decision_tracker.EVENT_TYPE,
             decision_tracker.EVENT_KEY: event_name}
 
@@ -670,8 +651,6 @@ class TestDecisionTracker:
             np.random.seed(self.sample_seed)
             resp = decision_tracker.track_event(
                 event_name=event_name,
-                message_id=self.dummy_message_id,
-                history_id=self.dummy_history_id,
                 timestamp=self.dummy_timestamp)
 
             if resp is None:
@@ -693,7 +672,6 @@ class TestDecisionTracker:
         expected_track_body = {
             decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
             decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
-            # decision_tracker.MESSAGE_ID_KEY: self.dummy_message_id,
             decision_tracker.TYPE_KEY: decision_tracker.EVENT_TYPE,
             decision_tracker.EVENT_KEY: event_name,
             decision_tracker.PROPERTIES_KEY: dummy_properties}
@@ -721,10 +699,7 @@ class TestDecisionTracker:
 
             np.random.seed(self.sample_seed)
             resp = decision_tracker.track_event(
-                event_name=event_name,
-                properties=dummy_properties,
-                message_id=self.dummy_message_id,
-                history_id=self.dummy_history_id,
+                event_name=event_name, properties=dummy_properties,
                 timestamp=self.dummy_timestamp)
 
             if resp is None:
@@ -746,11 +721,122 @@ class TestDecisionTracker:
         with raises(TypeError) as terr:
 
             decision_tracker.track_event(
-                event_name=event_name,
-                properties=dummy_properties,
-                message_id=self.dummy_message_id,
-                history_id=self.dummy_history_id,
+                event_name=event_name, properties=dummy_properties,
                 timestamp=self.dummy_timestamp)
 
             assert str(terr.value)
 
+    def test_track_2_variants(self):
+
+        decision_tracker = \
+            dtr.DecisionTracker(
+                track_url=self.track_url,  max_runners_up=self.max_runners_up,
+                history_id=self.dummy_history_id)
+
+        variants = [el for el in range(1, 3, 1)]
+        top_runners_up = variants[1:]
+        variant = variants[0]
+        expected_sample = None
+
+        expected_track_body = {
+            decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
+            decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
+            decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
+            decision_tracker.MODEL_KEY: self.dummy_model_name,
+            decision_tracker.VARIANT_KEY: variants[0],
+            decision_tracker.VARIANTS_COUNT_KEY: len(variants),
+            decision_tracker.RUNNERS_UP_KEY: top_runners_up,
+            # decision_tracker.SAMPLE_KEY: expected_sample
+        }
+
+        expected_request_json = json.dumps(expected_track_body, sort_keys=False)
+
+        def custom_matcher(request):
+            request_dict = deepcopy(request.json())
+            del request_dict[decision_tracker.MESSAGE_ID_KEY]
+
+            if json.dumps(request_dict, sort_keys=False) != \
+                    expected_request_json:
+
+                print('request body:')
+                print(request.text)
+                print('expected body:')
+                print(expected_request_json)
+                return None
+            return True
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success',
+                   additional_matcher=custom_matcher)
+
+            np.random.seed(self.sample_seed)
+            resp = decision_tracker.track(
+                variant=variant,
+                variants=variants,
+                givens=None, model_name=self.dummy_model_name,
+                variants_ranked_and_track_runners_up=True,
+                timestamp=self.dummy_timestamp)
+
+            if resp is None:
+                print('The input request body and expected request body mismatch')
+            assert resp is not None
+            assert resp.status_code == 200
+            assert resp.text == 'success'
+
+    def test_track_2_variants__max_runners_up_0(self):
+
+        max_runners_up = 0
+
+        decision_tracker = \
+            dtr.DecisionTracker(
+                track_url=self.track_url,  max_runners_up=max_runners_up,
+                history_id=self.dummy_history_id)
+
+        variants = [el for el in range(1, 3, 1)]
+        # TODO make sure to refactor after API doc is updated
+        variant = variants[0]
+        expected_sample = variants[1]
+
+        expected_track_body = {
+            decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
+            decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
+            decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
+            decision_tracker.MODEL_KEY: self.dummy_model_name,
+            decision_tracker.VARIANT_KEY: variants[0],
+            decision_tracker.VARIANTS_COUNT_KEY: len(variants),
+            decision_tracker.SAMPLE_KEY: expected_sample
+        }
+
+        expected_request_json = json.dumps(expected_track_body, sort_keys=False)
+
+        def custom_matcher(request):
+            request_dict = deepcopy(request.json())
+            del request_dict[decision_tracker.MESSAGE_ID_KEY]
+
+            if json.dumps(request_dict, sort_keys=False) != \
+                    expected_request_json:
+
+                print('request body:')
+                print(request.text)
+                print('expected body:')
+                print(expected_request_json)
+                return None
+            return True
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success',
+                   additional_matcher=custom_matcher)
+
+            np.random.seed(self.sample_seed)
+            resp = decision_tracker.track(
+                variant=variant,
+                variants=variants,
+                givens=None, model_name=self.dummy_model_name,
+                variants_ranked_and_track_runners_up=True,
+                timestamp=self.dummy_timestamp)
+
+            if resp is None:
+                print('The input request body and expected request body mismatch')
+            assert resp is not None
+            assert resp.status_code == 200
+            assert resp.text == 'success'

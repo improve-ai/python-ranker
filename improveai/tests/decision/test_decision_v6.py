@@ -14,7 +14,7 @@ sys.path.append(
 import improveai.decision as d
 import improveai.decision_model as dm
 import improveai.decision_tracker as dt
-from improveai.utils.general_purpose_utils import read_jsonstring_from_file
+from improveai.utils.general_purpose_tools import read_jsonstring_from_file
 
 
 class TestDecisionV61(TestCase):
@@ -256,7 +256,7 @@ class TestDecisionV61(TestCase):
         if test_case is None:
             raise ValueError('`test_case` can`t be empty')
 
-        test_variants = np.array(test_case.get('variants', None))
+        test_variants = test_case.get('variants', None)
 
         if test_variants is None:
             raise ValueError('`variants` can`t be empty')

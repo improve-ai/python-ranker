@@ -243,9 +243,10 @@ class DecisionModel:
                 count=len(variants))
 
         # TODO ask about the sigmoid correction
+
         scores = \
-            self.chooser.score_all(
-                variants=variants, context=givens, return_plain_results=True)
+            self.chooser.score(
+                variants=variants, givens=givens, return_plain_results=True)
         return scores
 
     @staticmethod

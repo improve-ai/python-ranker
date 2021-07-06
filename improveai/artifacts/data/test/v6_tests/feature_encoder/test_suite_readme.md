@@ -54,8 +54,8 @@ encoded_variant = fe.encode_variant(variant=test_input.get("variant"),
                                     noise=noise)
 # lets assume encoded_variant = {'a': 1, 'b': 2}
 
-encoded_context = fe.encode_context(context=test_input.get("givens"),
-                                    noise=noise)
+encoded_context = fe.encode_givens(givens=test_input.get("givens"),
+                                   noise=noise)
 # lets assume encoded_context = {'b': 1, 'c': 2}
 
 # in such case the following code:

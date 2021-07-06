@@ -14,7 +14,7 @@ sys.path.append(
 import improveai.decision as d
 import improveai.decision_model as dm
 import improveai.decision_tracker as dt
-from improveai.utils.general_purpose_utils import read_jsonstring_from_file
+from improveai.utils.general_purpose_tools import read_jsonstring_from_file
 
 
 class TestDecisionModel(TestCase):

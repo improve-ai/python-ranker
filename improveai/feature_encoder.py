@@ -1,53 +1,58 @@
 from collections.abc import Iterable
-from Cython.Build import cythonize
 import math
 import numpy as np
-import os
-import pyximport
-from setuptools import Extension
 import xxhash
 
+# TODO commented out until python-SDK is not available as pip package
+# import improveai.settings as improve_settings
+# from improveai.encoder_cython_utils import cfe
 
-try:
-    # This is done for backward compatibilty
-    from coremltools.models.utils import macos_version
-except Exception as exc:
-    from coremltools.models.utils import _macos_version as macos_version
-
-
-if not macos_version():
-
-    rel_pth_prfx = \
-        os.sep.join(str(os.path.relpath(__file__)).split(os.sep)[:-1])
-
-    pth_str = \
-        '{}{}encoder_cython_utils/cythonized_feature_encoding.pyx'\
-        .format(
-            os.sep.join(str(os.path.relpath(__file__)).split(os.sep)[:-1]),
-            '' if not rel_pth_prfx else os.sep)
-
-    fast_feat_enc_ext = \
-        Extension(
-            'cythonized_feature_encoding',
-            sources=[pth_str],
-            define_macros=[
-                ("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")],
-            include_dirs=[np.get_include()])
-
-    pyximport.install(
-        setup_args={
-            'install_requires': ["numpy"],
-            'ext_modules': cythonize(
-                fast_feat_enc_ext,
-                language_level="3")})
-
-    import improveai.encoder_cython_utils.cythonized_feature_encoding as cfe
-
+# TODO using until python-SDK is not available as pip package
+#  For now trainer should have `USE_CYTHON_BACKEND` set to False (if set to
+#  True code will fail because it needs some dependencies from python-SDK)
+USE_CYTHON_BACKEND = False
+cfe = None
 
 xxhash3 = xxhash.xxh3_64_intdigest
 
 
 class FeatureEncoder:
+    """
+    This class serves as a preprocessor which allows to
+    convert event data in form of a JSON line (variants, givens and
+    extra features) to the tabular format expected on input by XGBoost.
+
+    Short summary of methods:
+     - encode_givens() -> encodes givens / variant metadata to dict of
+       feature name -> float pairs
+
+     - encode_variant() -> encodes variant to dict of feature name -> float pairs
+
+     - encode_feature_vector() -> encodes provided variant and givens;
+       appends extra features to the encoded variant dict;
+       converts encoded variant to numpy array using provided feature names
+
+     - add_noise() -> sprinkles each value of the input dict with small noise
+
+     - _encode_variant_and_givens() -> fully encodes provided variant and givens
+
+     - encode_variants() -> encodes multiple variants with one givens dict to
+       numpy array of dicts. If not on macOS attempts to use cython backend.
+
+     - _encode_variants_single_context() -> helper method - if cython support
+       is available performs encoding of multiple variants with single givens
+       with cython, otherwise uses numpy
+
+     - encoded_variant_to_np() -> converts single encoded variant to numpy
+       array filling missing features along the way
+
+     - encoded_variants_to_np() -> converts list of encoded variants to numpy
+       array; fills missing features in each encoded variant with np.NaNs along
+       the way. If not on macOS uses cython backend, otherwise goes for numpy
+
+    """
+
+    VARIANT_METADATA_PARAMETER_NAME = 'givens'
 
     def __init__(self, model_seed):
         if (model_seed < 0):
@@ -65,422 +70,193 @@ class FeatureEncoder:
             raise ValueError(
                 'Provided `noise` is out of allowed bounds <0.0, 1.0>')
 
-    def encode_context(self, context, noise):
+    def encode_givens(self, givens, noise=0.0, into=None):
 
         self._check_noise_value(noise=noise)
 
-        features = {}
-
-        if context is not None and not isinstance(context, dict):
+        if givens is not None and not isinstance(givens, dict):
             raise TypeError(
                 "Only dict type is supported for context encoding. {} type was "
-                "provided.".format(type(context)))
+                "provided.".format(type(givens)))
 
-        encode(context, self.context_seed, shrink(noise), features)
+        if into is None:
+            into = {}
 
-        return features
+        encode(givens, self.context_seed, shrink(noise), into)
 
-    def encode_variant(self, variant, noise):
+        return into
 
+    def encode_variant(self, variant, noise=0.0, into=None):
+
+        # TODO maybe this check is only a waste of runtime
         self._check_noise_value(noise=noise)
 
-        features = {}
+        if into is None:
+            into = {}
 
         small_noise = shrink(noise)
 
         if isinstance(variant, dict):
-            encode(variant, self.variant_seed, small_noise, features)
+            encode(variant, self.variant_seed, small_noise, into)
         else:
-            encode(variant, self.value_seed, small_noise, features)
+            encode(variant, self.value_seed, small_noise, into)
 
-        return features
+        return into
 
-    def encode_variants(
-            self, variants: Iterable, context: Iterable or dict or None,
-            noise: float, verbose: bool = False) -> Iterable:
-        """
-        Cythonized loop over provided variants and context(s).
-        Returns array of encoded dicts.
-        Parameters
-        ----------
-        variants: Iterable
-            collection of input variants to be encoded
-        context: Iterable or dict or None
-            collection or a single item of input contexts to be encoded with
-            variants
-        noise: float
-            noise param from 0-1 uniform distribution
-        verbose: bool
-            debug prints toggle
-        Returns
-        -------
-        np.ndarray
-            array of encoded dicts
-        """
+    def encode_feature_vector(
+            self, variant: dict = None, givens: dict = None,
+            extra_features: dict = None, feature_names: list or np.ndarray = None,
+            noise: float = 0.0, into: np.ndarray = None):
 
-        used_variants = variants
-        if not isinstance(variants, np.ndarray):
-            if verbose:
-                print(
-                    'Provided `variants` are not of np.ndarray type - '
-                    'attempting to convert')
-            used_variants = np.empty(len(variants), dtype=object)
-            used_variants[:] = [el for el in variants]
-            # used_variants = np.array(variants)
+        if into is None:
+            raise ValueError('`into` can`t be None')
 
-        encoder_method_kwargs = {
-            'variants': used_variants,
-            'noise': noise}
+        # encode givens
+        encoded_givens = \
+            self.encode_givens(givens=givens, noise=noise, into=dict())
+        # encoded variant and givens
+        encoded_variant = \
+            self.encode_variant(
+                variant=variant, noise=noise, into=encoded_givens)
 
-        if isinstance(context, dict) or context is None or context is {}:
-            # process with single context
-            encoder_method = self._encode_variants_single_context
-            encoder_method_kwargs['context'] = context
+        if extra_features:
+            if not isinstance(extra_features, dict):
+                raise TypeError(
+                    'Provided `extra_features` is not a dict but: {}'
+                    .format(extra_features))
 
-        elif not isinstance(context, str) and isinstance(context, Iterable):
-            used_contexts = context
-            if not isinstance(variants, np.ndarray):
-                if verbose:
-                    print(
-                        'Provided `contexts` is Iterable and not of np.ndarray '
-                        'type - attempting to convert')
-                used_contexts = np.array(context)
+            encoded_variant.update(extra_features)
 
-            encoder_method = self._encode_variants_multiple_contexts
-            encoder_method_kwargs['contexts'] = used_contexts
-
+        # n + nan = nan so you'll have to check for nan values on into
+        # TODO once python-SDK is available from pip this should be changed
+        # if improve_settings.USE_CYTHON_BACKEND:
+        if USE_CYTHON_BACKEND:
+            # i7 10th gen time per iter - 7.464-05 [s] / 0.96% of pure python time
+            cfe.encoded_variant_into_np_row(
+                encoded_variant=encoded_variant, feature_names=feature_names,
+                into=into)
         else:
-            raise TypeError(
-                'Unsupported contexts` type: {}'.format(type(context)))
+            # i7 10th gen time per iter - 7.755e-05 [s]
+            hash_index_map = \
+                {feature_hash: index for index, feature_hash
+                 in enumerate(feature_names)}
 
-        encoded_variants = encoder_method(**encoder_method_kwargs)
+            filler = \
+                np.array(
+                    [(hash_index_map.get(feature_name, None), value)
+                     for feature_name, value in encoded_variant.items()
+                     if hash_index_map.get(feature_name, None) is not None])
 
-        return encoded_variants
+            # sum into with encoded variants treating nans in sums as zeros
+            subset_index = filler[:, 0].astype(int)
 
-    def encode_jsonlines(
-            self, jsonlines: Iterable, noise: float, variant_key: str,
-            context_key: str, verbose: bool = False,  **kwargs) -> np.ndarray:
-        """
-        Wrapper around cythonized jsonlines encoder
-        Parameters
-        ----------
-        jsonlines: Iterable
-            collection of jsonlines to be encoded
-        variant_key: str
-            key with which `variant` can be extracted from a jsonline
-        context_key: str
-            key with which `context` can be extracted from a jsonline
-        verbose: bool
-            debug prints toggle
-        kwargs
-        Returns
-        -------
-        np.ndarray
-            array of encoded variants
-        """
+            into[subset_index] = np.nansum(
+                np.array([into[subset_index], filler[:, 1]]), axis=0)
 
-        if not variant_key or not context_key:
-            raise ValueError(
-                '`variant_key` and `context_key must both be provided and not '
-                'empty / None')
+    def add_noise(self, into, noise):
+        small_noise = shrink(noise)
+        for feature_name, value in into.items():
+            into[feature_name] = sprinkle(value, small_noise)
 
-        if not isinstance(jsonlines, np.ndarray):
-            if verbose:
-                print(
-                    'Provided `jsonlines` are not of np.ndarray type - '
-                    'attempting to convert')
-            jsonlines = np.array(jsonlines)
-
-        if not macos_version():
-            return cfe.encode_jsonlines(
-                jsonlines=jsonlines, noise=noise, variant_key=variant_key,
-                context_key=context_key, feature_encoder=self.encode_variant,
-                context_encoder=self.encode_context)
-        else:
-            return self._encode_jsonlines_numpy(
-                jsonlines=jsonlines, noise=noise, variant_key=variant_key,
-                context_key=context_key)
-
-    def _encode_jsonlines_numpy(
-            self, jsonlines: np.ndarray, noise: float, variant_key: str,
-            context_key: str) -> np.ndarray:
-        """
-        Numpy based jsonlines batch encoder. Slower than cython but used for now
-        due to macOS - numpy - cython problems
-
-        Parameters
-        ----------
-        jsonlines: np.ndarray
-            array of jsonlines to be encoded
-        noise: float
-            noise parameter for encoding
-        variant_key: str
-            key to extract variant from jsonline / record
-        context_key: str
-            key to extract context form jsonline / record
-
-        Returns
-        -------
-        np.ndarray
-            array of dicts with encoded records
-
-        """
-
-        encoded_variants = np.empty(len(jsonlines), dtype=object)
-        encoded_variants[:] = [
-            self.fully_encode_single_variant(
-                variant=record.get(variant_key, None),
-                context=record.get(context_key, None), noise=noise)
-            for record in jsonlines]
-
-        return encoded_variants
-
-    def _encode_variants_single_context(
-            self, variants: Iterable, context: dict, noise: float,
-            **kwargs) -> np.ndarray:
-        """
-        Wrapper around cythonized single-context variant encoder
-        Parameters
-        ----------
-        variants: Iterable
-            collection of variants to be encoded
-        context: dict
-            context to be encoded
-        kwargs: dict
-            kwargs
-        Returns
-        -------
-        np.ndarray
-            array of encoded variants
-        """
-
-        if not macos_version():
-            return cfe.encode_variants_single_context(
-                variants=variants, context=context, noise=noise,
-                feature_encoder=self.encode_variant,
-                context_encoder=self.encode_context)
-        else:
-            return self._encode_variants_single_context_numpy(
-                variants=variants, context=context, noise=noise)
-
-    def _encode_variants_single_context_numpy(
-            self, variants: np.ndarray, context: dict, noise: float):
-        """
-        Encodes variants with single context using numpy. Slower than cython
-        implementation; Needed for now for macOS compat.
-
-        Parameters
-        ----------
-        variants: np.ndarray
-            array of variants to be encoded
-        context: dict
-            context dict
-        noise: float
-            noise parameter for the encoding
-
-        Returns
-        -------
-        np.ndarray
-            array of encoded variants
-
-        """
-
-        encoded_variants = np.empty(len(variants), dtype=object)
-        encoded_variants[:] = [
-            self.fully_encode_single_variant(
-                variant=variant, context=context, noise=noise)
-            for variant in variants]
-
-        return encoded_variants
-
-    def _encode_variants_multiple_contexts(
-            self, variants: Iterable, contexts: Iterable, noise: float,
-            **kwargs) -> np.ndarray:
-
-        """
-        Wrapper around cythonized multi-context variant encoder
-        Parameters
-        ----------
-        variants: Iterable
-            collection of variants to encode
-        contexts: Iterable
-            collection of contexts to encode
-        kwargs: dict
-            kwargs
-        Returns
-        -------
-        np.ndarray
-            array of encoded variants
-        """
-
-        if not macos_version():
-            return cfe.encode_variants_multiple_contexts(
-                variants=variants, contexts=contexts, noise=noise,
-                feature_encoder=self.encode_variant,
-                context_encoder=self.encode_context)
-        else:
-            return self._encode_variants_multiple_context_numpy(
-                variants=variants, contexts=contexts, noise=noise)
-
-    def _encode_variants_multiple_context_numpy(
-            self, variants: np.ndarray, contexts: dict,
+    def encode_to_np_matrix(
+            self, variants: Iterable, multiple_givens: Iterable,
+            multiple_extra_features: Iterable, feature_names: Iterable,
             noise: float) -> np.ndarray:
         """
-        Encodes variants with multiple contexts using numpy. Slower than cython
-        implementation; Needed for now for macOS compat.
+        Provided list of variants and corresponding lists of givens and extra
+        features encodes variants completely and converts to numpy array
 
         Parameters
         ----------
-        variants: np.ndarray
-            array of variants to be encoded
-        contexts: np.ndarray
-            array of context dicts
+        variants: list
+            list of variants to be encoded
+        multiple_givens: list
+            list of givens - givens[i] will be used to encode variants[i]
+        multiple_extra_features: list
+            list of extra_features - multiple_extra_features[i] will be used
+            to encode variants[i]
+        feature_names: list
+            names of features expected by the model
         noise: float
-            noise parameter for the encoding
+            noise to be used when encoding data
 
         Returns
         -------
         np.ndarray
-            array of encoded variants
-
-        """
-        encoded_variants = np.empty(len(variants), dtype=object)
-        encoded_variants[:] = [
-            self.fully_encode_single_variant(
-                variant=variant, context=context, noise=noise)
-            for variant, context in zip(variants, contexts)]
-
-        return encoded_variants
-
-    def fill_missing_features(
-            self, encoded_variants: np.ndarray,
-            feature_names: np.ndarray) -> np.ndarray:
-        """
-        Fills missing features in provided encoded variants. Needs model feature
-        names. Missings are filled with np.nan
-
-        Parameters
-        ----------
-        encoded_variants: np.ndarray
-            array of encoded vairants
-        feature_names: np.ndarray
-            array of feature names from model which will be used for predictions
-
-        Returns
-        -------
-        np.ndarray
-            array of (num. variants, num. features) shape
+            2D numpy array of encoded variants
 
         """
 
-        if not macos_version():
-            return cfe.fill_missing_features(
+        if not isinstance(variants, list):
+            variants = list(variants)
+
+        if not isinstance(multiple_givens, list):
+            multiple_givens = list(multiple_givens)
+
+        if not isinstance(multiple_extra_features, list):
+            multiple_extra_features = list(multiple_extra_features)
+
+        if not isinstance(feature_names, list):
+            feature_names = list(feature_names)
+
+        # TODO once python-SDK is available from pip this should be changed
+        # if improve_settings.USE_CYTHON_BACKEND:
+        if USE_CYTHON_BACKEND:
+            # i7 10th gen time per variant - 2.778e-05 [s] |
+            # 33% of pure python implementation runtime per iter
+            encoded_variants = cfe.encode_variants_multiple_givens(
+                variants=variants, multiple_givens=multiple_givens,
+                multiple_extra_features=multiple_extra_features, noise=noise,
+                feature_encoder=self.encode_variant,
+                givens_encoder=self.encode_givens)
+            encoded_variants_array = cfe.encoded_variants_to_np(
                 encoded_variants=encoded_variants, feature_names=feature_names)
         else:
-            return self._fill_missing_features_numpy(
-                encoded_variants=encoded_variants, feature_names=feature_names)
+            # i7 10th gen time per variant - 7.995e-05 [s]
+            encoded_variants_array = np.full((len(variants), len(feature_names)), np.nan)
 
-    def _fill_missing_features_numpy(
-            self, encoded_variants: np.ndarray,
-            feature_names: np.ndarray) -> np.ndarray:
+            [self.encode_feature_vector(
+                variant=variant, givens=givens, extra_features=extra_features,
+                feature_names=feature_names, noise=noise, into=into)
+             for variant, givens, extra_features, into
+             in zip(variants, multiple_givens, multiple_extra_features,
+                    encoded_variants_array)]
+
+        return encoded_variants_array
+
+    def add_extra_features(
+            self, encoded_variants: np.ndarray, extra_features: dict or list):
         """
-        Plain numpy missing features filler. Used for macOS compat
+        Once variants are encoded this method can be used to quickly append
+        extra features
 
         Parameters
         ----------
-        encoded_variants: np.ndarray
-            array of encoded vairants
-        feature_names: np.ndarray
-            array of feature names from model which will be used for predictions
+        encoded_variants
+        extra_features
 
         Returns
         -------
-        np.ndarray
-            array of (num. variants, num. features) shape
 
         """
-        no_missing_features_variants = \
-            np.empty((len(encoded_variants), len(feature_names)))
-        no_missing_features_variants[:] = [
-            self.fill_missing_features_single_variant(
-                encoded_variant=encoded_variant, feature_names=feature_names)
-            for encoded_variant in encoded_variants]
-        return no_missing_features_variants
+        if isinstance(extra_features, dict):
+            [encoded_variant.update(extra_features)
+             for encoded_variant in encoded_variants]
+            return
 
-    def fully_encode_single_variant(
-            self, variant: dict, context: dict, noise: float,
-            verbose: bool = False) -> dict:
-        """
-        Encodes variant and context and 'concatenates' results of encoding
-        (sums values in case of key collision)
+        if isinstance(extra_features, list):
+            extra_features_list = extra_features
 
-        Parameters
-        ----------
-        variant: dict
-            variant to be encoded
-        context: dict
-            context to be encoded
-        noise: float
-            noise parameter for the encoding
-        verbose: bool
-            logging parameter
+        elif isinstance(extra_features, np.ndarray) or \
+                isinstance(extra_features, tuple):
+            extra_features_list = list(extra_features)
+        else:
+            raise TypeError(
+                'Only dict, list, tuple and np.ndarray types are supported')
 
-        Returns
-        -------
-        dict
-            result of context and variant encoding
-
-        """
-
-        # encode context
-        encoded_context = {}
-        if context:
-            encoded_context = self.encode_context(context=context, noise=noise)
-
-        # encode variant
-        encoded_variant = self.encode_variant(variant=variant, noise=noise)
-
-        # add
-        return \
-            {k: encoded_context.get(k, 0) + encoded_variant.get(k, 0)
-             for k in set(encoded_context) | set(encoded_variant)}
-
-    def fill_missing_features_single_variant(
-            self, encoded_variant: dict,
-            feature_names: np.ndarray) -> np.ndarray:
-        """
-        Fills missing features in a single variant
-
-        Parameters
-        ----------
-        encoded_variant: dict
-            fully encoded single variant
-        feature_names: np.ndarray
-            array of feature names from model which will be used for predictions
-
-        Returns
-        -------
-        np.ndarray
-            single row of a shape (1, num. features) which contains fully
-            encoded variant
-
-        """
-
-        result = np.empty(shape=(len(feature_names), ))
-        result[:] = np.nan
-        hash_index_map = \
-            {feature_hash: index for index, feature_hash
-             in enumerate(feature_names)}
-
-        filler = \
-            np.array(
-                [(hash_index_map.get(feature_name, None), value)
-                 for feature_name, value in encoded_variant.items()
-                 if hash_index_map.get(feature_name, None)])
-        if len(filler) > 0:
-            result[filler[:, 0].astype(int)] = filler[:, 1]
-
-        return result
+        [encoded_variant.update(single_extra_features)
+         for encoded_variant, single_extra_features in
+         zip(encoded_variants, extra_features_list)]
 
 
 # - None, json null, {}, [], nan, are treated as missing feature_names and ignored.
@@ -491,15 +267,21 @@ class FeatureEncoder:
 # - a small amount of noise is incorporated to avoid overfitting
 # - feature names are 8 hexidecimal characters
 def encode(object_, seed, small_noise, features):
-    if isinstance(object_, (int, float)):  # bool is an instanceof int
 
+    if isinstance(object_, (int, float)):  # bool is an instanceof int
         if math.isnan(object_):  # nan is treated as missing feature, return
             return
 
         feature_name = hash_to_feature_name(seed)
 
-        features[feature_name] = features.get(feature_name, 0.0) + sprinkle(
-            object_, small_noise)
+        previous_object_ = \
+            _get_previous_value(
+                feature_name=feature_name, into=features,
+                small_noise=small_noise)
+
+        features[feature_name] = \
+            sprinkle(object_ + previous_object_, small_noise)
+
         return
 
     if isinstance(object_, str):
@@ -507,30 +289,74 @@ def encode(object_, seed, small_noise, features):
 
         feature_name = hash_to_feature_name(seed)
 
-        features[feature_name] = features.get(feature_name, 0.0) + sprinkle(
-            ((hashed & 0xffff0000) >> 16) - 0x8000, small_noise)
+        previous_hashed = \
+            _get_previous_value(
+                feature_name=feature_name, into=features,
+                small_noise=small_noise)
+
+        features[feature_name] = \
+            sprinkle(
+                (((hashed & 0xffff0000) >> 16) - 0x8000) + previous_hashed,
+                small_noise)
 
         hashed_feature_name = hash_to_feature_name(hashed)
 
+        previous_hashed_for_feature_name = \
+            _get_previous_value(
+                feature_name=hashed_feature_name, into=features,
+                small_noise=small_noise)
+
         features[hashed_feature_name] = \
-            features.get(hashed_feature_name, 0.0) + sprinkle(
-            (hashed & 0xffff) - 0x8000, small_noise)
+            sprinkle(
+                ((hashed & 0xffff) - 0x8000) + previous_hashed_for_feature_name,
+                small_noise)
+
         return
 
     if isinstance(object_, dict):
         for key, value in object_.items():
-            encode(value, xxhash3(key, seed=seed), small_noise, features)
+            encode(
+                value, xxhash3(key, seed=seed), small_noise, features)
         return
 
     if isinstance(object_, (list, tuple)):
-
         for index, item in enumerate(object_):
             encode(
                 item, xxhash3(index.to_bytes(8, byteorder='big'), seed=seed),
                 small_noise, features)
+        # return
         return
-
     # None, json null, or unsupported type. Treat as missing feature, return
+
+
+def _get_previous_value(
+        feature_name: str, into: dict, small_noise: float):
+    """
+    Gets previous, 'unsprinkled' value of <feature_name> feature
+    from <features> dict
+    
+    Parameters
+    ----------
+    feature_name: str
+        name of a feature which previous value is desired
+    into: dict
+        dict containing current results of encoding
+    small_noise: float
+        small noise used to sprinkle
+
+    Returns
+    -------
+    float
+        'unsprinkled' value of desired feature
+
+    """
+
+    previous_sprinkled_object_ = into.get(feature_name, 0.0)
+
+    if previous_sprinkled_object_ != 0.0:
+        return reverse_sprinkle(previous_sprinkled_object_, small_noise)
+    else:
+        return 0.0
 
 
 def hash_to_feature_name(hash_):
@@ -544,3 +370,70 @@ def shrink(noise):
 def sprinkle(x, small_noise):
     return (x + small_noise) * (1 + small_noise)
 
+
+def reverse_sprinkle(sprinkled_x, small_noise):
+    """
+    Retrieves true value from sprinkled one
+
+    Parameters
+    ----------
+    sprinkled_x: float
+        sprinkled value
+    small_noise: float
+        noise used to calculate sprinkled_Xx
+
+    Returns
+    -------
+    float
+        true value of x which was used to calculate sprinkled_x
+
+    """
+    return sprinkled_x / (1 + small_noise) - small_noise
+
+# this code was used to check getless speedup
+# def encode_ignoring_collisions(object_, seed, small_noise, features):
+#     if isinstance(object_, (int, float)):  # bool is an instanceof int
+#
+#         if math.isnan(object_):  # nan is treated as missing feature, return
+#             return 0
+#
+#         feature_name = hash_to_feature_name(seed)
+#         features[feature_name] = sprinkle(object_, small_noise)
+#
+#         return 1
+#
+#     if isinstance(object_, str):
+#         hashed = xxhash3(object_, seed=seed)
+#
+#         feature_name = hash_to_feature_name(seed)
+#         hashed_feature_name = hash_to_feature_name(hashed)
+#
+#         features[feature_name] = \
+#             sprinkle(((hashed & 0xffff0000) >> 16) - 0x8000, small_noise)
+#         features[hashed_feature_name] = \
+#             sprinkle((hashed & 0xffff) - 0x8000, small_noise)
+#
+#         return 2
+#
+#     if isinstance(object_, dict):
+#         encoded_count = 0
+#
+#         for key, value in object_.items():
+#             encoded_count += \
+#                 encode_ignoring_collisions(
+#                     value, xxhash3(key, seed=seed), small_noise, features)
+#
+#         return encoded_count
+#
+#     if isinstance(object_, (list, tuple)):
+#         encoded_count = 0
+#
+#         for index, item in enumerate(object_):
+#             encoded_count += \
+#                 encode_ignoring_collisions(
+#                     item, xxhash3(index.to_bytes(8, byteorder='big'), seed=seed),
+#                     small_noise, features)
+#
+#         return encoded_count
+#
+#     # None, json null, or unsupported type. Treat as missing feature, return

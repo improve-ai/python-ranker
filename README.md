@@ -12,18 +12,31 @@ Improve.ai performs fast machine learning on any `JSON` encodable data structure
 
 Python-SDK for Improve.ai is currently available only on github.
 
-To install python-sdk for Improve.ai:
+o install python-sdk for Improve.ai:
+ 0. install prerequisites:
+    - Fedora:
+      - sudo yum groupinstall "Development Tools"
+      - sudo yum install python3-devel python3-Bottleneck python3-numpy
+    - Amazon Linux 2:
+      - sudo yum update
+      - yum groupinstall "Development Tools"
+      - sudo yum install python3-devel numpy
+    - Ubuntu (18.04 and 20.04):
+      - sudo apt install build-essential make gcc python3-dev python3-numpy python3-venv
  1. clone repo: git clone https://github.com/improve-ai/python-sdk
- 2. make sure you are in the cloned (python-sdk) folder 
+ 2. make sure you are in the cloned (python-sdk) folder
  3. activate your virtualenv (if you are using one, if not you can skip this step; using venv is advised)
- 4. install requirements:
+ 4. install wheel and cmake:
     
-    pip3 install -r requirements.txt    
+    pip3 install wheel cmake --no-cache-dir
+    
+ 5. install requirements:
+    
+    pip3 install -r requirements.txt --no-cache-dir   
 
- 5. run the following commands to install improve_ai python package:
+ 6. run the following commands to install improve_ai python package:
     
     python3 setup.py build_ext --inplace && python3 setup.py install
-
 
 ## Import and initialize the SDK.
 
@@ -423,4 +436,4 @@ Improve.ai is copyright Mind Blown Apps, LLC. All rights reserved.  May not be u
 
 [comment]: <> (## Cython compatibility issues fix -> symlink numpy)
 
-[comment]: <> (sudo ln -s /usr/lib/python3.7/dist-packages/numpy/core/include/numpy /usr/include/numpy)
+[comment]: <> (sudo ln -s /usr/lib/python3.9/dist-packages/numpy/core/include/numpy /usr/include/numpy)

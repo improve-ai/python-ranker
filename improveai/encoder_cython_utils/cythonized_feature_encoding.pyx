@@ -6,116 +6,111 @@ import numpy as np
 cimport numpy as np
 
 
-@cython.boundscheck(False)
-cpdef np.ndarray encode_variants_single_context(
-        np.ndarray variants, dict context, double noise, object feature_encoder,
-        object context_encoder):
+cpdef encoded_variant_into_np_row(
+        dict encoded_variant, list feature_names, np.ndarray into):
+    """
+    Fills in `into` row using provided variants and `feature_names`
 
-    cdef dict encoded_context = context_encoder(context, noise)
+    Parameters
+    ----------
+    encoded_variant: dict
+        dict containing fully encoded variant (variant + givens)
+    feature_names: np.ndarray or list
+        collection of desired feature names
+    into: np.ndarray
+        array to be filled with encoded
+
+    Returns
+    -------
+    None
+        None
+
+    """
+
+    cdef dict hash_index_map = \
+        {feature_hash: index for index, feature_hash
+         in enumerate(feature_names)}
+
+    # cdef np.ndarray filler =
+    cdef np.ndarray filler = \
+        np.array(
+            [(hash_index_map.get(feature_name, None), value)
+             for feature_name, value in encoded_variant.items()
+             if hash_index_map.get(feature_name, None) is not None])
+
+    # sum into with encoded variants treating nans in sums as zeros
+
+    cdef np.ndarray subset_index = np.empty(len(filler))
+
+    if len(filler) > 0:
+
+        subset_index = filler[:, 0].astype(int)
+
+        into[subset_index] = np.nansum(
+            np.array([into[subset_index], filler[:, 1]]), axis=0)
+
+@cython.boundscheck(False)
+cpdef np.ndarray encode_variants_single_givens(
+        list variants, dict givens, double noise,
+        object variants_encoder, object givens_encoder):
+
+    cdef dict into = {}
+
+    cdef dict encoded_givens = \
+        givens_encoder(givens, noise, into=dict(into))
+
     cdef int variants_count = len(variants)
     cdef np.ndarray res = np.empty((variants_count, ), dtype=object)
-    cdef dict encoded_variant = {}
+
     cdef dict fully_encoded_variant = {}
 
     for variant_idx in range(variants_count):
 
-        encoded_variant = \
-            feature_encoder(variants[variant_idx], noise)
-
-        fully_encoded_variant = {}
-
-        for k in set(encoded_context) | set(encoded_variant):
-            fully_encoded_variant[k] = \
-                encoded_context.get(k, 0) + encoded_variant.get(k, 0)
-
-        # fully_encoded_variant = \
-        #     {k: encoded_context.get(k, 0) + encoded_variant.get(k, 0)
-        #       for k in set(encoded_context) | set(encoded_variant)}
+        fully_encoded_variant = \
+            variants_encoder(
+                variants[variant_idx], noise, into=dict(encoded_givens))
 
         res[variant_idx] = fully_encoded_variant
 
     return res
 
 @cython.boundscheck(False)
-cpdef np.ndarray encode_variants_multiple_contexts(
-        np.ndarray variants, np.ndarray contexts, double noise,
-        object feature_encoder, object context_encoder):
+cpdef np.ndarray encode_variants_multiple_givens(
+        list variants, list multiple_givens, list multiple_extra_features,
+        double noise, object feature_encoder, object givens_encoder):
 
-    assert len(variants) == len(contexts)
+    assert len(variants) == len(multiple_givens)
     cdef int records_count = len(variants)
     cdef np.ndarray res = np.empty((records_count,), dtype=object)
 
-    cdef dict context = {}
+    cdef dict empty_into = {}
 
-    cdef dict encoded_variant = {}
-    cdef dict encoded_context = {}
+    cdef dict givens = {}
+    cdef dict extra_features = {}
+    cdef dict encoded_givens = {}
     cdef dict fully_encoded_variant = {}
 
     for variant_idx in range(records_count):
 
-        encoded_context = {}
-        context = contexts[variant_idx]
-        if context:
-            encoded_context = \
-                context_encoder(context, noise)
+        encoded_givens = {}
+        givens = multiple_givens[variant_idx]
+        if givens:
+            encoded_givens = \
+                givens_encoder(givens, noise, into=dict(empty_into))
 
-        encoded_variant = \
-            feature_encoder(variants[variant_idx], noise)
+        res[variant_idx] = \
+            feature_encoder(variants[variant_idx], noise, into=encoded_givens)
 
-        if not encoded_context:
-            fully_encoded_variant = encoded_variant
-        else:
-            fully_encoded_variant = {}
-
-            for k in set(encoded_context) | set(encoded_variant):
-                fully_encoded_variant[k] = \
-                    encoded_context.get(k, 0) + encoded_variant.get(k, 0)
-
-        res[variant_idx] = fully_encoded_variant
+        extra_features = multiple_extra_features[variant_idx]
+        if extra_features:
+            res[variant_idx].update(extra_features)
 
     return res
 
 
 @cython.boundscheck(False)
-cpdef np.ndarray encode_jsonlines(
-        np.ndarray jsonlines, double noise, str variant_key, str context_key,
-        object feature_encoder, object context_encoder):
-
-    cdef int records_count = len(jsonlines)
-    cdef np.ndarray res = np.empty((records_count,), dtype=object)
-
-    cdef dict encoded_variant = {}
-    cdef dict encoded_context = {}
-    cdef dict fully_encoded_variant = {}
-
-    for jsonline_idx in range(records_count):
-
-        encoded_context = {}
-        context = jsonlines[jsonline_idx].get(context_key, {})
-        if context:
-            encoded_context = \
-                context_encoder(context, noise)
-
-        encoded_variant = \
-            feature_encoder(
-                jsonlines[jsonline_idx].get(variant_key, None), noise)
-
-        if not encoded_context:
-            fully_encoded_variant = encoded_variant
-        else:
-            fully_encoded_variant = {}
-
-            for k in set(encoded_context) | set(encoded_variant):
-                fully_encoded_variant[k] = \
-                    encoded_context.get(k, 0) + encoded_variant.get(k, 0)
-
-        res[jsonline_idx] = fully_encoded_variant
-
-    return res
-
-@cython.boundscheck(False)
-cpdef np.ndarray fill_missing_features(
-        np.ndarray encoded_variants, np.ndarray feature_names):
+cpdef np.ndarray encoded_variants_to_np(
+        np.ndarray encoded_variants, list feature_names):
 
     cdef np.ndarray encoded_variants_array = \
         np.empty(shape=(len(encoded_variants), len(feature_names)), dtype=float)
@@ -134,7 +129,7 @@ cpdef np.ndarray fill_missing_features(
             np.array(
                 [(name_to_index.get(feature_name, None), value)
                  for feature_name, value in processed_variant.items()
-                 if name_to_index.get(feature_name, None)])
+                 if name_to_index.get(feature_name, None) is not None])
 
         # this might be faster if there are less feature names than keys in
         # processed variants
@@ -149,4 +144,3 @@ cpdef np.ndarray fill_missing_features(
                 .astype(int)] = filler[:, 1]
 
     return encoded_variants_array
-

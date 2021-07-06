@@ -36,6 +36,6 @@ if __name__ == '__main__':
           packages=find_packages(exclude=['*tests*']),
           install_requires=["numpy", "setuptools", "wheel", "Cython"],
           ext_modules=cythonize(fast_feat_enc_ext, language_level="3"),
-          include_dirs=np.get_include(),
+          include_dirs=[np.get_include()],
           package_data={'improveai': [pth_str]},
           include_package_data=True)

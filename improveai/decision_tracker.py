@@ -8,7 +8,7 @@ from typing import Dict
 from uuid import uuid4
 from warnings import warn
 
-from improveai.utils.general_purpose_utils import constant
+from improveai.utils.general_purpose_tools import constant
 
 
 class DecisionTracker:
@@ -189,6 +189,9 @@ class DecisionTracker:
         top_runners_up = ranked_variants[
              1:min(len(ranked_variants), self.max_runners_up + 1)]\
             if ranked_variants is not None else None
+        # If `top_runners_up` == [] return None
+        if not top_runners_up:
+            return None
 
         returned_top_runners_up = top_runners_up
         if isinstance(top_runners_up, np.ndarray):
@@ -197,7 +200,7 @@ class DecisionTracker:
         return returned_top_runners_up
 
     def track(
-            self, variant: object, variants: list, givens: dict,
+            self, variant: object, variants: list or np.ndarray, givens: dict,
             model_name: str, variants_ranked_and_track_runners_up: bool,
             timestamp: object = None, **kwargs):
         """
@@ -207,7 +210,7 @@ class DecisionTracker:
         ----------
         variant: object
             chosen variant
-        variants: np.ndarray
+        variants: list or np.ndarray
             collection of tracked variants
         givens: dict:
             givens for variants
@@ -240,8 +243,12 @@ class DecisionTracker:
 
         if variants is not None and variants != [None] \
                 and variants_ranked_and_track_runners_up:
-            body[self.RUNNERS_UP_KEY] = \
-                self.top_runners_up(ranked_variants=variants)
+
+            runners_up = self.top_runners_up(ranked_variants=variants)
+
+            if runners_up is not None:
+                body[self.RUNNERS_UP_KEY] = \
+                    self.top_runners_up(ranked_variants=variants)
 
         sample = \
             self.get_sample(
@@ -436,6 +443,7 @@ class DecisionTracker:
         # serialization is a must have for this requests
         try:
             payload_json = json.dumps(body)
+            # print(payload_json)
 
         except Exception as exc:
             warn("Data serialization error: {}\nbody: {}".format(exc, body))
@@ -444,7 +452,6 @@ class DecisionTracker:
         error = None
         resp = None
         try:
-
             resp = \
                 rq.post(url=self.track_url, data=payload_json, headers=headers)
 
@@ -462,7 +469,8 @@ class DecisionTracker:
                 content = json.dumps(body)
 
                 if content:
-                    user_info[self.PAYLOAD_FOR_ERROR_KEY] = content
+                    user_info[self.PAYLOAD_FOR_ERROR_KEY] = content \
+                        if len(content) <= 1000 else content[:100]
 
                 error = str(error) if not isinstance(error, str) else error
                 error += \
@@ -487,3 +495,50 @@ class DecisionTracker:
                 'not happen (?)')
 
         return resp
+
+
+if __name__ == '__main__':
+    track_url = 'https://pt5w416qc4.execute-api.us-east-2.amazonaws.com/track'
+
+    dt = DecisionTracker(track_url=track_url, history_id='dummy-history-id-2')
+
+    # resp = decision_tracker.track(
+    #     variant=variant,
+    #     variants=np.array(variants),
+    #     givens=givens, model_name=self.dummy_model_name,
+    #     variants_ranked_and_track_runners_up=True,
+    #     message_id=self.dummy_message_id,
+    #     history_id=self.dummy_history_id,
+    #     timestamp=self.dummy_timestamp)
+
+    variants = [el for el in range(100)]
+    variants[0] = ''.join(['x' for _ in range(int(10110000/10))])
+
+    with open('dummy.json', 'w') as dj:
+        q = json.dumps(variants[0])
+        dj.write(q)
+
+    # np.random.shuffle(variants)
+
+    import base64
+
+
+    def base64len(s):
+        encoded_str = base64.b64decode(s)
+        return len(encoded_str)
+    # large_variant = ''.join(['x' for _ in range(1011100)])
+
+    import time
+
+    for _ in range(20):
+
+        resp = dt.track(
+            variant=variants[0],
+            variants=variants[:1],
+            givens={}, model_name='dummy-model-2',
+            variants_ranked_and_track_runners_up=False,
+            timestamp=str(np.datetime_as_string(
+                        np.datetime64(datetime.now()), unit='ms', timezone='UTC')))
+
+        print(resp.status_code)
+        time.sleep(2)

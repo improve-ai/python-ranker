@@ -1,5 +1,7 @@
+from copy import deepcopy
 import coremltools as ct
 import json
+from numbers import Number
 import numpy as np
 from time import time
 from typing import Dict, List
@@ -7,7 +9,8 @@ from typing import Dict, List
 
 from improveai.choosers.basic_choosers import BasicChooser
 from improveai.feature_encoder import FeatureEncoder
-from improveai.utils.general_purpose_utils import constant, sigmoid
+from improveai.utils.general_purpose_tools import constant, sigmoid
+from improveai.utils.choosers_feature_encoding_tools import encoded_variant_to_np
 
 
 class BasicMLModelChooser(BasicChooser):
@@ -217,10 +220,10 @@ class BasicMLModelChooser(BasicChooser):
         return json.loads(
             self.model.user_defined_metadata[self.model_metadata_key])
 
-    def score(
+    def _score(
             self, variant: Dict[str, object], noise: float,
-            context: Dict[str, object] = None,
-            encoded_context: Dict[str, object] = None,
+            givens: Dict[str, object] = None,
+            encoded_givens: Dict[str, object] = None,
             mlmodel_score_res_key: str = 'target',
             mlmodel_class_proba_key: str = 'classProbability',
             target_class_label: int = 1, imputer_value: float = np.nan,
@@ -235,9 +238,9 @@ class BasicMLModelChooser(BasicChooser):
         ----------
         variant: dict
             scored case / row as a dict
-        context: dict
+        givens: dict
             dict with lookup table and seed
-        encoded_context: Dict[str, float]
+        encoded_givens: Dict[str, float]
             already encoded context dict
         mlmodel_score_res_key: str
             key in mlmodel results dict under which result float is stored
@@ -260,44 +263,25 @@ class BasicMLModelChooser(BasicChooser):
 
         """
 
-        # if not encoded_context:
-            # encoded_context = \
-            #     self.feature_encoder.encode_features({'context': context})
+        if not encoded_givens:
+            encoded_givens = \
+                self.feature_encoder.encode_givens(givens=givens, noise=noise)
 
-        # encoded_jsonlines = \
-        #     self.feature_encoder.encode_features({'variant': variant})
-        #
-        # all_encoded_features = deepcopy(encoded_context)
-        # all_encoded_features.update(encoded_jsonlines)
+        # encoded_variant = \
+        #     self.feature_encoder.encode_variant(
+        #         variant=variant, noise=noise,
+        #         previous_sprinkles=previous_sprinkles)
 
-        # all_feats_count = self._get_features_count()
-        # all_feat_names = \
-        #     np.array(['f{}'.format(el) for el in range(all_feats_count)])
-
-        # rename feature_names
-        # missings_filled_v = \
-        #     self._get_missings_filled_variants(
-        #         input_dict=encoded_jsonlines, all_feats_count=all_feats_count,
-        #         missing_filler=imputer_value)
-
-        # _get_nan_filled_encoded_variant
-
-        # noise = np.random.rand()
-
-        if not encoded_context:
-            encoded_context = \
-                self.feature_encoder.encode_context(
-                    context=context, noise=noise)
-
-        encoded_variant = \
-            self.feature_encoder.encode_variant(variant=variant, noise=noise)
+        # encoded_variant_and_context = \
+        #     {k: encoded_context.get(k, 0) + encoded_variant.get(k, 0)
+        #      for k in set(encoded_context) | set(encoded_variant)}
 
         encoded_variant_and_context = \
-            {k: encoded_context.get(k, 0) + encoded_variant.get(k, 0)
-             for k in set(encoded_context) | set(encoded_variant)}
+            self.feature_encoder.encode_variant(
+                variant=variant, noise=noise, into=encoded_givens)
 
         missings_filled_v = \
-            self.feature_encoder.fill_missing_features_single_variant(
+            encoded_variant_to_np(
                 encoded_variant=encoded_variant_and_context,
                 feature_names=self.model_feature_names)
 
@@ -355,7 +339,7 @@ class BasicMLModelChooser(BasicChooser):
         sigmoid_correction: bool
             should sigmoid correction be applied
         sigmoid_const: float
-            sigmoids intercept
+            sigmoid`s intercept
 
         Returns
         -------
@@ -398,9 +382,9 @@ class BasicMLModelChooser(BasicChooser):
                     sigmoid(x=score, logit_const=sigmoid_const)
                     if sigmoid_correction else score, 0]
 
-    def score_all(
+    def score(
             self, variants: List[Dict[str, object]],
-            context: Dict[str, object],
+            givens: Dict[str, object],
             mlmodel_score_res_key: str = 'target',
             mlmodel_class_proba_key: str = 'classProbability',
             target_class_label: int = 1, imputer_value: float = np.nan,
@@ -415,9 +399,7 @@ class BasicMLModelChooser(BasicChooser):
         ----------
         variants: list
             list of variants to scores
-        context: dic        variant: dict
-            scored case / row as a dict
-        context: dict
+        givens: dict
             dict with lookup table and seed
         mlmodel_score_res_key: str
             key in mlmodel results dict under which result float is stored
@@ -447,13 +429,14 @@ class BasicMLModelChooser(BasicChooser):
         #     self.feature_encoder.encode_features({'context': context})
 
         noise = np.random.rand()
+
         encoded_context = \
-            self.feature_encoder.encode_context(context=context, noise=noise)
+            self.feature_encoder.encode_givens(givens=givens, noise=noise)
 
         scores = \
-            np.array([self.score(
-                variant=variant, noise=noise, context=context,
-                encoded_context=encoded_context,
+            np.array([self._score(
+                variant=variant, noise=noise, givens=givens,
+                encoded_givens=encoded_context,
                 mlmodel_score_res_key=mlmodel_score_res_key,
                 mlmodel_class_proba_key=mlmodel_class_proba_key,
                 target_class_label=target_class_label,
@@ -484,7 +467,7 @@ if __name__ == '__main__':
         variants = json.loads(''.join(json_str))
 
     noise = np.random.rand()
-    res = mlmc.score(variant=variants[0], context=context, noise=noise)
+    res = mlmc._score(variant=variants[0], givens=context, noise=noise)
     print('res')
     print(res)
     # 0.0012913734900291936
@@ -497,7 +480,7 @@ if __name__ == '__main__':
     for _ in range(batch_size):
         # res = mlmc.score(variant=variants[0], context=context)
         res_all = \
-            mlmc.score_all(variants=variants, context=context)
+            mlmc.score(variants=variants, givens=context)
     et = time()
     print((et - st) / batch_size)
     input('sanity check')
