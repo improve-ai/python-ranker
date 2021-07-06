@@ -1379,3 +1379,36 @@ class TestEncoder(TestCase):
 
             assert os.getenv("V6_FEATURE_ENCODER_ENCODE_FEATURE_VECTOR_WRONG_TYPE_OF_EXTRA_FEATURES_TYPEERROR_MSG") \
                    in str(type_err.value)
+
+    def test_add_multiple_extra_features(self):
+
+        dummy_encoded_variants = [{'0': 1, '1': 1} for _ in range(3)]
+
+        dummy_extra_features = [{'3': 3} for _ in range(3)]
+        dummy_extra_features[1] = {}
+        dummy_extra_features[2] = None
+
+        fe = FeatureEncoder(model_seed=0)
+        fe.add_extra_features(
+            encoded_variants=dummy_encoded_variants,
+            extra_features=dummy_extra_features)
+
+        expected_result = [{'0': 1, '1': 1} for _ in range(3)]
+        expected_result[0] = {'0': 1, '1': 1, '3': 3}
+
+        assert expected_result == dummy_encoded_variants
+
+    def test_add_single_extra_features(self):
+
+        dummy_encoded_variants = [{'0': 1, '1': 1} for _ in range(3)]
+
+        dummy_extra_features = {'3': 3}
+
+        fe = FeatureEncoder(model_seed=0)
+        fe.add_extra_features(
+            encoded_variants=dummy_encoded_variants,
+            extra_features=dummy_extra_features)
+
+        expected_result = [{'0': 1, '1': 1, '3': 3} for _ in range(3)]
+
+        assert expected_result == dummy_encoded_variants

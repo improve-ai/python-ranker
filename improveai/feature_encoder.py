@@ -216,7 +216,8 @@ class FeatureEncoder:
         return encoded_variants_array
 
     def add_extra_features(
-            self, encoded_variants: np.ndarray, extra_features: dict or list):
+            self, encoded_variants: list or np.ndarray,
+            extra_features: dict or list):
         """
         Once variants are encoded this method can be used to quickly append
         extra features
@@ -237,7 +238,6 @@ class FeatureEncoder:
 
         if isinstance(extra_features, list):
             extra_features_list = extra_features
-
         elif isinstance(extra_features, np.ndarray) or \
                 isinstance(extra_features, tuple):
             extra_features_list = list(extra_features)
@@ -246,6 +246,7 @@ class FeatureEncoder:
                 'Only dict, list, tuple and np.ndarray types are supported')
 
         [encoded_variant.update(single_extra_features)
+         if single_extra_features is not None else encoded_variant
          for encoded_variant, single_extra_features in
          zip(encoded_variants, extra_features_list)]
 
