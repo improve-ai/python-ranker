@@ -12,7 +12,7 @@ Improve.ai performs fast machine learning on any `JSON` encodable data structure
 
 Python-SDK for Improve.ai is currently available only on github.
 
-o install python-sdk for Improve.ai:
+To install python-sdk for Improve.ai:
 
  0. install prerequisites:
     - Fedora:
