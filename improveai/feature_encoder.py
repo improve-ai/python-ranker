@@ -34,21 +34,12 @@ class FeatureEncoder:
 
      - add_noise() -> sprinkles each value of the input dict with small noise
 
-     - _encode_variant_and_givens() -> fully encodes provided variant and givens
+     - encode_to_np_matrix()  -> encodes collection of variants with collection
+       of givens and extra features to the numpy 2D array / matrix. If desired
+       uses cython backed (works much faster)
 
-     - encode_variants() -> encodes multiple variants with one givens dict to
-       numpy array of dicts. If not on macOS attempts to use cython backend.
-
-     - _encode_variants_single_context() -> helper method - if cython support
-       is available performs encoding of multiple variants with single givens
-       with cython, otherwise uses numpy
-
-     - encoded_variant_to_np() -> converts single encoded variant to numpy
-       array filling missing features along the way
-
-     - encoded_variants_to_np() -> converts list of encoded variants to numpy
-       array; fills missing features in each encoded variant with np.NaNs along
-       the way. If not on macOS uses cython backend, otherwise goes for numpy
+     - add_extra_features() - helper method for adding extra features to already
+       encoded variants
 
     """
 
@@ -63,7 +54,7 @@ class FeatureEncoder:
         # memoize commonly used seeds
         self.variant_seed = xxhash3("variant", seed=model_seed)
         self.value_seed = xxhash3("$value", seed=self.variant_seed)
-        self.context_seed = xxhash3("context", seed=model_seed)
+        self.givens_seed = xxhash3("context", seed=model_seed)
 
     def _check_noise_value(self, noise: float):
         if noise > 1.0 or noise < 0.0:
@@ -82,7 +73,7 @@ class FeatureEncoder:
         if into is None:
             into = {}
 
-        encode(givens, self.context_seed, shrink(noise), into)
+        encode(givens, self.givens_seed, shrink(noise), into)
 
         return into
 
