@@ -54,7 +54,7 @@ class FeatureEncoder:
         # memoize commonly used seeds
         self.variant_seed = xxhash3("variant", seed=model_seed)
         self.value_seed = xxhash3("$value", seed=self.variant_seed)
-        self.givens_seed = xxhash3("context", seed=model_seed)
+        self.givens_seed = xxhash3("givens", seed=model_seed)
 
     def _check_noise_value(self, noise: float):
         if noise > 1.0 or noise < 0.0:
@@ -361,7 +361,7 @@ def _get_previous_value(
 
 
 def hash_to_feature_name(hash_):
-    return hex(hash_ >> 32)[2:]  # chop off '0x'. Could be further optimized
+    return '%0*x' % (8, (hash_ >> 32))
 
 
 def shrink(noise):
@@ -390,51 +390,3 @@ def reverse_sprinkle(sprinkled_x, small_noise):
 
     """
     return sprinkled_x / (1 + small_noise) - small_noise
-
-# this code was used to check getless speedup
-# def encode_ignoring_collisions(object_, seed, small_noise, features):
-#     if isinstance(object_, (int, float)):  # bool is an instanceof int
-#
-#         if math.isnan(object_):  # nan is treated as missing feature, return
-#             return 0
-#
-#         feature_name = hash_to_feature_name(seed)
-#         features[feature_name] = sprinkle(object_, small_noise)
-#
-#         return 1
-#
-#     if isinstance(object_, str):
-#         hashed = xxhash3(object_, seed=seed)
-#
-#         feature_name = hash_to_feature_name(seed)
-#         hashed_feature_name = hash_to_feature_name(hashed)
-#
-#         features[feature_name] = \
-#             sprinkle(((hashed & 0xffff0000) >> 16) - 0x8000, small_noise)
-#         features[hashed_feature_name] = \
-#             sprinkle((hashed & 0xffff) - 0x8000, small_noise)
-#
-#         return 2
-#
-#     if isinstance(object_, dict):
-#         encoded_count = 0
-#
-#         for key, value in object_.items():
-#             encoded_count += \
-#                 encode_ignoring_collisions(
-#                     value, xxhash3(key, seed=seed), small_noise, features)
-#
-#         return encoded_count
-#
-#     if isinstance(object_, (list, tuple)):
-#         encoded_count = 0
-#
-#         for index, item in enumerate(object_):
-#             encoded_count += \
-#                 encode_ignoring_collisions(
-#                     item, xxhash3(index.to_bytes(8, byteorder='big'), seed=seed),
-#                     small_noise, features)
-#
-#         return encoded_count
-#
-#     # None, json null, or unsupported type. Treat as missing feature, return

@@ -10,7 +10,7 @@
             "history_id": "49a82cf7",
             "message_id": "729904c4d2874a",
             "timestamp": "2021-02-07 21:33:23.403871232",
-            "given": {
+            "givens": {
                 "device_manufacturer": "Apple",
                 "version_name": "4.3",
                 "os_name": "ios",
@@ -33,7 +33,7 @@
             "history_id": "49a82cf7",
             "message_id": "729904c4d2874a",
             "timestamp": "2021-02-07 21:33:23.403871232",
-            "given": {
+            "givens": {
                 "device_manufacturer": "Apple",
                 "version_name": "4.3",
                 "os_name": "ios",
@@ -2678,7 +2678,7 @@
         NaN,
         NaN,
         NaN,
-        -9465.064468600976,
+        NaN,
         NaN,
         NaN,
         NaN,

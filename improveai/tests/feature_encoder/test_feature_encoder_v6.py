@@ -148,7 +148,7 @@ class TestEncoder(TestCase):
 
     def _generic_test_encode_record_from_json_data(
             self, test_case_filename: str, input_data_key: str = 'test_case',
-            variant_key: str = 'variant', given_key: str = 'context',
+            variant_key: str = 'variant', givens_key: str = 'givens',
             expected_output_data_key: str = 'test_output',
             convert_result_to_float32: bool = False):
 
@@ -169,7 +169,7 @@ class TestEncoder(TestCase):
         if variant_input is None:
             raise ValueError('Test input for variant is empty')
 
-        given_input = test_input.get(given_key, None)
+        given_input = test_input.get(givens_key, None)
 
         expected_output = test_case.get(expected_output_data_key, None)
 
@@ -193,7 +193,7 @@ class TestEncoder(TestCase):
             provided_first_test_case: dict = None,
             provided_second_test_case: dict = None,
             input_data_key: str = 'test_case', variant_key: str = 'variant',
-            given_key: str = 'context', convert_result_to_float32: bool = False):
+            givens_key: str = 'givens', convert_result_to_float32: bool = False):
 
         first_test_case_path = os.sep.join(
             [self.v6_test_suite_data_directory, first_test_case_filename])
@@ -213,7 +213,7 @@ class TestEncoder(TestCase):
                 "First test input for is empty")
 
         first_variant_input = first_test_input.get(variant_key, None)
-        first_given_input = first_test_input.get(given_key, None)
+        first_given_input = first_test_input.get(givens_key, None)
 
         pprint(first_variant_input)
 
@@ -248,7 +248,7 @@ class TestEncoder(TestCase):
                 "Second test input for is empty")
 
         second_variant_input = second_test_input.get(variant_key, None)
-        second_given_input = second_test_input.get(given_key, None)
+        second_given_input = second_test_input.get(givens_key, None)
 
         print(second_variant_input)
 
@@ -272,7 +272,7 @@ class TestEncoder(TestCase):
             provided_first_test_case: dict = None,
             provided_second_test_case: dict = None,
             input_data_key: str = 'test_case', variant_key: str = 'variant',
-            given_key: str = 'context', convert_result_to_float32: bool = False):
+            givens_key: str = 'givens', convert_result_to_float32: bool = False):
 
         first_test_case_path = os.sep.join(
             [self.v6_test_suite_data_directory, first_test_case_filename])
@@ -292,7 +292,7 @@ class TestEncoder(TestCase):
                 "First test input for is empty")
 
         first_variant_input = first_test_input.get(variant_key, None)
-        first_given_input = first_test_input.get(given_key, None)
+        first_given_input = first_test_input.get(givens_key, None)
 
         pprint(first_variant_input)
 
@@ -327,7 +327,7 @@ class TestEncoder(TestCase):
                 "Second test input for is empty")
 
         second_variant_input = second_test_input.get(variant_key, None)
-        second_given_input = second_test_input.get(given_key, None)
+        second_given_input = second_test_input.get(givens_key, None)
 
         print(second_variant_input)
 
@@ -353,7 +353,7 @@ class TestEncoder(TestCase):
     def _generic_test_external_collisions(
             self, test_case_filename: str, input_data_key: str = 'test_case',
             expected_output_data_key: str = 'test_output',
-            variant_key: str = 'variant', given_key: str = 'context',
+            variant_key: str = 'variant', givens_key: str = 'givens',
             data_read_method: str = 'read'):
 
         test_case_path = os.sep.join(
@@ -371,10 +371,10 @@ class TestEncoder(TestCase):
             raise ValueError("Test jsonlines are empty")
 
         variant = test_case_input.get(variant_key, None)
-        given = test_case_input.get(given_key, None)
+        givens = test_case_input.get(givens_key, None)
 
-        if variant is None or given is None:
-            raise ValueError("variant or given are empty")
+        if variant is None or givens is None:
+            raise ValueError("variant or givens are empty")
 
         expected_output = test_case.get(expected_output_data_key, None)
 
@@ -383,11 +383,11 @@ class TestEncoder(TestCase):
 
         encoded_variant = \
             self.feature_encoder.encode_variant(variant=variant, noise=self.noise)
-        encoded_given = \
-            self.feature_encoder.encode_givens(givens=given, noise=self.noise)
+        encoded_givens = \
+            self.feature_encoder.encode_givens(givens=givens, noise=self.noise)
 
         common_keys = \
-            set(encoded_variant.keys()).intersection(set(encoded_given.keys()))
+            set(encoded_variant.keys()).intersection(set(encoded_givens.keys()))
 
         assert len(common_keys) > 0
 
@@ -395,25 +395,25 @@ class TestEncoder(TestCase):
             self.feature_encoder.encode_variant(
                 variant=variant, noise=self.noise,
                 into=self.feature_encoder.encode_givens(
-                    givens=deepcopy(given), noise=self.noise))
+                    givens=deepcopy(givens), noise=self.noise))
 
         np.testing.assert_array_equal(expected_output, fully_encoded_variant)
 
         single_common_key = list(common_keys)[0]
 
         assert single_common_key in encoded_variant.keys() \
-               and single_common_key in encoded_given.keys() \
+               and single_common_key in encoded_givens.keys() \
                and single_common_key in fully_encoded_variant.keys()
 
         # TODO this assertion no longer makes sense
         # assert encoded_variant.get(single_common_key, None) + \
-        #        encoded_given.get(single_common_key, None) == \
+        #        encoded_givens.get(single_common_key, None) == \
         #        fully_encoded_variant.get(single_common_key, None)
 
     def _generic_test_internal_collisions(
             self, test_case_filename: str, input_data_key: str = 'test_case',
             expected_output_data_key: str = 'test_output',
-            variant_key: str = 'variant', given_key: str = 'context',
+            variant_key: str = 'variant', givens_key: str = 'givens',
             data_read_method: str = 'read'):
 
         test_case_path = os.sep.join(
@@ -431,10 +431,10 @@ class TestEncoder(TestCase):
             raise ValueError("Test jsonlines are empty")
 
         variant = test_case_input.get(variant_key, None)
-        given = test_case_input.get(given_key, None)
+        givens = test_case_input.get(givens_key, None)
 
-        if variant is None or given is None:
-            raise ValueError("variant or given are empty")
+        if variant is None or givens is None:
+            raise ValueError("variant or givens are empty")
 
         expected_output = test_case.get(expected_output_data_key, None)
 
@@ -445,7 +445,7 @@ class TestEncoder(TestCase):
             self.feature_encoder.encode_variant(
                 variant=variant, noise=self.noise,
                 into=self.feature_encoder.encode_givens(
-                    givens=deepcopy(given), noise=self.noise))
+                    givens=deepcopy(givens), noise=self.noise))
 
         assert fully_encoded_variant == expected_output
 
@@ -1188,7 +1188,7 @@ class TestEncoder(TestCase):
         if not test_feature_names:
             raise ValueError('Test feature names are missing')
 
-        expected_output = test_case.get(test_output_key, None)
+        expected_output = np.array(test_case.get(test_output_key, None))
 
         tested_into = np.full(len(test_feature_names), np.nan)
 
@@ -1197,6 +1197,13 @@ class TestEncoder(TestCase):
             extra_features=test_extra_features,
             feature_names=test_feature_names, noise=self.noise,
             into=tested_into)
+
+        print('tested_into')
+        print(tested_into.dtype)
+        print('expected_output')
+        print(expected_output.dtype)
+        print('diff')
+        print(tested_into - expected_output)
 
         np.testing.assert_array_equal(expected_output, tested_into)
 

@@ -73,8 +73,8 @@ class TestChooserFeatureEncoding(TestCase):
 
     def _generic_test_batch_input_encoding(
             self, test_case_filename: str, input_data_key: str = 'test_case',
-            expected_output_data_key: str = 'single_given_test_output',
-            variant_key: str = 'variant', given_key: str = 'given',
+            expected_output_data_key: str = 'single_givens_test_output',
+            variant_key: str = 'variant', givens_key: str = 'givens',
             single_given_encoding: bool = True,
             data_read_method: str = 'read'):
 
@@ -94,7 +94,7 @@ class TestChooserFeatureEncoding(TestCase):
 
         test_variants = np.array([jl[variant_key] for jl in test_jsonlines])
         test_givens = \
-            np.array([jl.get(given_key, {}) for jl in test_jsonlines])
+            np.array([jl.get(givens_key, {}) for jl in test_jsonlines])
 
         if single_given_encoding:
             test_givens = test_givens[0]
@@ -115,7 +115,7 @@ class TestChooserFeatureEncoding(TestCase):
         self._generic_test_batch_input_encoding(
             test_case_filename=os.getenv(
                 "V6_CHOOSERS_FEATURE_ENCODER_TEST_BATCH_ENCODING_JSONLINES"),
-            expected_output_data_key="single_given_test_output",
+            expected_output_data_key="single_givens_test_output",
             single_given_encoding=True, data_read_method='read')
 
     def test_batch_variants_encoding_with_single_given_and_numpy(self):
@@ -126,7 +126,7 @@ class TestChooserFeatureEncoding(TestCase):
         self._generic_test_batch_input_encoding(
             test_case_filename=os.getenv(
                 "V6_CHOOSERS_FEATURE_ENCODER_TEST_BATCH_ENCODING_JSONLINES"),
-            expected_output_data_key="single_given_test_output",
+            expected_output_data_key="single_givens_test_output",
             single_given_encoding=True, data_read_method='read')
 
         improve_settings.USE_CYTHON_BACKEND = orig_use_cython_backend
