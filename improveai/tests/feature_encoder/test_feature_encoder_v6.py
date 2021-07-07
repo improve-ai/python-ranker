@@ -674,24 +674,35 @@ class TestEncoder(TestCase):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
                 "V6_FEATURE_ENCODER_TEST_NOISE_3_128_JSON"),
-            convert_result_to_float32=True        )
+            convert_result_to_float32=True)
 
     def test_noise_2_256(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
                 "V6_FEATURE_ENCODER_TEST_NOISE_2_256_JSON"),
-            convert_result_to_float32=True        )
+            convert_result_to_float32=True)
 
     def test_noise_3_256(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
                 "V6_FEATURE_ENCODER_TEST_NOISE_3_256_JSON"),
-            convert_result_to_float32=True        )
+            convert_result_to_float32=True)
 
     def test_big_int32_seed(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
                 "V6_FEATURE_ENCODER_TEST_SEED_BIG_INT32_JSON"))
+
+    def test_leading_zeros_in_feature_names_01(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_LEADING_ZEROS_IN_FEATURE_NAME_01"))
+
+    def test_leading_zeros_in_feature_names_02(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_LEADING_ZEROS_IN_FEATURE_NAME_02"))
+
 
     def test_noise_out_of_bounds_raises(self):
         fe = FeatureEncoder(model_seed=0)
