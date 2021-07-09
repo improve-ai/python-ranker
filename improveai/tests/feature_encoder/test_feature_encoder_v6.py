@@ -685,6 +685,11 @@ class TestEncoder(TestCase):
             test_case_filename=os.getenv(
                 "V6_FEATURE_ENCODER_TEST_LEADING_ZEROS_IN_FEATURE_NAME_02"))
 
+    def test_sprinkle_equals_zero(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_SPRINKLED_EQUALS_ZERO_JSON"))
+
     def test_noise_out_of_bounds_raises(self):
         fe = FeatureEncoder(model_seed=0)
 
