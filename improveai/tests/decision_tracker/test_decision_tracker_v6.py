@@ -793,7 +793,6 @@ class TestDecisionTracker:
                 history_id=self.dummy_history_id)
 
         variants = [el for el in range(1, 3, 1)]
-        # TODO make sure to refactor after API doc is updated
         variant = variants[0]
         expected_sample = variants[1]
 

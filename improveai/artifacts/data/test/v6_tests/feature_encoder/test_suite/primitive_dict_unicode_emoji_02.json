@@ -1,10 +1,12 @@
 {
     "test_case": {
-        "variant": {"$value":  "Some text, some symbols \u00B1 \u00D7, some emojis \uD83D\uDE44\uD83D\uDE0C\uD83D\uDE37"}
+        "variant": {
+            "$value": "Some text, some symbols \u00b1 \u00d7, some emojis \ud83d\ude44\ud83d\ude0c\ud83d\ude37"
+        }
     },
     "test_output": {
-        "5e9f9c59": 16251.110708337306,
-        "5f959020": 25945.17674369427
+        "5e9f9c59": 16251.11,
+        "5f959020": 25945.176
     },
     "model_seed": 1,
     "noise": 0.8928601514360016,

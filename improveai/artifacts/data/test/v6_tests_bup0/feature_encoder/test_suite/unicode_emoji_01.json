@@ -1,0 +1,14 @@
+{
+    "test_case": {
+        "variant": "\uD83D\uDE00\uD83D\uDE0D\uD83E\uDD17\uD83D\uDE11"
+    },
+    "test_output": {
+        "d1491420": -28233.192315885848,
+        "5e9f9c59": -23035.15690720156
+    },
+    "model_seed": 1,
+    "noise": 0.8928601514360016,
+    "variant_seed": 2675988294294598568,
+    "value_seed": 6818340268807889528,
+    "givens_seed": 12461487462738526788
+}

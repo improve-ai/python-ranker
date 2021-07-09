@@ -1,10 +1,12 @@
 {
     "test_case": {
-        "variant": {"$value": "Empty character \u0000 in the middle"}
+        "variant": {
+            "$value": "Empty character \u0000 in the middle"
+        }
     },
     "test_output": {
-        "5e9f9c59": -30939.210749110105,
-        "03285f0a": -3543.0241280414607
+        "5e9f9c59": -30939.21,
+        "03285f0a": -3543.0242
     },
     "model_seed": 1,
     "noise": 0.8928601514360016,

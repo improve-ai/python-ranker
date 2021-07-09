@@ -12,13 +12,13 @@ import xgboost as xgb
 sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
 
+from improveai import FeatureEncoder
 from improveai.choosers.xgb_chooser import BasicNativeXGBChooser
 from improveai.utils.choosers_feature_encoding_tools import \
-    encoded_variant_to_np, encoded_variants_to_np
-from improveai.feature_encoder import FeatureEncoder, sprinkle, shrink, \
-    reverse_sprinkle, _get_previous_value
+    encoded_variants_to_np
 import improveai.settings as improve_settings
 from improveai.utils.general_purpose_tools import read_jsonstring_from_file
+from improveai.tests.test_utils import convert_values_to_float32
 
 
 class TestChooserFeatureEncoding(TestCase):
@@ -104,12 +104,18 @@ class TestChooserFeatureEncoding(TestCase):
         if expected_output is None:
             raise ValueError("Expected output is empty")
 
-        tested_output = \
+        tested_output_float64 = \
             self.xgb_chooser._encode_variants_single_givens(
                 variants=test_variants, givens=test_givens,
                 noise=self.noise)
 
-        np.testing.assert_array_equal(expected_output, tested_output)
+        tested_output_float32 = \
+            convert_values_to_float32(val=tested_output_float64)
+
+        # np.testing.assert_array_equal(expected_output, tested_output_float32)
+
+        for v_ref, v_calc in zip(expected_output, tested_output_float32):
+            assert v_ref == v_calc
 
     def test_batch_variants_encoding_with_single_given(self):
         self._generic_test_batch_input_encoding(
@@ -159,11 +165,15 @@ class TestChooserFeatureEncoding(TestCase):
                 variants=test_variants, givens=test_givens,
                 noise=self.noise)
 
-        missings_filled_array = encoded_variants_to_np(
+        missings_filled_array_float64 = encoded_variants_to_np(
             encoded_variants=encoded_variants,
             feature_names=self.xgb_chooser.model_feature_names)
 
-        np.testing.assert_array_equal(expected_output, missings_filled_array)
+        missings_filled_array_float32 = \
+            convert_values_to_float32(val=missings_filled_array_float64)
+
+        np.testing.assert_array_equal(
+            expected_output, missings_filled_array_float32)
 
     def test_missing_features_filler_method_02(self):
         test_case_path = os.sep.join(
@@ -193,13 +203,17 @@ class TestChooserFeatureEncoding(TestCase):
                 variants=test_variants, givens=test_givens,
                 noise=self.noise)
 
-        missings_filled_array = encoded_variants_to_np(
+        missings_filled_array_float64 = encoded_variants_to_np(
             encoded_variants=encoded_variants,
             feature_names=self.xgb_chooser.model_feature_names)
 
-        pprint(missings_filled_array.tolist())
+        missings_filled_array_float32 = \
+            convert_values_to_float32(val=missings_filled_array_float64)
 
-        np.testing.assert_array_equal(expected_output, missings_filled_array)
+        # pprint(missings_filled_array_float32.tolist())
+
+        np.testing.assert_array_equal(
+            expected_output, missings_filled_array_float32)
 
     def test_missing_features_filler_method_02_with_numpy(self):
         test_case_path = os.sep.join(
@@ -233,13 +247,17 @@ class TestChooserFeatureEncoding(TestCase):
         orig_use_cython_backend = improve_settings.USE_CYTHON_BACKEND
         improve_settings.USE_CYTHON_BACKEND = False
 
-        missings_filled_array = encoded_variants_to_np(
+        missings_filled_array_float64 = encoded_variants_to_np(
             encoded_variants=encoded_variants,
             feature_names=self.xgb_chooser.model_feature_names)
 
         improve_settings.USE_CYTHON_BACKEND = orig_use_cython_backend
 
-        pprint(missings_filled_array.tolist())
+        # pprint(missings_filled_array.tolist())
 
-        np.testing.assert_array_equal(expected_output, missings_filled_array)
+        missings_filled_array_float32 = \
+            convert_values_to_float32(val=missings_filled_array_float64)
+
+        np.testing.assert_array_equal(
+            expected_output, missings_filled_array_float32)
 

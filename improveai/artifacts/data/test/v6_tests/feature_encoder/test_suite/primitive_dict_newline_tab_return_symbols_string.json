@@ -1,10 +1,12 @@
 {
     "test_case": {
-        "variant": {"$value": "\n\t\r"}
+        "variant": {
+            "$value": "\n\t\r"
+        }
     },
     "test_output": {
-        "f7bcffc3": -21468.146232825206,
-        "5e9f9c59": 26540.180796823774
+        "f7bcffc3": -21468.146,
+        "5e9f9c59": 26540.182
     },
     "model_seed": 1,
     "noise": 0.8928601514360016,

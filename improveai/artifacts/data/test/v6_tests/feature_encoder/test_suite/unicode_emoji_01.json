@@ -1,10 +1,10 @@
 {
     "test_case": {
-        "variant": "\uD83D\uDE00\uD83D\uDE0D\uD83E\uDD17\uD83D\uDE11"
+        "variant": "\ud83d\ude00\ud83d\ude0d\ud83e\udd17\ud83d\ude11"
     },
     "test_output": {
-        "d1491420": -28233.192315885848,
-        "5e9f9c59": -23035.15690720156
+        "d1491420": -28233.191,
+        "5e9f9c59": -23035.156
     },
     "model_seed": 1,
     "noise": 0.8928601514360016,

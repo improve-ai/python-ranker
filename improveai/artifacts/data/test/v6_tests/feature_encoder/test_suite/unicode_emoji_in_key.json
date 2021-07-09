@@ -1,10 +1,14 @@
 {
     "test_case": {
-        "variant": {"$value":  {"\uD83D\uDE44\uD83D\uDE0C\uD83D\uDE37":  "Some text, some symbols \u00B1 \u00D7, some emojis \uD83D\uDE44\uD83D\uDE0C\uD83D\uDE37"}}
+        "variant": {
+            "$value": {
+                "\ud83d\ude44\ud83d\ude0c\ud83d\ude37": "Some text, some symbols \u00b1 \u00d7, some emojis \ud83d\ude44\ud83d\ude0c\ud83d\ude37"
+            }
+        }
     },
     "test_output": {
-        "13fc355a": 27651.18836493617,
-        "492ecbc4": 27442.18694123186
+        "13fc355a": 27651.188,
+        "492ecbc4": 27442.188
     },
     "model_seed": 1,
     "noise": 0.8928601514360016,

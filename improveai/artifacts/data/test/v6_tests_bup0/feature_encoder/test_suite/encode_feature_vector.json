@@ -1,0 +1,43 @@
+{
+    "test_case": {
+        "variant": {
+            "text": "lovely corgi",
+            "chars": 12,
+            "words": 2
+        },
+        "givens": {
+            "given_0": 0.0,
+            "given_1": [0, 1, 2],
+            "given_2": {"0": 0.0, "1": "dummy_str"}
+        },
+        "extra_features": {
+            "timestamp": 1625178668.87
+        },
+        "feature_names": [
+            "1c1de8c1",
+            "02588087",
+            "291ec7b3",
+            "51fa8142",
+            "5cd66872",
+            "a01c7050",
+            "c3abcfc3",
+            "dummy000",
+            "timestamp"]
+    },
+    "test_output": [
+      29437.20053113666,
+      NaN,
+      22238.151491675675,
+      NaN,
+      NaN,
+      NaN,
+      2.000020435993473,
+      NaN,
+      1625178668.87
+    ],
+    "model_seed": 1,
+    "noise": 0.8928601514360016,
+    "variant_seed": 2675988294294598568,
+    "value_seed": 6818340268807889528,
+    "givens_seed": 12461487462738526788
+}
