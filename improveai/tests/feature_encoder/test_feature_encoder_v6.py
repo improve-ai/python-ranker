@@ -912,6 +912,16 @@ class TestEncoder(TestCase):
             test_case_filename=os.getenv(
                 "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_FLOAT_M1_JSON"))
 
+    def test_foo_bar(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_FOO_BAR_JSON"))
+
+    def test_dit_foo_bar(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_DICT_FOO_BAR_JSON"))
+
     def test_primitive_dict_foo_bar(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
