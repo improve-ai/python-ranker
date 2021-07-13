@@ -144,11 +144,6 @@ class FeatureEncoder:
             into[subset_index] = np.nansum(
                 np.array([into[subset_index], filler[:, 1]]), axis=0)
 
-    def add_noise(self, into, noise):
-        small_noise = shrink(noise)
-        for feature_name, value in into.items():
-            into[feature_name] = sprinkle(value, small_noise)
-
     def encode_to_np_matrix(
             self, variants: Iterable, multiple_givens: Iterable,
             multiple_extra_features: Iterable, feature_names: Iterable,
@@ -216,17 +211,17 @@ class FeatureEncoder:
         return encoded_variants_array
 
     def add_extra_features(
-            self, encoded_variants: list or np.ndarray,
-            extra_features: dict or list):
+            self, encoded_variants: list,
+            extra_features: list):
         """
         Once variants are encoded this method can be used to quickly append
         extra features
 
         Parameters
         ----------
-        encoded_variants: list or np.ndarray
+        encoded_variants: list
             collection of encoded variants to be updated with extra features
-        extra_features: list or dict
+        extra_features: list
             payload to be appended to encoded variants
 
         Returns
@@ -239,25 +234,16 @@ class FeatureEncoder:
         if extra_features is None:
             return
 
-        if isinstance(extra_features, dict):
+        if not isinstance(encoded_variants, list):
+            raise TypeError('`encoded_variants` should be of a list type')
 
-            [encoded_variant.update(extra_features)
-             for encoded_variant in encoded_variants]
-            return
-
-        if isinstance(extra_features, list):
-            extra_features_list = extra_features
-        elif isinstance(extra_features, np.ndarray) or \
-                isinstance(extra_features, tuple):
-            extra_features_list = list(extra_features)
-        else:
-            raise TypeError(
-                'Only dict, list, tuple and np.ndarray types are supported')
+        if not isinstance(extra_features, list):
+            raise TypeError('`extra_features` should be of a list type')
 
         [encoded_variant.update(single_extra_features)
          if single_extra_features is not None else encoded_variant
          for encoded_variant, single_extra_features in
-         zip(encoded_variants, extra_features_list)]
+         zip(encoded_variants, extra_features)]
 
 
 # - None, json null, {}, [], nan, are treated as missing feature_names and ignored.
@@ -397,3 +383,9 @@ def reverse_sprinkle(sprinkled_x, small_noise):
 
     """
     return sprinkled_x / (1 + small_noise) - small_noise
+
+
+def add_noise(into, noise):
+    small_noise = shrink(noise)
+    for feature_name, value in into.items():
+        into[feature_name] = sprinkle(value, small_noise)

@@ -1,6 +1,5 @@
 from copy import deepcopy
 import json
-from numbers import Number
 import numpy as np
 import os
 from pprint import pprint
@@ -13,7 +12,7 @@ sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
 
 from improveai.feature_encoder import FeatureEncoder, sprinkle, shrink, \
-    reverse_sprinkle, _get_previous_value
+    reverse_sprinkle, _get_previous_value, add_noise
 import improveai.settings as improve_settings
 from improveai.utils.general_purpose_tools import read_jsonstring_from_file
 from improveai.tests.test_utils import convert_values_to_float32
@@ -1121,7 +1120,7 @@ class TestEncoder(TestCase):
             raise ValueError(
                 'Key {} is missing from the test case'.format(test_output_key))
 
-        self.feature_encoder.add_noise(into=test_into_float64, noise=test_noise)
+        add_noise(into=test_into_float64, noise=test_noise)
 
         test_into_float32 = convert_values_to_float32(test_into_float64)
 
@@ -1414,20 +1413,30 @@ class TestEncoder(TestCase):
 
         assert expected_result == dummy_encoded_variants
 
-    def test_add_single_extra_features(self):
+    def test_extra_features_raises(self):
 
-        dummy_encoded_variants = [{'0': 1, '1': 1} for _ in range(3)]
+        dummy_variants_count = 3
 
-        dummy_extra_features = {'3': 3}
+        dummy_encoded_variants_dict = {'0': 1, '1': 1}
+        dummy_encoded_variants_list = \
+            [dummy_encoded_variants_dict for _ in range(dummy_variants_count)]
+
+        dummy_extra_features_dict = {'3': 3}
+        dummy_extra_features_list = \
+            [dummy_extra_features_dict for _ in range(dummy_variants_count)]
 
         fe = FeatureEncoder(model_seed=0)
-        fe.add_extra_features(
-            encoded_variants=dummy_encoded_variants,
-            extra_features=dummy_extra_features)
+        with raises(TypeError) as terr:
+            fe.add_extra_features(
+                encoded_variants=dummy_encoded_variants_list,
+                extra_features=dummy_extra_features_dict)
+            assert terr.value
 
-        expected_result = [{'0': 1, '1': 1, '3': 3} for _ in range(3)]
-
-        assert expected_result == dummy_encoded_variants
+        with raises(TypeError) as terr:
+            fe.add_extra_features(
+                encoded_variants=dummy_encoded_variants_dict,
+                extra_features=dummy_extra_features_list)
+            assert terr.value
 
     def test_add_none_extra_features(self):
 
