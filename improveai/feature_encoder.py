@@ -139,10 +139,11 @@ class FeatureEncoder:
                      if hash_index_map.get(feature_name, None) is not None])
 
             # sum into with encoded variants treating nans in sums as zeros
-            subset_index = filler[:, 0].astype(int)
+            if len(filler) > 0:
+                subset_index = filler[:, 0].astype(int)
 
-            into[subset_index] = np.nansum(
-                np.array([into[subset_index], filler[:, 1]]), axis=0)
+                into[subset_index] = np.nansum(
+                    np.array([into[subset_index], filler[:, 1]]), axis=0)
 
     def encode_to_np_matrix(
             self, variants: Iterable, multiple_givens: Iterable,
@@ -337,13 +338,6 @@ def _get_previous_value(
         'unsprinkled' value of desired feature
 
     """
-
-    # previous_sprinkled_object_ = into.get(feature_name, 0.0)
-    #
-    # if previous_sprinkled_object_ != 0.0:
-    #     return reverse_sprinkle(previous_sprinkled_object_, small_noise)
-    # else:
-    #     return 0.0
 
     previous_sprinkled_object_ = into.get(feature_name, None)
 
