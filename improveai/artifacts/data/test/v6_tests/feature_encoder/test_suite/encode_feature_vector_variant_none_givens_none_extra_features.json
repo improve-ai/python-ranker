@@ -1,0 +1,36 @@
+{
+    "test_case": {
+        "variant": null,
+        "givens": null,
+        "feature_names": [
+            "1c1de8c1",
+            "02588087",
+            "291ec7b3",
+            "51fa8142",
+            "5cd66872",
+            "a01c7050",
+            "c3abcfc3",
+            "dummy000",
+            "timestamp"
+        ],
+        "extra_features": {
+            "timestamp": 1625178668.87
+        }
+    },
+    "test_output": [
+        NaN,
+        NaN,
+        NaN,
+        NaN,
+        NaN,
+        NaN,
+        NaN,
+        NaN,
+        1.6251786e+09
+    ],
+    "model_seed": 1,
+    "noise": 0.8928601514360016,
+    "variant_seed": 2675988294294598568,
+    "value_seed": 6818340268807889528,
+    "givens_seed": 12461487462738526788
+}
