@@ -50,16 +50,6 @@ class BasicChooser(ABC):
     def model_metadata(self, new_val: Dict[str, object]):
         pass
 
-    # @property
-    # @abstractmethod
-    # def lookup_table_key(self) -> str:
-    #     pass
-    #
-    # @lookup_table_key.setter
-    # @abstractmethod
-    # def lookup_table_key(self, new_val: str):
-    #     pass
-
     @property
     @abstractmethod
     def model_seed_key(self) -> str:
@@ -126,10 +116,6 @@ class BasicChooser(ABC):
     def score(self, variants, givens, **kwargs):
         pass
 
-    # @abstractmethod
-    # def score_all(self, variants, context, **kwargs):
-    #     pass
-
     @abstractmethod
     def _get_model_metadata(self, **kwargs):
         pass
@@ -161,22 +147,7 @@ class BasicChooser(ABC):
         table = self.model_metadata.get(self.lookup_table_key, None)
         return len(table[1])
 
-    def _get_feature_encoder(self) -> FeatureEncoder:
-        """
-        Getter for FeatureEncoder object
-
-        Returns
-        -------
-        FeatureEncoder
-            feature feature_encoder for current model
-
-        """
-
-        model_seed = self.model_metadata.get(self.model_seed_key, None)
-
-        return FeatureEncoder(model_seed=model_seed)
-
-    def _get_model_feature_names(self):
+    def _get_model_feature_names(self, model_metadata: dict):
         """
         Getter for model features
 
@@ -187,96 +158,39 @@ class BasicChooser(ABC):
 
         """
 
-        if not self.model_metadata:
+        if not model_metadata:
             raise ValueError('Model metadata empty or None!')
 
-        feature_names = \
-            self.model_metadata.get(self.model_feature_names_key, None)
+        feature_names = model_metadata.get(self.model_feature_names_key, None)
 
         if not feature_names:
             raise ValueError('Feature names not in model metadata!')
         
         return feature_names
 
-    def _get_model_seed(self):
-        if not self.model_metadata:
+    def _get_model_seed(self, model_metadata: dict):
+        if not model_metadata:
             raise ValueError('Model metadata empty or None!')
 
-        model_seed = \
-            self.model_metadata.get(self.model_seed_key, None)
+        model_seed = model_metadata.get(self.model_seed_key, None)
 
         if not model_seed:
             raise ValueError('Feature names not in model metadata!')
 
         return model_seed
 
-    def _get_model_name(self):
-        if not self.model_metadata:
+    def _get_model_name(self, model_metadata: dict):
+        if not model_metadata:
             raise ValueError('Model metadata empty or None!')
 
-        model_name = \
-            self.model_metadata.get(self.model_name_key, None)
+        model_name = model_metadata.get(self.model_name_key, None)
 
         if not model_name:
             raise ValueError('Feature names not in model metadata!')
 
         return model_name
 
-    def _get_nan_filled_encoded_variant(
-            self, variant: Dict[str, object], context: Dict[str, object],
-            all_feats_count: int, missing_filler: float = np.nan) -> np.ndarray:
-        """
-        Wrapper around fast filling missings in variant. This would be used in
-        case many variants need to be scored at once and predict() accepts numpy
-        array
-
-        Parameters
-        ----------
-        variant: Dict[str, object]
-            single observation
-        context: Dict[str, object]
-            scoring context
-        all_feats_count: int
-            desired number of feature_names in the model
-        missing_filler: float
-            value ot impute missings with
-
-        Returns
-        -------
-        np.ndarray
-            np.ndarray of np.ndarrays of which each containes all feature_names with
-            missings filled
-
-        """
-
-        # st1 = time()
-        context_copy = deepcopy(context)
-        enc_variant = self.feature_encoder.encode_features({'variant': variant})
-        context_copy.update(enc_variant)
-        # et1 = time()
-        # print('Encoding feature_names took: {}'.format(et1 - st1))
-        # print(context_copy)
-
-        # st2 = time()
-        missings_filled_v = np.empty((1, all_feats_count))
-        # et2 = time()
-        # print('Initializing empty took: {}'.format(et2 - st2))
-
-        # st = time()
-        missings_filled_v[0, :] = missing_filler
-        missings_filled_v[0, list(context_copy.keys())] = \
-            list(context_copy.values())
-        # et = time()
-        # print('Filling nans took: {}'.format(et - st))
-        # input('sanity check')
-
-        # missings_filled_v = \
-        #     self._get_missings_filled_variants(
-        #         input_dict=context_copy, all_feats_count=all_feats_count,
-        #         missing_filler=missing_filler)
-
-        return missings_filled_v
-
+    # TODO sort and choose are deprecated (kept only for CLI compatibility)
     def sort(
             self, variants_w_scores: np.ndarray,
             scores_col_idx: int = 1, class_cols_idx: int = 2) -> np.ndarray:

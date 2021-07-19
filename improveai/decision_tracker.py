@@ -72,10 +72,10 @@ class DecisionTracker:
     @constant
     def DECISION_TYPE() -> str:
         return "decision"
-
-    @constant
-    def REWARDS_TYPE() -> str:
-        return "rewards"
+# TODO verify if this is obsolete
+    # @constant
+    # def REWARDS_TYPE() -> str:
+    #     return "rewards"
 
     @constant
     def EVENT_TYPE() -> str:
@@ -345,7 +345,7 @@ class DecisionTracker:
         ranked_variants: list or np.ndarray
             list of ranked variants
         track_runners_up: bool
-            should runners up be tracker ?
+            should runners up be tracked ?
 
         Returns
         -------
@@ -498,7 +498,7 @@ class DecisionTracker:
 
 
 if __name__ == '__main__':
-    track_url = 'https://pt5w416qc4.execute-api.us-east-2.amazonaws.com/track'
+    track_url = 'https://7thx657umd.execute-api.us-east-2.amazonaws.com/track'
 
     dt = DecisionTracker(track_url=track_url, history_id='dummy-history-id-2')
 
@@ -512,7 +512,7 @@ if __name__ == '__main__':
     #     timestamp=self.dummy_timestamp)
 
     variants = [el for el in range(100)]
-    variants[0] = ''.join(['x' for _ in range(int(10110000/10))])
+    # variants[0] = ''.join(['x' for _ in range(int(10110000/10))])
 
     with open('dummy.json', 'w') as dj:
         q = json.dumps(variants[0])
@@ -530,12 +530,12 @@ if __name__ == '__main__':
 
     import time
 
-    for _ in range(20):
+    for _ in range(80):
 
         resp = dt.track(
             variant=variants[0],
             variants=variants[:1],
-            givens={}, model_name='dummy-model-2',
+            givens={}, model_name='dummy-model-1',
             variants_ranked_and_track_runners_up=False,
             timestamp=str(np.datetime_as_string(
                         np.datetime64(datetime.now()), unit='ms', timezone='UTC')))

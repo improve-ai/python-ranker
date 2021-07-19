@@ -204,12 +204,15 @@ class BasicNativeXGBChooser(BasicChooser):
                     'occured: {}'.format(input_model_src, exc))
             print_exc()
 
-        self.model_metadata = self._get_model_metadata()
-        self.model_seed = self._get_model_seed()
-        self.model_name = self._get_model_name()
+        model_metadata = self._get_model_metadata()
+        self.model_seed = self._get_model_seed(model_metadata=model_metadata)
+        self.model_name = self._get_model_name(model_metadata=model_metadata)
+        self.model_feature_names = \
+            self._get_model_feature_names(model_metadata=model_metadata)
 
-        self.model_feature_names = self._get_model_feature_names()
-        self.feature_encoder = self._get_feature_encoder()
+        self.feature_encoder = FeatureEncoder(model_seed=self.model_seed)
+
+        # TODO make sure which objective is desired
         self.model_objective = self._get_model_objective()
 
     def _get_model_metadata(self) -> dict:
@@ -235,8 +238,6 @@ class BasicNativeXGBChooser(BasicChooser):
             mlmodel_score_res_key: str = 'target',
             mlmodel_class_proba_key: str = 'classProbability',
             target_class_label: int = 1, imputer_value: float = np.nan,
-            sigmoid_correction: bool = False, sigmoid_const: float = 0.5,
-            return_plain_results: bool = False,
             **kwargs) -> np.ndarray:
 
         """
@@ -290,8 +291,8 @@ class BasicNativeXGBChooser(BasicChooser):
                     missings_filled_v, feature_names=self.model_feature_names))\
             .astype('float64')
 
-        if sigmoid_correction:
-            scores = sigmoid(scores, logit_const=sigmoid_const)
+        # if sigmoid_correction:
+        #     scores = sigmoid(scores, logit_const=sigmoid_const)
 
         scores += \
             np.array(
@@ -301,15 +302,17 @@ class BasicNativeXGBChooser(BasicChooser):
         # TODO left for debugging sake - delete when no more neede
         # assert any([fel == sel for sel in scores for fel in scores])
 
-        if return_plain_results:
-            return scores
+        return scores
 
-        variants_w_scores_list = \
-            np.array(
-                [self._get_processed_score(score=score, variant=variant)
-                 for score, variant in zip(scores, variants)])
-
-        return variants_w_scores_list  # np.column_stack([variants, scores])
+        # if return_plain_results:
+        #     return scores
+        #
+        # variants_w_scores_list = \
+        #     np.array(
+        #         [self._get_processed_score(score=score, variant=variant)
+        #          for score, variant in zip(scores, variants)])
+        #
+        # return variants_w_scores_list  # np.column_stack([variants, scores])
 
     def _get_model_objective(self) -> str:
         """
@@ -472,8 +475,7 @@ if __name__ == '__main__':
     input('score_all')
 
     score_all = mlmc.score(
-        variants=variants, givens=context, sigmoid_correction=False,
-        return_plain_results=False)
+        variants=variants, givens=context)
 
     sorted = mlmc.sort(variants_w_scores=score_all)
     print('sorted')

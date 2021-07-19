@@ -245,8 +245,7 @@ class DecisionModel:
         # TODO ask about the sigmoid correction
 
         scores = \
-            self.chooser.score(
-                variants=variants, givens=givens, return_plain_results=True)
+            self.chooser.score(variants=variants, givens=givens)
         return scores
 
     @staticmethod
