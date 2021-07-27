@@ -1,7 +1,6 @@
 from collections.abc import Iterable
 from copy import deepcopy
 import json
-from numbers import Number
 import numpy as np
 import pickle
 from time import time
@@ -14,7 +13,7 @@ from improveai.choosers.basic_choosers import BasicChooser
 from improveai.encoder_cython_utils import cfe
 from improveai.feature_encoder import FeatureEncoder
 import improveai.settings as improve_settings
-from improveai.utils.general_purpose_tools import constant, sigmoid
+from improveai.utils.general_purpose_tools import constant
 from improveai.utils.choosers_feature_encoding_tools import encoded_variants_to_np
 
 
@@ -51,14 +50,6 @@ class BasicNativeXGBChooser(BasicChooser):
     @model_metadata_key.setter
     def model_metadata_key(self, new_val: str):
         self._mlmodel_metadata_key = new_val
-
-    # @property
-    # def lookup_table_key(self) -> str:
-    #     return self._lookup_table_key
-    #
-    # @lookup_table_key.setter
-    # def lookup_table_key(self, new_val: str):
-    #     self._lookup_table_key = new_val
 
     @property
     def model_seed_key(self) -> str:
@@ -109,14 +100,6 @@ class BasicNativeXGBChooser(BasicChooser):
         self._model_feature_names = new_val
 
     @property
-    def model_objective(self) -> str:
-        return self._model_objective
-
-    @model_objective.setter
-    def model_objective(self, new_val: str):
-        self._model_objective = new_val
-
-    @property
     def feature_encoder_extras(self):
         return self._feature_encoder_extras
 
@@ -143,7 +126,6 @@ class BasicNativeXGBChooser(BasicChooser):
         self.model_metadata = None
 
         self.feature_encoder = None
-        # self.lookup_table_key = lookup_table_key
         self.model_feature_names_key = model_feature_names_key
         self.model_feature_names = np.empty(shape=(1,))
 
@@ -152,8 +134,6 @@ class BasicNativeXGBChooser(BasicChooser):
 
         self.model_name_key = model_name_key
         self.model_name = None
-
-        self.model_objective = None
 
     def load_model(self, input_model_src: str, verbose: bool = False):
         """
@@ -212,9 +192,6 @@ class BasicNativeXGBChooser(BasicChooser):
 
         self.feature_encoder = FeatureEncoder(model_seed=self.model_seed)
 
-        # TODO make sure which objective is desired
-        self.model_objective = self._get_model_objective()
-
     def _get_model_metadata(self) -> dict:
         """
         Model metadata (hash table, etc. getter)
@@ -256,14 +233,6 @@ class BasicNativeXGBChooser(BasicChooser):
             label of the target class
         imputer_value: float
             value with which missing valuse will be imputed
-        sigmoid_correction: bool
-            should sigmoid correction be applied (sigmoid function be applied
-            to model`s scores)
-        sigmoid_const: float
-            intercept of sigmoid
-        return_plain_results: bool
-            should raw results (with sigmoid correction) be returned from predict
-            added for speed optimization
         kwargs
 
         Returns
@@ -291,82 +260,12 @@ class BasicNativeXGBChooser(BasicChooser):
                     missings_filled_v, feature_names=self.model_feature_names))\
             .astype('float64')
 
-        # if sigmoid_correction:
-        #     scores = sigmoid(scores, logit_const=sigmoid_const)
-
         scores += \
             np.array(
                 np.random.rand(len(encoded_variants)), dtype='float64') * \
             self.TIEBREAKER_MULTIPLIER
 
-        # TODO left for debugging sake - delete when no more neede
-        # assert any([fel == sel for sel in scores for fel in scores])
-
         return scores
-
-        # if return_plain_results:
-        #     return scores
-        #
-        # variants_w_scores_list = \
-        #     np.array(
-        #         [self._get_processed_score(score=score, variant=variant)
-        #          for score, variant in zip(scores, variants)])
-        #
-        # return variants_w_scores_list  # np.column_stack([variants, scores])
-
-    def _get_model_objective(self) -> str:
-        """
-        Helper method for native xgboost -> retrieves objective from booster
-        object
-
-        Returns
-        -------
-        str
-            string representing task (check SUPPORTED_OBJECTIVES for currently
-            supported tasks)
-
-        """
-        model_objective = ''
-        # print(json.loads(self.model.save_config()))
-        try:
-            model_cfg = json.loads(self.model.save_config())
-            model_objective = \
-                model_cfg['learner']['learner_train_param']['objective'] \
-                .split(':')[0]
-        except Exception as exc:
-            print('Cannot extract objective info from booster`s config')
-
-        if model_objective not in self.SUPPORTED_OBJECTIVES:
-            raise ValueError(
-                'Unsupported booster objective: {}'.format(model_objective))
-        return model_objective
-
-    def _get_processed_score(self, score, variant):
-        """
-        Prepares 'result row' based on booster`s objective
-
-        Parameters
-        ----------
-        score: float or np.ndarray
-            single observation`s score
-        variant: Dict[str, object]
-            single obervation`s input
-
-        Returns
-        -------
-        List[Number]
-            list representing single row:
-            [<variant>, <variant`s score>, <class>] (0 for regression task)
-
-        """
-
-        if self.model_objective == 'reg':
-            return [variant, float(score), int(0)]
-        elif self.model_objective == 'binary':
-            return [variant, float(score), int(1)]
-        elif self.model_objective == 'multi':
-            return [variant, float(np.array(score).max()),
-                    int(np.array(score).argmax())]
 
     def _encode_variants_single_givens(
             self, variants: Iterable, givens: dict or None,

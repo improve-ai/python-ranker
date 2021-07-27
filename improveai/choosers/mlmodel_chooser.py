@@ -268,71 +268,13 @@ class BasicMLModelChooser(BasicChooser):
             self.model.predict(
                 dict(zip(self.model_feature_names, missings_filled_v)))
 
-        # TODO simplify this
-        best_score = \
-            self._get_processed_score(
-                variant=variant, score_dict=score_dict,
-                mlmodel_class_proba_key=mlmodel_class_proba_key,
-                mlmodel_score_res_key=mlmodel_score_res_key,
-                target_class_label=target_class_label)
+        if 'target' not in score_dict:
+            raise ValueError(
+                'Prediction dict has no `target` key: {}'.format(score_dict))
 
-        best_score[1] = \
-            float(np.array(best_score[1], dtype='float64') +
-                  np.array(np.random.rand(), dtype='float64') *
-                  self.TIEBREAKER_MULTIPLIER)
+        score = score_dict.get('target', None)
 
-        return best_score[1]
-
-    def _get_processed_score(
-            self, variant, score_dict, mlmodel_class_proba_key,
-            mlmodel_score_res_key, target_class_label) -> list:
-        """
-        Getter for object which would be returned with scores
-
-        Parameters
-        ----------
-        variant: dict
-            dict with scored variant
-        score_dict: dict
-            dict with results
-        mlmodel_class_proba_key: str
-            string with mlmodel probability key in results dict
-        mlmodel_score_res_key: str
-            string with score key in results dict
-        target_class_label: object
-            desired class label of a target class
-
-        Returns
-        -------
-        list
-            list with processed results
-
-        """
-
-        if mlmodel_class_proba_key in score_dict.keys():
-
-            if len(score_dict[mlmodel_class_proba_key].keys()) == 2:
-
-                class_1_proba = \
-                    score_dict[mlmodel_class_proba_key][target_class_label]
-
-                return [variant, class_1_proba, target_class_label]
-
-            all_scores = \
-                np.array([
-                    list(score_dict[mlmodel_class_proba_key].values()),
-                    list(score_dict[mlmodel_class_proba_key].keys())]).T
-            return \
-                [variant] + \
-                all_scores[all_scores[:, 0] == all_scores[:, 0].max()] \
-                .flatten().tolist()
-        else:
-            score = score_dict.get(mlmodel_score_res_key, None)
-            if not score:
-                raise KeyError(
-                    'There was no key named: {} in result of predict() method'
-                    .format(mlmodel_score_res_key))
-            return [variant, score, 0]
+        return score
 
     def score(
             self, variants: List[Dict[str, object]],
