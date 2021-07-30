@@ -1,5 +1,5 @@
 from setuptools import Extension, find_packages, setup
-import numpy as np
+
 import os
 import pydoc
 
@@ -16,12 +16,19 @@ if __name__ == '__main__':
         install_reqs = \
             [pkg_name.replace('\n', '')
              for pkg_name in rqf.readlines() if pkg_name]
+
         cython_dep = [el for el in install_reqs if 'Cython' in el][0]
+        numpy_dep = [el for el in install_reqs if 'numpy' in el][0]
 
     if 'Cython' not in installed_packages:
         os.system('pip3 install {}'.format(cython_dep))
 
     from Cython.Build import cythonize
+
+    if 'numpy' not in installed_packages:
+        os.system('pip3 install {}'.format(numpy_dep))
+
+    import numpy as np
 
     rel_pth_prfx = \
         os.sep.join(str(os.path.relpath(__file__)).split(os.sep)[:-1])
