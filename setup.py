@@ -1,11 +1,8 @@
 from Cython.Build import cythonize
-# from distutils.core import setup
 from setuptools import Extension, find_packages, setup
-# from cysetuptools import setup
-import sys
-# from distutils.extension import Extension
 import numpy as np
 import os
+import pip
 
 
 if __name__ == '__main__':
@@ -27,6 +24,13 @@ if __name__ == '__main__':
                 ("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")],
             include_dirs=[np.get_include()])
 
+    if float(pip.__version__.split('.')[0]) >= 10:
+        parse_requirements = pip._internal.req.parse_requirements
+    else:
+        parse_requirements = pip.req.parse_requirements
+
+    install_reqs = parse_requirements('./requirements.txt')
+
     setup(name='improveai',
           version='0.1',
           description='v6 Decision API',
@@ -34,7 +38,8 @@ if __name__ == '__main__':
           author_email='',
           url='https://github.com/improve-ai/python-sdk',
           packages=find_packages(exclude=['*tests*']),
-          install_requires=["numpy", "setuptools", "wheel", "Cython"],
+          install_requires=
+          ["numpy", "setuptools", "wheel", "Cython"] + install_reqs,
           ext_modules=cythonize(fast_feat_enc_ext, language_level="3"),
           include_dirs=[np.get_include()],
           package_data={'improveai': [pth_str]},
