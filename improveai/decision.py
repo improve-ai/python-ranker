@@ -63,7 +63,17 @@ class Decision:
 
     def choose_from(self, variants: list or np.ndarray):
 
-        if variants is None or variants == [None]:
+        if self.chosen:
+            warn('The best variant has already been chosen')
+            return self
+
+        if self.__variants__set:
+            warn('`variants` have already been set - ignoring this call')
+            return self
+
+        # TODO is numpy array check necessary ? Maybe it is a waste of time
+        if variants is None or variants == [None] or variants == [] or \
+                (isinstance(variants, np.ndarray) and variants.size == 0):
             return self
 
         if isinstance(variants, str) or isinstance(variants, dict):
@@ -76,14 +86,6 @@ class Decision:
                 '`variants` should be a collection of some sort '
                 '(list, np.ndarray, set, tuple) not a: {}'
                 .format(type(variants)))
-
-        if self.chosen:
-            warn('The best variant has already been chosen')
-            return self
-
-        if self.__variants__set:
-            warn('`variants` have already been set - ignoring this call')
-            return self
 
         self.__variants = variants
         self.__variants__set = True

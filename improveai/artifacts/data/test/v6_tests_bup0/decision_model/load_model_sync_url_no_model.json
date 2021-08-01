@@ -1,6 +1,0 @@
-{
-    "test_case": {
-        "model_url": "http://such.model.does.not.exist.gz"
-    },
-    "test_output": {}
-}

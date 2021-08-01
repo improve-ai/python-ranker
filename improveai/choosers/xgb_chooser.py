@@ -211,10 +211,7 @@ class BasicNativeXGBChooser(BasicChooser):
 
     def score(
             self, variants: List[Dict[str, object]],
-            givens: Dict[str, object],
-            mlmodel_score_res_key: str = 'target',
-            mlmodel_class_proba_key: str = 'classProbability',
-            target_class_label: int = 1, imputer_value: float = np.nan,
+            givens: Dict[str, object], imputer_value: float = np.nan,
             **kwargs) -> np.ndarray:
 
         """
@@ -227,10 +224,6 @@ class BasicNativeXGBChooser(BasicChooser):
         givens: dict
             context dict needed for encoding
                 mlmodel_score_res_key
-        mlmodel_class_proba_key: str
-            param added for mlmodel api consistency
-        target_class_label: int
-            label of the target class
         imputer_value: float
             value with which missing valuse will be imputed
         kwargs

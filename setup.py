@@ -8,11 +8,13 @@ if __name__ == '__main__':
 
     installed_packages = [pkg.name for pkg in pydoc.pkgutil.iter_modules()]
 
-    with open('requirements.txt') as rqf:
-        # install_reqs = \
-        #     [pkg_name.split('==')[0].replace('\n', '')
-        #      for pkg_name in rqf.readlines() if pkg_name]
+    reqs_path = os.getenv('SDK_HOME_PATH', None)
 
+    if not reqs_path:
+        reqs_path = \
+            os.sep.join(str(__file__).split(os.sep)[:-1] + ['requirements.txt'])
+
+    with open(reqs_path) as rqf:
         install_reqs = \
             [pkg_name.replace('\n', '')
              for pkg_name in rqf.readlines() if pkg_name]

@@ -218,10 +218,7 @@ class BasicMLModelChooser(BasicChooser):
     def _score(
             self, variant: Dict[str, object], noise: float,
             givens: Dict[str, object] = None,
-            encoded_givens: Dict[str, object] = None,
-            mlmodel_score_res_key: str = 'target',
-            mlmodel_class_proba_key: str = 'classProbability',
-            target_class_label: int = 1, **kwargs) -> list:
+            encoded_givens: Dict[str, object] = None, **kwargs) -> list:
         """
         Performs scoring of a single variant using provided context and loaded
         model
@@ -234,12 +231,6 @@ class BasicMLModelChooser(BasicChooser):
             dict with lookup table and seed
         encoded_givens: Dict[str, float]
             already encoded context dict
-        mlmodel_score_res_key: str
-            key in mlmodel results dict under which result float is stored
-        mlmodel_class_proba_key: str
-            key storing dict with probas in mlmodel results dict
-        target_class_label: str
-            class label which is the <class 1>
         kwargs
 
         Returns
@@ -278,11 +269,7 @@ class BasicMLModelChooser(BasicChooser):
 
     def score(
             self, variants: List[Dict[str, object]],
-            givens: Dict[str, object],
-            mlmodel_score_res_key: str = 'target',
-            mlmodel_class_proba_key: str = 'classProbability',
-            target_class_label: int = 1, imputer_value: float = np.nan,
-            sigmoid_const: float = 0.5, **kwargs) -> np.ndarray:
+            givens: Dict[str, object], **kwargs) -> np.ndarray:
         """
         Scores all provided variants
 
@@ -292,12 +279,6 @@ class BasicMLModelChooser(BasicChooser):
             list of variants to scores
         givens: dict
             dict with lookup table and seed
-        mlmodel_score_res_key: str
-            key in mlmodel results dict under which result float is stored
-        mlmodel_class_proba_key: str
-            key storing dict with probas in mlmodel results dict
-        target_class_label: str
-            class label which is the <class 1>
         kwargs
             kwargs
 
@@ -319,10 +300,7 @@ class BasicMLModelChooser(BasicChooser):
         scores = \
             np.array([self._score(
                 variant=variant, noise=noise, givens=givens,
-                encoded_givens=encoded_context,
-                mlmodel_score_res_key=mlmodel_score_res_key,
-                mlmodel_class_proba_key=mlmodel_class_proba_key,
-                target_class_label=target_class_label) for variant in variants])
+                encoded_givens=encoded_context) for variant in variants])
 
         return scores
 
