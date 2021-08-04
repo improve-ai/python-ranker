@@ -313,7 +313,8 @@ class DecisionModel:
             variants: list or np.ndarray, scores: list or np.ndarray,
             **kwargs) -> list or np.ndarray:
         """
-        Return a list of the variants ranked from best to worst
+        Return a list of the variants ranked from best to worst.
+        DO NOT USE THIS METHOD - WILL LIKELY CHANGE SOON
 
         Parameters
         ----------
