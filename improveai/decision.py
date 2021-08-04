@@ -130,6 +130,8 @@ class Decision:
                         givens=self.givens, model_name=self.model.model_name,
                         variants_ranked_and_track_runners_up=False)
 
+            elif self.model.tracker is None:
+                raise ValueError('`tracker` object can`t be None')
             else:
                 self.__memoized_variant = \
                     dm.DecisionModel.top_scoring_variant(
