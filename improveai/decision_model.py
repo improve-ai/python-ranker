@@ -376,7 +376,7 @@ class DecisionModel:
         """
         return d.Decision(decision_model=self).given(givens=givens)
 
-    def choose_from(self, variants: list or np.ndarray, **kwargs) -> object:
+    def choose_from(self, variants: list, **kwargs) -> object:
         """
         Wrapper for chaining
 
