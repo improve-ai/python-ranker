@@ -269,9 +269,11 @@ class TestDecision(TestCase):
 
         assert decision.chosen is False
 
-        memoized_variant = \
-            decision.choose_from(variants=test_variants)\
-            .given(givens=test_given).get()
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+            memoized_variant = \
+                decision.choose_from(variants=test_variants)\
+                .given(givens=test_given).get()
 
         assert decision.chosen is True
 
@@ -308,9 +310,11 @@ class TestDecision(TestCase):
 
         assert decision.chosen is False
 
-        memoized_variant = \
-            decision.choose_from(variants=test_variants)\
-            .given(givens=test_given).get()
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+            memoized_variant = \
+                decision.choose_from(variants=test_variants)\
+                .given(givens=test_given).get()
 
         assert decision.chosen is True
 
@@ -327,9 +331,11 @@ class TestDecision(TestCase):
 
         assert decision.chosen is False
 
-        memoized_variant = \
-            decision.choose_from(variants=[None])\
-            .given(givens={}).get()
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+            memoized_variant = \
+                decision.choose_from(variants=[None])\
+                .given(givens={}).get()
 
         assert decision.chosen is True
         assert memoized_variant is None
@@ -340,9 +346,11 @@ class TestDecision(TestCase):
 
         assert decision.chosen is False
 
-        memoized_variant = \
-            decision.choose_from(variants=None)\
-            .given(givens={}).get()
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+            memoized_variant = \
+                decision.choose_from(variants=None)\
+                .given(givens={}).get()
 
         assert decision.chosen is True
         assert memoized_variant is None
@@ -443,9 +451,11 @@ class TestDecision(TestCase):
 
         assert decision.chosen is False
 
-        memoized_variant = \
-            decision.choose_from(variants=test_variants)\
-            .given(givens=test_given).get()
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+            memoized_variant = \
+                decision.choose_from(variants=test_variants)\
+                .given(givens=test_given).get()
 
         assert decision.chosen is True
         return decision, memoized_variant
@@ -575,9 +585,11 @@ class TestDecision(TestCase):
 
         assert decision.chosen is False
 
-        memoized_variant = \
-            decision.choose_from(variants=test_variants)\
-            .given(givens=test_given).get()
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+            memoized_variant = \
+                decision.choose_from(variants=test_variants)\
+                .given(givens=test_given).get()
 
         assert decision.chosen is True
 
