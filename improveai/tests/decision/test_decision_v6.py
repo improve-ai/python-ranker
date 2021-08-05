@@ -17,14 +17,14 @@ import improveai.decision_tracker as dt
 from improveai.utils.general_purpose_tools import read_jsonstring_from_file
 
 
-class TestDecisionV61(TestCase):
+class TestDecision(TestCase):
 
     @property
-    def decision_model(self):
+    def decision_model_without_tracker(self):
         return self._decision_model
 
-    @decision_model.setter
-    def decision_model(self, value):
+    @decision_model_without_tracker.setter
+    def decision_model_without_tracker(self, value):
         self._decision_model = value
 
     @property
@@ -83,7 +83,7 @@ class TestDecisionV61(TestCase):
         self.test_jsons_data_directory = \
             os.getenv('V6_DECISION_TEST_SUITE_JSONS_DIR')
 
-        self.decision_model = \
+        self.decision_model_without_tracker = \
             dm.DecisionModel.load(model_url=decision_tests_model_url)
 
         self.decision_model_with_tracker = \
@@ -140,7 +140,7 @@ class TestDecisionV61(TestCase):
             assert str(aerr.value) == "AttributeError: can't set attribute"
 
     def test_model_setter(self):
-        decision = d.Decision(decision_model=self.decision_model)
+        decision = d.Decision(decision_model=self.decision_model_without_tracker)
         assert decision.model is not None
 
         assert decision.variants == [None]
@@ -158,13 +158,13 @@ class TestDecisionV61(TestCase):
         assert decision.memoized_variant is None
 
     def test_model_getter(self):
-        decision = d.Decision(decision_model=self.decision_model)
+        decision = d.Decision(decision_model=self.decision_model_without_tracker)
         assert decision.model is not None
-        assert decision.model == self.decision_model
+        assert decision.model == self.decision_model_without_tracker
 
     def test_choose_from_variants_setter(self):
         decision = \
-            d.Decision(decision_model=self.decision_model)\
+            d.Decision(decision_model=self.decision_model_without_tracker)\
             .choose_from(self.mockup_variants)
 
         assert decision.variants is not None
@@ -181,30 +181,30 @@ class TestDecisionV61(TestCase):
     def test_choose_from_variants_setter_raises_type_error_for_string(self):
 
         with raises(TypeError) as terr:
-            d.Decision(decision_model=self.decision_model)\
+            d.Decision(decision_model=self.decision_model_without_tracker)\
                 .choose_from(variants='dummy string')
             assert str(terr.value)
 
     def test_choose_from_variants_setter_raises_type_error_for_non_iterable(
             self):
         with raises(TypeError) as terr:
-            d.Decision(decision_model=self.decision_model) \
+            d.Decision(decision_model=self.decision_model_without_tracker) \
                 .choose_from(variants={'dummy': 'string'})
             assert str(terr.value)
 
         with raises(TypeError) as terr:
-            d.Decision(decision_model=self.decision_model) \
+            d.Decision(decision_model=self.decision_model_without_tracker) \
                 .choose_from(variants=1234)
             assert str(terr.value)
 
         with raises(TypeError) as terr:
-            d.Decision(decision_model=self.decision_model) \
+            d.Decision(decision_model=self.decision_model_without_tracker) \
                 .choose_from(variants=1234.1234)
             assert str(terr.value)
 
     def test_givens_setter(self):
         decision = \
-            d.Decision(decision_model=self.decision_model)\
+            d.Decision(decision_model=self.decision_model_without_tracker)\
             .given(self.mockup_given)
 
         assert decision.givens is not None
@@ -222,22 +222,22 @@ class TestDecisionV61(TestCase):
     def test_givens_setter_raises_type_error_for_non_dict(self):
 
         with raises(TypeError) as terr:
-            d.Decision(decision_model=self.decision_model)\
+            d.Decision(decision_model=self.decision_model_without_tracker)\
                 .given(givens='dummy string')
             assert str(terr.value)
 
         with raises(TypeError) as terr:
-            d.Decision(decision_model=self.decision_model) \
+            d.Decision(decision_model=self.decision_model_without_tracker) \
                 .given(givens=['dummy', 'string'])
             assert str(terr.value)
 
         with raises(TypeError) as terr:
-            d.Decision(decision_model=self.decision_model) \
+            d.Decision(decision_model=self.decision_model_without_tracker) \
                 .given(givens=1234)
             assert str(terr.value)
 
         with raises(TypeError) as terr:
-            d.Decision(decision_model=self.decision_model) \
+            d.Decision(decision_model=self.decision_model_without_tracker) \
                 .given(givens=1234.1234)
             assert str(terr.value)
 
@@ -265,7 +265,7 @@ class TestDecisionV61(TestCase):
         if test_given is None:
             raise ValueError('`given` can`t be empty')
 
-        decision = d.Decision(decision_model=self.decision_model)
+        decision = d.Decision(decision_model=self.decision_model_with_tracker)
 
         assert decision.chosen is False
 
@@ -304,7 +304,7 @@ class TestDecisionV61(TestCase):
         if test_given is None:
             raise ValueError('`given` can`t be empty')
 
-        decision = d.Decision(decision_model=self.decision_model)
+        decision = d.Decision(decision_model=self.decision_model_with_tracker)
 
         assert decision.chosen is False
 
@@ -323,7 +323,7 @@ class TestDecisionV61(TestCase):
 
     def test_get_03(self):
 
-        decision = d.Decision(decision_model=self.decision_model)
+        decision = d.Decision(decision_model=self.decision_model_with_tracker)
 
         assert decision.chosen is False
 
@@ -336,7 +336,7 @@ class TestDecisionV61(TestCase):
 
     def test_get_04(self):
 
-        decision = d.Decision(decision_model=self.decision_model)
+        decision = d.Decision(decision_model=self.decision_model_with_tracker)
 
         assert decision.chosen is False
 
@@ -351,7 +351,7 @@ class TestDecisionV61(TestCase):
 
         tracker = dt.DecisionTracker(
             track_url=self.track_url, history_id=self.dummy_history_id)
-        decision = d.Decision(decision_model=self.decision_model)
+        decision = d.Decision(decision_model=self.decision_model_without_tracker)
         decision.model.set_tracker(tracker=tracker)
 
         assert decision.chosen is False
@@ -374,7 +374,7 @@ class TestDecisionV61(TestCase):
 
         tracker = dt.DecisionTracker(
             track_url=self.track_url, history_id=self.dummy_history_id)
-        decision = d.Decision(decision_model=self.decision_model)
+        decision = d.Decision(decision_model=self.decision_model_without_tracker)
         decision.model.set_tracker(tracker=tracker)
 
         assert decision.chosen is False
@@ -398,7 +398,7 @@ class TestDecisionV61(TestCase):
 
         tracker = dt.DecisionTracker(
             track_url=self.track_url, history_id=self.dummy_history_id)
-        decision = d.Decision(decision_model=self.decision_model)
+        decision = d.Decision(decision_model=self.decision_model_without_tracker)
         decision.model.set_tracker(tracker=tracker)
 
         assert decision.chosen is False
@@ -439,7 +439,7 @@ class TestDecisionV61(TestCase):
         if test_given is None:
             raise ValueError('`given` can`t be empty')
 
-        decision = d.Decision(decision_model=self.decision_model)
+        decision = d.Decision(decision_model=self.decision_model_with_tracker)
 
         assert decision.chosen is False
 
@@ -463,7 +463,7 @@ class TestDecisionV61(TestCase):
         assert memoized_variant == decision.memoized_variant
 
     def test_choose_from_variants_already_set(self):
-        decision = d.Decision(decision_model=self.decision_model)
+        decision = d.Decision(decision_model=self.decision_model_without_tracker)
 
         assert decision.variants == [None]
         assert decision.givens is None
@@ -489,7 +489,7 @@ class TestDecisionV61(TestCase):
         assert decision.memoized_variant is None
 
     def test_given_givens_already_set(self):
-        decision = d.Decision(decision_model=self.decision_model)
+        decision = d.Decision(decision_model=self.decision_model_without_tracker)
 
         assert decision.variants == [None]
         assert decision.givens is None
@@ -542,7 +542,7 @@ class TestDecisionV61(TestCase):
                memoized_variant_from_decision
 
     def test_memoized_variant_set_from_outside(self):
-        decision = d.Decision(decision_model=self.decision_model)
+        decision = d.Decision(decision_model=self.decision_model_without_tracker)
 
         with raises(AttributeError) as aerr:
             decision.memoized_variant = 'dummy_variant'
@@ -571,7 +571,7 @@ class TestDecisionV61(TestCase):
         if test_given is None:
             raise ValueError('`given` can`t be empty')
 
-        decision = d.Decision(decision_model=self.decision_model)
+        decision = d.Decision(decision_model=self.decision_model_with_tracker)
 
         assert decision.chosen is False
 
@@ -584,3 +584,11 @@ class TestDecisionV61(TestCase):
         expected_output = test_data.get('test_output', None)
 
         assert memoized_variant == expected_output
+
+    def test_get_with_no_tracker(self):
+        variants = [el for el in range(10)]
+
+        with raises(ValueError) as verr:
+            d.Decision(decision_model=self.decision_model_without_tracker)\
+                .choose_from(variants=variants).get()
+            assert str(verr.value)

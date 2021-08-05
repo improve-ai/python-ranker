@@ -624,3 +624,16 @@ class TestDecisionModel(TestCase):
 
             assert str(terr.value)
 
+    def test_no_model_score_and_sort(self):
+
+        variants = [el for el in range(100)]
+
+        decision_model = dm.DecisionModel(model_name='no-model')
+
+        scores_for_variants = decision_model.score(variants=variants, givens={})
+
+        sorted_with_scores = \
+            [v for _, v in
+             sorted(zip(scores_for_variants, variants), reverse=True)]
+
+        assert variants == sorted_with_scores

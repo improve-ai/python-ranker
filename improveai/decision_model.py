@@ -242,8 +242,6 @@ class DecisionModel:
             return DecisionModel.generate_descending_gaussians(
                 count=len(variants))
 
-        # TODO ask about the sigmoid correction
-
         scores = \
             self.chooser.score(variants=variants, givens=givens)
         return scores

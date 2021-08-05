@@ -53,17 +53,17 @@ To install python-sdk for Improve.ai:
 ```python
 from improveai import DecisionTracker
 
-endpoint_url = '<desired tracker endpoint url>'
+tracker_url = '<desired tracker endpoint url>'
 history_id = '<desired history id>'
 
 # Call with no API key
-tracker = DecisionTracker(track_url=endpoint_url, history_id=history_id)
+tracker = DecisionTracker(track_url=tracker_url, history_id=history_id)
 
 # Call with API key
 api_key = '<API key for endpoint_url>'
 tracker = \
-        DecisionTracker(
-            track_url=endpoint_url, api_key=api_key, history_id=history_id)
+    DecisionTracker(
+        track_url=tracker_url, api_key=api_key, history_id=history_id)
 ```
 
 To obtain the model bundle URL and api key, first deploy an Improve Model Gateway (link).
@@ -95,13 +95,14 @@ What is the best greeting?
 from improveai import Decision, DecisionModel
 
 
-dm = None
+model_name = 'hello-world-model'
+dm = DecisionModel(model_name=model_name) 
+
 # If you already have a trained model you might want to use one 
 i_have_model = False
 if i_have_model:
     model_url = '<path / or / URL / to / model>'
-    
-    dm = DecisionModel(model_url=model_url)
+    dm.load(model_url=model_url)
 
 # prepare JSON encodable variants to choose from:
 hello_variants = [
@@ -109,21 +110,22 @@ hello_variants = [
     {'text': "Hi World!"},
     {'text': "Howdy World!"}]
 
-d = Decision(model=dm)
+givens = {
+    '<metadata_key_0>': '<metadata_value_0>',
+    '<metadata_key_1>': '<metadata_value_1>'}
 
 # Get the best greeting
-best_hello_world = d.best()
+best_hello_world = \
+    Decision(decision_model=dm).choose_from(variants=hello_variants)\
+    .given(givens=givens).get()
 
 # Train model using decision
-tracker.track(decision=d, timestamp='<datetime64 timestamp or None>')
-
-best_hello_world_revenue = 1  # award / revenue assigned to the 'best' variant
-
-# ... later when the `best_hello_world` is chosen, give the decision a reward
-tracker.add_reward(
-    reward=best_hello_world_revenue, reward_key='greetings', 
-    message_id='<unique msg id>', history_id='<unique history id>', 
+tracker.track(
+    variant=best_hello_world,
+    variants=hello_variants,
+    givens=givens, model_name=model_name,
     timestamp='<datetime64 timestamp or None>')
+
 ```
 
 Improve quickly learns to choose the greeting with the highest chance of button tap.
@@ -138,27 +140,31 @@ Namespace strings are opaque and can be any format you wish.
 How many bonus gems should we offer on our In App Purchase?
 
 ```python
-from improveai import Decision
+from improveai import Decision, DecisionModel
 
+
+model_name = 'gems-model'
+dm = DecisionModel(model_name=model_name)
 
 # prepare JSON encodable variants to choose from:
 gems_variants = [{'number': 1000}, {'number': 2000}, {'number': 3000}]
 
-d = Decision(variants=gems_variants, model_name='bonusGems')
+givens = {
+    '<metadata_key_0>': '<metadata_value_0>',
+    '<metadata_key_1>': '<metadata_value_1>'}
 
-best_gems_count = d.best()
+best_gems_count = \
+    Decision(decision_model=dm).choose_from(variants=gems_variants)\
+    .givens(givens=givens).get()
 
 # train the model using the decision
-tracker.track_using_best_from(
-    decision=d, message_id='<unique msg id>', history_id='<unique history id>', 
+tracker.track(
+    variant=best_gems_count,
+    variants=gems_variants,
+    givens=givens, model_name=model_name,
     timestamp='<datetime64 timestamp or None>')
 
-# ... later when the user makes a purchase, give the decision a reward
-best_gems_count_revenue = 1  # award / revenue assigned to the 'best' variant
-tracker.add_reward(
-    reward=best_gems_count_revenue, reward_key='bonusGems', 
-    message_id='<unique msg id>', history_id='<unique history id>', 
-    timestamp='<datetime64 timestamp or None>')
+
 ```
 
 ### Complex Objects
@@ -169,21 +175,21 @@ from improveai import Decision, DecisionModel
 
 dm = None
 # If you already have a trained model you might want to use one
+model_name = 'complex-objects-model'
 i_have_model = False
 if i_have_model:
-    model_kind = 'xgb_native'
-    model_pth = '<path / or / URL / to / model>'
+    model_ulr = '<path / or / URL / to / model>'
     
-    dm = DecisionModel(model_pth=model_pth, model_kind=model_kind)
+    dm = DecisionModel(model_name=model_name).load(model_url=model_ulr)
 
 # prepare JSON encodable variants to choose from:
 complex_variants = [
     {"textColor": "#000000", "backgroundColor": "#ffffff" },
     { "textColor": "#F0F0F0", "backgroundColor": "#aaaaaa" }]
 
-d = Decision(variants=complex_variants, model=dm, model_name='theme')
+best_complex_variant = \
+    Decision(decision_model=dm).choose_from(variants=complex_variants).get()
 
-bset_coplex_variant = d.best()
 ```
 
 Improve learns to use the attributes of each key and value in a dictionary variant to make the optimal decision.  
@@ -200,12 +206,13 @@ from improveai import Decision, DecisionModel
 
 dm = None
 # If you already have a trained model you might want to use one
+model_name = 'greeting-model'
+
 i_have_model = False
 if i_have_model:
-    model_kind = 'xgb_native'
-    model_pth = '<path / or / URL / to / model>'
+    model_url = '<path / or / URL / to / model>'
     
-    dm = DecisionModel(model_pth=model_pth, model_kind=model_kind)
+    dm = DecisionModel(model_name=model_name).load(model_url=model_url)
 
 # prepare JSON encodable variants to choose from:
 
@@ -216,28 +223,32 @@ cowboy_hello_variants = [
 
 cowboy_greeting_context = {"language": "cowboy"}
 
-d = Decision(
-    variants=complex_variants, model=dm, model_name='greetings', 
-    context=cowboy_greeting_context)
+best_complex_variant = \ 
+    Decision(decision_model=dm).choose_from(variants=cowboy_hello_variants)\
+    .get()
 
-bset_coplex_variant = d.best()
 ```
 
-Improve can optimize decisions for a given context of arbitrary complexity. We might imagine that "Howdy World!" would produce the highest rewards for { language: cowboy }, while another greeting might be best for other contexts.
+Improve can optimize decisions for a given ```givens``` of arbitrary complexity. We might imagine that "Howdy World!" would produce the highest rewards for { language: cowboy }, while another greeting might be best for other contexts.
 
-You can think of contexts like: If `<context>` then `<variant>`.
+You can think of contexts like: If ```<givens>``` then ```<variant>```.
 
 ### Learning from Specific Types of Rewards
-Instead of tracking rewards for every seperate decision namespace, we can assign a custom rewardKey during trackDecision for that specific decision to be trained on.
+Instead of tracking rewards for every separate decision namespace, we can assign a custom rewardKey during track for that specific decision to be trained on.
 
 ```python
+variants = \
+    [{'song': "Hey Jude"}, {'song': "Lucy in the sky with diamond"}, 
+     {'song': "Yellow submarine"}]
 tracked_variant = {'song': "Hey Jude"}
-tracked_variant_context = {}  # some context for a given variant
+tracked_variant_givens = {}  # some context for a given variant
 
 # train the model using the decision
-tracker.track_using(
-    variant=tracked_variant, model_name='songs', message_id='<unique msg id>', 
-    history_id='<unique history id>', timestamp='<datetime64 timestamp or None>')
+tracker.track(
+    variant=tracked_variant,
+    variants=variants,
+    givens=tracked_variant_givens, model_name=model_name,
+    timestamp='<datetime64 timestamp or None>')
 
 # track_rewards() is called in iOS API here but is not implemented
  ```
@@ -253,77 +264,46 @@ from improveai import Decision, DecisionModel
 
 dm = None
 # If you already have a trained model you might want to use one
+
+model_name = 'videos-model'
+dm = DecisionModel(model_name=model_name)
+
 i_have_model = False
 if i_have_model:
-    model_kind = 'xgb_native'
-    model_pth = '<path / or / URL / to / model>'
-    
-    dm = DecisionModel(model_pth=model_pth, model_kind=model_kind)
-
+    model_url = '<path / or / URL / to / model>'
+    dm.load(model_url=model_url)
 
 viral_video_variants = [{'video': 'video1'}, {'video': 'video2'}]
-viral_video_context = {}  # context for videos
+viral_video_givens = {}  # context for videos
 
-d = Decision(
-    variants=viral_video_variants, model=dm, context=viral_video_context)
-
-best_video = d.best()
+best_video = \
+    Decision(decision_model=dm).choose_from(variants=viral_video_variants)\
+    .given(givens=viral_video_givens).get()
 
 # Create a custom rewardKey specific to this variant
-tracker.track_using_best_from(
-    decision=d, message_id='<unique msg id>', history_id='<unique history id>',
-    timestamp='<datetime64 timestamp or None>')
-
-video_reward_key = 'sample_video_key'
-best_video_revenue = 1  # award / revenue assigned to the 'best' variant
-tracker.add_reward(
-    reward=best_video_revenue, reward_key=video_reward_key, 
-    message_id='<unique msg id>', history_id='<unique history id>', 
+tracker.track(
+    variant=best_video,
+    variants=viral_video_variants,
+    givens=viral_video_givens, model_name=model_name,
     timestamp='<datetime64 timestamp or None>')
 ```
 
- ### Sort Stuff
+[comment]: <> (```python)
 
-```python
-from improveai import Decision, DecisionModel
- 
+[comment]: <> (video_reward_key = 'sample_video_key')
 
-dm = None
-# If you already have a trained model you might want to use one
-i_have_model = False
-if i_have_model:
-    model_kind = 'xgb_native'
-    model_pth = '<path / or / URL / to / model>'
-    
-    dm = DecisionModel(model_pth=model_pth, model_kind=model_kind)
+[comment]: <> (best_video_revenue = 1  # award / revenue assigned to the 'best' variant)
 
-dogs_variants = [
-    {'breed': 'German Shepard'}, 
-    {'breed': "Border Collie"}, 
-    {'breed': "Labrador Retriever"}]
-dogs_context = {}  # dogs context dict
-dogs_model_name = 'dog'
+[comment]: <> (tracker.add_reward&#40;)
 
-d = Decision(
-    variants=dogs_variants, model=dm, model_name=dogs_model_name, 
-    context=dogs_context)
+[comment]: <> (    reward=best_video_revenue, reward_key=video_reward_key, )
 
-# No human could ever make this decision, but math can.
-sorted_breeds = d.ranked()
-top_dog = sorted_breeds[0] 
+[comment]: <> (    message_id='<unique msg id>', history_id='<unique history id>', )
 
-# With ranked, training is done just as before, on one individual variant at a time.
-tracker.track_using_best_from(
-    decision=d, message_id='<unique msg id>', history_id='<unique history id>',
-    timestamp='<datetime64 timestamp or None>')
+[comment]: <> (    timestamp='<datetime64 timestamp or None>'&#41;)
 
-top_dog_revenue = 1000  # award / revenue assigned to the 'best' variant
-tracker.add_reward(
-    reward=top_dog_revenue, reward_key=dogs_model_name, 
-    message_id='<unique msg id>', history_id='<unique history id>', 
-    timestamp='<datetime64 timestamp or None>')
+[comment]: <> (```)
 
-```
 
  ### Server-Side Decision/Rewards Processing
  
@@ -334,8 +314,8 @@ tracker.add_reward(
 
 #...when the song is played
 song_properties = {'song': 'example_song_object'}
-tracker.track_analytics_event(event='Song Played', properties=song_properties)
- ```
+tracker.track_event(event_name='song_played', properties=song_properties)
+```
 
  ## Algorithm
  
