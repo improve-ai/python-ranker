@@ -1,14 +1,36 @@
-from Cython.Build import cythonize
-# from distutils.core import setup
 from setuptools import Extension, find_packages, setup
-# from cysetuptools import setup
-import sys
-# from distutils.extension import Extension
-import numpy as np
+
 import os
+import pydoc
 
 
 if __name__ == '__main__':
+
+    installed_packages = [pkg.name for pkg in pydoc.pkgutil.iter_modules()]
+
+    reqs_path = os.getenv('SDK_HOME_PATH', None)
+
+    if not reqs_path:
+        reqs_path = \
+            os.sep.join(str(__file__).split(os.sep)[:-1] + ['requirements.txt'])
+
+    with open(reqs_path) as rqf:
+        install_reqs = \
+            [pkg_name.replace('\n', '')
+             for pkg_name in rqf.readlines() if pkg_name]
+
+        cython_dep = [el for el in install_reqs if 'Cython' in el][0]
+        numpy_dep = [el for el in install_reqs if 'numpy' in el][0]
+
+    if 'Cython' not in installed_packages:
+        os.system('pip3 install {}'.format(cython_dep))
+
+    from Cython.Build import cythonize
+
+    if 'numpy' not in installed_packages:
+        os.system('pip3 install {}'.format(numpy_dep))
+
+    import numpy as np
 
     rel_pth_prfx = \
         os.sep.join(str(os.path.relpath(__file__)).split(os.sep)[:-1])
@@ -34,8 +56,9 @@ if __name__ == '__main__':
           author_email='',
           url='https://github.com/improve-ai/python-sdk',
           packages=find_packages(exclude=['*tests*']),
-          install_requires=["numpy", "setuptools", "wheel", "Cython"],
+          install_requires=
+          ["numpy", "setuptools", "wheel", "Cython"] + install_reqs,
           ext_modules=cythonize(fast_feat_enc_ext, language_level="3"),
-          include_dirs=np.get_include(),
+          include_dirs=[np.get_include()],
           package_data={'improveai': [pth_str]},
           include_package_data=True)

@@ -1,12 +1,17 @@
+from copy import deepcopy
 import coremltools as ct
 import json
+from numbers import Number
 import numpy as np
 from time import time
 from typing import Dict, List
 
+
 from improveai.choosers.basic_choosers import BasicChooser
-from improveai.encoders.feature_encoder import FeatureEncoder
-from improveai.utils.gen_purp_utils import constant, sigmoid
+from improveai.feature_encoder import FeatureEncoder
+from improveai.utils.general_purpose_tools import constant
+from improveai.utils.choosers_feature_encoding_tools import \
+    encoded_variant_to_np
 
 
 class BasicMLModelChooser(BasicChooser):
@@ -44,20 +49,52 @@ class BasicMLModelChooser(BasicChooser):
         self._model_metadata_key = new_val
 
     @property
-    def lookup_table_key(self) -> str:
-        return self._lookup_table_key
+    def model_seed_key(self) -> str:
+        return self._model_seed_key
 
-    @lookup_table_key.setter
-    def lookup_table_key(self, new_val: str):
-        self._lookup_table_key = new_val
+    @model_seed_key.setter
+    def model_seed_key(self, new_val: str):
+        self._model_seed_key = new_val
 
     @property
-    def seed_key(self) -> str:
-        return self._seed_key
+    def model_seed(self):
+        return self._model_seed
 
-    @seed_key.setter
-    def seed_key(self, new_val: str):
-        self._seed_key = new_val
+    @model_seed.setter
+    def model_seed(self, value):
+        self._model_seed = value
+
+    @property
+    def model_name_key(self):
+        return self._model_name_key
+
+    @model_name_key.setter
+    def model_name_key(self, value):
+        self._model_name_key = value
+
+    @property
+    def model_name(self):
+        return self._model_name
+
+    @model_name.setter
+    def model_name(self, value):
+        self._model_name = value
+
+    @property
+    def model_feature_names_key(self):
+        return self._model_feature_names_key
+
+    @model_feature_names_key.setter
+    def model_feature_names_key(self, new_val):
+        self._model_feature_names_key = new_val
+
+    @property
+    def model_feature_names(self) -> np.ndarray:
+        return self._model_feature_names
+
+    @model_feature_names.setter
+    def model_feature_names(self, new_val):
+        self._model_feature_names = new_val
 
     @constant
     def TIEBREAKER_MULTIPLIER() -> float:
@@ -65,15 +102,26 @@ class BasicMLModelChooser(BasicChooser):
 
     def __init__(
             self, mlmodel_metadata_key: str = 'json',
-            lookup_table_key: str = 'table', seed_key: str = 'model_seed'):
+            model_feature_names_key: str = 'feature_names',
+            model_seed_key: str = 'model_seed',
+            model_name_key: str = 'model'):
         # initialize
         self.model = None
         self.model_metadata_key = mlmodel_metadata_key
-        self.feature_encoder = None
         self.model_metadata = None
-        self.lookup_table_key = lookup_table_key
-        self.seed_key = seed_key
+
+        self.feature_encoder = None
+
+        self.model_seed_key = model_seed_key
+        self.model_seed = None
+
+        self.model_name_key = model_name_key
+        self.model_name = None
+
         self.model_objective = None
+
+        self.model_feature_names_key = model_feature_names_key
+        self.model_feature_names = np.empty(shape=(1,))
 
     def _load_buffered_model(self, model_bytes: bytes):
         """
@@ -90,26 +138,17 @@ class BasicMLModelChooser(BasicChooser):
 
         """
 
-        # user_home_dir = os.path.expanduser('~')
-        # tmp_model_pth = user_home_dir + os.sep + 'tmp.mlmodel'
-        #
-        # with open(tmp_model_pth, 'wb') as tmp_mlmodel:
-        #     tmp_mlmodel.write(model_bytes)
-        #
-        # loaded_model_specs = ct.models.MLModel(tmp_model_pth)._spec
-        # os.remove(tmp_model_pth)
-
         spec = ct.proto.Model_pb2.Model()
         spec.ParseFromString(model_bytes)
         return ct.models.MLModel(spec)
 
-    def load_model(self, inupt_model_src: str, verbose: bool = True):
+    def load_model(self, input_model_src: str, verbose: bool = False):
         """
         Loads desired model from input path.
 
         Parameters
         ----------
-        inupt_model_src: str
+        input_model_src: str
             path to desired model
         verbose: bool
             should I print msgs
@@ -121,11 +160,15 @@ class BasicMLModelChooser(BasicChooser):
 
         """
 
+        failed_to_load = False
         try:
             if verbose:
-                print('Attempting to load: {} model'.format(inupt_model_src))
+                print('Attempting to load: {} model'.format(
+                    input_model_src if len(input_model_src) < 100 else
+                    str(input_model_src[:10]) + ' ... ' + str(
+                        input_model_src[-10:])))
 
-            raw_model_src = self._get_model_src(model_src=inupt_model_src)
+            raw_model_src = self.get_model_src(model_src=input_model_src)
 
             # model_src = self._load_buffered_model(model_bytes=raw_model_src)
 
@@ -133,16 +176,28 @@ class BasicMLModelChooser(BasicChooser):
                 ct.models.MLModel(raw_model_src) \
                 if not isinstance(raw_model_src, bytes) \
                 else self._load_buffered_model(model_bytes=raw_model_src)
-            if verbose:
-                print('Model: {} successfully loaded'.format(inupt_model_src))
+
+            if verbose and not failed_to_load:
+                print('Model: {} successfully loaded'.format(
+                    input_model_src if len(input_model_src) < 100 else
+                    str(input_model_src[:10]) + ' ... ' + str(input_model_src[-10:])))
         except Exception as exc:
             if verbose:
                 print(
                     'When attempting to load the mode: {} the following error '
-                    'occured: {}'.format(inupt_model_src, exc))
+                    'occured: {}'.format(input_model_src, exc))
 
-        self.model_metadata = self._get_model_metadata()
-        self.feature_encoder = self._get_feature_encoder()
+        if failed_to_load:
+            raise RuntimeError('Model failed to load')
+
+        model_metadata = self._get_model_metadata()
+
+        self.model_seed = self._get_model_seed(model_metadata=model_metadata)
+        self.model_name = self._get_model_name(model_metadata=model_metadata)
+        self.model_feature_names = \
+            self._get_model_feature_names(model_metadata=model_metadata)
+
+        self.feature_encoder = FeatureEncoder(model_seed=self.model_seed)
 
     def _get_model_metadata(self) -> dict:
         """
@@ -160,16 +215,10 @@ class BasicMLModelChooser(BasicChooser):
         return json.loads(
             self.model.user_defined_metadata[self.model_metadata_key])
 
-    def score(
-            self, variant: Dict[str, object],
-            context: Dict[str, object] = None,
-            encoded_context: Dict[str, object] = None,
-            mlmodel_score_res_key: str = 'target',
-            mlmodel_class_proba_key: str = 'classProbability',
-            target_class_label: int = 1, imputer_value: float = np.nan,
-            sigmoid_correction: bool = True,
-            sigmoid_const: float = 0.5, return_plain_results: bool = False,
-            **kwargs) -> list:
+    def _score(
+            self, variant: Dict[str, object], noise: float,
+            givens: Dict[str, object] = None,
+            encoded_givens: Dict[str, object] = None, **kwargs) -> list:
         """
         Performs scoring of a single variant using provided context and loaded
         model
@@ -178,22 +227,10 @@ class BasicMLModelChooser(BasicChooser):
         ----------
         variant: dict
             scored case / row as a dict
-        context: dict
+        givens: dict
             dict with lookup table and seed
-        encoded_context: Dict[str, float]
+        encoded_givens: Dict[str, float]
             already encoded context dict
-        mlmodel_score_res_key: str
-            key in mlmodel results dict under which result float is stored
-        mlmodel_class_proba_key: str
-            key storing dict with probas in mlmodel results dict
-        target_class_label: str
-            class label which is the <class 1>
-        imputer_value: float
-            value with which nans will be imputed
-        sigmoid_correction: bool
-            should sigmoid correction be applied to results of predict
-        sigmoid_const: float
-            intercept term of sigmoid
         kwargs
 
         Returns
@@ -203,133 +240,36 @@ class BasicMLModelChooser(BasicChooser):
 
         """
 
-        if not encoded_context:
-            encoded_context = \
-                self.feature_encoder.encode_features({'context': context})
-        # encoded_features = \
-        #     self.feature_encoder.encode_features({'variant': variant})
-        #
-        # all_encoded_features = deepcopy(encoded_context)
-        # all_encoded_features.update(encoded_features)
+        if not encoded_givens:
+            encoded_givens = \
+                self.feature_encoder.encode_givens(givens=givens, noise=noise)
 
-        all_feats_count = self._get_features_count()
-        all_feat_names = \
-            np.array(['f{}'.format(el) for el in range(all_feats_count)])
-
-        # rename features
-        # missings_filled_v = \
-        #     self._get_missings_filled_variants(
-        #         input_dict=encoded_features, all_feats_count=all_feats_count,
-        #         missing_filler=imputer_value)
-
-        # _get_nan_filled_encoded_variant
+        encoded_variant_and_context = \
+            self.feature_encoder.encode_variant(
+                variant=variant, noise=noise, into=encoded_givens)
 
         missings_filled_v = \
-            self._get_nan_filled_encoded_variant(
-                variant=variant, context=encoded_context,
-                all_feats_count=all_feats_count, missing_filler=imputer_value)\
-            .reshape((all_feats_count, ))
+            encoded_variant_to_np(
+                encoded_variant=encoded_variant_and_context,
+                feature_names=self.model_feature_names)
 
-        assert len(all_feat_names) == len(missings_filled_v)
+        assert len(self.model_feature_names) == len(missings_filled_v)
 
         score_dict = \
-            self.model.predict(dict(zip(all_feat_names, missings_filled_v)))
+            self.model.predict(
+                dict(zip(self.model_feature_names, missings_filled_v)))
 
-        best_score = \
-            self._get_processed_score(
-                variant=variant, score_dict=score_dict,
-                mlmodel_class_proba_key=mlmodel_class_proba_key,
-                mlmodel_score_res_key=mlmodel_score_res_key,
-                target_class_label=target_class_label,
-                sigmoid_correction=sigmoid_correction,
-                sigmoid_const=sigmoid_const)
+        if 'target' not in score_dict:
+            raise ValueError(
+                'Prediction dict has no `target` key: {}'.format(score_dict))
 
-        best_score[1] = \
-            float(np.array(best_score[1], dtype='float64') +
-                  np.array(np.random.rand(), dtype='float64') *
-                  self.TIEBREAKER_MULTIPLIER)
+        score = score_dict.get('target', None)
 
-        if return_plain_results:
-            return best_score[1]
+        return score
 
-        return best_score
-
-    def _get_processed_score(
-            self, variant, score_dict, mlmodel_class_proba_key,
-            mlmodel_score_res_key, target_class_label,
-            sigmoid_correction: bool = True,
-            sigmoid_const: float = 0.5) -> list:
-        """
-        Getter for object which would be returned with scores
-
-        Parameters
-        ----------
-        variant: dict
-            dict with scored variatn
-        score_dict: dict
-            dict with results
-        mlmodel_class_proba_key: str
-            string with mlmodel probability key in results dict
-        mlmodel_score_res_key: str
-            string with score key in results dict
-        target_class_label: object
-            desired class label of a target class
-        sigmoid_correction: bool
-            should sigmoid correction be applied
-        sigmoid_const: float
-            sigmoids intercept
-
-        Returns
-        -------
-        list
-            list with processed results
-
-        """
-
-        if mlmodel_class_proba_key in score_dict.keys():
-
-            if len(score_dict[mlmodel_class_proba_key].keys()) == 2:
-
-                class_1_proba = \
-                    score_dict[mlmodel_class_proba_key][target_class_label]
-                if sigmoid_correction:
-                    class_1_proba = \
-                        sigmoid(x=class_1_proba, logit_const=sigmoid_const)
-
-                return [variant, class_1_proba, target_class_label]
-
-            class_1_probas = score_dict[mlmodel_class_proba_key].values()
-
-            all_scores = \
-                np.array([
-                    [sigmoid(x=val, logit_const=sigmoid_const)
-                     for val in class_1_probas] if sigmoid_correction
-                    else list(score_dict[mlmodel_class_proba_key].values()),
-                    list(score_dict[mlmodel_class_proba_key].keys())]).T
-            return \
-                [variant] + \
-                all_scores[all_scores[:, 0] == all_scores[:, 0].max()] \
-                .flatten().tolist()
-        else:
-            score = score_dict.get(mlmodel_score_res_key, None)
-            if not score:
-                raise KeyError(
-                    'There was no key named: {} in result of predict() method'
-                    .format(mlmodel_score_res_key))
-            return [variant,
-                    sigmoid(x=score, logit_const=sigmoid_const)
-                    if sigmoid_correction else score, 0]
-
-    def score_all(
+    def score(
             self, variants: List[Dict[str, object]],
-            context: Dict[str, object],
-            mlmodel_score_res_key: str = 'target',
-            mlmodel_class_proba_key: str = 'classProbability',
-            target_class_label: int = 1, imputer_value: float = np.nan,
-            sigmoid_const: float = 0.5,
-            sigmoid_correction: bool = True,
-            return_plain_results: bool = False,
-            **kwargs) -> np.ndarray:
+            givens: Dict[str, object], **kwargs) -> np.ndarray:
         """
         Scores all provided variants
 
@@ -337,24 +277,8 @@ class BasicMLModelChooser(BasicChooser):
         ----------
         variants: list
             list of variants to scores
-        context: dic        variant: dict
-            scored case / row as a dict
-        context: dict
+        givens: dict
             dict with lookup table and seed
-        mlmodel_score_res_key: str
-            key in mlmodel results dict under which result float is stored
-        mlmodel_class_proba_key: str
-            key storing dict with probas in mlmodel results dict
-        target_class_label: str
-            class label which is the <class 1>
-        imputer_value: float
-            value with which nans will be imputed
-        sigmoid_correction: bool
-            should sigmoid correction be applied
-        sigmoid_const: float
-            sigmoids intercept
-        return_plain_results: boold
-            should results without 'post-processing' be returned (for speed`s sake)
         kwargs
             kwargs
 
@@ -365,20 +289,18 @@ class BasicMLModelChooser(BasicChooser):
 
         """
 
+        # encoded_context = \
+        #     self.feature_encoder.encode_features({'context': context})
+
+        noise = np.random.rand()
+
         encoded_context = \
-            self.feature_encoder.encode_features({'context': context})
+            self.feature_encoder.encode_givens(givens=givens, noise=noise)
 
         scores = \
-            np.array([self.score(
-                variant=variant, context=context,
-                encoded_context=encoded_context,
-                mlmodel_score_res_key=mlmodel_score_res_key,
-                mlmodel_class_proba_key=mlmodel_class_proba_key,
-                target_class_label=target_class_label,
-                imputer_value=imputer_value,
-                sigmoid_correction=sigmoid_correction,
-                sigmoid_const=sigmoid_const,
-                return_plain_results=return_plain_results) for variant in variants])
+            np.array([self._score(
+                variant=variant, noise=noise, givens=givens,
+                encoded_givens=encoded_context) for variant in variants])
 
         return scores
 
@@ -387,10 +309,11 @@ if __name__ == '__main__':
 
     mlmc = BasicMLModelChooser()
 
-    test_model_pth = '../artifacts/test_artifacts/improve-messages-2.0-3.mlmodel'
+    # test_model_pth = '../artifacts/test_artifacts/improve-messages-2.0-3.mlmodel'
+    test_model_pth = '../artifacts/models/v6_conv_model.mlmodel'
     # test_model_pth = "https://improve-v5-resources-prod-models-117097735164.s3-us-west-2.amazonaws.com/models/mindful/latest/improve-messages-2.0.mlmodel"
     # test_model_pth = "/Users/os/Downloads/improve-messages-2.0.mlmodel.gz"
-    mlmc.load_model(inupt_model_src=test_model_pth)
+    mlmc.load_model(input_model_src=test_model_pth)
 
     with open('../artifacts/test_artifacts/context.json', 'r') as mj:
         json_str = mj.readline()
@@ -400,7 +323,8 @@ if __name__ == '__main__':
         json_str = vj.readlines()
         variants = json.loads(''.join(json_str))
 
-    res = mlmc.score(variant=variants[0], context=context)
+    noise = np.random.rand()
+    res = mlmc._score(variant=variants[0], givens=context, noise=noise)
     print('res')
     print(res)
     # 0.0012913734900291936
@@ -413,7 +337,7 @@ if __name__ == '__main__':
     for _ in range(batch_size):
         # res = mlmc.score(variant=variants[0], context=context)
         res_all = \
-            mlmc.score_all(variants=variants, context=context)
+            mlmc.score(variants=variants, givens=context)
     et = time()
     print((et - st) / batch_size)
     input('sanity check')

@@ -1,0 +1,87 @@
+{
+    "test_case": {
+        "givens": {
+            "natural_pelican": [
+                "didactic",
+                "hospitable",
+                "butterfly",
+                "of",
+                "novelty"
+            ],
+            "nostalgic_orca": [
+                "conscious",
+                "natural",
+                "sloth",
+                "of",
+                "eternity"
+            ],
+            "venomous_nightingale": [
+                "busy",
+                "inquisitive",
+                "spider",
+                "of",
+                "charisma"
+            ],
+            "hungry_dalmatian": [
+                0,
+                1,
+                2,
+                3
+            ]
+        },
+        "variant": {
+            "authentic mandrill": "amorphous noisy bird of cleaning",
+            "carmine seriema": "radical white butterfly of piety",
+            "fresh tuna": "calm tentacled mayfly of nirvana",
+            "hissing squid": "dashing mega cockatoo of realization"
+        }
+    },
+    "test_output": {
+        "06082339": -2294.0156,
+        "09809788": -5925.0405,
+        "19eb024e": -25542.174,
+        "1b611473": -5513.0376,
+        "1cd97f91": 6.812029e-06,
+        "1d8fa990": 19500.133,
+        "26b16675": 17730.121,
+        "32047919": 9362.063,
+        "333bff78": 29981.205,
+        "3a996a0a": 17568.12,
+        "3c976c94": -7573.052,
+        "51086a80": 3.0000272,
+        "51c50446": 4920.0337,
+        "55689015": -16944.115,
+        "575721d0": -19941.137,
+        "694af674": 10718.073,
+        "6bca0ca2": 16843.115,
+        "6c5842a0": 14192.097,
+        "71c457dc": 6739.046,
+        "763acb2b": 28103.191,
+        "769a5429": -27954.19,
+        "8f43932a": 27860.19,
+        "970b97ca": 666.0045,
+        "9c396bc9": 1691.0115,
+        "ab3114af": 27560.188,
+        "b51f53af": 8980.062,
+        "b707ee17": -22001.15,
+        "bc1c7a00": -15170.104,
+        "bca7d732": 27083.184,
+        "c582766e": 2.0000205,
+        "c8e2661e": 5667.0386,
+        "cbe39e2a": 2564.0176,
+        "d216f7ee": -9218.0625,
+        "dd9e658f": -28308.193,
+        "e011e9bd": -19681.135,
+        "e0a3ab5f": 1.0000136,
+        "e792b8f1": 18356.125,
+        "e97270e5": -27434.188,
+        "ebd394cc": 19364.133,
+        "ef98c7fc": 28654.195,
+        "fc954e75": 16426.111
+    },
+    "model_seed": 1,
+    "noise": 0.8928601514360016,
+    "variant_seed": 2675988294294598568,
+    "value_seed": 6818340268807889528,
+    "givens_seed": 12461487462738526788
+}

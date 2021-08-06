@@ -1,0 +1,6 @@
+{
+    "test_case": {
+        "model_filename": "model_does_mot_exists!.xgb"
+    },
+    "test_output": {}
+}

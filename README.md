@@ -1,81 +1,60 @@
 # Improve.ai for python (3.7.9)
 
-## An AI library for Making Great Choices
+
+## Fast AI Decisions for Swift and Objective C
 
 [![License](https://img.shields.io/cocoapods/l/Improve.svg?style=flat)](http://cocoapods.org/pods/Improve)
 
-Quickly choose and sort objects to maximize user retention, performance, revenue, or any other metric. It's like an AI if / then statement.
+It's like an AI *if/then* statement. Quickly make decisions that configure your app to maximize revenue, performance, user retention, or any other metric.
 
-Improve.ai performs fast machine learning on any `JSON` encodable data structure including dictionaries, arrays, strings, integers, floats, and null values.
 
 ## Installation
 
 Python-SDK for Improve.ai is currently available only on github.
 
 To install python-sdk for Improve.ai:
- 1. clone repo: git clone https://github.com/improve-ai/python-sdk
- 2. make sure you are in the cloned (python-sdk) folder 
- 3. activate your virtualenv (if you are using one, if not you can skip this step; using venv is advised)
- 4. install requirements:
-    
-    pip3 install -r requirements.txt    
 
- 5. run the following commands to install improve_ai python package:
+ 0. install prerequisites:
+    - Fedora:
+      - sudo yum groupinstall "Development Tools"
+      - sudo yum install python3-devel python3-Bottleneck python3-numpy
+    - Amazon Linux 2:
+      - sudo yum update
+      - yum groupinstall "Development Tools"
+      - sudo yum install python3-devel numpy
+    - Ubuntu (18.04 and 20.04):
+      - sudo apt install build-essential make gcc python3-dev python3-numpy python3-venv
+     
+ 1. clone repo: git clone https://github.com/improve-ai/python-sdk
+    
+ 2. make sure you are in the cloned (python-sdk) folder
+    
+ 3. activate your virtualenv (if you are using one, if not you can skip this step; using venv is advised)
+    
+ 4. install wheel and cmake:
+
+    
+    pip3 install wheel cmake --no-cache-dir
+
+    
+ 5. install requirements:
+
+    
+    pip3 install -r requirements.txt --no-cache-dir
+
+
+ 6. run the following commands to install improve_ai python package:
+
     
     python3 setup.py build_ext --inplace && python3 setup.py install
 
-
-## Import and initialize the SDK.
-
-```python
-from improveai.trackers.decision_trackers import DecisionTracker
-
-endpoint_url = '<desired tracker endpoint url>'
-
-# Call with no API key
-tracker = DecisionTracker(track_url=endpoint_url)
-
-# Call with API key
-api_key = '<API key for endpoint_url>'
-tracker = DecisionTracker(track_url=endpoint_url, api_key=api_key)
-```
-
-To obtain the model bundle URL and api key, first deploy an Improve Model Gateway (link).
-
-Currently SDK supports:
- - loading models from a file (also a gziped one)
- - downloading models as raw or gziped streams from specified URL
- - 2 types of models:
-   - mlmodel (coremltools type)
-   - native xgboost type
-    
-To load desired model / model from desired endpoint (Improve.ai trains new model daily).
-
-```python
-from improveai.models.decision_models import DecisionModel
-
-model_kind = 'xgb_native'  # other allowed model type is `mlmodel` 
-model_pth = '<path / or / URL / to / model>'
-
-dm = DecisionModel(model_pth=model_pth, model_kind=model_kind)
-```
 
 ### Hello World!
 
 What is the best greeting?
 
 ```python
-from improveai.models.decision_models import DecisionModel
-from improveai.decisions.v6 import Decision
-
-dm = None
-# If you already have a trained model you might want to use one 
-i_have_model = False
-if i_have_model:
-    model_kind = 'xgb_native'
-    model_pth = '<path / or / URL / to / model>'
-    
-    dm = DecisionModel(model_pth=model_pth, model_kind=model_kind)
+from improveai import DecisionModel
 
 # prepare JSON encodable variants to choose from:
 hello_variants = [
@@ -83,267 +62,134 @@ hello_variants = [
     {'text': "Hi World!"},
     {'text': "Howdy World!"}]
 
-d = Decision(variants=hello_variants, model=dm, model_name='greetings')
+givens = {'language': 'cowboy'}
 
 # Get the best greeting
-best_hello_world = d.best()
-
-# Train model using decision
-tracker.track_using_best_from(
-    decision=d, message_id='<unique msg id>', history_id='<unique history id>', 
-    timestamp='<datetime64 timestamp or None>')
-
-best_hello_world_revenue = 1  # award / revenue assigned to the 'best' variant
-
-# ... later when the `best_hello_world` is chosen, give the decision a reward
-tracker.add_reward(
-    reward=best_hello_world_revenue, reward_key='greetings', 
-    message_id='<unique msg id>', history_id='<unique history id>', 
-    timestamp='<datetime64 timestamp or None>')
+greeting = \
+    DecisionModel(model_name="greetings").given(givens=givens)\
+    .choose_from(variants=hello_variants).get()
 ```
 
-Improve quickly learns to choose the greeting with the highest chance of button tap.
-
-```'greeting'``` in this example is the namespace for the type of variant being chosen. Namespaces ensure that multiple uses of Improve in the same project are decided and trained separately. 
-A namespace can be a simple string like "discount" or "song" or can be more complicated like "SubscriptionViewController.buttonText". 
-Namespace strings are opaque and can be any format you wish.
+*greeting* should result in *Howdy World* assuming it performs best when *language* is *cowboy*.
 
 
 ### Numbers Too
 
-How many bonus gems should we offer on our In App Purchase?
+What discount should we offer?
 
 ```python
-from improveai.decisions.v6 import Decision
-
-# prepare JSON encodable variants to choose from:
-gems_variants = [{'number': 1000}, {'number': 2000}, {'number': 3000}]
-
-d = Decision(variants=gems_variants, model_name='bonusGems')
-
-best_gems_count = d.best()
-
-# train the model using the decision
-tracker.track_using_best_from(
-    decision=d, message_id='<unique msg id>', history_id='<unique history id>', 
-    timestamp='<datetime64 timestamp or None>')
-
-# ... later when the user makes a purchase, give the decision a reward
-best_gems_count_revenue = 1  # award / revenue assigned to the 'best' variant
-tracker.add_reward(
-    reward=best_gems_count_revenue, reward_key='bonusGems', 
-    message_id='<unique msg id>', history_id='<unique history id>', 
-    timestamp='<datetime64 timestamp or None>')
+discount = DecisionModel(model_name='discounts').choose_from(variants=[0.1, 0.2, 0.3]).get()
 ```
+
+## Booleans
+
+Dynamically enable feature flags for best performance...
+
+```python
+feature_flag = DecisionModel(model_name='feature_flags').choose_from(variants=[True, False]).get()
+```
+
 
 ### Complex Objects
 
+
 ```python
-from improveai.models.decision_models import DecisionModel
-from improveai.decisions.v6 import Decision
-
-dm = None
-# If you already have a trained model you might want to use one
-i_have_model = False
-if i_have_model:
-    model_kind = 'xgb_native'
-    model_pth = '<path / or / URL / to / model>'
-    
-    dm = DecisionModel(model_pth=model_pth, model_kind=model_kind)
-
-# prepare JSON encodable variants to choose from:
-complex_variants = [
+theme_variants = [
     {"textColor": "#000000", "backgroundColor": "#ffffff" },
     { "textColor": "#F0F0F0", "backgroundColor": "#aaaaaa" }]
 
-d = Decision(variants=complex_variants, model=dm, model_name='theme')
-
-bset_coplex_variant = d.best()
+theme = DecisionModel(model_name='themes').choose_from(variants=theme_variants).get()
 ```
 
-Improve learns to use the attributes of each key and value in a dictionary variant to make the optimal decision.  
+Improve learns to use the attributes of each key and value in a complex variant to make the optimal decision.
 
-Variants can be any JSON encodeable object of arbitrary complexity.
+Variants can be any JSON encodeable data structure of arbitrary complexity, including nested dictionaries, arrays, strings, numbers, nulls, and booleans.
 
-### Howdy World (Context for Cowboys)
 
-If language is "cowboy", which greeting is best?
+## Models
+
+A *DecisionModel* contains the AI decision logic, analogous to a large number of *if/then* statements.
+
+Models are thread-safe and a single model can be used for multiple decisions.
+
+### Synchronous Model Loading
 
 ```python
-from improveai.models.decision_models import DecisionModel
-from improveai.decisions.v6 import Decision
-
-dm = None
-# If you already have a trained model you might want to use one
-i_have_model = False
-if i_have_model:
-    model_kind = 'xgb_native'
-    model_pth = '<path / or / URL / to / model>'
-    
-    dm = DecisionModel(model_pth=model_pth, model_kind=model_kind)
-
-# prepare JSON encodable variants to choose from:
-
-cowboy_hello_variants = [
-    {"text": "Hello World!"},
-    {"text": "Hi World!"},
-    {"text": "Howdy World!"}]
-
-cowboy_greeting_context = {"language": "cowboy"}
-
-d = Decision(
-    variants=complex_variants, model=dm, model_name='greetings', 
-    context=cowboy_greeting_context)
-
-bset_coplex_variant = d.best()
+product = DecisionModel.load(model_url=model_url).choose_from(["clutch", "dress", "jacket"]).get()
 ```
 
-Improve can optimize decisions for a given context of arbitrary complexity. We might imagine that "Howdy World!" would produce the highest rewards for { language: cowboy }, while another greeting might be best for other contexts.
+Models can be loaded from the app bundle or from https URLs.
 
-You can think of contexts like: If `<context>` then `<variant>`.
+### Asynchronous Model Loading
 
-### Learning from Specific Types of Rewards
-Instead of tracking rewards for every seperate decision namespace, we can assign a custom rewardKey during trackDecision for that specific decision to be trained on.
-
-```python
-from improveai.decisions.v6 import Decision
-
-
-tracked_variant = {'song': "Hey Jude"}
-tracked_variant_context = {}  # some context for a given variant
-
-# train the model using the decision
-tracker.track_using(
-    variant=tracked_variant, model_name='songs', message_id='<unique msg id>', 
-    history_id='<unique history id>', timestamp='<datetime64 timestamp or None>')
-
-# track_rewards() is called in iOS API here but is not implemented
- ```
-
- ### Learning Rewards for a Specific Variant
- 
- Instead of applying rewards to general categories of decisions, they can be scoped to specific variants by specifying a custom rewardKey for each variant.
-
+Asynchronous model loading allows decisions to be made at any point, even before the model is loaded.  If the model isn't yet loaded or fails to load, the first variant will be returned as the decision.
 
 ```python
-from improveai.models.decision_models import DecisionModel
-from improveai.decisions.v6 import Decision
+from improveai import DecisionModel, DecisionTracker
 
-dm = None
-# If you already have a trained model you might want to use one
-i_have_model = False
-if i_have_model:
-    model_kind = 'xgb_native'
-    model_pth = '<path / or / URL / to / model>'
-    
-    dm = DecisionModel(model_pth=model_pth, model_kind=model_kind)
+track_url = 'http://your.track.url'
+api_key = '<tracker API key>'
+history_id = '<history_id to be used by tracker>'
 
+tracker = DecisionTracker(track_url=track_url, api_key=api_key, history_id=history_id)
 
-viral_video_variants = [{'video': 'video1'}, {'video': 'video2'}]
-viral_video_context = {}  # context for videos
+model_url = '/ model/ path / or / url'
 
-d = Decision(
-    variants=viral_video_variants, model=dm, context=viral_video_context)
+model = DecisionModel(model_name="greetings") 
+model.set_tracker(tracker=tracker)
+model.load_async(model_url=model_url)
 
-best_video = d.best()
-
-# Create a custom rewardKey specific to this variant
-tracker.track_using_best_from(
-    decision=d, message_id='<unique msg id>', history_id='<unique history id>',
-    timestamp='<datetime64 timestamp or None>')
-
-video_reward_key = 'sample_video_key'
-best_video_revenue = 1  # award / revenue assigned to the 'best' variant
-tracker.add_reward(
-    reward=best_video_revenue, reward_key=video_reward_key, 
-    message_id='<unique msg id>', history_id='<unique history id>', 
-    timestamp='<datetime64 timestamp or None>')
+# It is very unlikely that the model will be loaded by the time this is called, 
+# so "Hello World" would be returned and tracked as the decision
+greeting = model.choose_from(variants=['Hello World', 'Howdy World', 'Yo World']).get()
 ```
 
- ### Sort Stuff
+## Tracking & Training Models
+
+The magic of Improve AI is it's learning process, whereby models continuously improve by training on past decisions. To accomplish this, decisions and events are tracked to your deployment of the Improve AI Gym.
+
+### Tracking Decisions
+
+Set a *DecisionTracker* on the *DecisionModel* to automatically track decisions and enable learning.  A single *DecisionTracker* instance can be shared by multiple models.
 
 ```python
-from improveai.models.decision_models import DecisionModel
-from improveai.decisions.v6 import Decision
+tracker = DecisionTracker(track_url=track_url)  # trackUrl is obtained from your Gym configuration
 
-dm = None
-# If you already have a trained model you might want to use one
-i_have_model = False
-if i_have_model:
-    model_kind = 'xgb_native'
-    model_pth = '<path / or / URL / to / model>'
-    
-    dm = DecisionModel(model_pth=model_pth, model_kind=model_kind)
-
-dogs_variants = [
-    {'breed': 'German Shepard'}, 
-    {'breed': "Border Collie"}, 
-    {'breed': "Labrador Retriever"}]
-dogs_context = {}  # dogs context dict
-dogs_model_name = 'dog'
-
-d = Decision(
-    variants=dogs_variants, model=dm, model_name=dogs_model_name, 
-    context=dogs_context)
-
-# No human could ever make this decision, but math can.
-sorted_breeds = d.ranked()
-top_dog = sorted_breeds[0] 
-
-# With ranked, training is done just as before, on one individual variant at a time.
-tracker.track_using_best_from(
-    decision=d, message_id='<unique msg id>', history_id='<unique history id>',
-    timestamp='<datetime64 timestamp or None>')
-
-top_dog_revenue = 1000  # award / revenue assigned to the 'best' variant
-tracker.add_reward(
-    reward=top_dog_revenue, reward_key=dogs_model_name, 
-    message_id='<unique msg id>', history_id='<unique history id>', 
-    timestamp='<datetime64 timestamp or None>')
-
+font_size = \
+    DecisionModel.load(model_url=model_url).set_tracker(tracker=tracker).chooseFrom([12, 16, 20]).get()
 ```
 
- ### Server-Side Decision/Rewards Processing
- 
- Some deployments may wish to handle all training and reward assignments on the server side. In this case, you may simply track generic app events to be parsed by your custom backend scripts and converted to decisions and rewards.
- 
- ```python
-# omit trackDecision and trackReward on the client and use custom code on the model gateway to do it instead
+The decision is lazily evaluated and then automatically tracked as being causal upon calling *get()*.
 
-#...when the song is played
-song_properties = {'song': 'example_song_object'}
-tracker.track_analytics_event(event='Song Played', properties=song_properties)
- ```
+For this reason, wait to call *get()* until the decision will actually be used.
 
- ## Algorithm
- 
-The algorithm is a production tuned contextual multi-armed bandit algorithm related to Thompson Sampling.
- 
- ## Security & Privacy
- 
- Improve uses tracked variants, context, and rewards to continuously train statistical models.  If models will be distributed to unsecured clients, then the most conservative stance is to assume that what you put in the model you can get out.
- 
- That said, all variant and context data is hashed (using a secure pseudorandom function once siphash is deployed) and never transmitted in models so if a sensitive information were accidentally included in tracked data, it is not exposed by the model.
- 
-It is strongly recommended to never include Personally Identifiable Information (PII) in an Improve variant or context if for no other reason than to ensure that it is not persisted in your Improve Model Gateway analytics records.
- 
- The types of information that can be gleaned from an Improve model are the types of things it is designed for, such as the relative ranking and scoring of variants and contexts, and the relative frequency of variants and contexts.  Future versions will normalize rewards to zero, so absolute information about rewards will not be transmitted at that time.
- 
- Additional security measures such as white-listing specific variants and context or obfuscating rewards can be implemented by custom scripts on the back end.
- 
- For truly sensitive model information, you may wish to only use those Improve models within a secure server environment.
- 
- ## Additional Caveats
- 
- Use of rapidly changing data in variants and contexts is discouraged.  This includes timestamps, counters, random numbers, message ids, or unique identifiers.  These will be treated as statistical noise and may slow down model learning or performance.  If models become bloated you may filter such nuisance data on the server side during training time.
- 
- Numbers with limited range, such as ratios, are okay as long as they are encoded as NSNumbers.
- 
- In addition to the previous noise issue, linear time based data is generally discouraged because decisions will always being made in a time interval ahead of the training data.  If time based context must be used then ensure that it is cyclical such as the day of the week or hour of the day without reference to an absolute time.
+### Tracking Events
+
+Events are the mechanism by which decisions are rewarded or penalized.  In most cases these will mirror the normal analytics events that your app tracks and can be integrated with any event tracking singletons in your app.
+
+```python
+tracker.track_event(event_name="Purchased", properties={"product_id": 8, "value": 19.99})
+```
+
+Like most analytics packages, *track* takes an *event* name and an optional *properties* dictionary.  The only property with special significance is *value*, which indicates a reward value for decisions prior to that event.  
+
+If *value* is ommitted then the default reward value of an event is *0.001*.
+
+By default, each decision is rewarded the total value of all events that occur within 48 hours of the decision.
+
+Assuming a typical app where user retention and engagement are valuable, we recommend tracking all of your analytics events with the *DecisionTracker*.  You can customize the rewards assignment logic later in the Improve AI Gym.
+
+## Privacy
+  
+It is strongly recommended to never include Personally Identifiable Information (PII) in variants or givens so that it is never tracked, persisted, or used as training data.
+
+## An Ask
+
+Thank you so much for enjoying my labor of love. Please only use it to create things that are good, true, and beautiful. - Justin
 
 ## License
 
-Improve.ai is copyright Mind Blown Apps, LLC. All rights reserved.  May not be used without a license.
+Improve AI is copyright Mind Blown Apps, LLC. All rights reserved.  May not be used without a license.
 
 
 [comment]: <> (---)
@@ -424,4 +270,4 @@ Improve.ai is copyright Mind Blown Apps, LLC. All rights reserved.  May not be u
 
 [comment]: <> (## Cython compatibility issues fix -> symlink numpy)
 
-[comment]: <> (sudo ln -s /usr/lib/python3.7/dist-packages/numpy/core/include/numpy /usr/include/numpy)
+[comment]: <> (sudo ln -s /usr/lib/python3.9/dist-packages/numpy/core/include/numpy /usr/include/numpy)

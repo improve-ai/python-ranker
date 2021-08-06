@@ -1,48 +1,31 @@
 from argparse import ArgumentParser
 import json
+import numpy as np
+import os
 import simplejson
 
-from improveai.models.decision_models import DecisionModel
-from improveai.utils.gen_purp_utils import read_jsonstring_frm_file
+from improveai.decision_model import DecisionModel
+from utils.general_purpose_tools import read_jsonstring_from_file
 
 
 if __name__ == '__main__':
 
-    DEFAULT_VARIANT = \
-        json.dumps(
-            [{"text": "Sanity check test 1"},
-             {"text": "Sanity check test 2"},
-             {"text": "Completely different sanity check"}])
-
-    with open('artifacts/test_artifacts/context.json', 'r') as mj:
-        context_str = mj.read()
-
-    DEFAULT_CONTEXT = context_str
-
     ap = ArgumentParser()
     ap.add_argument(
-        'method_call', default='score',
-        help='Which action of 4 available should be performed '
-             '(score, sort, choose)')
+        '--operation', default='score',
+        help='Which action of 4 available should be performed: {}'.format(
+            DecisionModel.SUPPORTED_CALLS))
+    ap.add_argument('--model_url', help='Path to model file', required=True)
     ap.add_argument(
-        'model_kind', default='mlmodel',
-        help='String indicating which model type would be used: mlmodel, '
-             'xgb_native or tf_lite model')
-    ap.add_argument('model_pth', help='Path to model file')
-    ap.add_argument('--variants', help='JSON with variants to be scored',
-                    default=DEFAULT_VARIANT)
-    ap.add_argument(
-        '--variants_pth',
-        help='Path to file with JSON with variants to be scored',
-        default='')
-    ap.add_argument(
-        '--context', help='JSON with context', default=DEFAULT_CONTEXT)
+        '--variants', help='Path to JSONfile with variants or a JSON itself',
+        default='[]')
 
     ap.add_argument(
-        '--context_pth', help='Path to file with JSON with context',
-        default='')
+        '--givens',
+        help='Path to JSONfile with givens or JSON with givens itself',
+        default='{}')
     ap.add_argument(
-        '--results_pth',
+        '--results_path',
         help='Path to file where JSON with prediction results will be dumped',
         default='result_file.json')
     ap.add_argument('--sigmoid_correction', action='store_true')
@@ -69,53 +52,48 @@ if __name__ == '__main__':
 
     pa = ap.parse_args()
 
-    im = DecisionModel(model_kind=pa.model_kind, model_pth=pa.model_pth)
+    dm = DecisionModel.load(model_url=pa.model_url)
 
-    if pa.method_call not in im.SUPPORTED_CALLS:
+    if pa.operation not in DecisionModel.SUPPORTED_CALLS:
         raise ValueError(
             'CLI supported method_calls are {}. \n Provided method_calls: {}'
-            .format(','.join(im.SUPPORTED_CALLS), pa.method_call))
+            .format(','.join(dm.SUPPORTED_CALLS), pa.method_call))
 
-    if pa.model_kind not in im.SUPPORTED_MODEL_KINDS:
-        raise ValueError(
-            'Currently supported model kinds are: {} \n. '
-            'You have provided following model kind: {}'
-            .format(','.join(im.SUPPORTED_MODEL_KINDS), pa.model_kind))
+    if pa.operation != 'get':
+        assert hasattr(dm, pa.operation)
 
-    assert hasattr(im, pa.method_call)
+    inputs = {}
+    for key, value in zip(['variants', 'givens'], [pa.variants, pa.givens]):
+        json_loads_value = value
+        if os.path.isfile(value):
+            # load jsonfile
+            json_loads_value = read_jsonstring_from_file(path_to_file=value)
+        inputs[key] = json.loads(json_loads_value)
 
-    # loading files
-    input_objects = {
-        'variants': pa.variants,
-        'context': pa.context,
-        'sigmoid_correction': pa.sigmoid_correction,
-        'sigmoid_const': float(pa.sigmoid_const)}
-
-    input_pths = [pa.variants_pth, pa.context_pth]
-
-    for input_obj_key, input_pth in zip(input_objects.keys(), input_pths):
-        if input_pth:
-            input_objects[input_obj_key] = read_jsonstring_frm_file(input_pth)
-
-    input_objects['cli_call'] = True
-
-    des_method = getattr(im, pa.method_call)
-
-    res = \
-        des_method(**input_objects)
-
-    output_col = 1 if pa.method_call == "score" else 0
-
-    if not pa.prettify_json:
-        res = \
-            json.dumps([output[output_col] for output in json.loads(res)]) \
-            if not pa.full_output else res
+    dm = DecisionModel.load(model_url=pa.model_url)
+    if pa.operation == 'get':
+        result = \
+            dm.choose_from(variants=inputs['variants'])\
+            .given(givens=inputs['givens']).get()
     else:
-        res = \
-            simplejson.dumps(
-                [output[output_col] for output in json.loads(res)], indent=4) \
-            if not pa.full_output \
-            else simplejson.dumps(json.loads(res), indent=4)
+
+        scores = \
+            dm.score(**inputs)
+
+        if pa.operation == 'score':
+            result = scores
+        else:
+            desired_operation = getattr(dm, pa.operation)
+            inputs['scores'] = scores
+            result = desired_operation(**inputs)
+
+        if isinstance(result, np.ndarray):
+            result = result.tolist()
+
+    string_result = json.dumps(result)
+
+    if pa.prettify_json:
+        string_result = simplejson.dumps(json.loads(string_result), indent=4)
 
     if pa.debug_print:
         print('\n##################################################################\n\n'
@@ -123,8 +101,8 @@ if __name__ == '__main__':
               '##################################################################\n\n'
               'is: \n'
               '{}'
-              .format(pa.method_call, pa.variants, pa.model_pth, res))
+              .format(pa.method_call, pa.variants, pa.model_pth, result))
 
-    if pa.results_pth:
-        with open(pa.results_pth, 'w') as resf:
-            resf.writelines(res)
+    if pa.results_path:
+        with open(pa.results_path, 'w') as resf:
+            resf.writelines(string_result)

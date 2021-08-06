@@ -1,0 +1,18 @@
+{
+    "test_case": {
+        "variant": {
+            "$value": {
+                "\ud83d\ude44\ud83d\ude0c\ud83d\ude37": "Some text, some symbols \u00b1 \u00d7, some emojis \ud83d\ude44\ud83d\ude0c\ud83d\ude37"
+            }
+        }
+    },
+    "test_output": {
+        "13fc355a": 27651.188,
+        "492ecbc4": 27442.188
+    },
+    "model_seed": 1,
+    "noise": 0.8928601514360016,
+    "variant_seed": 2675988294294598568,
+    "value_seed": 6818340268807889528,
+    "givens_seed": 12461487462738526788
+}
