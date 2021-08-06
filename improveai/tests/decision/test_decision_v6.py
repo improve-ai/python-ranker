@@ -379,13 +379,18 @@ class TestDecision(TestCase):
         assert memoized_variant is None
 
     def test_get_06(self):
+        # this is a test case which covers tracking runners up from within
+        # get() call
 
-        tracker = dt.DecisionTracker(
-            track_url=self.track_url, history_id=self.dummy_history_id)
-        decision = d.Decision(decision_model=self.decision_model_without_tracker)
-        decision.model.set_tracker(tracker=tracker)
+        decision = d.Decision(decision_model=self.decision_model_with_tracker)
 
         assert decision.chosen is False
+
+        variants = [el for el in range(20)]
+        variants[9] = {
+            "text": "lovely corgi",
+            "chars": 12,
+            "words": 2}
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
@@ -395,21 +400,27 @@ class TestDecision(TestCase):
 
                 np.random.seed(self.tracks_seed)
                 memoized_variant = \
-                    decision.choose_from(variants=[el for el in range(20)])\
+                    decision.choose_from(variants=variants)\
                     .given(givens={}).get()
+
                 assert len(w) == 0
 
         assert decision.chosen is True
-        assert memoized_variant == 11
+        assert memoized_variant == variants[9]
 
     def test_get_07(self):
+        # this is a test case which covers NOT tracking runners up from within
+        # get() call
 
-        tracker = dt.DecisionTracker(
-            track_url=self.track_url, history_id=self.dummy_history_id)
-        decision = d.Decision(decision_model=self.decision_model_without_tracker)
-        decision.model.set_tracker(tracker=tracker)
+        decision = d.Decision(decision_model=self.decision_model_with_tracker)
 
         assert decision.chosen is False
+
+        variants = [el for el in range(20)]
+        variants[9] = {
+            "text": "lovely corgi",
+            "chars": 12,
+            "words": 2}
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
@@ -419,12 +430,12 @@ class TestDecision(TestCase):
 
                 np.random.seed(self.not_tracks_seed)
                 memoized_variant = \
-                    decision.choose_from(variants=[el for el in range(20)])\
+                    decision.choose_from(variants=variants)\
                     .given(givens={}).get()
                 assert len(w) == 0
 
         assert decision.chosen is True
-        assert memoized_variant == 12
+        assert memoized_variant == variants[9]
 
     def _get_complete_decision(self):
         test_case_filename = os.getenv('V6_DECISION_TEST_GET_02_JSON')

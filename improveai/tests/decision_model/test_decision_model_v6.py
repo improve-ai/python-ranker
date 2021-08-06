@@ -15,6 +15,7 @@ import improveai.decision as d
 import improveai.decision_model as dm
 import improveai.decision_tracker as dt
 from improveai.utils.general_purpose_tools import read_jsonstring_from_file
+from improveai.tests.test_utils import convert_values_to_float32
 
 
 class TestDecisionModel(TestCase):
@@ -356,18 +357,25 @@ class TestDecisionModel(TestCase):
         np.random.seed(score_seed)
         calculated_scores = decision_model.score(**empty_callable_kwargs)
 
-        if evaluated_method_name == 'score':
+        calculated_scores_float32 = convert_values_to_float32(calculated_scores)
 
+        if evaluated_method_name == 'score':
             np.testing.assert_array_equal(
-                calculated_scores.tolist(), expected_output)
+                calculated_scores_float32, expected_output)
+
             return
 
         if scores_key in empty_callable_kwargs:
-            empty_callable_kwargs[scores_key] = calculated_scores
+            empty_callable_kwargs[scores_key] = calculated_scores_float32
 
         np.random.seed(score_seed)
         evaluated_callable = getattr(dm.DecisionModel, evaluated_method_name)
         calculated_output = evaluated_callable(**empty_callable_kwargs)
+
+        print('### calc vs true ###')
+        from pprint import pprint
+
+        pprint(calculated_output)
 
         if isinstance(expected_output, list):
             np.testing.assert_array_equal(
