@@ -104,7 +104,7 @@ class BasicMLModelChooser(BasicChooser):
             self, mlmodel_metadata_key: str = 'json',
             model_feature_names_key: str = 'feature_names',
             model_seed_key: str = 'model_seed',
-            model_name_key: str = 'model'):
+            model_name_key: str = 'model_name'):
         # initialize
         self.model = None
         self.model_metadata_key = mlmodel_metadata_key

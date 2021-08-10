@@ -85,7 +85,7 @@ class TestDecisionModel(TestCase):
             test_case_key: str = 'test_case',
             test_output_key: str = 'test_output',
             test_output_feature_names_key: str = 'feature_names',
-            test_output_model_name_key: str = 'model',
+            test_output_model_name_key: str = 'model_name',
             test_output_model_seed_key: str = 'model_seed',
             test_output_version_key: str = 'version',
             model_filename_key: str = 'model_filename', load_mode: str = 'sync'):
