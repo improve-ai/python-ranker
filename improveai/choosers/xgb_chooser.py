@@ -113,7 +113,7 @@ class BasicNativeXGBChooser(BasicChooser):
 
     @constant
     def TIEBREAKER_MULTIPLIER() -> float:
-        return 1e-6
+        return 2e-23
 
     def __init__(
             self, mlmodel_metadata_key: str = 'json',

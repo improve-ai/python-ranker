@@ -98,7 +98,7 @@ class BasicMLModelChooser(BasicChooser):
 
     @constant
     def TIEBREAKER_MULTIPLIER() -> float:
-        return 1e-7
+        return 2e-23
 
     def __init__(
             self, mlmodel_metadata_key: str = 'json',
