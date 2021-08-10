@@ -45,7 +45,7 @@ class DecisionModel:
         self.tracker = None
         self.chooser = None
 
-    def set_tracker(self, tracker):
+    def track_with(self, tracker):
 
         if not isinstance(tracker, dt.DecisionTracker):
             raise TypeError('`tracker` should be an instance of DecisionTracker')

@@ -615,7 +615,7 @@ class TestDecisionModel(TestCase):
 
         assert decision_model.tracker is None
 
-        decision_model.set_tracker(tracker=tracker)
+        decision_model.track_with(tracker=tracker)
 
         assert decision_model.tracker is not None
         assert decision_model.tracker == tracker
@@ -628,7 +628,7 @@ class TestDecisionModel(TestCase):
 
         with raises(TypeError) as terr:
 
-            decision_model.set_tracker(tracker=None)
+            decision_model.track_with(tracker=None)
 
             assert str(terr.value)
 

@@ -135,8 +135,8 @@ tracker = DecisionTracker(track_url=track_url, api_key=api_key, history_id=histo
 
 model_url = '/ model/ path / or / url'
 
-model = DecisionModel(model_name="greetings") 
-model.set_tracker(tracker=tracker)
+model = DecisionModel(model_name="greetings")
+model.track_with(tracker=tracker)
 model.load_async(model_url=model_url)
 
 # It is very unlikely that the model will be loaded by the time this is called, 
@@ -155,8 +155,8 @@ Set a *DecisionTracker* on the *DecisionModel* to automatically track decisions 
 ```python
 tracker = DecisionTracker(track_url=track_url)  # trackUrl is obtained from your Gym configuration
 
-font_size = \
-    DecisionModel.load(model_url=model_url).set_tracker(tracker=tracker).chooseFrom([12, 16, 20]).get()
+font_size =
+    DecisionModel.load(model_url=model_url).track_with(tracker=tracker).chooseFrom([12, 16, 20]).get()
 ```
 
 The decision is lazily evaluated and then automatically tracked as being causal upon calling *get()*.

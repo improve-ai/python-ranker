@@ -20,11 +20,11 @@ from improveai.utils.general_purpose_tools import read_jsonstring_from_file
 class TestDecision(TestCase):
 
     @property
-    def decision_model_without_tracker(self):
+    def decision_model_without_tracker(self) -> dm.DecisionModel:
         return self._decision_model
 
     @decision_model_without_tracker.setter
-    def decision_model_without_tracker(self, value):
+    def decision_model_without_tracker(self, value: dm.DecisionModel):
         self._decision_model = value
 
     @property
@@ -52,11 +52,11 @@ class TestDecision(TestCase):
         self._test_jsons_data_directory = value
 
     @property
-    def decision_model_with_tracker(self):
+    def decision_model_with_tracker(self) -> dm.DecisionModel:
         return self._decision_model_with_tracker
 
     @decision_model_with_tracker.setter
-    def decision_model_with_tracker(self, value):
+    def decision_model_with_tracker(self, value: dm.DecisionModel):
         self._decision_model_with_tracker = value
 
     @property
@@ -94,7 +94,7 @@ class TestDecision(TestCase):
             dt.DecisionTracker(
                 track_url=self.track_url, history_id='dummy-history-id')
 
-        self.decision_model_with_tracker.set_tracker(tracker=self.tracker)
+        self.decision_model_with_tracker.track_with(tracker=self.tracker)
 
         self.mockup_variants = [
             {'$value': 123},
@@ -360,7 +360,7 @@ class TestDecision(TestCase):
         tracker = dt.DecisionTracker(
             track_url=self.track_url, history_id=self.dummy_history_id)
         decision = d.Decision(decision_model=self.decision_model_without_tracker)
-        decision.model.set_tracker(tracker=tracker)
+        decision.model.track_with(tracker=tracker)
 
         assert decision.chosen is False
 

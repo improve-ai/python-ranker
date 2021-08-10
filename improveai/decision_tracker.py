@@ -498,7 +498,7 @@ class DecisionTracker:
 
 
 if __name__ == '__main__':
-    track_url = 'https://7thx657umd.execute-api.us-east-2.amazonaws.com/track'
+    track_url = 'https://ozu9mub4xh.execute-api.us-east-2.amazonaws.com/track'
 
     dt = DecisionTracker(track_url=track_url, history_id='dummy-history-id-2')
 
@@ -514,9 +514,9 @@ if __name__ == '__main__':
     variants = [el for el in range(100)]
     # variants[0] = ''.join(['x' for _ in range(int(10110000/10))])
 
-    with open('dummy.json', 'w') as dj:
-        q = json.dumps(variants[0])
-        dj.write(q)
+    # with open('dummy.json', 'w') as dj:
+    #     q = json.dumps(variants[0])
+    #     dj.write(q)
 
     # np.random.shuffle(variants)
 
@@ -535,10 +535,10 @@ if __name__ == '__main__':
         resp = dt.track(
             variant=variants[0],
             variants=variants[:1],
-            givens={}, model_name='dummy-model-1',
+            givens={}, model_name='appconfig',
             variants_ranked_and_track_runners_up=False,
             timestamp=str(np.datetime_as_string(
                         np.datetime64(datetime.now()), unit='ms', timezone='UTC')))
 
         print(resp.status_code)
-        time.sleep(2)
+        time.sleep(0.1)
