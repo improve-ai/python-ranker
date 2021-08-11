@@ -10,6 +10,7 @@ from improveai.choosers.mlmodel_chooser import BasicMLModelChooser
 from improveai.choosers.xgb_chooser import BasicNativeXGBChooser
 import improveai.decision as d
 import improveai.decision_tracker as dt
+from improveai.utils.general_purpose_tools import constant
 
 
 class DecisionModel:
@@ -39,6 +40,10 @@ class DecisionModel:
     @chooser.setter
     def chooser(self, value: BasicChooser):
         self._chooser = value
+
+    @constant
+    def TIEBREAKER_MULTIPLIER() -> float:
+        return 2**-23
 
     def __init__(self, model_name: str):
         self.model_name = model_name
@@ -217,8 +222,7 @@ class DecisionModel:
         return self
 
     def score(
-            self, variants: list or np.ndarray,
-            givens: dict, **kwargs) -> list or np.ndarray:
+            self, variants: list or np.ndarray, givens: dict) -> list or np.ndarray:
         """
         Call predict and calculate scores for provided variants
 
@@ -228,7 +232,6 @@ class DecisionModel:
             collection of variants to be scored
         givens: dict
             context to calculating scores
-        kwargs
 
         Returns
         -------
@@ -243,13 +246,15 @@ class DecisionModel:
                 count=len(variants))
 
         scores = \
-            self.chooser.score(variants=variants, givens=givens)
+            self.chooser.score(variants=variants, givens=givens) + \
+            np.array(
+                np.random.rand(len(variants)), dtype='float64') * \
+            self.TIEBREAKER_MULTIPLIER
         return scores
 
     @staticmethod
     def _validate_variants_and_scores(
-            variants: list or np.ndarray, scores: list or np.ndarray,
-            **kwargs) -> bool:
+            variants: list or np.ndarray, scores: list or np.ndarray) -> bool:
         """
         Check if variants and scores are not malformed
 
@@ -281,8 +286,7 @@ class DecisionModel:
 
     @staticmethod
     def top_scoring_variant(
-            variants: list or np.ndarray, scores: list or np.ndarray,
-            **kwargs) -> dict:
+            variants: list or np.ndarray, scores: list or np.ndarray) -> dict:
         """
         Gets best variant considering provided scores
 
@@ -308,8 +312,7 @@ class DecisionModel:
 
     @staticmethod
     def rank(
-            variants: list or np.ndarray, scores: list or np.ndarray,
-            **kwargs) -> list or np.ndarray:
+            variants: list or np.ndarray, scores: list or np.ndarray) -> list or np.ndarray:
         """
         Return a list of the variants ranked from best to worst.
         DO NOT USE THIS METHOD - WILL LIKELY CHANGE SOON
@@ -339,8 +342,7 @@ class DecisionModel:
         return sorted_variants_w_scores[:, 0]
 
     @staticmethod
-    def generate_descending_gaussians(
-            count: int, **kwargs) -> list or np.ndarray:
+    def generate_descending_gaussians(count: int) -> list or np.ndarray:
         """
         Generates random floats and sorts in a descending fashion
 
@@ -360,7 +362,7 @@ class DecisionModel:
         random_scores[::-1].sort()
         return random_scores
 
-    def given(self, givens: dict, **kwargs) -> object:  # returns Decision
+    def given(self, givens: dict) -> object:  # returns Decision
         """
         Wrapper for chaining.
 
@@ -368,7 +370,6 @@ class DecisionModel:
         ----------
         givens: dict
             givens to be set
-        kwargs
 
         Returns
         -------
@@ -376,7 +377,7 @@ class DecisionModel:
         """
         return d.Decision(decision_model=self).given(givens=givens)
 
-    def choose_from(self, variants: list, **kwargs) -> object:
+    def choose_from(self, variants: list) -> object:
         """
         Wrapper for chaining
 
@@ -384,7 +385,6 @@ class DecisionModel:
         ----------
         variants: np.ndarray
             variants to be set
-        kwargs
 
         Returns
         -------

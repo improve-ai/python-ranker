@@ -325,12 +325,12 @@ class TestDecisionModel(TestCase):
         if variants is None:
             raise ValueError('Variants can`t be None')
 
-        context = test_case.get(givens_key, None)
+        givens = test_case.get(givens_key, None)
 
         if givens_key in empty_callable_kwargs:
-            empty_callable_kwargs[givens_key] = context
+            empty_callable_kwargs[givens_key] = givens
 
-        if context is None:
+        if givens is None:
             raise ValueError('Context can`t be None')
 
         score_seed = test_data.get(scores_seed_key, None)
@@ -355,7 +355,8 @@ class TestDecisionModel(TestCase):
         decision_model = dm.DecisionModel.load(model_url=model_url)
 
         np.random.seed(score_seed)
-        calculated_scores = decision_model.score(**empty_callable_kwargs)
+        # calculated_scores = decision_model.score(**empty_callable_kwargs)
+        calculated_scores = decision_model.score(variants=variants, givens=givens)
 
         calculated_scores_float32 = convert_values_to_float32(calculated_scores)
 
@@ -369,12 +370,19 @@ class TestDecisionModel(TestCase):
             empty_callable_kwargs[scores_key] = calculated_scores_float32
 
         np.random.seed(score_seed)
-        evaluated_callable = getattr(dm.DecisionModel, evaluated_method_name)
-        calculated_output = evaluated_callable(**empty_callable_kwargs)
+        # evaluated_callable = getattr(dm.DecisionModel, evaluated_method_name)
+        if evaluated_method_name == 'top_scoring_variant':
+            calculated_output = \
+                dm.DecisionModel.top_scoring_variant(
+                    variants=variants, scores=calculated_scores)
+        elif evaluated_method_name == 'rank':
+            calculated_output = \
+                dm.DecisionModel.rank(variants=variants, scores=calculated_scores)
+        else:
+            raise ValueError('Unsupported method: {}'.format(evaluated_method_name))
 
         print('### calc vs true ###')
         from pprint import pprint
-
         pprint(calculated_output)
 
         if isinstance(expected_output, list):
@@ -412,12 +420,12 @@ class TestDecisionModel(TestCase):
         if variants is None:
             raise ValueError('Variants can`t be None')
 
-        context = test_case.get(givens_key, None)
+        givens = test_case.get(givens_key, None)
 
         if givens_key in empty_callable_kwargs:
-            empty_callable_kwargs[givens_key] = context
+            empty_callable_kwargs[givens_key] = givens
 
-        if context is None:
+        if givens is None:
             raise ValueError('Context can`t be None')
 
         score_seed = test_data.get(scores_seed_key, None)
@@ -438,7 +446,7 @@ class TestDecisionModel(TestCase):
         decision_model = dm.DecisionModel(model_name='dummy-model')
 
         np.random.seed(score_seed)
-        calculated_scores = decision_model.score(**empty_callable_kwargs)
+        calculated_scores = decision_model.score(variants=variants, givens=givens)
 
         if evaluated_method_name == 'score':
 
@@ -450,8 +458,17 @@ class TestDecisionModel(TestCase):
             empty_callable_kwargs[scores_key] = calculated_scores
 
         np.random.seed(score_seed)
-        evaluated_callable = getattr(dm.DecisionModel, evaluated_method_name)
-        calculated_output = evaluated_callable(**empty_callable_kwargs)
+        # evaluated_callable = getattr(dm.DecisionModel, evaluated_method_name)
+        # calculated_output = evaluated_callable(**empty_callable_kwargs)
+        if evaluated_method_name == 'top_scoring_variant':
+            calculated_output = \
+                dm.DecisionModel.top_scoring_variant(
+                    variants=variants, scores=calculated_scores)
+        elif evaluated_method_name == 'rank':
+            calculated_output = \
+                dm.DecisionModel.rank(variants=variants, scores=calculated_scores)
+        else:
+            raise ValueError('Unsupported method: {}'.format(evaluated_method_name))
 
         if isinstance(expected_output, list):
             np.testing.assert_array_equal(

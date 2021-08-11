@@ -202,7 +202,7 @@ class DecisionTracker:
     def track(
             self, variant: object, variants: list or np.ndarray, givens: dict,
             model_name: str, variants_ranked_and_track_runners_up: bool,
-            timestamp: object = None, **kwargs):
+            timestamp: object = None):
         """
         Track that variant is causal in the system
 
@@ -221,7 +221,6 @@ class DecisionTracker:
             are the variants ranked and runners up should be tracked
         timestamp: object
             when was decision tracked
-        kwargs
 
         Returns
         -------
@@ -271,7 +270,7 @@ class DecisionTracker:
 
     def track_event(
             self, event_name: str, properties: Dict[str, object] = None,
-            timestamp: object = None, **kwargs):
+            timestamp: object = None):
         """
         Executes post_improve_request constructing body from input params:
         event, properties and givens
@@ -284,7 +283,6 @@ class DecisionTracker:
            part fo payload (?)
         timestamp: object
             timestamp of tracking request
-        kwargs
 
         Returns
         -------
@@ -400,7 +398,7 @@ class DecisionTracker:
 
     def post_improve_request(
             self, body_values: Dict[str, object], block: callable,
-            timestamp: object = None, **kwargs):
+            timestamp: object = None):
         """
         Posts request to tracker endpoint
 
@@ -412,7 +410,6 @@ class DecisionTracker:
             callable to execute on error
         timestamp: object
             timestamp of request
-        kwargs
 
         Returns
         -------

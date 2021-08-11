@@ -111,10 +111,6 @@ class BasicNativeXGBChooser(BasicChooser):
     def SUPPORTED_OBJECTIVES() -> list:
         return ['reg', 'binary', 'multi']
 
-    @constant
-    def TIEBREAKER_MULTIPLIER() -> float:
-        return 2e-23
-
     def __init__(
             self, mlmodel_metadata_key: str = 'json',
             model_feature_names_key: str = 'feature_names',
@@ -253,10 +249,10 @@ class BasicNativeXGBChooser(BasicChooser):
                     missings_filled_v, feature_names=self.model_feature_names))\
             .astype('float64')
 
-        scores += \
-            np.array(
-                np.random.rand(len(encoded_variants)), dtype='float64') * \
-            self.TIEBREAKER_MULTIPLIER
+        # scores += \
+        #     np.array(
+        #         np.random.rand(len(encoded_variants)), dtype='float64') * \
+        #     self.TIEBREAKER_MULTIPLIER
 
         return scores
 
