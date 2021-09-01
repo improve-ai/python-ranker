@@ -518,7 +518,7 @@ class TestDecisionTracker:
             decision_tracker.VARIANTS_COUNT_KEY: len(variants),
             decision_tracker.RUNNERS_UP_KEY: top_runners_up,
             decision_tracker.SAMPLE_KEY: expected_sample,
-            decision_tracker.GIVEN_KEY: givens}
+            decision_tracker.GIVENS_KEY: givens}
 
         expected_request_json = json.dumps(expected_track_body, sort_keys=False)
 
@@ -577,7 +577,7 @@ class TestDecisionTracker:
             decision_tracker.VARIANTS_COUNT_KEY: len(variants),
             decision_tracker.RUNNERS_UP_KEY: top_runners_up,
             decision_tracker.SAMPLE_KEY: expected_sample,
-            decision_tracker.GIVEN_KEY: givens}
+            decision_tracker.GIVENS_KEY: givens}
 
         expected_request_json = json.dumps(expected_track_body, sort_keys=False)
 

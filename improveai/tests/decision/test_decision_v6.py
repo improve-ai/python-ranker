@@ -261,9 +261,9 @@ class TestDecision(TestCase):
         if test_variants is None:
             raise ValueError('`variants` can`t be empty')
 
-        test_given = test_case.get('given', None)
+        test_given = test_case.get('givens', None)
         if test_given is None:
-            raise ValueError('`given` can`t be empty')
+            raise ValueError('`givens` can`t be empty')
 
         decision = d.Decision(decision_model=self.decision_model_with_tracker)
 
@@ -302,9 +302,9 @@ class TestDecision(TestCase):
         if test_variants is None:
             raise ValueError('`variants` can`t be empty')
 
-        test_given = test_case.get('given', None)
+        test_given = test_case.get('givens', None)
         if test_given is None:
-            raise ValueError('`given` can`t be empty')
+            raise ValueError('`givens` can`t be empty')
 
         decision = d.Decision(decision_model=self.decision_model_with_tracker)
 
@@ -454,9 +454,9 @@ class TestDecision(TestCase):
         if test_variants is None:
             raise ValueError('`variants` can`t be empty')
 
-        test_given = test_case.get('given', None)
+        test_given = test_case.get('givens', None)
         if test_given is None:
-            raise ValueError('`given` can`t be empty')
+            raise ValueError('`givens` can`t be empty')
 
         decision = d.Decision(decision_model=self.decision_model_with_tracker)
 
@@ -588,9 +588,9 @@ class TestDecision(TestCase):
         if test_variants is None:
             raise ValueError('`variants` can`t be empty')
 
-        test_given = test_case.get('given', None)
+        test_given = test_case.get('givens', None)
         if test_given is None:
-            raise ValueError('`given` can`t be empty')
+            raise ValueError('`givens` can`t be empty')
 
         decision = d.Decision(decision_model=self.decision_model_with_tracker)
 
