@@ -312,7 +312,6 @@ def encode(object_, seed, small_noise, features):
             encode(
                 item, xxhash3(index.to_bytes(8, byteorder='big'), seed=seed),
                 small_noise, features)
-        # return
         return
     # None, json null, or unsupported type. Treat as missing feature, return
 

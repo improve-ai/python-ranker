@@ -203,7 +203,11 @@ class DecisionModel:
 
     def load_async(self, model_url: str):
         """
-        Loads model im an async fashion
+        Loads model im an async fashion;
+
+        IMPORTANT:
+        Please note that this is an EXPERIMENTAL/DEPRECATED method and might be
+        changed in the near future
 
         Parameters
         ----------
