@@ -1,7 +1,7 @@
 {
     "test_case": {
         "variants": [],
-        "given": {}
+        "givens": {}
     },
     "test_output":  null,
     "model_seed": 1,

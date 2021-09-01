@@ -4,7 +4,7 @@
             "variant": {
                 "$value": 123
             },
-            "given": {}
+            "givens": {}
         }
     ],
     "test_output": [

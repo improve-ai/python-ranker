@@ -38,8 +38,8 @@ class DecisionTracker:
         return "variant"
 
     @constant
-    def GIVEN_KEY() -> str:
-        return "given"
+    def GIVENS_KEY() -> str:
+        return "givens"
 
     @constant
     def REWARDS_KEY() -> str:
@@ -258,7 +258,7 @@ class DecisionTracker:
             body[self.SAMPLE_KEY] = sample
 
         if givens is not None:
-            body[self.GIVEN_KEY] = givens
+            body[self.GIVENS_KEY] = givens
 
         # TODO determine what sort of completion_block should be used
         #  For now completion_block() set to 0

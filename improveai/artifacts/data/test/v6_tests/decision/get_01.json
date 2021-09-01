@@ -1,7 +1,7 @@
 {
     "test_case": {
     "variants": [{"$value": 123}],
-    "given":  {}
+    "givens":  {}
     },
     "test_output": {"$value": 123},
     "model_seed": 1,

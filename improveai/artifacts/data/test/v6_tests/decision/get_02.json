@@ -1,4 +1,4 @@
-{
+ {
     "test_case": {
         "variants": [
             {
@@ -51,7 +51,7 @@
             "chars": 14,
             "words": 2
             }],
-        "given": {
+        "givens": {
                 "device_manufacturer": "Apple",
                 "version_name": "4.3",
                 "os_name": "ios",
