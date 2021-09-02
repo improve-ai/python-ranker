@@ -726,7 +726,7 @@ class TestDecisionTracker:
 
             assert str(terr.value)
 
-    def test_track_2_variants(self):
+    def test_track_2_variants_and_sample(self):
 
         decision_tracker = \
             dtr.DecisionTracker(
@@ -839,3 +839,88 @@ class TestDecisionTracker:
             assert resp is not None
             assert resp.status_code == 200
             assert resp.text == 'success'
+
+    # TODO determine if:
+    #   - those tests are 100% correct
+    #   - max_runners_up = 0 be overridden by count = 2 and runners up should be tracked
+    def test_should_track_runners_up_2_variants(self):
+
+        decision_tracker = \
+            dtr.DecisionTracker(
+                track_url=self.track_url, history_id=self.dummy_history_id)
+
+        [decision_tracker.should_track_runners_up(variants_count=2) for _ in range(10)]
+
+        assert decision_tracker.track_runners_up is True
+
+    def test_top_runners_up_2_variants(self):
+
+        decision_tracker = \
+            dtr.DecisionTracker(
+                track_url=self.track_url, history_id=self.dummy_history_id)
+
+        variants = [el for el in range(2)]
+
+        top_runners_up = decision_tracker.top_runners_up(ranked_variants=variants)
+
+        assert top_runners_up == [1]
+
+    def test_track_2_variants_no_sample_max_runners_up_50(self):
+
+        max_runners_up = 50
+
+        decision_tracker = \
+            dtr.DecisionTracker(
+                track_url=self.track_url,  max_runners_up=max_runners_up,
+                history_id=self.dummy_history_id)
+
+        variants = [el for el in range(0, 1)]
+        variant = variants[0]
+
+        expected_track_body = {
+            decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
+            decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
+            decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
+            decision_tracker.MODEL_KEY: self.dummy_model_name,
+            decision_tracker.VARIANT_KEY: variants[0],
+            decision_tracker.VARIANTS_COUNT_KEY: len(variants),
+        }
+
+        expected_request_json = json.dumps(expected_track_body, sort_keys=False)
+
+        def custom_matcher(request):
+            request_dict = deepcopy(request.json())
+            del request_dict[decision_tracker.MESSAGE_ID_KEY]
+
+            if json.dumps(request_dict, sort_keys=False) != \
+                    expected_request_json:
+
+                print('request body:')
+                print(request.text)
+                print('expected body:')
+                print(expected_request_json)
+                return None
+            return True
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success',
+                   additional_matcher=custom_matcher)
+
+            print('### decision_tracker.track_runners_up ###')
+            print(decision_tracker.track_runners_up)
+
+            np.random.seed(self.sample_seed)
+            resp = decision_tracker.track(
+                variant=variant,
+                variants=variants,
+                givens=None, model_name=self.dummy_model_name,
+                variants_ranked_and_track_runners_up=decision_tracker.track_runners_up,
+                timestamp=self.dummy_timestamp)
+
+            if resp is None:
+                print('The input request body and expected request body mismatch')
+            assert resp is not None
+            assert resp.status_code == 200
+            assert resp.text == 'success'
+
+    # TODO test for max_runners_up = 0
