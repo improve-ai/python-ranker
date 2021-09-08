@@ -103,7 +103,7 @@ class Decision:
         # ranked_variants = None
 
         # TODO make sure this is bit is executed only once per Decision's
-        #  lifetime
+        #  lifetime ?
         if self.variants is not None and len(self.variants) != 0:
             # there should be no difference between effect of those 2 conditions
             # since this  clause is reached only once
