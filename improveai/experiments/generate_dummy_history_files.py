@@ -22,7 +22,7 @@ history_record_dummy = \
 
 if __name__ == '__main__':
 
-    hist_count = 20
+    hist_count = 5000
     models = ['appconfig', 'songs-2.0', 'themes-2.0', 'images-2.0', 'dummy-2.0']
 
     histories_dir = '/home/kw/Projects/upwork/sanity_check_artifacts/incoming'

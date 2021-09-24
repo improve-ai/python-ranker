@@ -3,6 +3,8 @@ from setuptools import Extension, find_packages, setup
 import os
 import pydoc
 
+from improveai.settings import CYTHON_MODULE_DIR, IMPROVE_DIR
+
 
 if __name__ == '__main__':
 
@@ -32,12 +34,6 @@ if __name__ == '__main__':
 
     import numpy as np
 
-    IMPROVE_DIR = 'improveai'
-    CYTHON_MODULE_DIR = 'cythonized_feature_encoding'
-
-    print('### LISTDIR ###')
-    print(os.listdir(os.sep.join(['.', IMPROVE_DIR, CYTHON_MODULE_DIR])))
-
     cython_feature_encoding_utils_path_str = \
         os.sep.join(
             [IMPROVE_DIR, CYTHON_MODULE_DIR, 'cythonized_feature_encoding_utils.pyx'])
@@ -57,17 +53,6 @@ if __name__ == '__main__':
             '{}.{}.src.cythonized_feature_encoder'.format(IMPROVE_DIR, CYTHON_MODULE_DIR),
             sources=[cython_feature_encoder_path_str],
             include_dirs=[np.get_include(), os.sep.join(['.', IMPROVE_DIR, CYTHON_MODULE_DIR])])
-
-    # setup(name='improve_trainer',
-    #       version='0.1',
-    #       description='v6 Decision API',
-    #       author='Justin Chapweske',
-    #       author_email='',
-    #       url='https://github.com/improve-ai/trainer/tree/v6',
-    #       ext_modules=cythonize(
-    #           [cython_feature_encoding_utils_ext, cython_feature_encoder_ext],
-    #           language_level="3"),
-    #       packages=find_packages(exclude=['*tests*', '*local_test*', '*tools*']))
 
     setup(name='improveai',
           version='0.1',
