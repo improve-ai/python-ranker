@@ -9,12 +9,15 @@ from traceback import print_exc
 from xgboost import Booster, DMatrix
 from xgboost.core import XGBoostError
 
-from improveai.choosers.basic_choosers import BasicChooser
-from improveai.encoder_cython_utils import cfe
 from improveai.feature_encoder import FeatureEncoder
-import improveai.settings as improve_settings
+from improveai.choosers.basic_choosers import BasicChooser
+from improveai.cythonized_feature_encoding import cfe, cfeu
+from improveai.settings import USE_CYTHON_BACKEND
 from improveai.utils.general_purpose_tools import constant
 from improveai.utils.choosers_feature_encoding_tools import encoded_variants_to_np
+
+
+FastFeatureEncoder = cfe.FeatureEncoder
 
 
 class BasicNativeXGBChooser(BasicChooser):
@@ -36,11 +39,11 @@ class BasicNativeXGBChooser(BasicChooser):
         self._model_metadata = new_val
 
     @property
-    def feature_encoder(self) -> FeatureEncoder:
+    def feature_encoder(self) -> FeatureEncoder or FastFeatureEncoder:
         return self._feature_encoder
 
     @feature_encoder.setter
-    def feature_encoder(self, new_val: FeatureEncoder):
+    def feature_encoder(self, new_val: FeatureEncoder or FastFeatureEncoder):
         self._feature_encoder = new_val
 
     @property
@@ -186,7 +189,10 @@ class BasicNativeXGBChooser(BasicChooser):
         self.model_feature_names = \
             self._get_model_feature_names(model_metadata=model_metadata)
 
-        self.feature_encoder = FeatureEncoder(model_seed=self.model_seed)
+        if USE_CYTHON_BACKEND:
+            self.feature_encoder = FastFeatureEncoder(model_seed=self.model_seed)
+        else:
+            self.feature_encoder = FeatureEncoder(model_seed=self.model_seed)
 
     def _get_model_metadata(self) -> dict:
         """
@@ -235,7 +241,7 @@ class BasicNativeXGBChooser(BasicChooser):
                 variants=variants, givens=givens, noise=np.random.rand())
 
         encoded_variants_to_np_method = \
-            cfe.encoded_variants_to_np if improve_settings.USE_CYTHON_BACKEND \
+            cfeu.encoded_variants_to_np if USE_CYTHON_BACKEND \
             else encoded_variants_to_np
 
         missings_filled_v = \
@@ -283,8 +289,8 @@ class BasicNativeXGBChooser(BasicChooser):
                 'Unsupported givens` type: {}'.format(type(givens)))
             # process with single context
 
-        # if improve_settings.USE_CYTHON_BACKEND:
-        if improve_settings.USE_CYTHON_BACKEND:
+        # if USE_CYTHON_BACKEND:
+        if USE_CYTHON_BACKEND:
             if isinstance(variants, list):
                 used_variants = variants
             elif isinstance(variants, tuple) or isinstance(variants, np.ndarray):
@@ -293,7 +299,7 @@ class BasicNativeXGBChooser(BasicChooser):
                 raise TypeError(
                     'Variants are of a wrong type: {}'.format(type(variants)))
 
-            return cfe.encode_variants_single_givens(
+            return cfeu.encode_variants_single_givens(
                 variants=used_variants, givens=givens, noise=noise,
                 variants_encoder=self.feature_encoder.encode_variant,
                 givens_encoder=self.feature_encoder.encode_givens)

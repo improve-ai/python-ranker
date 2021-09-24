@@ -3,15 +3,9 @@ import math
 import numpy as np
 import xxhash
 
-# TODO commented out until python-SDK is not available as pip package
 import improveai.settings as improve_settings
-from improveai.encoder_cython_utils import cfe
+from improveai.cythonized_feature_encoding import cfeu
 
-# TODO using until python-SDK is not available as pip package
-#  For now trainer should have `USE_CYTHON_BACKEND` set to False (if set to
-#  True code will fail because it needs some dependencies from python-SDK)
-# USE_CYTHON_BACKEND = False
-# cfe = None
 
 xxhash3 = xxhash.xxh3_64_intdigest
 
@@ -123,7 +117,7 @@ class FeatureEncoder:
         if improve_settings.USE_CYTHON_BACKEND:
         # if USE_CYTHON_BACKEND:
             # i7 10th gen time per iter - 7.464-05 [s] / 0.96% of pure python time
-            cfe.encoded_variant_into_np_row(
+            cfeu.encoded_variant_into_np_row(
                 encoded_variant=encoded_variant, feature_names=feature_names,
                 into=into)
         else:
@@ -191,12 +185,12 @@ class FeatureEncoder:
         # if USE_CYTHON_BACKEND:
             # i7 10th gen time per variant - 2.778e-05 [s] |
             # 33% of pure python implementation runtime per iter
-            encoded_variants = cfe.encode_variants_multiple_givens(
+            encoded_variants = cfeu.encode_variants_multiple_givens(
                 variants=variants, multiple_givens=multiple_givens,
                 multiple_extra_features=multiple_extra_features, noise=noise,
                 feature_encoder=self.encode_variant,
                 givens_encoder=self.encode_givens)
-            encoded_variants_array = cfe.encoded_variants_to_np(
+            encoded_variants_array = cfeu.encoded_variants_to_np(
                 encoded_variants=encoded_variants, feature_names=feature_names)
         else:
             # i7 10th gen time per variant - 7.995e-05 [s]

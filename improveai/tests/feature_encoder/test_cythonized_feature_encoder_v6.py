@@ -11,8 +11,15 @@ import xgboost as xgb
 sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
 
-from improveai.feature_encoder import sprinkle, shrink, \
-    reverse_sprinkle, _get_previous_value, add_noise, FeatureEncoder
+from improveai.cythonized_feature_encoding import cfe
+
+FeatureEncoder = cfe.FeatureEncoder
+sprinkle = cfe.sprinkle
+shrink = cfe.shrink
+reverse_sprinkle = cfe.reverse_sprinkle
+_get_previous_value = cfe._get_previous_value
+add_noise = cfe.add_noise
+
 
 import improveai.settings as improve_settings
 from improveai.utils.general_purpose_tools import read_jsonstring_from_file
@@ -97,7 +104,7 @@ class TestEncoder(TestCase):
     def _get_sprinkled_value_and_noise(self):
         x = 1.0
         noise = 0.1
-        small_noise = shrink(noise=noise)
+        small_noise = shrink(noise)
 
         sprinkled_x = sprinkle(x, small_noise=small_noise)
         return x, sprinkled_x, small_noise
@@ -1243,7 +1250,9 @@ class TestEncoder(TestCase):
                 self.feature_encoder.encode_givens(
                     givens=illegal_primitive, noise=noise)
 
-            assert os.getenv("V6_FEATURE_ENCODER_CONTEXT_TYPEERROR_MSG") \
+            print('type_err.value')
+            print(type_err.value)
+            assert os.getenv("V6_CYTHON_FEATURE_ENCODER_CONTEXT_TYPEERROR_MSG") \
                    in str(type_err.value)
 
     def test_add_noise(

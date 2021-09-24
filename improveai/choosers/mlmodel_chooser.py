@@ -1,17 +1,19 @@
-from copy import deepcopy
 import coremltools as ct
 import json
-from numbers import Number
 import numpy as np
 from time import time
 from typing import Dict, List
 
 
-from improveai.choosers.basic_choosers import BasicChooser
 from improveai.feature_encoder import FeatureEncoder
+from improveai.cythonized_feature_encoding import cfe
+from improveai.choosers.basic_choosers import BasicChooser
+from improveai.settings import USE_CYTHON_BACKEND
 from improveai.utils.general_purpose_tools import constant
 from improveai.utils.choosers_feature_encoding_tools import \
     encoded_variant_to_np
+
+FastFeatureEncoder = cfe.FeatureEncoder
 
 
 class BasicMLModelChooser(BasicChooser):
@@ -33,11 +35,11 @@ class BasicMLModelChooser(BasicChooser):
         self._model_metadata = new_val
 
     @property
-    def feature_encoder(self) -> FeatureEncoder:
+    def feature_encoder(self) -> FeatureEncoder or FastFeatureEncoder:
         return self._feature_encoder
 
     @feature_encoder.setter
-    def feature_encoder(self, new_val: FeatureEncoder):
+    def feature_encoder(self, new_val: FeatureEncoder or FastFeatureEncoder):
         self._feature_encoder = new_val
 
     @property
@@ -197,7 +199,10 @@ class BasicMLModelChooser(BasicChooser):
         self.model_feature_names = \
             self._get_model_feature_names(model_metadata=model_metadata)
 
-        self.feature_encoder = FeatureEncoder(model_seed=self.model_seed)
+        if USE_CYTHON_BACKEND:
+            self.feature_encoder = FastFeatureEncoder(model_seed=self.model_seed)
+        else:
+            self.feature_encoder = FeatureEncoder(model_seed=self.model_seed)
 
     def _get_model_metadata(self) -> dict:
         """

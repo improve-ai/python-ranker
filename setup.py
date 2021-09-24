@@ -32,22 +32,42 @@ if __name__ == '__main__':
 
     import numpy as np
 
-    rel_pth_prfx = \
-        os.sep.join(str(os.path.relpath(__file__)).split(os.sep)[:-1])
+    IMPROVE_DIR = 'improveai'
+    CYTHON_MODULE_DIR = 'cythonized_feature_encoding'
 
-    pth_str = \
-        '{}{}improveai/choosers/choosers_cython_utils/fast_feat_enc.pyx'\
-        .format(
-            os.sep.join(str(os.path.relpath(__file__)).split(os.sep)[:-1]),
-            '' if not rel_pth_prfx else os.sep)
+    print('### LISTDIR ###')
+    print(os.listdir(os.sep.join(['.', IMPROVE_DIR, CYTHON_MODULE_DIR])))
 
-    fast_feat_enc_ext = \
+    cython_feature_encoding_utils_path_str = \
+        os.sep.join(
+            [IMPROVE_DIR, CYTHON_MODULE_DIR, 'cythonized_feature_encoding_utils.pyx'])
+
+    cython_feature_encoding_utils_ext = \
         Extension(
-            'fast_feat_enc',
-            sources=[pth_str],
-            define_macros=[
-                ("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")],
-            include_dirs=[np.get_include()])
+            '{}.{}.cythonized_feature_encoding_utils'.format(IMPROVE_DIR, CYTHON_MODULE_DIR),
+            sources=[cython_feature_encoding_utils_path_str],
+            include_dirs=[np.get_include(), os.sep.join(['.', IMPROVE_DIR, CYTHON_MODULE_DIR])])
+
+    cython_feature_encoder_path_str = \
+        os.sep.join(
+            [IMPROVE_DIR, CYTHON_MODULE_DIR, 'cythonized_feature_encoder.pyx'])
+
+    cython_feature_encoder_ext = \
+        Extension(
+            '{}.{}.src.cythonized_feature_encoder'.format(IMPROVE_DIR, CYTHON_MODULE_DIR),
+            sources=[cython_feature_encoder_path_str],
+            include_dirs=[np.get_include(), os.sep.join(['.', IMPROVE_DIR, CYTHON_MODULE_DIR])])
+
+    # setup(name='improve_trainer',
+    #       version='0.1',
+    #       description='v6 Decision API',
+    #       author='Justin Chapweske',
+    #       author_email='',
+    #       url='https://github.com/improve-ai/trainer/tree/v6',
+    #       ext_modules=cythonize(
+    #           [cython_feature_encoding_utils_ext, cython_feature_encoder_ext],
+    #           language_level="3"),
+    #       packages=find_packages(exclude=['*tests*', '*local_test*', '*tools*']))
 
     setup(name='improveai',
           version='0.1',
@@ -56,9 +76,8 @@ if __name__ == '__main__':
           author_email='',
           url='https://github.com/improve-ai/python-sdk',
           packages=find_packages(exclude=['*tests*']),
-          install_requires=
-          ["numpy", "setuptools", "wheel", "Cython"] + install_reqs,
-          ext_modules=cythonize(fast_feat_enc_ext, language_level="3"),
-          include_dirs=[np.get_include()],
-          package_data={'improveai': [pth_str]},
+          install_requires=["numpy", "setuptools", "wheel", "Cython"] + install_reqs,
+          ext_modules=cythonize([cython_feature_encoding_utils_ext, cython_feature_encoder_ext], language_level="3"),
+          include_dirs=[np.get_include(), '.'],
+          # package_data={'improveai': [pth_str]},
           include_package_data=True)

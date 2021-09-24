@@ -1,6 +1,8 @@
 #!python3
 #cython: language_level=3
 
+cdef extern from "npy_no_deprecated_api.h": pass
+
 import cython
 import numpy as np
 cimport numpy as np
@@ -109,7 +111,7 @@ cpdef np.ndarray encode_variants_multiple_givens(
 
 
 @cython.boundscheck(False)
-cpdef np.ndarray encoded_variants_to_np(
+cpdef double[:, :] encoded_variants_to_np(
         np.ndarray encoded_variants, list feature_names):
 
     cdef np.ndarray encoded_variants_array = \
