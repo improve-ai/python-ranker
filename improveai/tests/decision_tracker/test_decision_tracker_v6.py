@@ -15,11 +15,11 @@ import improveai.decision_tracker as dtr
 class TestDecisionTracker:
 
     @property
-    def tracks_seed(self) -> str:
+    def tracks_seed(self) -> int:
         return self._tracks_seed
 
     @tracks_seed.setter
-    def tracks_seed(self, value: str):
+    def tracks_seed(self, value: int):
         self._tracks_seed = value
 
     @property
@@ -117,9 +117,7 @@ class TestDecisionTracker:
             dtr.DecisionTracker(
                 track_url=self.track_url, history_id=self.dummy_history_id)
 
-        decision_tracker.should_track_runners_up(variants_count=1)
-
-        assert decision_tracker.track_runners_up is False
+        assert decision_tracker.should_track_runners_up(variants_count=1) is False
 
     def test_should_track_runners_up_0_max_runners_up(self):
 
@@ -129,9 +127,7 @@ class TestDecisionTracker:
                 history_id=self.dummy_history_id)
 
         np.random.seed(self.tracks_seed)
-        decision_tracker.should_track_runners_up(variants_count=100)
-
-        assert decision_tracker.track_runners_up is False
+        assert decision_tracker.should_track_runners_up(variants_count=100) is False
 
     def test_should_track_runners_up_true(self):
         decision_tracker = \
@@ -139,10 +135,7 @@ class TestDecisionTracker:
                 track_url=self.track_url, history_id=self.dummy_history_id)
 
         np.random.seed(self.tracks_seed)
-        decision_tracker.should_track_runners_up(
-            variants_count=self.variants_count)
-
-        assert decision_tracker.track_runners_up is True
+        assert decision_tracker.should_track_runners_up(variants_count=self.variants_count) is True
 
     def test_should_track_runners_up_false(self):
         decision_tracker = \
@@ -150,10 +143,7 @@ class TestDecisionTracker:
                 track_url=self.track_url, history_id=self.dummy_history_id)
 
         np.random.seed(self.not_tracks_seed)
-        decision_tracker.should_track_runners_up(
-            variants_count=self.variants_count)
-
-        assert decision_tracker.track_runners_up is False
+        assert decision_tracker.should_track_runners_up(variants_count=self.variants_count) is False
 
     def test_top_runners_up(self):
 
@@ -849,9 +839,9 @@ class TestDecisionTracker:
             dtr.DecisionTracker(
                 track_url=self.track_url, history_id=self.dummy_history_id)
 
-        [decision_tracker.should_track_runners_up(variants_count=2) for _ in range(10)]
-
-        assert decision_tracker.track_runners_up is True
+        assert all(
+            [decision_tracker.should_track_runners_up(variants_count=2)
+             for _ in range(10)])
 
     def test_top_runners_up_2_variants(self):
 
@@ -906,15 +896,13 @@ class TestDecisionTracker:
             m.post(self.track_url, text='success',
                    additional_matcher=custom_matcher)
 
-            print('### decision_tracker.track_runners_up ###')
-            print(decision_tracker.track_runners_up)
-
             np.random.seed(self.sample_seed)
             resp = decision_tracker.track(
                 variant=variant,
                 variants=variants,
                 givens=None, model_name=self.dummy_model_name,
-                variants_ranked_and_track_runners_up=decision_tracker.track_runners_up,
+                variants_ranked_and_track_runners_up=
+                decision_tracker.should_track_runners_up(len(variants)),
                 timestamp=self.dummy_timestamp)
 
             if resp is None:

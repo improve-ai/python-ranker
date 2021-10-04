@@ -382,29 +382,41 @@ class TestDecision(TestCase):
         # this is a test case which covers tracking runners up from within
         # get() call
 
-        decision = d.Decision(decision_model=self.decision_model_with_tracker)
-
-        assert decision.chosen is False
-
         variants = [el for el in range(20)]
         variants[9] = {
             "text": "lovely corgi",
             "chars": 12,
             "words": 2}
 
-        with rqm.Mocker() as m:
-            m.post(self.track_url, text='success')
+        runners_up_tracked = []
 
-            with warnings.catch_warnings(record=True) as w:
-                warnings.simplefilter("always")
+        def custom_matcher(request):
 
-                np.random.seed(self.tracks_seed)
-                memoized_variant = \
-                    decision.choose_from(variants=variants)\
-                    .given(givens={}).get()
+            request_dict = deepcopy(request.json())
+            del request_dict[self.decision_model_with_tracker.tracker.MESSAGE_ID_KEY]
 
-                assert len(w) == 0
+            if 'runners_up' in request_dict:
+                runners_up_tracked.append(True)
+            else:
+                runners_up_tracked.append(False)
+            return True
 
+        for _ in variants:
+            with rqm.Mocker() as m:
+                m.post(self.track_url, text='success', additional_matcher=custom_matcher)
+
+                with warnings.catch_warnings(record=True) as w:
+                    warnings.simplefilter("always")
+
+                    # np.random.seed(self.tracks_seed)
+                    decision = d.Decision(decision_model=self.decision_model_with_tracker)
+                    assert decision.chosen is False
+
+                    memoized_variant = \
+                        decision.choose_from(variants=variants)\
+                        .given(givens={}).get()
+
+        assert any(runners_up_tracked)
         assert decision.chosen is True
         assert memoized_variant == variants[9]
 
@@ -615,3 +627,64 @@ class TestDecision(TestCase):
             d.Decision(decision_model=self.decision_model_without_tracker)\
                 .choose_from(variants=variants).get()
             assert str(verr.value)
+
+    def test_consistent_encoding(self):
+        # TODO since it is impossible to access encoded features from get() call
+        #  I'll simply test encoding method used by chooser
+        chooser = self.decision_model_with_tracker.chooser
+
+        variants = [{'a': [], 'b': '{} as str'.format(el)} for el in range(5)]
+        givens = {'g1': 1, 'g2': '2 as str', 'g3': [0, 1, 2]}
+        # consecutive calls with identical seed should return identical encodings
+        np.random.seed(0)
+        encoded_variants_same_seed_0 = \
+            chooser._encode_variants_single_givens(variants=variants, givens=givens)
+        np.random.seed(0)
+        encoded_variants_same_seed_1 = \
+            chooser._encode_variants_single_givens(variants=variants, givens=givens)
+
+        np.testing.assert_array_equal(
+            encoded_variants_same_seed_0, encoded_variants_same_seed_1)
+
+        # consecutive calls with no / different seed should return different encodings
+        encoded_variants_no_seed_0 = \
+            chooser._encode_variants_single_givens(variants=variants, givens=givens)
+        encoded_variants_no_seed_1 = \
+            chooser._encode_variants_single_givens(variants=variants, givens=givens)
+
+        with np.testing.assert_raises(AssertionError):
+            np.testing.assert_array_equal(
+                encoded_variants_no_seed_0, encoded_variants_no_seed_1)
+
+    def test_get_consistent_scores(self):
+        variants = [{'num': el, 'string': str(el)} for el in range(10)]
+        consistency_seed = int(os.getenv('V6_DECISION_TEST_CONSISTENCY_SEED'))
+
+        if consistency_seed is None:
+            raise ValueError('consistency seed must not be None')
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+
+            decision_1 = d.Decision(decision_model=self.decision_model_with_tracker)
+            np.random.seed(consistency_seed)
+            decision_1.choose_from(variants=variants).get()
+
+            decision_2 = d.Decision(decision_model=self.decision_model_with_tracker)
+            np.random.seed(consistency_seed)
+            decision_2.choose_from(variants=variants).get()
+
+            np.testing.assert_array_equal(decision_1.scores, decision_2.scores)
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+
+            decision_3 = d.Decision(decision_model=self.decision_model_with_tracker)
+            decision_3.choose_from(variants=variants).get()
+
+            decision_4 = d.Decision(decision_model=self.decision_model_with_tracker)
+            decision_4.choose_from(variants=variants).get()
+
+            with np.testing.assert_raises(AssertionError):
+                np.testing.assert_array_equal(decision_3.scores, decision_4.scores)
+

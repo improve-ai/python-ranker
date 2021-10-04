@@ -28,6 +28,14 @@ class Decision:
     def memoized_variant(self) -> dict or None:
         return self.__memoized_variant
 
+    @property
+    def scores(self):
+        return self.__scores
+
+    @property
+    def ranked_variants(self):
+        return self.__ranked_variants
+
     def __init__(self, decision_model: object):
 
         if decision_model is None:
@@ -39,6 +47,8 @@ class Decision:
         self.__variants = [None]
         self.__givens = None
         self.__memoized_variant = None
+        self.__scores = None
+        self.__ranked_variants = [None]
 
         self.__variants__set = False
         self.__givens_set = False
@@ -98,7 +108,8 @@ class Decision:
             warn('The best variant has already been chosen')
             return self.memoized_variant
 
-        scores = self.model.score(variants=self.variants, givens=self.givens)
+        # TODO should scores be persisted inside Decision object
+        self.__scores = self.model.score(variants=self.variants, givens=self.givens)
         # TODO is that needed
         # ranked_variants = None
 
@@ -110,32 +121,49 @@ class Decision:
             # if self.model.tracker and not self.tracked:
             if self.model.tracker:
 
-                if self.model.tracker.should_track_runners_up(len(self.variants)):
-                    ranked_variants = \
-                        dm.DecisionModel.rank(
-                            variants=self.variants, scores=scores)
-                    self.__memoized_variant = ranked_variants[0]
+                # TODO should ranked_variants be persisted inside Decision object
+                self.__ranked_variants = \
+                    dm.DecisionModel.rank(variants=self.variants, scores=self.__scores)
+                self.__memoized_variant = self.ranked_variants[0]
+                track_runners_up = self.model.tracker.should_track_runners_up(len(self.variants))
 
-                    self.model.tracker.track(
-                        variant=self.memoized_variant, variants=ranked_variants,
-                        givens=self.givens, model_name=self.model.model_name,
-                        variants_ranked_and_track_runners_up=True)
-                else:
-                    self.__memoized_variant = \
-                        dm.DecisionModel.top_scoring_variant(
-                            variants=self.variants, scores=scores)
+                self.model.tracker.track(
+                    variant=self.memoized_variant, variants=self.ranked_variants,
+                    givens=self.givens, model_name=self.model.model_name,
+                    variants_ranked_and_track_runners_up=track_runners_up)
 
-                    self.model.tracker.track(
-                        variant=self.memoized_variant, variants=self.variants,
-                        givens=self.givens, model_name=self.model.model_name,
-                        variants_ranked_and_track_runners_up=False)
+                # if track_runners_up:
+                #     # # TODO should ranked_variants be persisted inside Decision object
+                #     # self.__ranked_variants = \
+                #     #     dm.DecisionModel.rank(
+                #     #         variants=self.variants, scores=self.__scores)
+                #     # self.__memoized_variant = self.ranked_variants[0]
+                #
+                #     self.model.tracker.track(
+                #         variant=self.memoized_variant, variants=self.ranked_variants,
+                #         givens=self.givens, model_name=self.model.model_name,
+                #         variants_ranked_and_track_runners_up=True)
+                # else:
+                #     # self.__memoized_variant = \
+                #     #     dm.DecisionModel.top_scoring_variant(
+                #     #         variants=self.variants, scores=self.__scores)
+                #
+                #     # self.__ranked_variants = \
+                #     #     dm.DecisionModel.rank(
+                #     #         variants=self.variants, scores=self.__scores)
+                #     # self.__memoized_variant = self.ranked_variants[0]
+                #
+                #     self.model.tracker.track(
+                #         variant=self.memoized_variant, variants=self.ranked_variants,
+                #         givens=self.givens, model_name=self.model.model_name,
+                #         variants_ranked_and_track_runners_up=False)
 
             elif self.model.tracker is None:
                 raise ValueError('`tracker` object can`t be None')
             else:
                 self.__memoized_variant = \
                     dm.DecisionModel.top_scoring_variant(
-                        variants=self.variants, scores=scores)
+                        variants=self.variants, scores=self.__scores)
 
         self.__chosen = True
         return self.memoized_variant

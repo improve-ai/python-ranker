@@ -138,14 +138,6 @@ class DecisionTracker:
         self._max_runners_up = new_val
 
     @property
-    def track_runners_up(self) -> bool or None:
-        return self._track_runners_up
-
-    @track_runners_up.setter
-    def track_runners_up(self, value: bool or None):
-        self._track_runners_up = value
-
-    @property
     def history_id(self) -> str:
         return self._history_id
 
@@ -165,16 +157,15 @@ class DecisionTracker:
         self.max_runners_up = max_runners_up
         self.history_id = history_id
 
-        self.track_runners_up = None
+        # self.track_runners_up = None
 
     def should_track_runners_up(self, variants_count: int):
 
         if variants_count == 1 or self.max_runners_up == 0:
-            self.track_runners_up = False
+            return False
         else:
-            self.track_runners_up = \
-                np.random.rand() < 1 / min(
-                    variants_count - 1, self.max_runners_up)
+            return np.random.rand() < 1 / min(
+                variants_count - 1, self.max_runners_up)
 
     def top_runners_up(self, ranked_variants: list) -> Iterable or None:
 
@@ -239,6 +230,9 @@ class DecisionTracker:
             self.VARIANT_KEY: variant,
             self.VARIANTS_COUNT_KEY:
                 len(variants) if variants is not None else 1}
+
+        if variants is not None and not variants_ranked_and_track_runners_up:
+            assert variant == variants[0]
 
         if variants is not None and variants != [None] \
                 and variants_ranked_and_track_runners_up:

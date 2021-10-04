@@ -1,13 +1,9 @@
-from copy import deepcopy
 import json
-from numbers import Number
 import numpy as np
 import os
-from pprint import pprint
-from pytest import fixture, raises
+from pytest import fixture
 import sys
 from unittest import TestCase
-import xgboost as xgb
 
 sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
@@ -46,6 +42,7 @@ class TestChooserFeatureEncoding(TestCase):
         self.xgb_chooser = BasicNativeXGBChooser()
         xgb_path = os.getenv("V6_DUMMY_MODEL_PATH")
         self.xgb_chooser.load_model(input_model_src=xgb_path)
+        self.batch_encoding_seed = int(os.getenv('V6_BATCH_ENCODING_SEED'))
 
     def _get_test_data(
             self, path_to_test_json: str, method: str = 'readlines') -> object:
@@ -104,13 +101,15 @@ class TestChooserFeatureEncoding(TestCase):
         if expected_output is None:
             raise ValueError("Expected output is empty")
 
+        np.random.seed(self.batch_encoding_seed)
         tested_output_float64 = \
             self.xgb_chooser._encode_variants_single_givens(
-                variants=test_variants, givens=test_givens,
-                noise=self.noise)
+                variants=test_variants, givens=test_givens)
 
         tested_output_float32 = \
             convert_values_to_float32(val=tested_output_float64)
+        from pprint import pprint
+        pprint(tested_output_float32.tolist())
 
         # np.testing.assert_array_equal(expected_output, tested_output_float32)
 
@@ -160,10 +159,10 @@ class TestChooserFeatureEncoding(TestCase):
         if expected_output is None:
             raise ValueError("Expected output is empty")
 
+        np.random.seed(self.batch_encoding_seed)
         encoded_variants = \
             self.xgb_chooser._encode_variants_single_givens(
-                variants=test_variants, givens=test_givens,
-                noise=self.noise)
+                variants=test_variants, givens=test_givens)
 
         missings_filled_array_float64 = encoded_variants_to_np(
             encoded_variants=encoded_variants,
@@ -172,8 +171,7 @@ class TestChooserFeatureEncoding(TestCase):
         missings_filled_array_float32 = \
             convert_values_to_float32(val=missings_filled_array_float64)
 
-        np.testing.assert_array_equal(
-            expected_output, missings_filled_array_float32)
+        np.testing.assert_array_equal(expected_output, missings_filled_array_float32)
 
     def test_missing_features_filler_method_02(self):
         test_case_path = os.sep.join(
@@ -200,8 +198,7 @@ class TestChooserFeatureEncoding(TestCase):
 
         encoded_variants = \
             self.xgb_chooser._encode_variants_single_givens(
-                variants=test_variants, givens=test_givens,
-                noise=self.noise)
+                variants=test_variants, givens=test_givens)
 
         missings_filled_array_float64 = encoded_variants_to_np(
             encoded_variants=encoded_variants,
@@ -240,8 +237,7 @@ class TestChooserFeatureEncoding(TestCase):
 
         encoded_variants = \
             self.xgb_chooser._encode_variants_single_givens(
-                variants=test_variants, givens=test_givens,
-                noise=self.noise)
+                variants=test_variants, givens=test_givens)
 
         # done for 100% coverage
         orig_use_cython_backend = improve_settings.USE_CYTHON_BACKEND

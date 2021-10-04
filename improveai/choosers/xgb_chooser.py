@@ -237,8 +237,7 @@ class BasicNativeXGBChooser(BasicChooser):
         """
 
         encoded_variants = \
-            self._encode_variants_single_givens(
-                variants=variants, givens=givens, noise=np.random.rand())
+            self._encode_variants_single_givens(variants=variants, givens=givens)
 
         encoded_variants_to_np_method = \
             cfeu.encoded_variants_to_np if USE_CYTHON_BACKEND \
@@ -263,8 +262,7 @@ class BasicNativeXGBChooser(BasicChooser):
         return scores
 
     def _encode_variants_single_givens(
-            self, variants: Iterable, givens: dict or None,
-            noise: float) -> Iterable:
+            self, variants: Iterable, givens: dict or None) -> Iterable:
         """
         Implemented as a XGBChooser helper method
         Cythonized loop over provided variants and a single givens dict.
@@ -275,8 +273,6 @@ class BasicNativeXGBChooser(BasicChooser):
             collection of input variants to be encoded
         givens: dict or None
             context to be encoded with variants
-        noise: float
-            noise param from 0-1 uniform distribution
 
         Returns
         -------
@@ -289,7 +285,8 @@ class BasicNativeXGBChooser(BasicChooser):
                 'Unsupported givens` type: {}'.format(type(givens)))
             # process with single context
 
-        # if USE_CYTHON_BACKEND:
+        noise = np.random.rand()
+
         if USE_CYTHON_BACKEND:
             if isinstance(variants, list):
                 used_variants = variants
