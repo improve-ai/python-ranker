@@ -325,8 +325,7 @@ class DecisionTracker:
         return sample
 
     def get_sample(
-            self, variant: object, ranked_variants: list,
-            track_runners_up: bool):
+            self, variant: object, ranked_variants: list, track_runners_up: bool):
         """
         Gets sample from ranked_variants. Takes runenrs up into account
 
@@ -341,6 +340,10 @@ class DecisionTracker:
 
         Returns
         -------
+        tuple
+            (sample, has_sample) tuple; sample is a value of sample and
+            has_sample indicates if should be a sample; In case where
+            has_sample == False sample should always be None
 
         """
 
@@ -374,26 +377,21 @@ class DecisionTracker:
             while True:
                 sample_idx = np.random.randint(0, len(ranked_variants))
                 if variant_idx != sample_idx:
-                    sample = ranked_variants[sample_idx]
                     break
 
-            return sample, True
+            return ranked_variants[sample_idx], True
 
         assert variant == ranked_variants[0]
         # TODO If there are no remaining variants after best and runners up,
         #  then there is no sample.
         last_runner_up_idx = min(len(ranked_variants), self.max_runners_up + 1)
-        variants_to_be_sampled = ranked_variants[last_runner_up_idx:]
-
-        if len(variants_to_be_sampled) == 0:
+        if last_runner_up_idx >= len(ranked_variants):
             return None, False
 
         # TODO If there are runners up, then sample is a random sample from
         #  variants with best and runners up excluded.
-
         sample = \
-            DecisionTracker._get_non_numpy_type_sample(
-                sample=np.random.choice(variants_to_be_sampled))
+            ranked_variants[np.random.randint(last_runner_up_idx, len(ranked_variants))]
         return sample, True
 
     def post_improve_request(
