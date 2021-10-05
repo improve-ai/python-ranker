@@ -147,6 +147,14 @@ class TestDecisionTracker:
         np.random.seed(self.not_tracks_seed)
         assert decision_tracker.should_track_runners_up(variants_count=self.variants_count) is False
 
+    def test_should_track_runners_up_2_variants(self):
+        decision_tracker = \
+            dtr.DecisionTracker(
+                track_url=self.track_url, history_id=self.dummy_history_id)
+
+        np.random.seed(self.not_tracks_seed)
+        assert decision_tracker.should_track_runners_up(variants_count=2) is True
+
     def test_top_runners_up(self):
 
         decision_tracker = \
@@ -748,6 +756,226 @@ class TestDecisionTracker:
                 variants=variants,
                 givens=None, model_name=self.dummy_model_name,
                 variants_ranked_and_track_runners_up=True,
+                timestamp=self.dummy_timestamp)
+
+            if resp is None:
+                print('The input request body and expected request body mismatch')
+            assert resp is not None
+            assert resp.status_code == 200
+            assert resp.text == 'success'
+
+    def test_track_2_variants_01(self):
+
+        decision_tracker = \
+            dtr.DecisionTracker(
+                track_url=self.track_url,  max_runners_up=self.max_runners_up,
+                history_id=self.dummy_history_id)
+
+        variants = [0, 1]
+        top_runners_up = [variants[1]]
+        variant = variants[0]
+
+        expected_track_body = {
+            decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
+            decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
+            decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
+            decision_tracker.MODEL_KEY: self.dummy_model_name,
+            decision_tracker.VARIANT_KEY: variant,
+            decision_tracker.VARIANTS_COUNT_KEY: len(variants),
+            decision_tracker.RUNNERS_UP_KEY: top_runners_up}
+
+        expected_request_json = json.dumps(expected_track_body, sort_keys=False)
+
+        def custom_matcher(request):
+            request_dict = deepcopy(request.json())
+            del request_dict[decision_tracker.MESSAGE_ID_KEY]
+
+            if json.dumps(request_dict, sort_keys=False) != \
+                    expected_request_json:
+
+                print('request body:')
+                print(request.text)
+                print(request.json())
+                print('expected body (minus message_id):')
+                print(expected_track_body)
+                return None
+            return True
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success',
+                   additional_matcher=custom_matcher)
+
+            np.random.seed(self.sample_seed)
+            resp = decision_tracker.track(
+                variant=variant,
+                variants=variants,
+                givens=None, model_name=self.dummy_model_name,
+                variants_ranked_and_track_runners_up=True,
+                timestamp=self.dummy_timestamp)
+
+            if resp is None:
+                print('The input request body and expected request body mismatch')
+            assert resp is not None
+            assert resp.status_code == 200
+            assert resp.text == 'success'
+
+    def test_track_2_variants_02(self):
+
+        decision_tracker = \
+            dtr.DecisionTracker(
+                track_url=self.track_url,  max_runners_up=self.max_runners_up,
+                history_id=self.dummy_history_id)
+
+        variants = [0, 1]
+        top_runners_up = [variants[0]]
+        variant = variants[1]
+
+        expected_track_body = {
+            decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
+            decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
+            decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
+            decision_tracker.MODEL_KEY: self.dummy_model_name,
+            decision_tracker.VARIANT_KEY: variant,
+            decision_tracker.VARIANTS_COUNT_KEY: len(variants),
+            decision_tracker.RUNNERS_UP_KEY: top_runners_up}
+
+        expected_request_json = json.dumps(expected_track_body, sort_keys=False)
+
+        def custom_matcher(request):
+            request_dict = deepcopy(request.json())
+            del request_dict[decision_tracker.MESSAGE_ID_KEY]
+
+            if json.dumps(request_dict, sort_keys=False) != \
+                    expected_request_json:
+
+                print('request body:')
+                print(request.text)
+                print(request.json())
+                print('expected body (minus message_id):')
+                print(expected_track_body)
+                return None
+            return True
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success',
+                   additional_matcher=custom_matcher)
+
+            np.random.seed(self.sample_seed)
+            resp = decision_tracker.track(
+                variant=variant,
+                variants=variants,
+                givens=None, model_name=self.dummy_model_name,
+                variants_ranked_and_track_runners_up=True,
+                timestamp=self.dummy_timestamp)
+
+            if resp is None:
+                print('The input request body and expected request body mismatch')
+            assert resp is not None
+            assert resp.status_code == 200
+            assert resp.text == 'success'
+
+    def test_track_2_variants_03(self):
+
+        decision_tracker = \
+            dtr.DecisionTracker(
+                track_url=self.track_url,  max_runners_up=self.max_runners_up,
+                history_id=self.dummy_history_id)
+
+        variants = [0, 1]
+        top_runners_up = [variants[1]]
+        variant = variants[0]
+
+        expected_track_body = {
+            decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
+            decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
+            decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
+            decision_tracker.MODEL_KEY: self.dummy_model_name,
+            decision_tracker.VARIANT_KEY: variant,
+            decision_tracker.VARIANTS_COUNT_KEY: len(variants),
+            decision_tracker.RUNNERS_UP_KEY: top_runners_up}
+
+        expected_request_json = json.dumps(expected_track_body, sort_keys=False)
+
+        def custom_matcher(request):
+            request_dict = deepcopy(request.json())
+            del request_dict[decision_tracker.MESSAGE_ID_KEY]
+
+            if json.dumps(request_dict, sort_keys=False) != \
+                    expected_request_json:
+
+                print('request body:')
+                print(request.text)
+                print(request.json())
+                print('expected body (minus message_id):')
+                print(expected_track_body)
+                return None
+            return True
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success',
+                   additional_matcher=custom_matcher)
+
+            np.random.seed(self.sample_seed)
+            resp = decision_tracker.track(
+                variant=variant,
+                variants=variants,
+                givens=None, model_name=self.dummy_model_name,
+                variants_ranked_and_track_runners_up=False,
+                timestamp=self.dummy_timestamp)
+
+            if resp is None:
+                print('The input request body and expected request body mismatch')
+            assert resp is not None
+            assert resp.status_code == 200
+            assert resp.text == 'success'
+
+    def test_track_2_variants_04(self):
+
+        decision_tracker = \
+            dtr.DecisionTracker(
+                track_url=self.track_url,  max_runners_up=self.max_runners_up,
+                history_id=self.dummy_history_id)
+
+        variants = [0, 1]
+        top_runners_up = [variants[0]]
+        variant = variants[1]
+
+        expected_track_body = {
+            decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
+            decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
+            decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
+            decision_tracker.MODEL_KEY: self.dummy_model_name,
+            decision_tracker.VARIANT_KEY: variant,
+            decision_tracker.VARIANTS_COUNT_KEY: len(variants),
+            decision_tracker.RUNNERS_UP_KEY: top_runners_up}
+
+        expected_request_json = json.dumps(expected_track_body, sort_keys=False)
+
+        def custom_matcher(request):
+            request_dict = deepcopy(request.json())
+            del request_dict[decision_tracker.MESSAGE_ID_KEY]
+
+            if json.dumps(request_dict, sort_keys=False) != \
+                    expected_request_json:
+
+                print('request body:')
+                print(request.text)
+                print(request.json())
+                print('expected body (minus message_id):')
+                print(expected_track_body)
+                return None
+            return True
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success',
+                   additional_matcher=custom_matcher)
+
+            np.random.seed(self.sample_seed)
+            resp = decision_tracker.track(
+                variant=variant,
+                variants=variants,
+                givens=None, model_name=self.dummy_model_name,
+                variants_ranked_and_track_runners_up=False,
                 timestamp=self.dummy_timestamp)
 
             if resp is None:

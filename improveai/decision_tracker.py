@@ -163,6 +163,8 @@ class DecisionTracker:
 
         if variants_count == 1 or self.max_runners_up == 0:
             return False
+        elif variants_count == 2:
+            return True
         else:
             return np.random.rand() < 1 / min(
                 variants_count - 1, self.max_runners_up)
@@ -230,6 +232,11 @@ class DecisionTracker:
             self.VARIANT_KEY: variant,
             self.VARIANTS_COUNT_KEY:
                 len(variants) if variants is not None else 1}
+
+        if len(variants) == 2:
+            if variant != variants[0]:
+                variants = list(reversed(variants))
+            variants_ranked_and_track_runners_up = True
 
         # TODO unittest / validate that when
         #  variants_ranked_and_track_runners_up == False runners_up are always
