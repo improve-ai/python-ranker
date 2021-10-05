@@ -231,9 +231,9 @@ class DecisionTracker:
             self.VARIANTS_COUNT_KEY:
                 len(variants) if variants is not None else 1}
 
-        if variants is not None and not variants_ranked_and_track_runners_up:
-            assert variant == variants[0]
-
+        # TODO unittest / validate that when
+        #  variants_ranked_and_track_runners_up == False runners_up are always
+        #  empty
         if variants is not None and variants != [None] \
                 and variants_ranked_and_track_runners_up:
 
@@ -243,12 +243,12 @@ class DecisionTracker:
                 body[self.RUNNERS_UP_KEY] = \
                     self.top_runners_up(ranked_variants=variants)
 
-        sample = \
+        sample, has_sample = \
             self.get_sample(
                 variant=variant, ranked_variants=variants,
                 track_runners_up=variants_ranked_and_track_runners_up)
 
-        if sample:
+        if has_sample:
             body[self.SAMPLE_KEY] = sample
 
         if givens is not None:
@@ -344,12 +344,22 @@ class DecisionTracker:
 
         """
 
+        assert isinstance(track_runners_up, bool)
+
+        if not isinstance(ranked_variants, list):
+            raise TypeError(
+                'Provided variants are of a wrong type: {}. Only list type is '
+                'allowed'.format(type(ranked_variants)))
+
+        if len(ranked_variants) == 0:
+            raise ValueError('`ranked_variants` must not be empty')
+
         # TODO If there is only one variant, which is the best, then there is
         #  no sample.
 
         if len(ranked_variants) == 1:
             if ranked_variants[0] == variant:
-                return None
+                return None, False
             else:
                 # TODO Is this even possible? What to do in such case
                 raise NotImplementedError(
@@ -360,26 +370,23 @@ class DecisionTracker:
         # TODO If there are no runners up, then sample is a random sample
         #  from variants with just best excluded.
         if not track_runners_up:
-            variants_to_be_sampled = ranked_variants[1:]
+            variant_idx = ranked_variants.index(variant)
+            while True:
+                sample_idx = np.random.randint(0, len(ranked_variants))
+                if variant_idx != sample_idx:
+                    sample = ranked_variants[sample_idx]
+                    break
 
-            if len(variants_to_be_sampled) == 0:
-                return None
+            return sample, True
 
-            # TODO make sure to return json-encodable type every time
-            sample = \
-                DecisionTracker._get_non_numpy_type_sample(
-                    sample=np.random.choice(variants_to_be_sampled))
-
-            return sample
-
+        assert variant == ranked_variants[0]
         # TODO If there are no remaining variants after best and runners up,
         #  then there is no sample.
-
         last_runner_up_idx = min(len(ranked_variants), self.max_runners_up + 1)
         variants_to_be_sampled = ranked_variants[last_runner_up_idx:]
 
         if len(variants_to_be_sampled) == 0:
-            return None
+            return None, False
 
         # TODO If there are runners up, then sample is a random sample from
         #  variants with best and runners up excluded.
@@ -387,8 +394,7 @@ class DecisionTracker:
         sample = \
             DecisionTracker._get_non_numpy_type_sample(
                 sample=np.random.choice(variants_to_be_sampled))
-
-        return sample
+        return sample, True
 
     def post_improve_request(
             self, body_values: Dict[str, object], block: callable,

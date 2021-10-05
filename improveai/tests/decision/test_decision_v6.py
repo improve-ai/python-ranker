@@ -114,6 +114,7 @@ class TestDecision(TestCase):
             int(os.getenv('V6_DECISION_TRACKER_NOT_TRACKS_SEED'))
 
         self.dummy_history_id = 'dummy-history-id'
+        self.dummy_timestamp = '2021-05-11T02:32:27.007Z'
 
     def _get_test_data(
             self, path_to_test_json: str, method: str = 'readlines') -> object:
@@ -371,8 +372,7 @@ class TestDecision(TestCase):
                 warnings.simplefilter("always")
                 np.random.seed(self.tracks_seed)
                 memoized_variant = \
-                    decision.choose_from(variants=[None])\
-                    .given(givens={}).get()
+                    decision.choose_from(variants=[None]).given(givens={}).get()
                 assert len(w) == 0
 
         assert decision.chosen is True
@@ -415,6 +415,8 @@ class TestDecision(TestCase):
                     memoized_variant = \
                         decision.choose_from(variants=variants)\
                         .given(givens={}).get()
+                    print('Got following warnings count')
+                    print(len(w))
 
         assert any(runners_up_tracked)
         assert decision.chosen is True
@@ -448,6 +450,52 @@ class TestDecision(TestCase):
 
         assert decision.chosen is True
         assert memoized_variant == variants[9]
+
+    def test_get_08(self):
+        # this is a test case which covers tracking runners up from within
+        # get() call
+
+        decision_tracker = self.decision_model_with_tracker.tracker
+
+        expected_track_body = {
+            decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
+            decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
+            decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
+            decision_tracker.MODEL_KEY: self.decision_model_with_tracker.model_name,
+            decision_tracker.VARIANT_KEY: None,
+            decision_tracker.VARIANTS_COUNT_KEY: 1,
+        }
+
+        expected_request_json = json.dumps(expected_track_body, sort_keys=False)
+
+        request_validity = {
+            'request_body_ok': True}
+
+        def custom_matcher(request):
+
+            request_dict = deepcopy(request.json())
+            del request_dict[self.decision_model_with_tracker.tracker.MESSAGE_ID_KEY]
+
+            if json.dumps(request_dict, sort_keys=False) != \
+                    expected_request_json:
+                request_validity['request_body_ok'] = True
+
+            return True
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success', additional_matcher=custom_matcher)
+
+            with warnings.catch_warnings(record=True) as w:
+                warnings.simplefilter("always")
+
+                decision = d.Decision(decision_model=self.decision_model_with_tracker)
+                assert decision.chosen is False
+
+                memoized_variant = decision.get()
+                assert decision.chosen is True
+                assert memoized_variant is None
+                assert len(w) == 0
+                assert request_validity['request_body_ok']
 
     def _get_complete_decision(self):
         test_case_filename = os.getenv('V6_DECISION_TEST_GET_02_JSON')
