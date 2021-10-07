@@ -55,12 +55,12 @@ class TestDecisionTracker:
         self._variants_count = value
 
     @property
-    def ranked_variants(self):
-        return self._ranked_variants
+    def variants(self):
+        return self._variants
 
-    @ranked_variants.setter
-    def ranked_variants(self, value):
-        self._ranked_variants = value
+    @variants.setter
+    def variants(self, value):
+        self._variants = value
         
     @property
     def max_runners_up(self):
@@ -93,7 +93,7 @@ class TestDecisionTracker:
         self.variants_count = \
             int(os.getenv('V6_DECISION_TRACKER_SHOULD_TRACK_RUNNERS_UP_VARIANTS_COUNT'))
 
-        self.ranked_variants = list(range(100))
+        self.variants = list(range(100))
         self.max_runners_up = \
             int(os.getenv('V6_DECISION_TRACKER_MAX_RUNNERS_UP'))
 
@@ -164,11 +164,11 @@ class TestDecisionTracker:
 
         top_runners_up = \
             decision_tracker.top_runners_up(
-                ranked_variants=self.ranked_variants)
+                ranked_variants=self.variants)
 
         assert len(top_runners_up) == self.max_runners_up
         np.testing.assert_array_equal(
-            top_runners_up, self.ranked_variants[1:self.max_runners_up + 1])
+            top_runners_up, self.variants[1:self.max_runners_up + 1])
 
     def test_top_runners_up_empty_variants(self):
 
@@ -189,7 +189,7 @@ class TestDecisionTracker:
                 track_url=self.track_url, max_runners_up=self.max_runners_up,
                 history_id=self.dummy_history_id)
 
-        ranked_variants = self.ranked_variants[:1]
+        ranked_variants = self.variants[:1]
 
         top_runners_up = \
             decision_tracker.top_runners_up(ranked_variants=ranked_variants)
@@ -212,7 +212,7 @@ class TestDecisionTracker:
 
     def test_top_runners_up_less_variants_than_runners_up(self):
 
-        max_runners_up = len(self.ranked_variants) + 10
+        max_runners_up = len(self.variants) + 10
 
         decision_tracker = \
             dtr.DecisionTracker(
@@ -221,62 +221,145 @@ class TestDecisionTracker:
 
         top_runners_up = \
             decision_tracker.top_runners_up(
-                ranked_variants=self.ranked_variants)
+                ranked_variants=self.variants)
 
-        assert len(top_runners_up) == len(self.ranked_variants) - 1
+        assert len(top_runners_up) == len(self.variants) - 1
         np.testing.assert_array_equal(
-            top_runners_up, self.ranked_variants[1:])
+            top_runners_up, self.variants[1:])
 
-    def test_get_sample_single_variant_not_tracks(self):
+    def test__is_sample_available_1_variant_no_runners_up(self):
+        decision_tracker = \
+            dtr.DecisionTracker(
+                track_url=self.track_url, history_id=self.dummy_history_id)
 
+        runners_up = None
+
+        has_sample = decision_tracker._is_sample_available(
+            variants=self.variants[:1], runners_up=runners_up)
+
+        assert has_sample is False
+
+    def test__is_sample_available_2_variants_1_runner_up(self):
+        decision_tracker = \
+            dtr.DecisionTracker(
+                track_url=self.track_url, history_id=self.dummy_history_id)
+
+        runners_up = self.variants[1:2]
+
+        has_sample = decision_tracker._is_sample_available(
+            variants=self.variants[:2], runners_up=runners_up)
+
+        assert has_sample is False
+
+    def test__is_sample_available_10_variants_9_runners_up(self):
+        decision_tracker = \
+            dtr.DecisionTracker(
+                track_url=self.track_url, history_id=self.dummy_history_id)
+
+        variants = self.variants[:10]
+        runners_up = self.variants[1:10]
+
+        has_sample = decision_tracker._is_sample_available(
+            variants=variants, runners_up=runners_up)
+
+        assert has_sample is False
+
+    def test__is_sample_available_10_variants_3_runners_up(self):
+        decision_tracker = \
+            dtr.DecisionTracker(
+                track_url=self.track_url, history_id=self.dummy_history_id)
+
+        variants = self.variants[:10]
+        runners_up = self.variants[1:4]
+
+        has_sample = decision_tracker._is_sample_available(
+            variants=variants, runners_up=runners_up)
+
+        assert has_sample is True
+
+    def test__is_sample_available_10_variants_8_runners_up(self):
+        decision_tracker = \
+            dtr.DecisionTracker(
+                track_url=self.track_url, history_id=self.dummy_history_id)
+
+        variants = self.variants[:10]
+        runners_up = self.variants[1:9]
+
+        has_sample = decision_tracker._is_sample_available(
+            variants=variants, runners_up=runners_up)
+
+        assert has_sample is True
+
+    def test_get_sample_raises_for_zero_len_variants(self):
         decision_tracker = \
             dtr.DecisionTracker(
                 track_url=self.track_url, max_runners_up=self.max_runners_up,
                 history_id=self.dummy_history_id)
 
-        variant = self.ranked_variants[0]
-        ranked_variants = self.ranked_variants[:1]
+        ranked_variants = []
+        variant = None
         track_runners_up = False
 
-        sample, has_sample = decision_tracker.get_sample(
-            variant=variant, ranked_variants=ranked_variants,
-            track_runners_up=track_runners_up)
-
-        assert sample is None
-        assert has_sample is False
-
-    def test_get_sample_single_variant_tracks(self):
-
-        decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
-
-        variant = self.ranked_variants[0]
-        ranked_variants = self.ranked_variants[:1]
-        track_runners_up = True
-
-        sample, has_sample = decision_tracker.get_sample(
-            variant=variant, ranked_variants=ranked_variants,
-            track_runners_up=track_runners_up)
-
-        assert sample is None
-        assert has_sample is False
-
-    def test_get_sample_single_variant_raises(self):
-        decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
-
-        variant = self.ranked_variants[1]
-        ranked_variants = self.ranked_variants[:1]
-        track_runners_up = True
-
-        with raises(NotImplementedError) as nee:
+        with raises(ValueError) as verr:
             decision_tracker.get_sample(
-                variant=variant, ranked_variants=ranked_variants,
+                variant=variant, variants=ranked_variants,
                 track_runners_up=track_runners_up)
+
+    def test_get_sample_raises_for_1_variant_not_tracks(self):
+        decision_tracker = \
+            dtr.DecisionTracker(
+                track_url=self.track_url, max_runners_up=self.max_runners_up,
+                history_id=self.dummy_history_id)
+
+        variant = self.variants[0]
+        variants = self.variants[:1]
+        track_runners_up = False
+
+        with raises(ValueError) as verr:
+            decision_tracker.get_sample(
+                variant=variant, variants=variants, track_runners_up=track_runners_up)
+
+    def test_get_sample_raises_for_1_variant_tracks(self):
+        decision_tracker = \
+            dtr.DecisionTracker(
+                track_url=self.track_url, max_runners_up=self.max_runners_up,
+                history_id=self.dummy_history_id)
+
+        variant = self.variants[0]
+        variants = self.variants[:1]
+        track_runners_up = True
+
+        with raises(ValueError) as verr:
+            decision_tracker.get_sample(
+                variant=variant, variants=variants, track_runners_up=track_runners_up)
+
+    def test_get_sample_raises_for_2_variants_not_tracks(self):
+        decision_tracker = \
+            dtr.DecisionTracker(
+                track_url=self.track_url, max_runners_up=self.max_runners_up,
+                history_id=self.dummy_history_id)
+
+        variant = self.variants[0]
+        variants = self.variants[:2]
+        track_runners_up = False
+
+        with raises(ValueError) as verr:
+            decision_tracker.get_sample(
+                variant=variant, variants=variants, track_runners_up=track_runners_up)
+
+    def test_get_sample_raises_for_2_variants_tracks(self):
+        decision_tracker = \
+            dtr.DecisionTracker(
+                track_url=self.track_url, max_runners_up=self.max_runners_up,
+                history_id=self.dummy_history_id)
+
+        variant = self.variants[0]
+        variants = self.variants[:2]
+        track_runners_up = True
+
+        with raises(ValueError) as verr:
+            decision_tracker.get_sample(
+                variant=variant, variants=variants, track_runners_up=track_runners_up)
 
     def test_get_sample_raises_for_non_bool_track_runners_up_01(self):
         decision_tracker = \
@@ -284,12 +367,12 @@ class TestDecisionTracker:
                 track_url=self.track_url, max_runners_up=self.max_runners_up,
                 history_id=self.dummy_history_id)
 
-        variant = self.ranked_variants[0]
+        variant = self.variants[0]
         track_runners_up = None
 
         with raises(AssertionError) as ae:
             decision_tracker.get_sample(
-                variant=variant, ranked_variants=self.ranked_variants,
+                variant=variant, variants=self.variants,
                 track_runners_up=track_runners_up)
 
     def test_get_sample_raises_for_non_bool_track_runners_up_02(self):
@@ -298,91 +381,14 @@ class TestDecisionTracker:
                 track_url=self.track_url, max_runners_up=self.max_runners_up,
                 history_id=self.dummy_history_id)
 
-        variant = self.ranked_variants[0]
-        ranked_variants = self.ranked_variants[:10]
+        variant = self.variants[0]
+        ranked_variants = self.variants[:10]
         track_runners_up = None
 
         with raises(AssertionError) as ae:
             decision_tracker.get_sample(
-                variant=variant, ranked_variants=ranked_variants,
+                variant=variant, variants=ranked_variants,
                 track_runners_up=track_runners_up)
-
-    def test_get_sample_not_tracks(self):
-
-        decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
-
-        variant = self.ranked_variants[0]
-        track_runners_up = False
-
-        expected_sample = \
-            int(os.getenv('V6_DECISION_TRACKER_SAMPLE_NOT_TRACKS'))
-
-        np.random.seed(self.sample_seed)
-        sample, has_sample = decision_tracker.get_sample(
-            variant=variant, ranked_variants=self.ranked_variants,
-            track_runners_up=track_runners_up)
-
-        assert sample == expected_sample
-        assert has_sample is True
-
-    def test_get_sample_no_variants_not_tracks_3_variants(self):
-        decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
-
-        ranked_variants = self.ranked_variants[:3]
-        variant = ranked_variants[0]
-        track_runners_up = False
-
-        sample, has_sample = decision_tracker.get_sample(
-            variant=variant, ranked_variants=ranked_variants,
-            track_runners_up=track_runners_up)
-
-        assert sample == ranked_variants[1]
-        assert sample != variant
-        assert has_sample is True
-
-    def test_get_sample_no_variants_not_tracks_3_identical_variants(self):
-        # theoretically for 2 variants we always have runners up
-        decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
-
-        ranked_variants = ['a', 'a', 'a']
-        variant = ranked_variants[0]
-        track_runners_up = False
-
-        sample, has_sample = decision_tracker.get_sample(
-            variant=variant, ranked_variants=ranked_variants,
-            track_runners_up=track_runners_up)
-
-        assert sample is ranked_variants[1]
-        assert sample == variant
-        assert has_sample is True
-
-    def test_get_sample_no_variants_not_tracks_identical_variants_01(self):
-        decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
-
-        ranked_variants = ['z', 'x', 'a', 'a', 'b', 'c']
-        variant = ranked_variants[2]
-        track_runners_up = False
-
-        np.random.seed(self.sample_seed)
-        sample, has_sample = decision_tracker.get_sample(
-            variant=variant, ranked_variants=ranked_variants,
-            track_runners_up=track_runners_up)
-
-        assert sample == ranked_variants[0]
-        assert sample is not None
-        assert has_sample is True
 
     def test_get_sample_raises_on_track_runners_up_and_not_ranked_variants(self):
         decision_tracker = \
@@ -396,8 +402,96 @@ class TestDecisionTracker:
 
         with raises(AssertionError) as aerr:
             decision_tracker.get_sample(
-                variant=variant, ranked_variants=ranked_variants,
+                variant=variant, variants=ranked_variants,
                 track_runners_up=track_runners_up)
+
+    def test_get_sample_raises_for_wrong_variants_type(self):
+        decision_tracker = \
+            dtr.DecisionTracker(
+                track_url=self.track_url, max_runners_up=self.max_runners_up,
+                history_id=self.dummy_history_id)
+
+        ranked_variants = {'variants': [None, None, None]}
+        variant = ranked_variants['variants'][0]
+        track_runners_up = False
+
+        with raises(TypeError) as terr:
+            decision_tracker.get_sample(
+                variant=variant, variants=ranked_variants,
+                track_runners_up=track_runners_up)
+
+    def test_get_sample_not_tracks(self):
+
+        decision_tracker = \
+            dtr.DecisionTracker(
+                track_url=self.track_url, max_runners_up=self.max_runners_up,
+                history_id=self.dummy_history_id)
+
+        variant = self.variants[0]
+        track_runners_up = False
+
+        expected_sample = \
+            int(os.getenv('V6_DECISION_TRACKER_SAMPLE_NOT_TRACKS'))
+
+        np.random.seed(self.sample_seed)
+        sample = decision_tracker.get_sample(
+            variant=variant, variants=self.variants,
+            track_runners_up=track_runners_up)
+
+        assert sample == expected_sample
+
+    def test_get_sample_no_variants_not_tracks_3_variants(self):
+        decision_tracker = \
+            dtr.DecisionTracker(
+                track_url=self.track_url, max_runners_up=self.max_runners_up,
+                history_id=self.dummy_history_id)
+
+        ranked_variants = self.variants[:3]
+        variant = ranked_variants[0]
+        track_runners_up = False
+
+        sample = decision_tracker.get_sample(
+            variant=variant, variants=ranked_variants,
+            track_runners_up=track_runners_up)
+
+        assert sample == ranked_variants[1]
+        assert sample != variant
+
+    def test_get_sample_no_variants_not_tracks_3_identical_variants(self):
+        # theoretically for 2 variants we always have runners up
+        decision_tracker = \
+            dtr.DecisionTracker(
+                track_url=self.track_url, max_runners_up=self.max_runners_up,
+                history_id=self.dummy_history_id)
+
+        ranked_variants = ['a', 'a', 'a']
+        variant = ranked_variants[0]
+        track_runners_up = False
+
+        sample = decision_tracker.get_sample(
+            variant=variant, variants=ranked_variants,
+            track_runners_up=track_runners_up)
+
+        assert sample is ranked_variants[1]
+        assert sample == variant
+
+    def test_get_sample_no_variants_not_tracks_identical_variants_01(self):
+        decision_tracker = \
+            dtr.DecisionTracker(
+                track_url=self.track_url, max_runners_up=self.max_runners_up,
+                history_id=self.dummy_history_id)
+
+        ranked_variants = ['z', 'x', 'a', 'a', 'b', 'c']
+        variant = ranked_variants[2]
+        track_runners_up = False
+
+        np.random.seed(self.sample_seed)
+        sample = decision_tracker.get_sample(
+            variant=variant, variants=ranked_variants,
+            track_runners_up=track_runners_up)
+
+        assert sample == ranked_variants[0]
+        assert sample is not None
 
     def test_get_sample_no_variants_not_tracks_identical_variants_02(self):
         # make sure to sample identical index with selected variant's index
@@ -412,13 +506,12 @@ class TestDecisionTracker:
         track_runners_up = False
 
         np.random.seed(self.first_sample_identical_with_variant_seed)
-        sample, has_sample = decision_tracker.get_sample(
-            variant=variant, ranked_variants=ranked_variants,
+        sample = decision_tracker.get_sample(
+            variant=variant, variants=ranked_variants,
             track_runners_up=track_runners_up)
 
         assert sample == ranked_variants[0]
         assert sample is not None
-        assert has_sample is True
 
     def test_get_sample_3_none_variants_not_tracks(self):
         decision_tracker = \
@@ -431,78 +524,11 @@ class TestDecisionTracker:
         track_runners_up = False
 
         np.random.seed(self.sample_seed)
-        sample, has_sample = decision_tracker.get_sample(
-            variant=variant, ranked_variants=ranked_variants,
+        sample = decision_tracker.get_sample(
+            variant=variant, variants=ranked_variants,
             track_runners_up=track_runners_up)
 
         assert sample is None
-        assert has_sample is True
-
-    def test_get_sample_raises_for_wrong_variants_type(self):
-        decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
-
-        ranked_variants = {'variants': [None, None, None]}
-        variant = ranked_variants['variants'][0]
-        track_runners_up = False
-
-        with raises(TypeError) as terr:
-            decision_tracker.get_sample(
-                variant=variant, ranked_variants=ranked_variants,
-                track_runners_up=track_runners_up)
-
-    def test_get_sample_raises_for_zero_len_variants(self):
-        decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
-
-        ranked_variants = []
-        variant = self.ranked_variants[0]
-        track_runners_up = False
-
-        with raises(ValueError) as verr:
-            decision_tracker.get_sample(
-                variant=variant, ranked_variants=ranked_variants,
-                track_runners_up=track_runners_up)
-
-    def test_get_sample_no_variants_not_tracks(self):
-        decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
-
-        ranked_variants = [None]
-        variant = ranked_variants[0]
-        track_runners_up = False
-
-        np.random.seed(self.sample_seed)
-        sample, has_sample = decision_tracker.get_sample(
-            variant=variant, ranked_variants=ranked_variants,
-            track_runners_up=track_runners_up)
-
-        assert sample is None
-        assert has_sample is False
-
-    def test_get_sample_no_variants_tracks(self):
-        decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
-
-        ranked_variants = [None]
-        variant = ranked_variants[0]
-        track_runners_up = True
-
-        np.random.seed(self.sample_seed)
-        sample, has_sample = decision_tracker.get_sample(
-            variant=variant, ranked_variants=ranked_variants,
-            track_runners_up=track_runners_up)
-
-        assert sample is None
-        assert has_sample is False
 
     def test_get_sample_tracks(self):
         decision_tracker = \
@@ -510,99 +536,73 @@ class TestDecisionTracker:
                 track_url=self.track_url, max_runners_up=self.max_runners_up,
                 history_id=self.dummy_history_id)
 
-        variant = self.ranked_variants[0]
+        variant = self.variants[0]
         track_runners_up = True
 
         expected_sample = \
             int(os.getenv('V6_DECISION_TRACKER_SAMPLE_TRACKS'))
 
         np.random.seed(self.sample_seed)
-        sample, has_sample = decision_tracker.get_sample(
-            variant=variant, ranked_variants=self.ranked_variants,
+        sample = decision_tracker.get_sample(
+            variant=variant, variants=self.variants,
             track_runners_up=track_runners_up)
 
         assert sample == expected_sample
-        assert has_sample is True
-
-    def test_get_sample_no_variants_track(self):
-        decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
-
-        ranked_variants = [None]
-        variant = ranked_variants[0]
-        track_runners_up = True
-
-        np.random.seed(self.sample_seed)
-        sample, has_sample = decision_tracker.get_sample(
-            variant=variant, ranked_variants=ranked_variants,
-            track_runners_up=track_runners_up)
-
-        assert sample is None
-        assert has_sample is False
 
     def test_get_sample_tracks_no_sample_01(self):
 
         # make sure there are no variants to sample from
-        max_runners_up = len(self.ranked_variants) - 1
+        max_runners_up = len(self.variants) - 1
 
         decision_tracker = \
             dtr.DecisionTracker(
                 track_url=self.track_url, max_runners_up=max_runners_up,
                 history_id=self.dummy_history_id)
 
-        variant = self.ranked_variants[0]
+        variant = self.variants[0]
         track_runners_up = True
 
-        sample, has_sample = decision_tracker.get_sample(
-            variant=variant, ranked_variants=self.ranked_variants,
-            track_runners_up=track_runners_up)
-
-        assert sample is None
-        assert has_sample is False
+        with raises(AssertionError) as ae:
+            decision_tracker.get_sample(
+                variant=variant, variants=self.variants,
+                track_runners_up=track_runners_up)
 
     def test_get_sample_tracks_no_sample_02(self):
-
         # make sure there are no variants to sample from
-        max_runners_up = len(self.ranked_variants) - 1
+        max_runners_up = len(self.variants) - 1
 
         decision_tracker = \
             dtr.DecisionTracker(
                 track_url=self.track_url, max_runners_up=max_runners_up,
                 history_id=self.dummy_history_id)
 
-        variant = self.ranked_variants[0]
-        ranked_variants = self.ranked_variants[:40]
+        variant = self.variants[0]
+        ranked_variants = self.variants[:40]
         track_runners_up = True
 
-        sample, has_sample = decision_tracker.get_sample(
-            variant=variant, ranked_variants=ranked_variants,
-            track_runners_up=track_runners_up)
-
-        assert sample is None
-        assert has_sample is False
+        with raises(AssertionError) as ae:
+            decision_tracker.get_sample(
+                variant=variant, variants=ranked_variants,
+                track_runners_up=track_runners_up)
 
     def test_get_sample_tracks_sample_is_last_variant(self):
-
         # make sure there are no variants to sample from
-        max_runners_up = len(self.ranked_variants) - 1
+        max_runners_up = len(self.variants) - 1
 
         decision_tracker = \
             dtr.DecisionTracker(
                 track_url=self.track_url, max_runners_up=max_runners_up,
                 history_id=self.dummy_history_id)
 
-        variant = self.ranked_variants[0]
-        ranked_variants = self.ranked_variants + [100]
+        variant = self.variants[0]
+        ranked_variants = self.variants + [100]
         track_runners_up = True
 
-        sample, has_sample = decision_tracker.get_sample(
-            variant=variant, ranked_variants=ranked_variants,
+        sample = decision_tracker.get_sample(
+            variant=variant, variants=ranked_variants,
             track_runners_up=track_runners_up)
 
         assert sample == ranked_variants[-1]
-        assert has_sample is True
 
     def test_track_single_none_variant_none_given_no_runners_up(self):
 
@@ -1043,6 +1043,28 @@ class TestDecisionTracker:
             assert resp.status_code == 200
             assert resp.text == 'success'
 
+    def test_track_best_not_first_ranked_and_tracks(self):
+
+        decision_tracker = \
+            dtr.DecisionTracker(
+                track_url=self.track_url,  max_runners_up=self.max_runners_up,
+                history_id=self.dummy_history_id)
+
+        variants = [el for el in range(1, 20, 1)]
+        variant = variants[self.max_runners_up]
+        givens = {'dummy': 'givens'}
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+
+            with raises(AssertionError) as ae:
+                decision_tracker.track(
+                    variant=variant,
+                    variants=variants,
+                    givens=givens, model_name=self.dummy_model_name,
+                    variants_ranked_and_track_runners_up=True,
+                    timestamp=self.dummy_timestamp)
+
     def test_track_ndarray_variants(self):
 
         decision_tracker = \
@@ -1271,7 +1293,7 @@ class TestDecisionTracker:
             assert resp.status_code == 200
             assert resp.text == 'success'
 
-    def test_track_2_variants__max_runners_up_0(self):
+    def test_track_2_variants_max_runners_up_0(self):
 
         max_runners_up = 0
 
@@ -1291,7 +1313,7 @@ class TestDecisionTracker:
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variants[0],
             decision_tracker.VARIANTS_COUNT_KEY: len(variants),
-            decision_tracker.SAMPLE_KEY: expected_sample
+            # decision_tracker.SAMPLE_KEY: expected_sample
         }
 
         expected_request_json = json.dumps(expected_track_body, sort_keys=False)
