@@ -182,8 +182,17 @@ class DecisionTracker:
         top_runners_up = ranked_variants[
              1:min(len(ranked_variants), self.max_runners_up + 1)]\
             if ranked_variants is not None else None
+
+        # if there is a positive max_runners_up and more than 1 variant there must be at least 1 runner up
+        if len(ranked_variants) > 1 and self.max_runners_up > 0:
+            assert top_runners_up is not None and len(top_runners_up) > 0
+
+        # if max_runners_up == 0 there are no runners up
+        if self.max_runners_up == 0:
+            assert not top_runners_up  # None or []
+
         # If `top_runners_up` == [] return None
-        if not top_runners_up:
+        if top_runners_up is None or len(top_runners_up) == 0:
             return None
 
         returned_top_runners_up = top_runners_up
@@ -197,7 +206,7 @@ class DecisionTracker:
         variants_count = len(variants)
         runners_up_count = len(runners_up) if runners_up else 0
 
-        if (variants_count - runners_up_count - 1) > 0 and variants_count > 2:
+        if variants_count - runners_up_count - 1 > 0:
             return True
 
         return False
@@ -244,18 +253,24 @@ class DecisionTracker:
                 len(variants) if variants is not None else 1}
 
         if len(variants) == 2:
+            # for 2 variants variants_ranked_and_track_runners_up should be True
+            assert variants_ranked_and_track_runners_up
             if variant != variants[0]:
                 variants = list(reversed(variants))
-            variants_ranked_and_track_runners_up = True
+            # variants_ranked_and_track_runners_up = True
 
         # TODO unittest / validate that when
         #  variants_ranked_and_track_runners_up == False runners_up are always
         #  empty
+        # for variants_ranked_and_track_runners_up == false (max_runners_up == 0)
+        # we skip this clause and runners_up == None
         runners_up = None
+        print('before runners up extraction')
+        print(variants)
+        print(variants_ranked_and_track_runners_up)
+
         if variants is not None and variants != [None] \
                 and variants_ranked_and_track_runners_up:
-
-            # TODO verify if this should stay
             assert variant == variants[0]
 
             runners_up = self.top_runners_up(ranked_variants=variants)
@@ -264,8 +279,13 @@ class DecisionTracker:
                 body[self.RUNNERS_UP_KEY] = \
                     self.top_runners_up(ranked_variants=variants)
 
-        if self._is_sample_available(variants=variants, runners_up=runners_up):
+        # If runners_up == None and len(variants) == 2 -> sample should be extracted
+        print('Should sample ?')
+        print(self._is_sample_available(variants=variants, runners_up=runners_up))
+        print(variants)
+        print(runners_up)
 
+        if self._is_sample_available(variants=variants, runners_up=runners_up):
             sample = \
                 self.get_sample(
                     variant=variant, variants=variants,
@@ -373,9 +393,12 @@ class DecisionTracker:
                 'Provided variants are of a wrong type: {}. Only list type is '
                 'allowed'.format(type(variants)))
 
-        if len(variants) <= 2:
-            raise ValueError(
-                'Can`t sample from 2 or less ({}) variants'.format(len(variants)))
+        assert len(variants) > 1
+        if len(variants) == 2:
+            assert self.max_runners_up == 0
+        # if len(variants) <= 1:
+        #     raise ValueError(
+        #         'Can`t sample from 2 or less ({}) variants'.format(len(variants)))
 
         # TODO If there are no runners up, then sample is a random sample
         #  from variants with just best excluded.
