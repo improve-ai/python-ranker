@@ -339,7 +339,7 @@ class DecisionModel:
                 variants=variants, scores=scores):
             return None
 
-        variants_w_scores = np.array([variants, scores]).T
+        variants_w_scores = np.array([variants, scores], dtype=object).T
 
         sorted_variants_w_scores = \
             variants_w_scores[(variants_w_scores[:, 1] * -1).argsort()]
