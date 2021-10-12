@@ -265,10 +265,6 @@ class DecisionTracker:
         # for variants_ranked_and_track_runners_up == false (max_runners_up == 0)
         # we skip this clause and runners_up == None
         runners_up = None
-        print('before runners up extraction')
-        print(variants)
-        print(variants_ranked_and_track_runners_up)
-
         if variants is not None and variants != [None] \
                 and variants_ranked_and_track_runners_up:
             assert variant == variants[0]
@@ -280,11 +276,6 @@ class DecisionTracker:
                     self.top_runners_up(ranked_variants=variants)
 
         # If runners_up == None and len(variants) == 2 -> sample should be extracted
-        print('Should sample ?')
-        print(self._is_sample_available(variants=variants, runners_up=runners_up))
-        print(variants)
-        print(runners_up)
-
         if self._is_sample_available(variants=variants, runners_up=runners_up):
             sample = \
                 self.get_sample(
