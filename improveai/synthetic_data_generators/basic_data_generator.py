@@ -28,7 +28,7 @@ LETTERS = [letter for letter in string.ascii_letters]
 # DATA_SEED_KEY = 'data_seed'
 
 
-class NotSoRandomGenerator:
+class BasicSemiRandomDataGenerator:
 
     @property
     def data_definition_json_path(self):
@@ -304,7 +304,7 @@ if __name__ == '__main__':
     track_url = 'http://tesst.track.url'
     test_path = \
         '../artifacts/data/synthetic_models/datasets_definitions/synth_data_def_0.json'
-    q = NotSoRandomGenerator(
+    q = BasicSemiRandomDataGenerator(
         data_definition_json_path=test_path, track_url=track_url)
     # pprint(q.data_definition)
     pprint(q.timespan)
