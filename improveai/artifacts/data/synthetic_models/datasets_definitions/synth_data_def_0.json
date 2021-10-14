@@ -1,0 +1,31 @@
+{
+  "dataset_name": "happy_sunday",
+  "timespan": {
+    "data_starts": "2021-01-01 00:00:00",
+    "data_ends": "2021-12-31 00:00:00",
+    "time_seed": 9
+  },
+  "encoding_noise": 0.6064903457651959,
+  "model_seed": 1,
+  "variants_definition": {
+    "values":["Have a great day!", "Have an OK day!", "Happy Sunday!"],
+    "eval_call": null,
+    "distribution_name": "#uniform#"
+  },
+  "givens_definition": {
+    "values": null,
+    "eval_call": "[{'weekday': el} for el in range(7)]",
+    "distribution_name": "#uniform#"
+  },
+  "variants_to_givens_mapping": null,
+  "givens_fraction": 1.0,
+  "reward_mapping": [
+    {"variant":  "Happy Sunday!", "givens": {"weekday":  6}, "reward":  1000},
+    {"variant":  "Happy Sunday!", "givens": "#any#", "reward": 0},
+    {"variant":  "Have an OK day!", "givens": "#any#", "reward":  1},
+    {"variant":  "Have a great day!", "givens": "#any#", "reward":  10}
+  ],
+  "records_per_epoch": 500,
+  "epochs": 3,
+  "data_seed": 0
+}
