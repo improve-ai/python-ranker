@@ -213,7 +213,7 @@ class BasicSemiRandomDataGenerator:
         return history_ids
 
     def make_decision_for_epoch(
-            self, epoch_index: int, decision_model: object):
+            self, epoch_index: int, decision_model: DecisionModel):
 
         request_body_container = {'body': None}
         records = []
@@ -241,7 +241,7 @@ class BasicSemiRandomDataGenerator:
             # does DecisionModel have chooser - if not shuffle variants
             variants = self.variants.copy()
 
-            if dm.chooser is None:
+            if decision_model.chooser is None:
                 np.random.shuffle(variants)
 
             #  - create a Decision object and call get() with mockup tracker endpoint
