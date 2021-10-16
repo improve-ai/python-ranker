@@ -55,7 +55,8 @@ class Decision:
 
     def given(self, givens: dict):
 
-        if not isinstance(givens, dict):
+        # TODO can given be None?
+        if not isinstance(givens, dict) and givens is not None:
             raise TypeError('`givens` should be a dict')
 
         if self.chosen:

@@ -25,7 +25,7 @@
     {"variant":  "Have an OK day!", "givens": "#any#", "reward":  1},
     {"variant":  "Have a great day!", "givens": "#any#", "reward":  10}
   ],
-  "records_per_epoch": 500,
-  "epochs": 3,
+  "records_per_epoch": 20000,
+  "epochs": 10,
   "data_seed": 0
 }
