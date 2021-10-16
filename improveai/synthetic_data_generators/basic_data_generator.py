@@ -176,7 +176,8 @@ class BasicSemiRandomDataGenerator:
         all_givens = self.givens_definition.get('values', None)
         if all_givens is None:
             eval_call = self.givens_definition.get('eval_call', None)
-            all_givens = eval(eval_call)
+            if eval_call is not None:
+                all_givens = eval(eval_call)
 
         self.all_givens = all_givens
 
@@ -185,7 +186,9 @@ class BasicSemiRandomDataGenerator:
             self.givens_definition.get('distribution_name', None)
 
         if givens_distribution_name is None:
-            raise ValueError('Variants distributions is None')
+            self.all_givens_probabilities = None
+            return
+            # raise ValueError('Givens distributions is None')
 
         givens_distribution_name = \
             givens_distribution_name.replace('#', '').strip()
@@ -196,11 +199,16 @@ class BasicSemiRandomDataGenerator:
 
     def _choose_givens(self):
 
+        if self.all_givens is None:
+            return None
+
         if self.givens_fraction < np.random.rand():
             return None
 
-        if not self.variants_to_givens_mapping:
-            return np.random.choice(self.all_givens, p=self.all_givens_probabilities)
+        # if not self.variants_to_givens_mapping:
+        #     return np.random.choice(self.all_givens, p=self.all_givens_probabilities)
+
+        return np.random.choice(self.all_givens, p=self.all_givens_probabilities)
 
         # TODO code for givens dependent on variant
 
@@ -242,6 +250,12 @@ class BasicSemiRandomDataGenerator:
 
             # does DecisionModel have chooser - if not shuffle variants
             variants = self.variants.copy()
+
+            if givens and self.variants_to_givens_mapping:
+                # subset variants
+                variants = \
+                    [vg['variant'] for vg in self.variants_to_givens_mapping
+                     if vg['givens'] == givens]
 
             if decision_model.chooser is None:
                 np.random.shuffle(variants)
@@ -306,7 +320,7 @@ if __name__ == '__main__':
 
     track_url = 'http://tesst.track.url'
     test_path = \
-        '../artifacts/data/synthetic_models/datasets_definitions/synth_data_def_0.json'
+        '../artifacts/data/synthetic_models/datasets_definitions/synth_data_2_variants_simple_givens_binary_reward.json'
     q = BasicSemiRandomDataGenerator(
         data_definition_json_path=test_path, track_url=track_url)
     # pprint(q.data_definition)
@@ -319,17 +333,17 @@ if __name__ == '__main__':
     dm = DecisionModel('test-model')
     dm.track_with(dt)
 
-    # records_00 = q.make_decision_for_epoch(0, dm)
-    # q.dump_data(records_00, 'dummy_decisions_00')
-    #
-    # records_01 = q.make_decision_for_epoch(1, dm)
-    # q.dump_data(records_01, 'dummy_decisions_01')
-    # print(res)
-    records_10 = q.make_decision_for_epoch(0, dm)
-    q.dump_data(records_10, 'dummy_decisions_10')
+    records_00 = q.make_decision_for_epoch(0, dm)
+    q.dump_data(records_00, 'dummy_decisions_00')
 
-    records_11 = q.make_decision_for_epoch(1, dm)
-    q.dump_data(records_11, 'dummy_decisions_11')
+    records_01 = q.make_decision_for_epoch(1, dm)
+    q.dump_data(records_01, 'dummy_decisions_01')
+    # print(res)
+    # records_10 = q.make_decision_for_epoch(0, dm)
+    # q.dump_data(records_10, 'dummy_decisions_10')
+    #
+    # records_11 = q.make_decision_for_epoch(1, dm)
+    # q.dump_data(records_11, 'dummy_decisions_11')
 
 
     # for epoch_idx in range(q.epochs):
