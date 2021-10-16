@@ -106,6 +106,7 @@ class BasicSemiRandomDataGenerator:
         # TODO support other distributions
 
     def _generate_epochs_timespans(self):
+        np.random.seed(self.data_seed)
         start_datetime = pd.to_datetime(self.timespan.get('data_starts', None))
         end_datetime = pd.to_datetime(self.timespan.get('data_ends', None))
 
@@ -122,21 +123,24 @@ class BasicSemiRandomDataGenerator:
                 epochs_limits[epoch_idx - 1], epochs_limits[epoch_idx]]
             for epoch_idx in range(1, self.epochs + 1)}
 
-        return start_datetime
-
     def _generate_record_timestamps_for_epoch(self, epoch_index: int):
 
+        np.random.seed(self.data_seed)
         if not self.epochs_timespans:
+            print('making timespans')
             self._generate_epochs_timespans()
 
         epoch_starts = self.epochs_timespans['epoch_{}'.format(epoch_index)][0]
         epoch_ends = self.epochs_timespans['epoch_{}'.format(epoch_index)][1]
         epoch_duration = epoch_ends - epoch_starts
 
+        np.random.seed(epoch_index)
+
+        timedelta_fractions = np.random.rand(self.records_per_epoch)
+
         epoch_timestamps = \
             sorted(
-                (np.random.rand(self.records_per_epoch) *
-                 np.full((self.records_per_epoch,), epoch_duration) +
+                (timedelta_fractions * np.full((self.records_per_epoch,), epoch_duration) +
                  np.full((self.records_per_epoch,), epoch_starts)).tolist())
 
         records_timestamps = [epoch_starts] + epoch_timestamps
@@ -218,14 +222,12 @@ class BasicSemiRandomDataGenerator:
         request_body_container = {'body': None}
         records = []
 
-        np.random.seed(self.data_seed)
-        history_ids = self._get_history_ids()
-
         def custom_matcher(request):
             request_dict = deepcopy(request.json())
             request_body_container['body'] = request_dict
             return True
 
+        np.random.seed(self.data_seed)
         # get epoch's timestamps
         epoch_timestamps = \
             self._generate_record_timestamps_for_epoch(epoch_index=epoch_index)
@@ -246,7 +248,7 @@ class BasicSemiRandomDataGenerator:
 
             #  - create a Decision object and call get() with mockup tracker endpoint
             d = \
-                Decision(decision_model=decision_model)\
+                Decision(decision_model=decision_model) \
                 .choose_from(variants).given(givens=givens)
             #  - mockup track endpoint
             with rqm.Mocker() as m:
@@ -263,7 +265,8 @@ class BasicSemiRandomDataGenerator:
                 request_body['timestamp'] = \
                     np.datetime_as_string(record_timestamp.to_datetime64())
                 request_body['reward'] = reward
-                request_body['history_id'] = np.random.choice(history_ids)
+                del request_body['history_id']
+                # request_body['history_id'] = np.random.choice(history_ids)
 
                 records.append(request_body)
         return records
@@ -316,12 +319,18 @@ if __name__ == '__main__':
     dm = DecisionModel('test-model')
     dm.track_with(dt)
 
-    records_0 = q.make_decision_for_epoch(0, dm)
-    q.dump_data(records_0, 'dummy_decisions_0')
-
-    records_1 = q.make_decision_for_epoch(0, dm)
-    q.dump_data(records_1, 'dummy_decisions_1')
+    # records_00 = q.make_decision_for_epoch(0, dm)
+    # q.dump_data(records_00, 'dummy_decisions_00')
+    #
+    # records_01 = q.make_decision_for_epoch(1, dm)
+    # q.dump_data(records_01, 'dummy_decisions_01')
     # print(res)
+    records_10 = q.make_decision_for_epoch(0, dm)
+    q.dump_data(records_10, 'dummy_decisions_10')
+
+    records_11 = q.make_decision_for_epoch(1, dm)
+    q.dump_data(records_11, 'dummy_decisions_11')
+
 
     # for epoch_idx in range(q.epochs):
     #     print(q.epochs_timespans['epoch_{}'.format(epoch_idx)])
