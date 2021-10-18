@@ -46,11 +46,20 @@ class BasicSemiRandomDataGenerator:
     def data_definition(self, value):
         self._data_definition = value
 
+    @property
+    def reward_cache(self):
+        return self._reward_cache
+
+    @reward_cache.setter
+    def reward_cache(self, value):
+        self._reward_cache = value
+
     def __init__(self, data_definition_json_path: str, track_url: str):
 
         # init values - if applicable later refactor to properties
-        self.dataset_name = None
+        self.data_set_name = None
         self.timespan = None
+        self._reward_cache = None
 
         self.variants_definition = None
         self.variants = None
@@ -75,6 +84,8 @@ class BasicSemiRandomDataGenerator:
         self._load_data_definition()
         self._unpack_data_definition()
 
+        self.init_reward_cache()
+
         self._unpack_variants()
         self._unpack_variants_probabilities()
 
@@ -90,6 +101,15 @@ class BasicSemiRandomDataGenerator:
     def _load_data_definition(self):
         with open(self.data_definition_json_path, 'r') as tcjf:
             self.data_definition = json.loads(tcjf.read())
+
+    def get_dataset_name(self):
+        return self.data_definition['dataset_name']
+
+    def init_reward_cache(self):
+        self.reward_cache = \
+            {'epoch_{}'.format(epoch_index): {
+                'max_reward': 0, 'achieved_reward': 0, 'regret': 0}
+             for epoch_index in range(self.epochs)}
 
     def _unpack_data_definition(self):
 
@@ -136,12 +156,12 @@ class BasicSemiRandomDataGenerator:
 
         np.random.seed(epoch_index)
 
-        timedelta_fractions = np.random.rand(self.records_per_epoch)
+        timedelta_fractions = np.random.rand(self.records_per_epoch - 1)
 
         epoch_timestamps = \
             sorted(
-                (timedelta_fractions * np.full((self.records_per_epoch,), epoch_duration) +
-                 np.full((self.records_per_epoch,), epoch_starts)).tolist())
+                (timedelta_fractions * np.full((self.records_per_epoch - 1,), epoch_duration) +
+                 np.full((self.records_per_epoch - 1,), epoch_starts)).tolist())
 
         records_timestamps = [epoch_starts] + epoch_timestamps
 
@@ -224,6 +244,12 @@ class BasicSemiRandomDataGenerator:
 
         return history_ids
 
+    def _get_max_reward_for_record(self, variants: list, givens: dict):
+        # make sure
+        return max(
+            [self._assign_record_reward(variant=v, givens=givens)
+             for v in variants])
+
     def make_decision_for_epoch(
             self, epoch_index: int, decision_model: DecisionModel):
 
@@ -242,6 +268,10 @@ class BasicSemiRandomDataGenerator:
 
         print('\n### GENERATING RECORDS ###')
         # for each timestamp:
+
+        max_reward = 0
+        achieved_reward = 0
+
         for record_timestamp in tqdm(epoch_timestamps):
             #  - choose givens randomly or according to strategy defined in json if
             #    givens are provided; should variants be 'trimmed' only to those
@@ -276,13 +306,30 @@ class BasicSemiRandomDataGenerator:
                     self._assign_record_reward(
                         variant=request_body['variant'], givens=givens)
 
+                if reward is None:
+                    print('\n sanity check')
+                    print(givens)
+                    print(variants)
+                    input('check')
+
                 request_body['timestamp'] = \
                     np.datetime_as_string(record_timestamp.to_datetime64())
                 request_body['reward'] = reward
                 del request_body['history_id']
                 # request_body['history_id'] = np.random.choice(history_ids)
 
+                # increment max reward and achieved reward
+                record_max_reward = \
+                    self._get_max_reward_for_record(variants=variants, givens=givens)
+                max_reward += record_max_reward
+                # increment achieved reward
+                achieved_reward += reward
+
                 records.append(request_body)
+        self.reward_cache['epoch_{}'.format(epoch_index)]['max_reward'] = max_reward
+        self.reward_cache['epoch_{}'.format(epoch_index)]['achieved_reward'] = achieved_reward
+        self.reward_cache['epoch_{}'.format(epoch_index)]['regret'] = max_reward - achieved_reward
+
         return records
 
     def _assign_record_reward(self, variant: object, givens: object):
@@ -320,7 +367,7 @@ if __name__ == '__main__':
 
     track_url = 'http://tesst.track.url'
     test_path = \
-        '../artifacts/data/synthetic_models/datasets_definitions/synth_data_2_variants_simple_givens_binary_reward.json'
+        '../artifacts/data/synthetic_models/datasets_definitions/2_list_of_dict_variants_100_random_nested_dict_givens_small_binary_reward.json'
     q = BasicSemiRandomDataGenerator(
         data_definition_json_path=test_path, track_url=track_url)
     # pprint(q.data_definition)
@@ -338,6 +385,9 @@ if __name__ == '__main__':
 
     records_01 = q.make_decision_for_epoch(1, dm)
     q.dump_data(records_01, 'dummy_decisions_01')
+
+    pprint(q.reward_cache)
+
     # print(res)
     # records_10 = q.make_decision_for_epoch(0, dm)
     # q.dump_data(records_10, 'dummy_decisions_10')

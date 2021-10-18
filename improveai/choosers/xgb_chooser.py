@@ -110,6 +110,14 @@ class BasicNativeXGBChooser(BasicChooser):
     def feature_encoder_extras(self, value):
         self._feature_encoder_extras = value
 
+    @property
+    def current_noise(self):
+        return self._current_noise
+
+    @current_noise.setter
+    def current_noise(self, value):
+        self._current_noise = value
+
     @constant
     def SUPPORTED_OBJECTIVES() -> list:
         return ['reg', 'binary', 'multi']
@@ -133,6 +141,8 @@ class BasicNativeXGBChooser(BasicChooser):
 
         self.model_name_key = model_name_key
         self.model_name = None
+
+        self.current_noise = None
 
     def load_model(self, input_model_src: str, verbose: bool = False):
         """
@@ -285,7 +295,7 @@ class BasicNativeXGBChooser(BasicChooser):
                 'Unsupported givens` type: {}'.format(type(givens)))
             # process with single context
 
-        noise = np.random.rand()
+        self.current_noise = noise = np.random.rand()
 
         if USE_CYTHON_BACKEND:
             if isinstance(variants, list):
