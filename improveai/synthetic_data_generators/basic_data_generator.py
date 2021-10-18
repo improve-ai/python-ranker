@@ -57,7 +57,7 @@ class BasicSemiRandomDataGenerator:
     def __init__(self, data_definition_json_path: str, track_url: str):
 
         # init values - if applicable later refactor to properties
-        self.data_set_name = None
+        self.dataset_name = None
         self.timespan = None
         self._reward_cache = None
 
@@ -371,6 +371,8 @@ if __name__ == '__main__':
     q = BasicSemiRandomDataGenerator(
         data_definition_json_path=test_path, track_url=track_url)
     # pprint(q.data_definition)
+    print(q.dataset_name)
+    input('check')
     pprint(q.timespan)
     # q._generate_epochs_timespans()
     # ts = q._generate_record_timestamps_for_epoch(24)
