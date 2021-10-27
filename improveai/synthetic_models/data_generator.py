@@ -367,12 +367,10 @@ if __name__ == '__main__':
 
     track_url = 'http://tesst.track.url'
     test_path = \
-        '../artifacts/data/synthetic_models/datasets_definitions/2_list_of_dict_variants_100_random_nested_dict_givens_small_binary_reward.json'
+        '../artifacts/data/synthetic_models/datasets_definitions/2_list_of_string_variants_100_simple_givens_binary_reward.json'
     q = BasicSemiRandomDataGenerator(
         data_definition_json_path=test_path, track_url=track_url)
     # pprint(q.data_definition)
-    print(q.dataset_name)
-    input('check')
     pprint(q.timespan)
     # q._generate_epochs_timespans()
     # ts = q._generate_record_timestamps_for_epoch(24)
@@ -385,10 +383,11 @@ if __name__ == '__main__':
     records_00 = q.make_decision_for_epoch(0, dm)
     q.dump_data(records_00, 'dummy_decisions_00')
 
-    records_01 = q.make_decision_for_epoch(1, dm)
-    q.dump_data(records_01, 'dummy_decisions_01')
-
     pprint(q.reward_cache)
+
+    # records_01 = q.make_decision_for_epoch(1, dm)
+    # q.dump_data(records_01, 'dummy_decisions_01')
+
 
     # print(res)
     # records_10 = q.make_decision_for_epoch(0, dm)

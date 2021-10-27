@@ -258,6 +258,9 @@ class BasicNativeXGBChooser(BasicChooser):
                 encoded_variants=encoded_variants,
                 feature_names=self.model_feature_names)
 
+        if USE_CYTHON_BACKEND:
+            missings_filled_v = np.asarray(missings_filled_v)
+
         scores = \
             self.model.predict(
                 DMatrix(

@@ -31,16 +31,6 @@ if __name__ == '__main__':
     ap.add_argument('--sigmoid_correction', action='store_true')
 
     ap.add_argument(
-        '--sigmoid_const',
-        help='Intercept for the sigmoid correction',
-        default=0.5)
-
-    ap.add_argument(
-        '--full_output',
-        action='store_true',
-        help='Form of output - full vs short')
-
-    ap.add_argument(
         '--debug_print',
         action='store_true',
         help='Printing results on screen')
@@ -50,6 +40,11 @@ if __name__ == '__main__':
         action='store_true',
         help='Pretty dump to JSON')
 
+    ap.add_argument(
+        '--full_output',
+        action='store_true',
+        help='dump to JSON all variants along with scores')
+
     pa = ap.parse_args()
 
     dm = DecisionModel.load(model_url=pa.model_url)
@@ -57,40 +52,53 @@ if __name__ == '__main__':
     if pa.operation not in DecisionModel.SUPPORTED_CALLS:
         raise ValueError(
             'CLI supported method_calls are {}. \n Provided method_calls: {}'
-            .format(','.join(dm.SUPPORTED_CALLS), pa.method_call))
+            .format(','.join(dm.SUPPORTED_CALLS), pa.operation))
 
     if pa.operation != 'get':
         assert hasattr(dm, pa.operation)
 
-    inputs = {}
-    for key, value in zip(['variants', 'givens'], [pa.variants, pa.givens]):
-        json_loads_value = value
-        if os.path.isfile(value):
-            # load jsonfile
-            json_loads_value = read_jsonstring_from_file(path_to_file=value)
-        inputs[key] = json.loads(json_loads_value)
+    # inputs = {}
+    # for key, value in zip(['variants', 'givens'], [pa.variants, pa.givens]):
+    #     json_loads_value = value
+    #     if os.path.isfile(value):
+    #         # load jsonfile
+    #         json_loads_value = read_jsonstring_from_file(path_to_file=value)
+    #     inputs[key] = json.loads(json_loads_value)
+
+    variants = json.loads(
+        read_jsonstring_from_file(path_to_file=pa.variants) if os.path.isfile(pa.variants) else pa.variants)
+    givens = json.loads(
+        read_jsonstring_from_file(path_to_file=pa.givens) if os.path.isfile(pa.givens) else pa.givens)
 
     dm = DecisionModel.load(model_url=pa.model_url)
     if pa.operation == 'get':
         result = \
-            dm.choose_from(variants=inputs['variants'])\
-            .given(givens=inputs['givens']).get()
+            dm.choose_from(variants=variants)\
+            .given(givens=givens).get()
     else:
 
         scores = \
-            dm.score(**inputs)
+            dm.score(variants=variants, givens=givens)
 
         if pa.operation == 'score':
             result = scores
         else:
             desired_operation = getattr(dm, pa.operation)
-            inputs['scores'] = scores
-            result = desired_operation(**inputs)
+            # inputs['scores'] = scores
+            result = desired_operation(**{'variants': variants, 'scores': scores})
 
         if isinstance(result, np.ndarray):
             result = result.tolist()
 
-    string_result = json.dumps(result)
+    if pa.full_output:
+        if pa.operation == 'score':
+            result_payload = [{'variant': k, 'score': v} for k, v in zip(variants, result)]
+        elif pa.operation == 'rank':
+            result_payload = [{'variant': k, 'score': v} for k, v in zip(result, list(reversed(sorted(scores))))]
+        else:
+            result_payload = result
+
+    string_result = json.dumps(result_payload)
 
     if pa.prettify_json:
         string_result = simplejson.dumps(json.loads(string_result), indent=4)
@@ -101,7 +109,7 @@ if __name__ == '__main__':
               '##################################################################\n\n'
               'is: \n'
               '{}'
-              .format(pa.method_call, pa.variants, pa.model_pth, result))
+              .format(pa.operation, pa.variants, pa.model_url, result))
 
     if pa.results_path:
         with open(pa.results_path, 'w') as resf:
