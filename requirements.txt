@@ -12,4 +12,4 @@ xgboost==1.4.2
 scipy==1.7.0
 simplejson==3.17.2
 docker_py==1.10.6
-scikit_learn==1.0.1
+scikit_learn==0.19.2
