@@ -2,9 +2,10 @@ from argparse import ArgumentParser
 import json
 import numpy as np
 import os
+import requests_mock as rqm
 import simplejson
 
-from improveai.decision_model import DecisionModel
+from improveai import DecisionModel, DecisionTracker
 from utils.general_purpose_tools import read_jsonstring_from_file
 
 
@@ -28,7 +29,11 @@ if __name__ == '__main__':
         '--results_path',
         help='Path to file where JSON with prediction results will be dumped',
         default='result_file.json')
-    ap.add_argument('--sigmoid_correction', action='store_true')
+
+    ap.add_argument(
+        '--track_url',
+        help='tracker url',
+        default='http://tracker.mockup.url')
 
     ap.add_argument(
         '--debug_print',
@@ -45,9 +50,16 @@ if __name__ == '__main__':
         action='store_true',
         help='dump to JSON all variants along with scores')
 
+    ap.add_argument(
+        '--mockup_track_endpoint',
+        action='store_true',
+        help='Should endpoint be mocked up')
+
     pa = ap.parse_args()
 
     dm = DecisionModel.load(model_url=pa.model_url)
+    tracker = DecisionTracker(track_url=pa.track_url, history_id='cli-call-history-id')
+    dm.track_with(tracker=tracker)
 
     if pa.operation not in DecisionModel.SUPPORTED_CALLS:
         raise ValueError(
@@ -70,11 +82,16 @@ if __name__ == '__main__':
     givens = json.loads(
         read_jsonstring_from_file(path_to_file=pa.givens) if os.path.isfile(pa.givens) else pa.givens)
 
-    dm = DecisionModel.load(model_url=pa.model_url)
     if pa.operation == 'get':
-        result = \
-            dm.choose_from(variants=variants)\
-            .given(givens=givens).get()
+
+        decision = dm.choose_from(variants=variants).given(givens=givens)
+        if pa.mockup_track_endpoint:
+            with rqm.Mocker() as m:
+                m.post(pa.track_url, text='success')
+                result = decision.get()
+        else:
+            result = decision.get()
+
     else:
 
         scores = \
