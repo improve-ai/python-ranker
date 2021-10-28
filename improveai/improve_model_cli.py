@@ -107,13 +107,12 @@ if __name__ == '__main__':
         if isinstance(result, np.ndarray):
             result = result.tolist()
 
+    result_payload = result
     if pa.full_output:
         if pa.operation == 'score':
             result_payload = [{'variant': k, 'score': v} for k, v in zip(variants, result)]
         elif pa.operation == 'rank':
             result_payload = [{'variant': k, 'score': v} for k, v in zip(result, list(reversed(sorted(scores))))]
-        else:
-            result_payload = result
 
     string_result = json.dumps(result_payload)
 
