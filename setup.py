@@ -10,7 +10,7 @@ if __name__ == '__main__':
 
     installed_packages = [pkg.name for pkg in pydoc.pkgutil.iter_modules()]
 
-    reqs_path = os.getenv('SDK_HOME_PATH', None)
+    reqs_path = os.getenv('SDK_REQUIREMENTS_PATH', None)
 
     if not reqs_path:
         reqs_path = \

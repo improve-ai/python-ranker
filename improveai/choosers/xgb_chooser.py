@@ -118,6 +118,14 @@ class BasicNativeXGBChooser(BasicChooser):
     def current_noise(self, value):
         self._current_noise = value
 
+    @property
+    def noise(self):
+        return self._noise
+
+    @noise.setter
+    def noise(self, value):
+        self._noise = value
+
     @constant
     def SUPPORTED_OBJECTIVES() -> list:
         return ['reg', 'binary', 'multi']
@@ -143,6 +151,7 @@ class BasicNativeXGBChooser(BasicChooser):
         self.model_name = None
 
         self.current_noise = None
+        self.noise = None
 
     def load_model(self, input_model_src: str, verbose: bool = False):
         """
@@ -261,6 +270,17 @@ class BasicNativeXGBChooser(BasicChooser):
         if USE_CYTHON_BACKEND:
             missings_filled_v = np.asarray(missings_filled_v)
 
+        # curr_time = int(time())
+        # with open('/home/kw/Projects/upwork/sanity_check_artifacts/scores_difference_check/{}.json'.format(curr_time), 'w') as scdf:
+        #     dump = {
+        #         'variants': variants,
+        #         'givens': givens,
+        #         'encoded_variants': encoded_variants.tolist(),
+        #         'np_df': missings_filled_v.tolist()
+        #     }
+        #
+        #     scdf.write(json.dumps(dump))
+
         scores = \
             self.model.predict(
                 DMatrix(
@@ -298,7 +318,13 @@ class BasicNativeXGBChooser(BasicChooser):
                 'Unsupported givens` type: {}'.format(type(givens)))
             # process with single context
 
-        self.current_noise = noise = np.random.rand()
+        # noise = 0.0
+        # TODO figure out how to make this nicer
+        if self.noise is not None:
+            noise = self.noise
+            self.current_noise = self.noise
+        else:
+            self.current_noise = noise = np.random.rand()
 
         if USE_CYTHON_BACKEND:
             if isinstance(variants, list):
