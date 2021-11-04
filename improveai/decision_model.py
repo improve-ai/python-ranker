@@ -25,11 +25,10 @@ class DecisionModel:
 
     @model_name.setter
     def model_name(self, value: str):
-        # TODO if it will be decided that model_name can ne None refactor
-        assert value is not None
-        # if value is not None:
-        assert isinstance(value, str)
-        assert re.search(DecisionModel.MODEL_NAME_REGEXP, value) is not None
+
+        if value is not None:
+            assert isinstance(value, str)
+            assert re.search(DecisionModel.MODEL_NAME_REGEXP, value) is not None
         self._model_name = value
 
     @property

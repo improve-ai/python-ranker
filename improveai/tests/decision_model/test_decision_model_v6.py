@@ -668,17 +668,10 @@ class TestDecisionModel(TestCase):
         assert variants == sorted_with_scores
 
     # set model name from constructor:
-    # - test that None model name does not pass now
-
-    def test_none_model_name(self):
-        with raises(AssertionError) as aerr:
-            dm.DecisionModel(model_name=None)
-            assert aerr.value
-
     # - test that regexp compliant model name passes regexp
     def test_good_model_name(self):
         good_model_names = \
-            ['a', '0', '0-', 'a1-', 'x23yz_', 'a01sd.', 'abc3-xy2z_as4d.'] + \
+            [None, 'a', '0', '0-', 'a1-', 'x23yz_', 'a01sd.', 'abc3-xy2z_as4d.'] + \
             [''.join('a' for _ in range(64))]
 
         for good_model_name in good_model_names:
