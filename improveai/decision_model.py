@@ -105,7 +105,7 @@ class DecisionModel:
 
         """
 
-        decision_model = DecisionModel(model_name='loading')
+        decision_model = DecisionModel(model_name=None)
         decision_model._set_chooser(
             chooser=DecisionModel._get_chooser(model_url=model_url))
 
