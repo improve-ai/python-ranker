@@ -3,6 +3,7 @@ import json
 import numpy as np
 import os
 from pytest import fixture, raises
+import string
 import sys
 import time
 from unittest import TestCase
@@ -19,6 +20,9 @@ from improveai.tests.test_utils import convert_values_to_float32
 
 
 class TestDecisionModel(TestCase):
+
+    BAD_SPECIAL_CHARACTERS = [el for el in '`~!@#$%^&*()=+[]{};:"<>,/?' + "'"]
+    ALNUM_CHARS = [el for el in string.digits + string.ascii_letters]
 
     @property
     def score_seed(self):
@@ -662,3 +666,37 @@ class TestDecisionModel(TestCase):
              sorted(zip(scores_for_variants, variants), reverse=True)]
 
         assert variants == sorted_with_scores
+
+    # set model name from constructor:
+    # - test that None model name does not pass now
+
+    def test_none_model_name(self):
+        with raises(AssertionError) as aerr:
+            dm.DecisionModel(model_name=None)
+            assert aerr.value
+
+    # - test that regexp compliant model name passes regexp
+    def test_good_model_name(self):
+        good_model_names = \
+            ['a', '0', '0-', 'a1-', 'x23yz_', 'a01sd.', 'abc3-xy2z_as4d.'] + \
+            [''.join('a' for _ in range(64))]
+
+        for good_model_name in good_model_names:
+            dm.DecisionModel(model_name=good_model_name)
+
+    # - test that regexp non-compliant model name raises AssertionError
+    def test_bad_model_name(self):
+        bad_model_names = \
+            ['', '-', '_', '.', '-a1', '.x2z', '_x2z'] + \
+            [''.join(
+                np.random.choice(TestDecisionModel.ALNUM_CHARS, 2).tolist() + [sc] +
+                np.random.choice(TestDecisionModel.ALNUM_CHARS, 2).tolist())
+             for sc in TestDecisionModel.BAD_SPECIAL_CHARACTERS] + \
+            [''.join('a' for _ in range(65))]
+
+        for bad_model_name in bad_model_names:
+            with raises(AssertionError) as aerr:
+                dm.DecisionModel(model_name=bad_model_name)
+                assert aerr.value
+
+

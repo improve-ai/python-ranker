@@ -1,5 +1,6 @@
 import asyncio
 import os
+import re
 import signal
 import warnings
 
@@ -16,6 +17,7 @@ from improveai.utils.general_purpose_tools import constant
 class DecisionModel:
 
     SUPPORTED_CALLS = ['score', 'top_scoring_variant', 'rank', 'get']
+    MODEL_NAME_REGEXP = "^[a-zA-Z0-9][\w\-.]{0,63}$"
 
     @property
     def model_name(self) -> str:
@@ -23,6 +25,11 @@ class DecisionModel:
 
     @model_name.setter
     def model_name(self, value: str):
+        # TODO if it will be decided that model_name can ne None refactor
+        assert value is not None
+        # if value is not None:
+        assert isinstance(value, str)
+        assert re.search(DecisionModel.MODEL_NAME_REGEXP, value) is not None
         self._model_name = value
 
     @property
@@ -99,7 +106,7 @@ class DecisionModel:
 
         """
 
-        decision_model = DecisionModel(model_name=None)
+        decision_model = DecisionModel(model_name='loading')
         decision_model._set_chooser(
             chooser=DecisionModel._get_chooser(model_url=model_url))
 

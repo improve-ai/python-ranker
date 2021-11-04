@@ -407,6 +407,9 @@ class BasicSemiRandomDataGenerator:
                 'variant': chosen_variant,
                 'count': len(variants)}
 
+            if givens is not None:
+                record['givens'] = givens
+
             track_runners_up = decision_model.tracker.should_track_runners_up(len(variants))
 
             runners_up = None
@@ -441,7 +444,11 @@ class BasicSemiRandomDataGenerator:
         if givens_index is None:
             givens_index = "#any#"
         reward_key = '{}|{}'.format(variant_index, givens_index)
-        return self.reward_mapping.get(reward_key, 0.0)
+        reward = self.reward_mapping.get(reward_key, None)
+        if reward is None:
+            not_exact_reward_key = '{}|{}'.format(variant_index, '#any#')
+            reward = self.reward_mapping.get(not_exact_reward_key, 0.0)
+        return reward
 
     def _get_rewards_keys(self, all_givens_indices):
         return \

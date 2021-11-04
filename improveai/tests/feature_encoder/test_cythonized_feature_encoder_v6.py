@@ -788,6 +788,26 @@ class TestEncoder(TestCase):
             test_case_filename=os.getenv(
                 "V6_FEATURE_ENCODER_TEST_NEWLINE_TAB_RETURN_SYMBOLS_STRING_JSON"))
 
+    def test_noise_0_with_float(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_NOISE_0_WITH_FLOAT_JSON"))
+
+    def test_noise_0_with_int(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_NOISE_0_WITH_INT_JSON"))
+
+    def test_noise_0_with_primitive_dict_float(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_NOISE_0_WITH_PRIMITIVE_DICT_FLOAT_JSON"))
+
+    def test_noise_0_with_primitive_dict_int(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_NOISE_0_WITH_PRIMITIVE_DICT_INT_JSON"))
+
     def test_noise_0_with_string(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(

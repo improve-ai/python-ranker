@@ -10,6 +10,8 @@ from improveai.utils.gzip_tools import check_and_get_unzpd_model
 
 
 class BasicChooser(ABC):
+    MODEL_NAME_REGEXP = "^[a-zA-Z0-9][\w\-.]{0,63}$"
+
     @property
     @abstractmethod
     def model(self) -> object:

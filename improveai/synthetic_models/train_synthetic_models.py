@@ -44,7 +44,7 @@ def prepare_synthetic_model_dirs(epochs, case_id):
 
 def get_decision_model(
         epoch_index: int, tracker: DecisionTracker, dataset_name: str, case_id):
-    dm = DecisionModel(model_name='{}-{}'.format(dataset_name.replace('_', '-'), epoch_index - 1))
+    dm = DecisionModel(model_name='{}-{}'.format(dataset_name.replace('_', '-'), epoch_index - 1)[:64])
 
     if epoch_index != 0:
         model_path = \
@@ -82,8 +82,6 @@ def train_model(epoch: int, dataset_name: str, case_id):
     environment = {
         MODEL_NAME_ENVVAR: '{}-epoch-{}'.format(dataset_name.replace('_', '-'), epoch)
     }
-
-    from pprint import pprint
 
     container = \
         dc.containers.run(
@@ -187,17 +185,29 @@ def create_synthetic_model_test_json(
     # -> dump results keeping specified synthetic model json conventino
     # append regret vs epoch to json (?)
 
+    noise = None
+    np.random.seed(data_generator.data_seed)
+    if hasattr(data_generator, 'noise'):
+        noise = data_generator.noise
+
+    if noise is None:
+        noise = np.random.rand()
+
+    assert noise is not None
+
     test_case = {
         "model_url": os.sep.join([PYTHON_SDK_PACKAGE_NAME, model_path.split(PYTHON_SDK_PACKAGE_NAME)[-1][1:]]),
         "metadata": {
             "case_name": data_generator.dataset_name,
             "train_stats": data_generator.reward_cache,
-            "noise": None,
-            "variants_vs_givens_stats": data_generator.variants_vs_givens_stats
+
+            # "variants_vs_givens_stats": data_generator.variants_vs_givens_stats
         },
         "test_case": {
             "variants": data_generator.variants,
             "givens": data_generator.all_givens,
+            "noise": noise,
+            "python_seed": data_generator.data_seed
         },
         "expected_output": []
     }
@@ -217,17 +227,11 @@ def create_synthetic_model_test_json(
 
             # fix seed to get reproducible results
             np.random.seed(noise_seed)
+            dm.chooser.imposed_noise = noise
             # get best variant
             best_variant = decision.get()
             # get encoding noise
-            encoding_noise = dm.chooser.current_noise
-            assert encoding_noise is not None
-
-            if i != 0:
-                assert encoding_noise == prev_encoding_noise == test_case['metadata']['noise']
-
-            test_case['metadata']['noise'] = encoding_noise
-            prev_encoding_noise = encoding_noise
+            # encoding_noise = dm.chooser.current_noise
 
             decision_output = {
                 "variant": best_variant,
@@ -263,7 +267,7 @@ if __name__ == '__main__':
 
     paths = get_test_data_definitions(SYNTHETIC_DATA_DEFINITIONS_DIRECTORY)
 
-    first_batch = [p for p in paths if '/2_' in p]
+    first_batch = [p for p in paths if '/2_' in p or '/0_' in p or '/happy_sunday_' in p]
     second_batch = [p for p in paths if '/1000_' in p]
 
     paths = first_batch + second_batch
@@ -271,10 +275,10 @@ if __name__ == '__main__':
     trained_models_dir = os.sep.join([IMPROVE_ABS_PATH, SYNTHETIC_MODELS_TEST_CASES_DIR])
     already_trained_models = os.listdir(trained_models_dir)
 
-    # paths = [SYNTHETIC_DATA_DEFINITIONS_DIRECTORY + '/2_list_of_numeric_variants_no_givens_large_binary_reward.json']
-    recalc_paths = ["2_list_of_dict_variants_100_random_nested_dict_givens_small_binary_reward.json", "2_string_variants_100_random_nested_dict_givens_large_binary_reward.json", "2_list_of_string_variants_100_random_int_givens_binary_reward.json", "2_list_of_numeric_variants_100_random_nested_dict_givens_small_binary_reward.json", "2_nested_dict_variants_100_random_nested_dict_givens_large_binary_reward.json", "2_nested_dict_variants_100_random_int_givens_large_binary_reward.json", "2_string_variants_100_random_int_givens_small_binary_reward.json", "2_numeric_variants_100_random_int_givens_large_binary_reward.json", "2_list_of_dict_variants_100_random_nested_dict_givens_large_binary_reward.json", "2_nested_dict_variants_100_random_nested_dict_givens_binary_reward.json", "2_list_of_numeric_variants_100_random_int_givens_binary_reward.json", "2_nested_dict_variants_100_random_int_givens_small_binary_reward.json", "2_list_of_numeric_variants_100_random_nested_dict_givens_binary_reward.json", "2_list_of_string_variants_100_random_int_givens_small_binary_reward.json", "2_numeric_variants_100_random_nested_dict_givens_binary_reward.json", "2_list_of_string_variants_100_random_nested_dict_givens_large_binary_reward.json", "2_string_variants_100_random_int_givens_large_binary_reward.json", "2_numeric_variants_100_random_int_givens_binary_reward.json", "2_list_of_numeric_variants_100_random_int_givens_large_binary_reward.json", "2_string_variants_100_random_nested_dict_givens_binary_reward.json", "2_numeric_variants_100_random_nested_dict_givens_small_binary_reward.json", "2_nested_dict_variants_100_random_int_givens_binary_reward.json", "2_list_of_dict_variants_100_random_int_givens_small_binary_reward.json", "2_numeric_variants_100_random_nested_dict_givens_large_binary_reward.json", "2_list_of_dict_variants_100_random_nested_dict_givens_binary_reward.json", "2_list_of_numeric_variants_100_random_int_givens_small_binary_reward.json", "2_list_of_string_variants_100_random_nested_dict_givens_small_binary_reward.json", "2_numeric_variants_100_random_int_givens_small_binary_reward.json", "2_nested_dict_variants_100_random_nested_dict_givens_small_binary_reward.json", "2_list_of_string_variants_100_random_int_givens_large_binary_reward.json", "2_string_variants_100_random_nested_dict_givens_small_binary_reward.json", "2_list_of_string_variants_100_random_nested_dict_givens_binary_reward.json", "2_string_variants_100_random_int_givens_binary_reward.json", "2_list_of_dict_variants_100_random_int_givens_large_binary_reward.json", "2_list_of_numeric_variants_100_random_nested_dict_givens_large_binary_reward.json", "2_list_of_dict_variants_100_random_int_givens_binary_reward.json"]
-    paths = [SYNTHETIC_DATA_DEFINITIONS_DIRECTORY + os.sep + path for path in recalc_paths]
-    CONTINUE = False
+    paths = [SYNTHETIC_DATA_DEFINITIONS_DIRECTORY + '/2_variants_20_huge_givens.json']
+    # recalc_paths = ["2_list_of_dict_variants_100_random_nested_dict_givens_small_binary_reward.json", "2_string_variants_100_random_nested_dict_givens_large_binary_reward.json", "2_list_of_string_variants_100_random_int_givens_binary_reward.json", "2_list_of_numeric_variants_100_random_nested_dict_givens_small_binary_reward.json", "2_nested_dict_variants_100_random_nested_dict_givens_large_binary_reward.json", "2_nested_dict_variants_100_random_int_givens_large_binary_reward.json", "2_string_variants_100_random_int_givens_small_binary_reward.json", "2_numeric_variants_100_random_int_givens_large_binary_reward.json", "2_list_of_dict_variants_100_random_nested_dict_givens_large_binary_reward.json", "2_nested_dict_variants_100_random_nested_dict_givens_binary_reward.json", "2_list_of_numeric_variants_100_random_int_givens_binary_reward.json", "2_nested_dict_variants_100_random_int_givens_small_binary_reward.json", "2_list_of_numeric_variants_100_random_nested_dict_givens_binary_reward.json", "2_list_of_string_variants_100_random_int_givens_small_binary_reward.json", "2_numeric_variants_100_random_nested_dict_givens_binary_reward.json", "2_list_of_string_variants_100_random_nested_dict_givens_large_binary_reward.json", "2_string_variants_100_random_int_givens_large_binary_reward.json", "2_numeric_variants_100_random_int_givens_binary_reward.json", "2_list_of_numeric_variants_100_random_int_givens_large_binary_reward.json", "2_string_variants_100_random_nested_dict_givens_binary_reward.json", "2_numeric_variants_100_random_nested_dict_givens_small_binary_reward.json", "2_nested_dict_variants_100_random_int_givens_binary_reward.json", "2_list_of_dict_variants_100_random_int_givens_small_binary_reward.json", "2_numeric_variants_100_random_nested_dict_givens_large_binary_reward.json", "2_list_of_dict_variants_100_random_nested_dict_givens_binary_reward.json", "2_list_of_numeric_variants_100_random_int_givens_small_binary_reward.json", "2_list_of_string_variants_100_random_nested_dict_givens_small_binary_reward.json", "2_numeric_variants_100_random_int_givens_small_binary_reward.json", "2_nested_dict_variants_100_random_nested_dict_givens_small_binary_reward.json", "2_list_of_string_variants_100_random_int_givens_large_binary_reward.json", "2_string_variants_100_random_nested_dict_givens_small_binary_reward.json", "2_list_of_string_variants_100_random_nested_dict_givens_binary_reward.json", "2_string_variants_100_random_int_givens_binary_reward.json", "2_list_of_dict_variants_100_random_int_givens_large_binary_reward.json", "2_list_of_numeric_variants_100_random_nested_dict_givens_large_binary_reward.json", "2_list_of_dict_variants_100_random_int_givens_binary_reward.json"]
+    # paths = [SYNTHETIC_DATA_DEFINITIONS_DIRECTORY + os.sep + path for path in recalc_paths]
+    CONTINUE = True
 
     for case_id, data_definition_json_path in enumerate(paths):
 
