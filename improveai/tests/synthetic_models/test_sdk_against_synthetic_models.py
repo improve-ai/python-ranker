@@ -108,3 +108,40 @@ def test_primitive_predicts_identical_with_primitive_dicts():
 
                 assert chosen_variant == {"$value": output['variant']}
                 assert all(abs(scores - output['scores']) < 2 ** -22)
+
+
+def test_model_predicts_identical_for_nullish_variants():
+    test_case_dir = 'primitive_variants_no_givens_binary_reward'
+
+    test_case_json_path = \
+        os.sep.join([SYNTHETIC_MODELS_DIR, test_case_dir, '{}.json'.format(test_case_dir)])
+
+    with open(test_case_json_path, 'r') as tcf:
+        test_case = json.loads(tcf.read())
+
+    # load model
+    dm = DecisionModel.load(os.sep.join([SDK_PATH, test_case['model_url']]))
+    dt = DecisionTracker(track_url=TRACK_URL)
+    dm.track_with(tracker=dt)
+
+    variants = [None, {}, [], {'$value': None}]
+    noise = 0.1
+    seed = 0
+
+    with rqm.Mocker() as m:
+        m.post(TRACK_URL, text='success')
+        decision = \
+            Decision(decision_model=dm).choose_from(variants=variants) \
+            .given(givens=None)
+        np.random.seed(seed)
+        dm.chooser.imposed_noise = noise
+        # calling to calc scores
+        decision.get()
+        scores = decision.scores
+
+        for bsc_index, bsc in enumerate(scores):
+            for osc_index, osc in enumerate(scores):
+                if bsc_index == osc_index:
+                    continue
+                assert abs(bsc - osc) < 2 ** -22
+

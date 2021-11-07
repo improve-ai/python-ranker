@@ -614,6 +614,12 @@ class TestEncoder(TestCase):
             test_case_filename=os.getenv(
                 "V6_FEATURE_ENCODER_TEST_EMPTY_DICT_JSON"))
 
+    def test_dict_with_null_value(self):
+
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_NONE_JSON"))
+
     def test_npnan(self):
 
         self._generic_test_encode_record_from_json_data(
