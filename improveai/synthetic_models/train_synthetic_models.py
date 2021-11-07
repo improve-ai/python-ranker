@@ -162,6 +162,10 @@ def copy_final_model(
     cp_sys_code = \
         os.system('cp {}/* {}/'.format(source_models_directory, abs_target_model_path))
     assert cp_sys_code == 0
+    xgb_gzipped = os.system('gzip {}'.format(os.sep.join([abs_target_model_path, 'model.xgb'])))
+    assert xgb_gzipped == 0
+    mlmodel_gzipped = os.system('gzip {}'.format(os.sep.join([abs_target_model_path, 'model.mlmodel'])))
+    assert mlmodel_gzipped == 0
 
 
 def create_synthetic_model_test_json(
@@ -169,7 +173,7 @@ def create_synthetic_model_test_json(
 
     # load model to extract model seed and noise (?)
     abs_model_directory = os.sep.join([IMPROVE_ABS_PATH, model_directory])
-    model_path = os.sep.join([abs_model_directory, data_generator.dataset_name, 'model.xgb'])
+    model_path = os.sep.join([abs_model_directory, data_generator.dataset_name, 'model.xgb.gz'])
     dm = DecisionModel.load(model_path)
     dm.track_with(DecisionTracker(data_generator.track_url))
     # extract all variants, givens and variants <-> givens mapping from data def
@@ -275,10 +279,10 @@ if __name__ == '__main__':
     trained_models_dir = os.sep.join([IMPROVE_ABS_PATH, SYNTHETIC_MODELS_TEST_CASES_DIR])
     already_trained_models = os.listdir(trained_models_dir)
 
-    paths = [SYNTHETIC_DATA_DEFINITIONS_DIRECTORY + '/2_variants_20_huge_givens.json']
+    paths = [SYNTHETIC_DATA_DEFINITIONS_DIRECTORY + '/primitive_variants_no_givens_binary_reward.json']
     # recalc_paths = ["2_list_of_dict_variants_100_random_nested_dict_givens_small_binary_reward.json", "2_string_variants_100_random_nested_dict_givens_large_binary_reward.json", "2_list_of_string_variants_100_random_int_givens_binary_reward.json", "2_list_of_numeric_variants_100_random_nested_dict_givens_small_binary_reward.json", "2_nested_dict_variants_100_random_nested_dict_givens_large_binary_reward.json", "2_nested_dict_variants_100_random_int_givens_large_binary_reward.json", "2_string_variants_100_random_int_givens_small_binary_reward.json", "2_numeric_variants_100_random_int_givens_large_binary_reward.json", "2_list_of_dict_variants_100_random_nested_dict_givens_large_binary_reward.json", "2_nested_dict_variants_100_random_nested_dict_givens_binary_reward.json", "2_list_of_numeric_variants_100_random_int_givens_binary_reward.json", "2_nested_dict_variants_100_random_int_givens_small_binary_reward.json", "2_list_of_numeric_variants_100_random_nested_dict_givens_binary_reward.json", "2_list_of_string_variants_100_random_int_givens_small_binary_reward.json", "2_numeric_variants_100_random_nested_dict_givens_binary_reward.json", "2_list_of_string_variants_100_random_nested_dict_givens_large_binary_reward.json", "2_string_variants_100_random_int_givens_large_binary_reward.json", "2_numeric_variants_100_random_int_givens_binary_reward.json", "2_list_of_numeric_variants_100_random_int_givens_large_binary_reward.json", "2_string_variants_100_random_nested_dict_givens_binary_reward.json", "2_numeric_variants_100_random_nested_dict_givens_small_binary_reward.json", "2_nested_dict_variants_100_random_int_givens_binary_reward.json", "2_list_of_dict_variants_100_random_int_givens_small_binary_reward.json", "2_numeric_variants_100_random_nested_dict_givens_large_binary_reward.json", "2_list_of_dict_variants_100_random_nested_dict_givens_binary_reward.json", "2_list_of_numeric_variants_100_random_int_givens_small_binary_reward.json", "2_list_of_string_variants_100_random_nested_dict_givens_small_binary_reward.json", "2_numeric_variants_100_random_int_givens_small_binary_reward.json", "2_nested_dict_variants_100_random_nested_dict_givens_small_binary_reward.json", "2_list_of_string_variants_100_random_int_givens_large_binary_reward.json", "2_string_variants_100_random_nested_dict_givens_small_binary_reward.json", "2_list_of_string_variants_100_random_nested_dict_givens_binary_reward.json", "2_string_variants_100_random_int_givens_binary_reward.json", "2_list_of_dict_variants_100_random_int_givens_large_binary_reward.json", "2_list_of_numeric_variants_100_random_nested_dict_givens_large_binary_reward.json", "2_list_of_dict_variants_100_random_int_givens_binary_reward.json"]
     # paths = [SYNTHETIC_DATA_DEFINITIONS_DIRECTORY + os.sep + path for path in recalc_paths]
-    CONTINUE = True
+    CONTINUE = False
 
     for case_id, data_definition_json_path in enumerate(paths):
 

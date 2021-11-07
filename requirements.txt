@@ -13,3 +13,5 @@ scipy==1.7.0
 simplejson==3.17.2
 docker_py==1.10.6
 scikit_learn==0.19.2
+orjson
+svix-ksuid

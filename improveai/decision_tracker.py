@@ -1,3 +1,4 @@
+import math
 from collections.abc import Iterable
 from copy import deepcopy
 from datetime import datetime
@@ -7,6 +8,9 @@ import requests as rq
 from typing import Dict
 from uuid import uuid4
 from warnings import warn
+
+# todo change when ready
+from ksuid import Ksuid
 
 from improveai.utils.general_purpose_tools import constant
 
@@ -451,7 +455,8 @@ class DecisionTracker:
                     np.datetime64(datetime.now()), unit='ms', timezone='UTC')),
             self.HISTORY_ID_KEY: self.history_id,
             # TODO check if this is the desired uuid
-            self.MESSAGE_ID_KEY: str(uuid4())}
+            self.MESSAGE_ID_KEY: str(Ksuid())  # str(uuid4())
+        }
 
         body.update(body_values)
 
@@ -513,7 +518,7 @@ class DecisionTracker:
 
 
 if __name__ == '__main__':
-    track_url = 'https://gxlnlafa6e.execute-api.us-east-2.amazonaws.com/track'
+    track_url = 'https://2qirwozwbe.execute-api.us-east-2.amazonaws.com/track'
 
     dt = DecisionTracker(track_url=track_url, history_id='dummy-history-id-1')
 
