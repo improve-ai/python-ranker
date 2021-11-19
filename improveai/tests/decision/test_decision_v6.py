@@ -1,6 +1,7 @@
 import warnings
 from copy import deepcopy
 import json
+import math
 import requests_mock as rqm
 import numpy as np
 import os
@@ -84,15 +85,14 @@ class TestDecision(TestCase):
             os.getenv('V6_DECISION_TEST_SUITE_JSONS_DIR')
 
         self.decision_model_without_tracker = \
-            dm.DecisionModel.load(model_url=decision_tests_model_url)
+            dm.DecisionModel(model_name=None).load(model_url=decision_tests_model_url)
 
         self.decision_model_with_tracker = \
-            dm.DecisionModel.load(model_url=decision_tests_model_url)
+            dm.DecisionModel(model_name=None).load(model_url=decision_tests_model_url)
 
         self.track_url = os.getenv('V6_DECISION_TRACKER_TEST_URL')
         self.tracker = \
-            dt.DecisionTracker(
-                track_url=self.track_url, history_id='dummy-history-id')
+            dt.DecisionTracker(track_url=self.track_url)
 
         self.decision_model_with_tracker.track_with(tracker=self.tracker)
 
@@ -358,8 +358,7 @@ class TestDecision(TestCase):
 
     def test_get_05(self):
 
-        tracker = dt.DecisionTracker(
-            track_url=self.track_url, history_id=self.dummy_history_id)
+        tracker = dt.DecisionTracker(track_url=self.track_url)
         decision = d.Decision(decision_model=self.decision_model_without_tracker)
         decision.model.track_with(tracker=tracker)
 
@@ -627,7 +626,7 @@ class TestDecision(TestCase):
 
         with raises(AttributeError) as aerr:
             decision.memoized_variant = 'dummy_variant'
-            assert str(aerr.value)
+            # assert str(aerr.value)
 
     def test_get_with_zero_len_variants(self):
 
@@ -736,3 +735,129 @@ class TestDecision(TestCase):
             with np.testing.assert_raises(AssertionError):
                 np.testing.assert_array_equal(decision_3.scores, decision_4.scores)
 
+    def test_add_reward(self):
+        decision = d.Decision(decision_model=self.decision_model_with_tracker)
+
+        reward = 1
+
+        expected_add_reward_body = {
+            decision.model.tracker.TYPE_KEY: decision.model.tracker.REWARD_TYPE,
+            decision.model.tracker.MODEL_KEY: self.decision_model_with_tracker.model_name,
+            decision.model.tracker.REWARD_KEY: reward,
+            decision.model.tracker.DECISION_ID_KEY: None,
+        }
+
+        def decision_id_matcher(request):
+            request_dict = deepcopy(request.json())
+            expected_add_reward_body[decision.model.tracker.DECISION_ID_KEY] = \
+                request_dict[decision.model.tracker.MESSAGE_ID_KEY]
+            return True
+
+        variants = [el for el in range(10)]
+
+        with rqm.Mocker() as m0:
+            m0.post(self.track_url, text='success', additional_matcher=decision_id_matcher)
+            decision.choose_from(variants=variants).get()
+
+        expected_request_json = json.dumps(expected_add_reward_body, sort_keys=False)
+
+        def custom_matcher(request):
+            request_dict = deepcopy(request.json())
+            del request_dict[decision.model.tracker.MESSAGE_ID_KEY]
+            del request_dict[decision.model.tracker.TIMESTAMP_KEY]
+
+            if json.dumps(request_dict, sort_keys=False) != expected_request_json:
+
+                print('raw request body:')
+                print(request.text)
+                print('compared request string')
+                print(json.dumps(request_dict, sort_keys=False))
+                print('expected body:')
+                print(expected_request_json)
+                return None
+            return True
+
+        with rqm.Mocker() as m1:
+            m1.post(self.track_url, text='success', additional_matcher=custom_matcher)
+            resp = decision.add_reward(reward=reward)
+            if resp is None:
+                print('The input request body and expected request body mismatch')
+            assert resp is not None
+            assert resp.status_code == 200
+            assert resp.text == 'success'
+
+    def test_add_reward_string_reward(self):
+        decision = d.Decision(decision_model=self.decision_model_with_tracker)
+
+        variants = list(range(20))
+
+        with rqm.Mocker() as m0:
+            m0.post(self.track_url, text='success')
+            decision.choose_from(variants=variants).get()
+
+        reward = 'string'
+
+        with rqm.Mocker() as m1:
+            m1.post(self.track_url, text='success')
+            with raises(AssertionError) as aerr:
+                decision.add_reward(reward=reward)
+
+    def test_add_reward_inf_reward(self):
+        decision = d.Decision(decision_model=self.decision_model_with_tracker)
+
+        variants = list(range(20))
+
+        with rqm.Mocker() as m0:
+            m0.post(self.track_url, text='success')
+            decision.choose_from(variants=variants).get()
+
+        reward = math.inf
+
+        with rqm.Mocker() as m1:
+            m1.post(self.track_url, text='success')
+            with raises(AssertionError) as aerr:
+                decision.add_reward(reward=reward)
+
+        reward = -math.inf
+
+        with rqm.Mocker() as m1:
+            m1.post(self.track_url, text='success')
+            with raises(AssertionError) as aerr:
+                decision.add_reward(reward=reward)
+
+    def test_add_reward_none_reward(self):
+        decision = d.Decision(decision_model=self.decision_model_with_tracker)
+
+        variants = list(range(20))
+
+        with rqm.Mocker() as m0:
+            m0.post(self.track_url, text='success')
+            decision.choose_from(variants=variants).get()
+
+        reward = None
+
+        with rqm.Mocker() as m1:
+            m1.post(self.track_url, text='success')
+            with raises(AssertionError) as aerr:
+                decision.add_reward(reward=reward)
+
+        reward = np.nan
+
+        with rqm.Mocker() as m1:
+            m1.post(self.track_url, text='success')
+            with raises(AssertionError) as aerr:
+                decision.add_reward(reward=reward)
+
+    def test__set_message_id_once(self):
+        decision = d.Decision(decision_model=self.decision_model_with_tracker)
+        decision._set_message_id()
+
+        with warns(UserWarning) as uw:
+            decision._set_message_id()
+            assert len(uw) != 0
+            assert uw.list[0].message
+
+    def test__set_message_id_twice(self):
+        decision = d.Decision(decision_model=self.decision_model_with_tracker)
+        decision._set_message_id()
+        assert decision.id_ is not None

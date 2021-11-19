@@ -1,12 +1,16 @@
+from copy import deepcopy
 import coremltools as ct
 import json
+import math
 import numpy as np
 import os
 from pytest import fixture, raises
+import requests_mock as rqm
 import string
 import sys
 import time
 from unittest import TestCase
+import warnings
 import xgboost as xgb
 
 sys.path.append(
@@ -55,6 +59,9 @@ class TestDecisionModel(TestCase):
 
         self.predictors_fs_directory = \
             os.getenv('V6_DECISION_MODEL_PREDICTORS_DIR')
+
+        self.track_url = os.getenv('V6_DECISION_TRACKER_TEST_URL', None)
+        assert self.track_url is not None
 
     def _get_test_data(
             self, path_to_test_json: str, method: str = 'readlines') -> object:
@@ -117,7 +124,7 @@ class TestDecisionModel(TestCase):
                 self.predictors_fs_directory, predictor_filename)
         # loading model
         if load_mode == 'sync':
-            decision_model = dm.DecisionModel.load(model_url=model_url)
+            decision_model = dm.DecisionModel(model_name=None).load(model_url=model_url)
         elif load_mode == 'async':
             decision_model = dm.DecisionModel(model_name='dummy-model-0')
             decision_model.load_async(model_url=model_url)
@@ -131,6 +138,8 @@ class TestDecisionModel(TestCase):
         # is predictor of a desired type
         print('decision_model.chooser')
         print(decision_model.chooser)
+        print(expected_predictor_type)
+        print(model_url)
         predictor = decision_model.chooser.model
         assert isinstance(predictor, expected_predictor_type)
 
@@ -196,7 +205,7 @@ class TestDecisionModel(TestCase):
         # loading model
         with raises(ValueError) as verr:
             if load_mode == 'sync':
-                decision_model = dm.DecisionModel.load(model_url=model_url)
+                decision_model = dm.DecisionModel(model_name=None).load(model_url=model_url)
             elif load_mode == 'async':
                 decision_model = dm.DecisionModel(model_name='dummy-model')
                 decision_model.load_async(model_url=model_url)
@@ -206,7 +215,7 @@ class TestDecisionModel(TestCase):
                     'Allowed values for `load_mode` are sync and async')
 
             # print(verr)
-            assert False
+            # assert False
             assert str(verr.value)
 
         # is returned object a decision model
@@ -238,7 +247,7 @@ class TestDecisionModel(TestCase):
         # loading model
         with raises(ValueError) as verr:
             if load_mode == 'sync':
-                decision_model = dm.DecisionModel.load(model_url=model_url)
+                decision_model = dm.DecisionModel(model_name=None).load(model_url=model_url)
             elif load_mode == 'async':
                 decision_model = dm.DecisionModel(model_name='dummy-model')
                 decision_model.load_async(model_url=model_url)
@@ -356,7 +365,7 @@ class TestDecisionModel(TestCase):
             ('{}' + os.sep + '{}').format(
                 self.predictors_fs_directory, predictor_filename)
 
-        decision_model = dm.DecisionModel.load(model_url=model_url)
+        decision_model = dm.DecisionModel(model_name=None).load(model_url=model_url)
 
         np.random.seed(score_seed)
         # calculated_scores = decision_model.score(**empty_callable_kwargs)
@@ -630,7 +639,7 @@ class TestDecisionModel(TestCase):
         assert decision.variants == [None]
 
     def test_set_tracker(self):
-        tracker = dt.DecisionTracker(track_url='dummy_tracker_url')
+        tracker = dt.DecisionTracker(track_url=self.track_url)
         decision_model = \
             dm.DecisionModel(model_name='test_choose_from_model')
 
@@ -690,6 +699,185 @@ class TestDecisionModel(TestCase):
         for bad_model_name in bad_model_names:
             with raises(AssertionError) as aerr:
                 dm.DecisionModel(model_name=bad_model_name)
-                assert aerr.value
 
+    def test_none_model_name_overwritten(self):
+        path_to_test_json = \
+            os.sep.join([
+                self.test_cases_directory, os.getenv('V6_DECISION_MODEL_TEST_MODEL_NAME_SET_TO_NONE_JSON')])
+        test_data = \
+            self._get_test_data(
+                path_to_test_json=path_to_test_json, method='read')
 
+        model_url = \
+            os.sep.join([self.predictors_fs_directory, test_data['test_case']['model_filename']])
+
+        decision_model = dm.DecisionModel(model_name=None).load(model_url=model_url)
+        assert decision_model.model_name is not None
+
+        expected_output = test_data['test_output']['model_name']
+
+        assert decision_model.model_name == expected_output
+
+    def test_not_none_model_name_warns(self):
+        path_to_test_json = \
+            os.sep.join([
+                self.test_cases_directory, os.getenv('V6_DECISION_MODEL_TEST_MODEL_NAME_SET_TO_NOT_NONE_JSON')])
+        test_data = \
+            self._get_test_data(
+                path_to_test_json=path_to_test_json, method='read')
+
+        model_url = \
+            os.sep.join([self.predictors_fs_directory, test_data['test_case']['model_filename']])
+
+        tested_model_name = test_data['test_case']['model_name']
+
+        with warnings.catch_warnings(record=True) as w:
+            decision_model = dm.DecisionModel(model_name=tested_model_name).load(model_url=model_url)
+            assert len(w) != 0
+        assert decision_model.model_name is not None
+
+        expected_output = test_data['test_output']['model_name']
+
+        assert decision_model.model_name == expected_output
+
+    def test_add_reward_inf(self):
+        # V6_DUMMY_MODEL_PATH
+        model_url = os.getenv('V6_DUMMY_MODEL_PATH', None)
+        assert model_url is not None
+
+        tracker = \
+            dt.DecisionTracker(track_url=self.track_url)
+        decision_model = dm.DecisionModel(model_name=None).load(model_url=model_url)
+        decision_model.track_with(tracker=tracker)
+
+        assert decision_model.id_ is None
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+            d.Decision(decision_model=decision_model).choose_from(list(range(10))).get()
+
+        assert decision_model.id_ is not None
+
+        reward = math.inf
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+            with raises(AssertionError) as aerr:
+                decision_model.add_reward(reward=reward)
+
+        reward = -math.inf
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+            with raises(AssertionError) as aerr:
+                decision_model.add_reward(reward=reward)
+
+    def test_add_reward_none(self):
+        # V6_DUMMY_MODEL_PATH
+        model_url = os.getenv('V6_DUMMY_MODEL_PATH', None)
+        assert model_url is not None
+
+        tracker = \
+            dt.DecisionTracker(track_url=self.track_url)
+        decision_model = dm.DecisionModel(model_name=None).load(model_url=model_url)
+        decision_model.track_with(tracker=tracker)
+
+        assert decision_model.id_ is None
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+            d.Decision(decision_model=decision_model).choose_from(list(range(10))).get()
+
+        assert decision_model.id_ is not None
+
+        reward = None
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+            with raises(AssertionError) as aerr:
+                decision_model.add_reward(reward=reward)
+
+        reward = np.nan
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+            with raises(AssertionError) as aerr:
+                decision_model.add_reward(reward=reward)
+
+    def test_add_reward(self):
+        model_url = os.getenv('V6_DUMMY_MODEL_PATH', None)
+        assert model_url is not None
+
+        tracker = \
+            dt.DecisionTracker(track_url=self.track_url)
+        decision_model = dm.DecisionModel(model_name=None).load(model_url=model_url)
+        decision_model.track_with(tracker=tracker)
+
+        assert decision_model.id_ is None
+
+        reward = 1.0
+
+        expected_add_reward_body = {
+            decision_model.tracker.TYPE_KEY: decision_model.tracker.REWARD_TYPE,
+            decision_model.tracker.MODEL_KEY: decision_model.model_name,
+            decision_model.tracker.REWARD_KEY: reward,
+            decision_model.tracker.DECISION_ID_KEY: None}
+
+        def grab_decision_id_matcher(request):
+            request_dict = deepcopy(request.json())
+            expected_add_reward_body[decision_model.tracker.DECISION_ID_KEY] = \
+                request_dict[decision_model.tracker.MESSAGE_ID_KEY]
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success', additional_matcher=grab_decision_id_matcher)
+            d.Decision(decision_model=decision_model).choose_from(list(range(10))).get()
+
+        assert decision_model.id_ is not None
+
+        expected_request_json = json.dumps(expected_add_reward_body, sort_keys=False)
+
+        def custom_matcher(request):
+            request_dict = deepcopy(request.json())
+            del request_dict[decision_model.tracker.MESSAGE_ID_KEY]
+            del request_dict[decision_model.tracker.TIMESTAMP_KEY]
+
+            if json.dumps(request_dict, sort_keys=False) != expected_request_json:
+
+                print('raw request body:')
+                print(request.text)
+                print('compared request string')
+                print(json.dumps(request_dict, sort_keys=False))
+                print('expected body:')
+                print(expected_request_json)
+                return None
+            return True
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success', additional_matcher=custom_matcher)
+            resp = decision_model.add_reward(reward=reward)
+            if resp is None:
+                print('The input request body and expected request body mismatch')
+            assert resp is not None
+            assert resp.status_code == 200
+            assert resp.text == 'success'
+
+    # def test_add_reward_string_reward(self):
+    #     # V6_DUMMY_MODEL_PATH
+    #     model_url = os.getenv('V6_DUMMY_MODEL_PATH', None)
+    #     assert model_url is not None
+    #
+    #     tracker = dt.DecisionTracker(track_url=self.track_url)
+    #     decision_model = dm.DecisionModel(model_name=None).load(model_url=model_url)
+    #     decision_model.track_with(tracker=tracker)
+    #
+    #     with rqm.Mocker() as m:
+    #         m.post(self.track_url, text='success')
+    #         d.Decision(decision_model=decision_model).choose_from(list(range(10))).get()
+    #
+    #     reward = 'string'
+    #
+    #     with rqm.Mocker() as m:
+    #         m.post(self.track_url, text='success')
+    #         with raises(AssertionError) as aerr:
+    #             decision_model.add_reward(reward=reward)
+    #             assert aerr.value

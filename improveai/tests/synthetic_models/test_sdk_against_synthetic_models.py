@@ -26,7 +26,7 @@ def test_sdk_against_all_synthetic_models():
             test_case = json.loads(tcf.read())
 
         # load model
-        dm = DecisionModel.load(os.sep.join([SDK_PATH, test_case['model_url']]))
+        dm = DecisionModel(model_name=None).load(os.sep.join([SDK_PATH, test_case['model_url']]))
         dt = DecisionTracker(track_url=TRACK_URL)
         dm.track_with(tracker=dt)
 
@@ -46,7 +46,7 @@ def test_sdk_against_all_synthetic_models():
                 decision = \
                     Decision(decision_model=dm).choose_from(variants=variants) \
                     .given(givens=givens)
-                np.random.seed(seed)
+                # np.random.seed(seed)
                 dm.chooser.imposed_noise = noise
                 chosen_variant = decision.get()
                 scores = decision.scores
@@ -66,7 +66,7 @@ def test_primitive_predicts_identical_with_primitive_dicts():
             test_case = json.loads(tcf.read())
 
         # load model
-        dm = DecisionModel.load(os.sep.join([SDK_PATH, test_case['model_url']]))
+        dm = DecisionModel(model_name=None).load(os.sep.join([SDK_PATH, test_case['model_url']]))
         dt = DecisionTracker(track_url=TRACK_URL)
         dm.track_with(tracker=dt)
 
@@ -87,7 +87,7 @@ def test_primitive_predicts_identical_with_primitive_dicts():
                 decision = \
                     Decision(decision_model=dm).choose_from(variants=variants) \
                     .given(givens=givens)
-                np.random.seed(seed)
+                # np.random.seed(seed)
                 dm.chooser.imposed_noise = noise
                 chosen_variant = decision.get()
                 scores = decision.scores
@@ -101,7 +101,7 @@ def test_primitive_predicts_identical_with_primitive_dicts():
                 decision = \
                     Decision(decision_model=dm).choose_from(variants=dicts_variants) \
                     .given(givens=givens)
-                np.random.seed(seed)
+                # np.random.seed(seed)
                 dm.chooser.imposed_noise = noise
                 chosen_variant = decision.get()
                 scores = decision.scores
@@ -120,7 +120,7 @@ def test_model_predicts_identical_for_nullish_variants():
         test_case = json.loads(tcf.read())
 
     # load model
-    dm = DecisionModel.load(os.sep.join([SDK_PATH, test_case['model_url']]))
+    dm = DecisionModel(model_name=None).load(os.sep.join([SDK_PATH, test_case['model_url']]))
     dt = DecisionTracker(track_url=TRACK_URL)
     dm.track_with(tracker=dt)
 
@@ -133,7 +133,7 @@ def test_model_predicts_identical_for_nullish_variants():
         decision = \
             Decision(decision_model=dm).choose_from(variants=variants) \
             .given(givens=None)
-        np.random.seed(seed)
+        # np.random.seed(seed)
         dm.chooser.imposed_noise = noise
         # calling to calc scores
         decision.get()

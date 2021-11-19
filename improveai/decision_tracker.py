@@ -46,10 +46,6 @@ class DecisionTracker:
         return "givens"
 
     @constant
-    def REWARDS_KEY() -> str:
-        return "rewards"
-
-    @constant
     def VARIANTS_COUNT_KEY() -> str:
         return "count"
 
@@ -62,8 +58,12 @@ class DecisionTracker:
         return "sample_variant"
 
     @constant
-    def REWARD_KEY_KEY() -> str:
-        return "reward_key"
+    def REWARD_TYPE() -> str:
+        return 'reward'
+
+    @constant
+    def REWARD_KEY():
+        return 'reward'
 
     @constant
     def EVENT_KEY() -> str:
@@ -76,10 +76,10 @@ class DecisionTracker:
     @constant
     def DECISION_TYPE() -> str:
         return "decision"
-# TODO verify if this is obsolete
-    # @constant
-    # def REWARDS_TYPE() -> str:
-    #     return "rewards"
+
+    @constant
+    def DECISION_ID_KEY() -> str:
+        return "decision_id"
 
     @constant
     def EVENT_TYPE() -> str:
@@ -141,17 +141,8 @@ class DecisionTracker:
     def max_runners_up(self, new_val):
         self._max_runners_up = new_val
 
-    @property
-    def history_id(self) -> str:
-        return self._history_id
-
-    @history_id.setter
-    def history_id(self, new_val: str):
-        self._history_id = new_val
-
     def __init__(
-            self, track_url: str, api_key: str = None,
-            max_runners_up: int = 50, history_id: str = None):
+            self, track_url: str, api_key: str = None, max_runners_up: int = 50):
 
         self.track_url = track_url
         self.api_key = api_key
@@ -159,9 +150,6 @@ class DecisionTracker:
         # TODO determined whether it should be set once per tracker`s life or
         #  with each track request (?)
         self.max_runners_up = max_runners_up
-        self.history_id = history_id
-
-        # self.track_runners_up = None
 
     def should_track_runners_up(self, variants_count: int):
 
@@ -218,7 +206,7 @@ class DecisionTracker:
     def track(
             self, variant: object, variants: list or np.ndarray, givens: dict,
             model_name: str, variants_ranked_and_track_runners_up: bool,
-            timestamp: object = None):
+            timestamp: object = None, message_id: str = None):
         """
         Track that variant is causal in the system
 
@@ -254,18 +242,15 @@ class DecisionTracker:
             self.MODEL_KEY: model_name,
             self.VARIANT_KEY: variant,
             self.VARIANTS_COUNT_KEY:
-                len(variants) if variants is not None else 1}
+                len(variants) if variants is not None else 1,
+            }
 
         if len(variants) == 2:
             # for 2 variants variants_ranked_and_track_runners_up should be True
             assert variants_ranked_and_track_runners_up
             if variant != variants[0]:
                 variants = list(reversed(variants))
-            # variants_ranked_and_track_runners_up = True
 
-        # TODO unittest / validate that when
-        #  variants_ranked_and_track_runners_up == False runners_up are always
-        #  empty
         # for variants_ranked_and_track_runners_up == false (max_runners_up == 0)
         # we skip this clause and runners_up == None
         runners_up = None
@@ -296,49 +281,73 @@ class DecisionTracker:
             body_values=body,
             block=lambda result, error: (
                 warn("Improve.track error: {}".format(error))
-                if error else 0, 0), timestamp=timestamp)
+                if error else 0, 0), timestamp=timestamp, message_id=message_id)
 
-    def track_event(
-            self, event_name: str, properties: Dict[str, object] = None,
-            timestamp: object = None):
-        """
-        Executes post_improve_request constructing body from input params:
-        event, properties and givens
+    def add_reward(self, reward: float or int, model_name: str, decision_id: str):
+        # void addReward(double reward)
+        # Add rewards for the most recent Decision for this model name, even if
+        # that Decision occurred in a previous session. Sets model on the reward
+        # record to be equal to the current modelName.
+        # NaN, positive infinity, and negative infinity are not allowed and should throw exceptions
 
-        Parameters
-        ----------
-        event_name: str
-            name of event
-        properties: Dict[str, object]
-           part fo payload (?)
-        timestamp: object
-            timestamp of tracking request
+        assert model_name is not None and decision_id is not None
+        assert isinstance(reward, float) or isinstance(reward, int)
+        assert reward is not None
+        assert not np.isnan(reward)
+        assert not np.isinf(reward)
 
-        Returns
-        -------
-        None
-            None
+        body = {
+            self.TYPE_KEY: self.REWARD_TYPE,
+            self.MODEL_KEY: model_name,
+            self.REWARD_KEY: reward,
+            self.DECISION_ID_KEY: decision_id}
 
-        """
-
-        body = {self.TYPE_KEY: self.EVENT_TYPE}
-
-        if properties:
-            if not isinstance(properties, dict):
-                raise TypeError('`properties must be of a dict type`')
-
-        for key, val in zip(
-                [self.EVENT_KEY, self.PROPERTIES_KEY], [event_name, properties]):
-            if val:
-                body[key] = val
-
-        # TODO determine what sort of completion_block should be used
-        #  For now completion_block() set to 0
         return self.post_improve_request(
             body_values=body,
             block=lambda result, error: (
-                warn("Improve.track error: {}".format(error))
-                if error else 0, 0), timestamp=timestamp)
+                warn("Improve.track error: {}".format(error)) if error else 0, 0))
+
+    # def track_event(
+    #         self, event_name: str, properties: Dict[str, object] = None,
+    #         timestamp: object = None):
+    #     """
+    #     Executes post_improve_request constructing body from input params:
+    #     event, properties and givens
+    #
+    #     Parameters
+    #     ----------
+    #     event_name: str
+    #         name of event
+    #     properties: Dict[str, object]
+    #        part fo payload (?)
+    #     timestamp: object
+    #         timestamp of tracking request
+    #
+    #     Returns
+    #     -------
+    #     None
+    #         None
+    #
+    #     """
+    #
+    #     body = {self.TYPE_KEY: self.EVENT_TYPE}
+    #
+    #     if properties:
+    #         if not isinstance(properties, dict):
+    #             raise TypeError('`properties must be of a dict type`')
+    #
+    #     for key, val in zip(
+    #             [self.EVENT_KEY, self.PROPERTIES_KEY], [event_name, properties]):
+    #         if val:
+    #             body[key] = val
+    #
+    #     # TODO determine what sort of completion_block should be used
+    #     #  For now completion_block() set to 0
+    #     return self.post_improve_request(
+    #         body_values=body,
+    #         block=lambda result, error: (
+    #             warn("Improve.track error: {}".format(error))
+    #             if error else 0, 0), timestamp=timestamp)
 
     # @staticmethod
     # def _get_non_numpy_type_sample(sample: object):
@@ -360,8 +369,7 @@ class DecisionTracker:
     #         return sample.item()
     #     return sample
 
-    def get_sample(
-            self, variant: object, variants: list, track_runners_up: bool):
+    def get_sample(self, variant: object, variants: list, track_runners_up: bool):
         """
         Gets sample from ranked_variants. Takes runenrs up into account
 
@@ -391,9 +399,6 @@ class DecisionTracker:
         assert len(variants) > 1
         if len(variants) == 2:
             assert self.max_runners_up == 0
-        # if len(variants) <= 1:
-        #     raise ValueError(
-        #         'Can`t sample from 2 or less ({}) variants'.format(len(variants)))
 
         # TODO If there are no runners up, then sample is a random sample
         #  from variants with just best excluded.
@@ -418,9 +423,31 @@ class DecisionTracker:
             variants[np.random.randint(last_runner_up_idx, len(variants))]
         return sample
 
+    def _is_valid_message_id(self, message_id: str or None) -> bool:
+        """
+        Check if message_id is  valid
+
+        Parameters
+        ----------
+        message_id: str
+            checked message_id
+
+        Returns
+        -------
+        bool
+            True if message_id otherwise False
+
+        """
+        try:
+            assert isinstance(message_id, str) or message_id is None
+            Ksuid.from_base62(message_id)
+            return True
+        except:
+            return False
+
     def post_improve_request(
             self, body_values: Dict[str, object], block: callable,
-            timestamp: object = None):
+            message_id: str = None, timestamp: object = None):
         """
         Posts request to tracker endpoint
 
@@ -438,24 +465,20 @@ class DecisionTracker:
 
         """
 
-        if not self.history_id:
-            warn("historyId cannot be nil")
-            # TODO make sure what this clause in iOS-SDK does
-            return None
-
         headers = {'Content-Type': 'application/json'}
 
         if self.api_key:
             headers[self.API_KEY_HEADER] = self.api_key
+
+        assert self._is_valid_message_id(message_id=message_id)
 
         body = {
             # was checked -> this convention seems to be accurate
             self.TIMESTAMP_KEY:
                 timestamp if timestamp else str(np.datetime_as_string(
                     np.datetime64(datetime.now()), unit='ms', timezone='UTC')),
-            self.HISTORY_ID_KEY: self.history_id,
             # TODO check if this is the desired uuid
-            self.MESSAGE_ID_KEY: str(Ksuid())  # str(uuid4())
+            self.MESSAGE_ID_KEY: message_id if message_id is not None else str(Ksuid())
         }
 
         body.update(body_values)
@@ -463,7 +486,6 @@ class DecisionTracker:
         # serialization is a must have for this requests
         try:
             payload_json = json.dumps(body)
-            # print(payload_json)
 
         except Exception as exc:
             warn("Data serialization error: {}\nbody: {}".format(exc, body))
@@ -471,6 +493,7 @@ class DecisionTracker:
 
         error = None
         resp = None
+
         try:
             resp = \
                 rq.post(url=self.track_url, data=payload_json, headers=headers)
@@ -518,7 +541,7 @@ class DecisionTracker:
 
 
 if __name__ == '__main__':
-    track_url = 'https://2qirwozwbe.execute-api.us-east-2.amazonaws.com/track'
+    track_url = 'https://uqicecc39c.execute-api.us-east-2.amazonaws.com/track'
 
     dt = DecisionTracker(track_url=track_url, history_id='dummy-history-id-1')
 

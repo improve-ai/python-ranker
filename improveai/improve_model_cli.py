@@ -57,7 +57,7 @@ if __name__ == '__main__':
 
     pa = ap.parse_args()
 
-    dm = DecisionModel.load(model_url=pa.model_url)
+    dm = DecisionModel(model_name=None).load(model_url=pa.model_url)
     tracker = DecisionTracker(track_url=pa.track_url, history_id='cli-call-history-id')
     dm.track_with(tracker=tracker)
 

@@ -1,10 +1,12 @@
 from copy import deepcopy
 import json
+import math
 import numpy as np
 import requests_mock as rqm
 import os
 from pytest import fixture, raises
 import sys
+import warnings
 
 sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
@@ -110,47 +112,40 @@ class TestDecisionTracker:
 
         self.dummy_model_name = 'dummy-model'
         self.dummy_message_id = 'dummy_message'
-        self.dummy_history_id = 'dummy-history'
         self.dummy_timestamp = '2021-05-11T02:32:27.007Z'
 
     def test_should_track_runners_up_single_variant(self):
 
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url)
 
         assert decision_tracker.should_track_runners_up(variants_count=1) is False
 
     def test_should_track_runners_up_0_max_runners_up(self):
 
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=0,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url, max_runners_up=0)
 
         np.random.seed(self.tracks_seed)
         assert decision_tracker.should_track_runners_up(variants_count=100) is False
 
     def test_should_track_runners_up_true(self):
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url)
 
         np.random.seed(self.tracks_seed)
         assert decision_tracker.should_track_runners_up(variants_count=self.variants_count) is True
 
     def test_should_track_runners_up_false(self):
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url)
 
         np.random.seed(self.not_tracks_seed)
         assert decision_tracker.should_track_runners_up(variants_count=self.variants_count) is False
 
     def test_should_track_runners_up_2_variants(self):
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url)
 
         np.random.seed(self.not_tracks_seed)
         assert decision_tracker.should_track_runners_up(variants_count=2) is True
@@ -159,8 +154,7 @@ class TestDecisionTracker:
 
         decision_tracker = \
             dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+                track_url=self.track_url, max_runners_up=self.max_runners_up)
 
         top_runners_up = \
             decision_tracker.top_runners_up(
@@ -174,8 +168,7 @@ class TestDecisionTracker:
 
         decision_tracker = \
             dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+                track_url=self.track_url, max_runners_up=self.max_runners_up)
 
         top_runners_up = \
             decision_tracker.top_runners_up(ranked_variants=[])
@@ -186,8 +179,7 @@ class TestDecisionTracker:
 
         decision_tracker = \
             dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+                track_url=self.track_url, max_runners_up=self.max_runners_up)
 
         ranked_variants = self.variants[:1]
 
@@ -200,8 +192,7 @@ class TestDecisionTracker:
 
         decision_tracker = \
             dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+                track_url=self.track_url, max_runners_up=self.max_runners_up)
 
         ranked_variants = [None]
 
@@ -216,8 +207,7 @@ class TestDecisionTracker:
 
         decision_tracker = \
             dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=max_runners_up,
-                history_id=self.dummy_history_id)
+                track_url=self.track_url, max_runners_up=max_runners_up)
 
         top_runners_up = \
             decision_tracker.top_runners_up(
@@ -230,7 +220,7 @@ class TestDecisionTracker:
     def test__is_sample_available_1_variant_no_runners_up(self):
         decision_tracker = \
             dtr.DecisionTracker(
-                track_url=self.track_url, history_id=self.dummy_history_id)
+                track_url=self.track_url)
 
         runners_up = None
 
@@ -242,7 +232,7 @@ class TestDecisionTracker:
     def test__is_sample_available_2_variants_1_runner_up(self):
         decision_tracker = \
             dtr.DecisionTracker(
-                track_url=self.track_url, history_id=self.dummy_history_id)
+                track_url=self.track_url)
 
         runners_up = self.variants[1:2]
 
@@ -253,8 +243,7 @@ class TestDecisionTracker:
 
     def test__is_sample_available_10_variants_9_runners_up(self):
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url)
 
         variants = self.variants[:10]
         runners_up = self.variants[1:10]
@@ -266,8 +255,7 @@ class TestDecisionTracker:
 
     def test__is_sample_available_10_variants_3_runners_up(self):
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url)
 
         variants = self.variants[:10]
         runners_up = self.variants[1:4]
@@ -279,8 +267,7 @@ class TestDecisionTracker:
 
     def test__is_sample_available_10_variants_8_runners_up(self):
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url)
 
         variants = self.variants[:10]
         runners_up = self.variants[1:9]
@@ -293,8 +280,7 @@ class TestDecisionTracker:
     def test_get_sample_raises_for_zero_len_variants(self):
         decision_tracker = \
             dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+                track_url=self.track_url, max_runners_up=self.max_runners_up)
 
         ranked_variants = []
         variant = None
@@ -308,8 +294,7 @@ class TestDecisionTracker:
     def test_get_sample_raises_for_1_variant_not_tracks(self):
         decision_tracker = \
             dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+                track_url=self.track_url, max_runners_up=self.max_runners_up)
 
         variant = self.variants[0]
         variants = self.variants[:1]
@@ -322,8 +307,7 @@ class TestDecisionTracker:
     def test_get_sample_raises_for_1_variant_tracks(self):
         decision_tracker = \
             dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+                track_url=self.track_url, max_runners_up=self.max_runners_up)
 
         variant = self.variants[0]
         variants = self.variants[:1]
@@ -336,8 +320,7 @@ class TestDecisionTracker:
     def test_get_sample_raises_for_2_variants_no_runners_up_positive_max_runners_up(self):
         decision_tracker = \
             dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+                track_url=self.track_url, max_runners_up=self.max_runners_up)
 
         variant = self.variants[0]
         variants = self.variants[:2]
@@ -353,8 +336,7 @@ class TestDecisionTracker:
 
         decision_tracker = \
             dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=max_runners_up,
-                history_id=self.dummy_history_id)
+                track_url=self.track_url, max_runners_up=max_runners_up)
 
         variant = self.variants[0]
         variants = self.variants[:2]
@@ -367,8 +349,7 @@ class TestDecisionTracker:
     def test_get_sample_raises_for_non_bool_track_runners_up_01(self):
         decision_tracker = \
             dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+                track_url=self.track_url, max_runners_up=self.max_runners_up)
 
         variant = self.variants[0]
         track_runners_up = None
@@ -380,9 +361,7 @@ class TestDecisionTracker:
 
     def test_get_sample_raises_for_non_bool_track_runners_up_02(self):
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url, max_runners_up=self.max_runners_up)
 
         variant = self.variants[0]
         ranked_variants = self.variants[:10]
@@ -395,9 +374,7 @@ class TestDecisionTracker:
 
     def test_get_sample_raises_on_track_runners_up_and_not_ranked_variants(self):
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url, max_runners_up=self.max_runners_up)
 
         ranked_variants = ['z', 'x', 'a', 'a', 'b', 'c']
         variant = ranked_variants[2]
@@ -410,9 +387,7 @@ class TestDecisionTracker:
 
     def test_get_sample_raises_for_wrong_variants_type(self):
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url, max_runners_up=self.max_runners_up)
 
         ranked_variants = {'variants': [None, None, None]}
         variant = ranked_variants['variants'][0]
@@ -427,8 +402,7 @@ class TestDecisionTracker:
 
         decision_tracker = \
             dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+                track_url=self.track_url, max_runners_up=self.max_runners_up)
 
         variant = self.variants[0]
         track_runners_up = False
@@ -445,9 +419,7 @@ class TestDecisionTracker:
 
     def test_get_sample_no_variants_not_tracks_3_variants(self):
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url, max_runners_up=self.max_runners_up)
 
         ranked_variants = self.variants[:3]
         variant = ranked_variants[0]
@@ -463,9 +435,7 @@ class TestDecisionTracker:
     def test_get_sample_no_variants_not_tracks_3_identical_variants(self):
         # theoretically for 2 variants we always have runners up
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url, max_runners_up=self.max_runners_up)
 
         ranked_variants = ['a', 'a', 'a']
         variant = ranked_variants[0]
@@ -480,9 +450,7 @@ class TestDecisionTracker:
 
     def test_get_sample_no_variants_not_tracks_identical_variants_01(self):
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url, max_runners_up=self.max_runners_up)
 
         ranked_variants = ['z', 'x', 'a', 'a', 'b', 'c']
         variant = ranked_variants[2]
@@ -500,9 +468,7 @@ class TestDecisionTracker:
         # make sure to sample identical index with selected variant's index
         # first
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url, max_runners_up=self.max_runners_up)
 
         ranked_variants = ['z', 'x', 'a', 'a', 'b', 'c']
         variant = ranked_variants[2]
@@ -518,9 +484,7 @@ class TestDecisionTracker:
 
     def test_get_sample_3_none_variants_not_tracks(self):
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url, max_runners_up=self.max_runners_up)
 
         ranked_variants = [None, None, None]
         variant = ranked_variants[0]
@@ -535,9 +499,7 @@ class TestDecisionTracker:
 
     def test_get_sample_tracks(self):
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url, max_runners_up=self.max_runners_up)
 
         variant = self.variants[0]
         track_runners_up = True
@@ -558,9 +520,7 @@ class TestDecisionTracker:
         max_runners_up = len(self.variants) - 1
 
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=max_runners_up,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url, max_runners_up=max_runners_up)
 
         variant = self.variants[0]
         track_runners_up = True
@@ -575,9 +535,7 @@ class TestDecisionTracker:
         max_runners_up = len(self.variants) - 1
 
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=max_runners_up,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url, max_runners_up=max_runners_up)
 
         variant = self.variants[0]
         ranked_variants = self.variants[:40]
@@ -593,9 +551,7 @@ class TestDecisionTracker:
         max_runners_up = len(self.variants) - 1
 
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=max_runners_up,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url, max_runners_up=max_runners_up)
 
         variant = self.variants[0]
         ranked_variants = self.variants + [100]
@@ -610,13 +566,10 @@ class TestDecisionTracker:
     def test_track_single_none_variant_none_given_no_runners_up(self):
 
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url,  max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url,  max_runners_up=self.max_runners_up)
 
         expected_track_body = {
             decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
-            decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: None,
@@ -660,9 +613,7 @@ class TestDecisionTracker:
     def test_track_none_given_no_runners_up(self):
 
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url,  max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url,  max_runners_up=self.max_runners_up)
 
         variants = [1, 2, 3]
         variant = variants[0]
@@ -670,7 +621,6 @@ class TestDecisionTracker:
 
         expected_track_body = {
             decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
-            decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variant,
@@ -714,9 +664,7 @@ class TestDecisionTracker:
     def test_track_none_given(self):
 
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url,  max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url,  max_runners_up=self.max_runners_up)
 
         variants = [el for el in range(1, 20, 1)]
         top_runners_up = variants[1:self.max_runners_up + 1]
@@ -725,7 +673,6 @@ class TestDecisionTracker:
 
         expected_track_body = {
             decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
-            decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variants[0],
@@ -770,9 +717,7 @@ class TestDecisionTracker:
     def test_track_2_variants_01(self):
 
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url,  max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url,  max_runners_up=self.max_runners_up)
 
         variants = [0, 1]
         top_runners_up = [variants[1]]
@@ -780,7 +725,6 @@ class TestDecisionTracker:
 
         expected_track_body = {
             decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
-            decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variant,
@@ -825,9 +769,7 @@ class TestDecisionTracker:
     def test_track_2_variants_02(self):
 
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url,  max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url,  max_runners_up=self.max_runners_up)
 
         variants = [0, 1]
         top_runners_up = [variants[0]]
@@ -835,7 +777,6 @@ class TestDecisionTracker:
 
         expected_track_body = {
             decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
-            decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variant,
@@ -880,9 +821,7 @@ class TestDecisionTracker:
     def test_track_2_variants_03(self):
 
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url,  max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url,  max_runners_up=self.max_runners_up)
 
         variants = [0, 1]
         top_runners_up = [variants[1]]
@@ -891,7 +830,6 @@ class TestDecisionTracker:
 
         expected_track_body = {
             decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
-            decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variant,
@@ -938,9 +876,7 @@ class TestDecisionTracker:
         max_runners_up = 0
 
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url,  max_runners_up=max_runners_up,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url,  max_runners_up=max_runners_up)
 
         variants = [0, 1]
         variant = variants[1]
@@ -949,7 +885,6 @@ class TestDecisionTracker:
 
         expected_track_body = {
             decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
-            decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variant,
@@ -993,9 +928,7 @@ class TestDecisionTracker:
 
     def test_track_2_variants_raises_for_variants_ranked_and_track_runners_up_false(self):
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url, max_runners_up=self.max_runners_up)
 
         variants = [0, 1]
         variant = variants[0]
@@ -1012,9 +945,7 @@ class TestDecisionTracker:
     def test_track_2_variants_raises_for_positive_max_runners_up(self):
 
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url,  max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url,  max_runners_up=self.max_runners_up)
 
         variants = [0, 1]
         top_runners_up = [variants[0]]
@@ -1023,7 +954,6 @@ class TestDecisionTracker:
 
         expected_track_body = {
             decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
-            decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variant,
@@ -1064,9 +994,7 @@ class TestDecisionTracker:
         max_runners_up = 0
 
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url,  max_runners_up=max_runners_up,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url,  max_runners_up=max_runners_up)
 
         variants = [0, 1]
         variant = variants[1]
@@ -1075,7 +1003,6 @@ class TestDecisionTracker:
 
         expected_track_body = {
             decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
-            decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variant,
@@ -1115,9 +1042,7 @@ class TestDecisionTracker:
     def test_track(self):
 
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url,  max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url,  max_runners_up=self.max_runners_up)
 
         variants = [el for el in range(1, 20, 1)]
         top_runners_up = variants[1:self.max_runners_up + 1]
@@ -1127,7 +1052,6 @@ class TestDecisionTracker:
 
         expected_track_body = {
             decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
-            decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variants[0],
@@ -1174,9 +1098,7 @@ class TestDecisionTracker:
     def test_track_best_not_first_ranked_and_tracks(self):
 
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url,  max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url,  max_runners_up=self.max_runners_up)
 
         variants = [el for el in range(1, 20, 1)]
         variant = variants[self.max_runners_up]
@@ -1196,9 +1118,7 @@ class TestDecisionTracker:
     def test_track_ndarray_variants(self):
 
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url,  max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url,  max_runners_up=self.max_runners_up)
 
         variants = [el for el in range(1, 20, 1)]
         top_runners_up = variants[1:self.max_runners_up + 1]
@@ -1208,7 +1128,6 @@ class TestDecisionTracker:
 
         expected_track_body = {
             decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
-            decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variants[0],
@@ -1251,125 +1170,118 @@ class TestDecisionTracker:
             assert resp.status_code == 200
             assert resp.text == 'success'
 
-    def test_track_event_no_properties(self):
-        decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+    # def test_track_event_no_properties(self):
+    #     decision_tracker = \
+    #         dtr.DecisionTracker(
+    #             track_url=self.track_url, max_runners_up=self.max_runners_up)
+    #
+    #     event_name = 'dummy-event'
+    #
+    #     expected_track_body = {
+    #         decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
+    #         decision_tracker.TYPE_KEY: decision_tracker.EVENT_TYPE,
+    #         decision_tracker.EVENT_KEY: event_name}
+    #
+    #     expected_request_json = json.dumps(expected_track_body, sort_keys=False)
+    #
+    #     def custom_matcher(request):
+    #
+    #         request_dict = deepcopy(request.json())
+    #         del request_dict[decision_tracker.MESSAGE_ID_KEY]
+    #
+    #         if json.dumps(request_dict, sort_keys=False) != \
+    #                 expected_request_json:
+    #
+    #             print('request body:')
+    #             print(request.text)
+    #             print('expected body:')
+    #             print(expected_request_json)
+    #             return None
+    #         return True
+    #
+    #     with rqm.Mocker() as m:
+    #         m.post(self.track_url, text='success',
+    #                additional_matcher=custom_matcher)
+    #
+    #         np.random.seed(self.sample_seed)
+    #         resp = decision_tracker.track_event(
+    #             event_name=event_name,
+    #             timestamp=self.dummy_timestamp)
+    #
+    #         if resp is None:
+    #             print(
+    #                 'The input request body and expected request body mismatch')
+    #         assert resp is not None
+    #         assert resp.status_code == 200
+    #         assert resp.text == 'success'
 
-        event_name = 'dummy-event'
+    # def test_track_event(self):
+    #     decision_tracker = \
+    #         dtr.DecisionTracker(
+    #             track_url=self.track_url, max_runners_up=self.max_runners_up)
+    #
+    #     event_name = 'dummy-event'
+    #     dummy_properties = {'dummy': {'nested': ['properties', 'test']}}
+    #
+    #     expected_track_body = {
+    #         decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
+    #         decision_tracker.TYPE_KEY: decision_tracker.EVENT_TYPE,
+    #         decision_tracker.EVENT_KEY: event_name,
+    #         decision_tracker.PROPERTIES_KEY: dummy_properties}
+    #
+    #     expected_request_json = json.dumps(expected_track_body, sort_keys=False)
+    #
+    #     def custom_matcher(request):
+    #
+    #         request_dict = deepcopy(request.json())
+    #         del request_dict[decision_tracker.MESSAGE_ID_KEY]
+    #
+    #         if json.dumps(request_dict, sort_keys=False) != \
+    #                 expected_request_json:
+    #
+    #             print('request body:')
+    #             print(request.text)
+    #             print('expected body:')
+    #             print(expected_request_json)
+    #             return None
+    #         return True
+    #
+    #     with rqm.Mocker() as m:
+    #         m.post(self.track_url, text='success',
+    #                additional_matcher=custom_matcher)
+    #
+    #         np.random.seed(self.sample_seed)
+    #         resp = decision_tracker.track_event(
+    #             event_name=event_name, properties=dummy_properties,
+    #             timestamp=self.dummy_timestamp)
+    #
+    #         if resp is None:
+    #             print(
+    #                 'The input request body and expected request body mismatch')
+    #         assert resp is not None
+    #         assert resp.status_code == 200
+    #         assert resp.text == 'success'
 
-        expected_track_body = {
-            decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
-            decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
-            decision_tracker.TYPE_KEY: decision_tracker.EVENT_TYPE,
-            decision_tracker.EVENT_KEY: event_name}
-
-        expected_request_json = json.dumps(expected_track_body, sort_keys=False)
-
-        def custom_matcher(request):
-
-            request_dict = deepcopy(request.json())
-            del request_dict[decision_tracker.MESSAGE_ID_KEY]
-
-            if json.dumps(request_dict, sort_keys=False) != \
-                    expected_request_json:
-
-                print('request body:')
-                print(request.text)
-                print('expected body:')
-                print(expected_request_json)
-                return None
-            return True
-
-        with rqm.Mocker() as m:
-            m.post(self.track_url, text='success',
-                   additional_matcher=custom_matcher)
-
-            np.random.seed(self.sample_seed)
-            resp = decision_tracker.track_event(
-                event_name=event_name,
-                timestamp=self.dummy_timestamp)
-
-            if resp is None:
-                print(
-                    'The input request body and expected request body mismatch')
-            assert resp is not None
-            assert resp.status_code == 200
-            assert resp.text == 'success'
-
-    def test_track_event(self):
-        decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
-
-        event_name = 'dummy-event'
-        dummy_properties = {'dummy': {'nested': ['properties', 'test']}}
-
-        expected_track_body = {
-            decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
-            decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
-            decision_tracker.TYPE_KEY: decision_tracker.EVENT_TYPE,
-            decision_tracker.EVENT_KEY: event_name,
-            decision_tracker.PROPERTIES_KEY: dummy_properties}
-
-        expected_request_json = json.dumps(expected_track_body, sort_keys=False)
-
-        def custom_matcher(request):
-
-            request_dict = deepcopy(request.json())
-            del request_dict[decision_tracker.MESSAGE_ID_KEY]
-
-            if json.dumps(request_dict, sort_keys=False) != \
-                    expected_request_json:
-
-                print('request body:')
-                print(request.text)
-                print('expected body:')
-                print(expected_request_json)
-                return None
-            return True
-
-        with rqm.Mocker() as m:
-            m.post(self.track_url, text='success',
-                   additional_matcher=custom_matcher)
-
-            np.random.seed(self.sample_seed)
-            resp = decision_tracker.track_event(
-                event_name=event_name, properties=dummy_properties,
-                timestamp=self.dummy_timestamp)
-
-            if resp is None:
-                print(
-                    'The input request body and expected request body mismatch')
-            assert resp is not None
-            assert resp.status_code == 200
-            assert resp.text == 'success'
-
-    def test_track_event_raises_type_error(self):
-        decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
-
-        event_name = 'dummy-event'
-        dummy_properties = 'this is not a dict'
-
-        with raises(TypeError) as terr:
-
-            decision_tracker.track_event(
-                event_name=event_name, properties=dummy_properties,
-                timestamp=self.dummy_timestamp)
-
-            assert str(terr.value)
+    # def test_track_event_raises_type_error(self):
+    #     decision_tracker = \
+    #         dtr.DecisionTracker(
+    #             track_url=self.track_url, max_runners_up=self.max_runners_up)
+    #
+    #     event_name = 'dummy-event'
+    #     dummy_properties = 'this is not a dict'
+    #
+    #     with raises(TypeError) as terr:
+    #
+    #         decision_tracker.track_event(
+    #             event_name=event_name, properties=dummy_properties,
+    #             timestamp=self.dummy_timestamp)
+    #
+    #         assert str(terr.value)
 
     def test_track_2_variants_and_sample(self):
 
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url,  max_runners_up=self.max_runners_up,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url,  max_runners_up=self.max_runners_up)
 
         variants = [el for el in range(1, 3, 1)]
         top_runners_up = variants[1:]
@@ -1378,7 +1290,6 @@ class TestDecisionTracker:
 
         expected_track_body = {
             decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
-            decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variants[0],
@@ -1426,9 +1337,7 @@ class TestDecisionTracker:
         max_runners_up = 0
 
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url,  max_runners_up=max_runners_up,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url,  max_runners_up=max_runners_up)
 
         variants = [el for el in range(1, 3, 1)]
         variant = variants[0]
@@ -1436,7 +1345,6 @@ class TestDecisionTracker:
 
         expected_track_body = {
             decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
-            decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variants[0],
@@ -1481,11 +1389,10 @@ class TestDecisionTracker:
     # TODO determine if:
     #   - those tests are 100% correct
     #   - max_runners_up = 0 be overridden by count = 2 and runners up should be tracked
-    def test_should_track_runners_up_2_variants(self):
+    def test_should_track_runners_up_2_variants_1(self):
 
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url)
 
         assert all(
             [decision_tracker.should_track_runners_up(variants_count=2)
@@ -1494,8 +1401,7 @@ class TestDecisionTracker:
     def test_top_runners_up_2_variants(self):
 
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url, history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url)
 
         variants = [el for el in range(2)]
 
@@ -1508,16 +1414,13 @@ class TestDecisionTracker:
         max_runners_up = 50
 
         decision_tracker = \
-            dtr.DecisionTracker(
-                track_url=self.track_url,  max_runners_up=max_runners_up,
-                history_id=self.dummy_history_id)
+            dtr.DecisionTracker(track_url=self.track_url,  max_runners_up=max_runners_up)
 
         variants = [el for el in range(0, 1)]
         variant = variants[0]
 
         expected_track_body = {
             decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
-            decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variants[0],
@@ -1560,3 +1463,305 @@ class TestDecisionTracker:
             assert resp.text == 'success'
 
     # TODO test for max_runners_up = 0
+    def test_add_float_reward(self):
+
+        decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
+
+        decision_id_container = {'decision_id': None}
+
+        def custom_matcher_caching_decision_id(request):
+            request_dict = deepcopy(request.json())
+            decision_id_container['decision_id'] = \
+                request_dict[decision_tracker.MESSAGE_ID_KEY]
+            return True
+
+        variants = [el for el in range(0, 1)]
+        variant = variants[0]
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success',
+                   additional_matcher=custom_matcher_caching_decision_id)
+
+            np.random.seed(self.sample_seed)
+            resp = decision_tracker.track(
+                variant=variant,
+                variants=variants,
+                givens=None, model_name=self.dummy_model_name,
+                variants_ranked_and_track_runners_up=
+                decision_tracker.should_track_runners_up(len(variants)),
+                timestamp=self.dummy_timestamp)
+
+            if resp is None:
+                print('The input request body and expected request body mismatch')
+            assert resp is not None
+            assert resp.status_code == 200
+            assert resp.text == 'success'
+
+        decision_id = decision_id_container['decision_id']
+        reward = 1.0
+
+        expected_add_reward_body = {
+            decision_tracker.TYPE_KEY: decision_tracker.REWARD_TYPE,
+            decision_tracker.MODEL_KEY: self.dummy_model_name,
+            decision_tracker.REWARD_KEY: reward,
+            decision_tracker.DECISION_ID_KEY: decision_id,
+        }
+
+        expected_request_json = json.dumps(expected_add_reward_body, sort_keys=False)
+
+        def custom_matcher(request):
+            request_dict = deepcopy(request.json())
+            del request_dict[decision_tracker.MESSAGE_ID_KEY]
+            del request_dict[decision_tracker.TIMESTAMP_KEY]
+
+            if json.dumps(request_dict, sort_keys=False) != \
+                    expected_request_json:
+
+                print('raw request body:')
+                print(request.text)
+                print('compared request string')
+                print(json.dumps(request_dict, sort_keys=False))
+                print('expected body:')
+                print(expected_request_json)
+                return None
+            return True
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success',
+                   additional_matcher=custom_matcher)
+
+            resp = decision_tracker.add_reward(
+                reward=reward, model_name=self.dummy_model_name, decision_id=decision_id)
+
+            if resp is None:
+                print('The input request body and expected request body mismatch')
+            assert resp is not None
+            assert resp.status_code == 200
+            assert resp.text == 'success'
+
+    # TODO test for max_runners_up = 0
+    def test_add_int_reward(self):
+
+        decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
+
+        decision_id_container = {'decision_id': None}
+
+        def custom_matcher_caching_decision_id(request):
+            request_dict = deepcopy(request.json())
+            decision_id_container['decision_id'] = \
+                request_dict[decision_tracker.MESSAGE_ID_KEY]
+            return True
+
+        variants = [el for el in range(0, 1)]
+        variant = variants[0]
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success',
+                   additional_matcher=custom_matcher_caching_decision_id)
+
+            np.random.seed(self.sample_seed)
+            resp = decision_tracker.track(
+                variant=variant,
+                variants=variants,
+                givens=None, model_name=self.dummy_model_name,
+                variants_ranked_and_track_runners_up=
+                decision_tracker.should_track_runners_up(len(variants)),
+                timestamp=self.dummy_timestamp)
+
+            if resp is None:
+                print('The input request body and expected request body mismatch')
+            assert resp is not None
+            assert resp.status_code == 200
+            assert resp.text == 'success'
+
+        decision_id = decision_id_container['decision_id']
+        reward = 1
+
+        expected_add_reward_body = {
+            decision_tracker.TYPE_KEY: decision_tracker.REWARD_TYPE,
+            decision_tracker.MODEL_KEY: self.dummy_model_name,
+            decision_tracker.REWARD_KEY: reward,
+            decision_tracker.DECISION_ID_KEY: decision_id,
+        }
+
+        expected_request_json = json.dumps(expected_add_reward_body, sort_keys=False)
+
+        def custom_matcher(request):
+            request_dict = deepcopy(request.json())
+            del request_dict[decision_tracker.MESSAGE_ID_KEY]
+            del request_dict[decision_tracker.TIMESTAMP_KEY]
+
+            if json.dumps(request_dict, sort_keys=False) != \
+                    expected_request_json:
+
+                print('raw request body:')
+                print(request.text)
+                print('compared request string')
+                print(json.dumps(request_dict, sort_keys=False))
+                print('expected body:')
+                print(expected_request_json)
+                return None
+            return True
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success',
+                   additional_matcher=custom_matcher)
+
+            resp = decision_tracker.add_reward(
+                reward=reward, model_name=self.dummy_model_name, decision_id=decision_id)
+
+            if resp is None:
+                print('The input request body and expected request body mismatch')
+            assert resp is not None
+            assert resp.status_code == 200
+            assert resp.text == 'success'
+
+    def test_add_reward_bad_reward_type(self):
+        decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
+
+        decision_id_container = {'decision_id': None}
+
+        def custom_matcher_caching_decision_id(request):
+            request_dict = deepcopy(request.json())
+            decision_id_container['decision_id'] = \
+                request_dict[decision_tracker.MESSAGE_ID_KEY]
+            return True
+
+        variants = [el for el in range(0, 1)]
+        variant = variants[0]
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success',
+                   additional_matcher=custom_matcher_caching_decision_id)
+
+            np.random.seed(self.sample_seed)
+            resp = decision_tracker.track(
+                variant=variant,
+                variants=variants,
+                givens=None, model_name=self.dummy_model_name,
+                variants_ranked_and_track_runners_up=
+                decision_tracker.should_track_runners_up(len(variants)),
+                timestamp=self.dummy_timestamp)
+
+            if resp is None:
+                print('The input request body and expected request body mismatch')
+            assert resp is not None
+            assert resp.status_code == 200
+            assert resp.text == 'success'
+
+        decision_id = decision_id_container['decision_id']
+        reward = 'bad_reward'
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+
+            with raises(AssertionError) as aerr:
+                decision_tracker.add_reward(
+                    reward=reward, model_name=self.dummy_model_name, decision_id=decision_id)
+
+    def test_add_reward_inf(self):
+        decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
+
+        decision_id_container = {'decision_id': None}
+
+        def custom_matcher_caching_decision_id(request):
+            request_dict = deepcopy(request.json())
+            decision_id_container['decision_id'] = \
+                request_dict[decision_tracker.MESSAGE_ID_KEY]
+            return True
+
+        variants = [el for el in range(0, 1)]
+        variant = variants[0]
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success',
+                   additional_matcher=custom_matcher_caching_decision_id)
+
+            np.random.seed(self.sample_seed)
+            resp = decision_tracker.track(
+                variant=variant,
+                variants=variants,
+                givens=None, model_name=self.dummy_model_name,
+                variants_ranked_and_track_runners_up=
+                decision_tracker.should_track_runners_up(len(variants)),
+                timestamp=self.dummy_timestamp)
+
+            if resp is None:
+                print('The input request body and expected request body mismatch')
+            assert resp is not None
+            assert resp.status_code == 200
+            assert resp.text == 'success'
+
+        decision_id = decision_id_container['decision_id']
+
+        reward = math.inf
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+
+            with raises(AssertionError) as aerr:
+                decision_tracker.add_reward(
+                    reward=reward, model_name=self.dummy_model_name, decision_id=decision_id)
+
+        reward = -math.inf
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+
+            with raises(AssertionError) as aerr:
+                decision_tracker.add_reward(
+                    reward=reward, model_name=self.dummy_model_name, decision_id=decision_id)
+
+    def test_add_reward_none(self):
+        decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
+
+        decision_id_container = {'decision_id': None}
+
+        def custom_matcher_caching_decision_id(request):
+            request_dict = deepcopy(request.json())
+            decision_id_container['decision_id'] = \
+                request_dict[decision_tracker.MESSAGE_ID_KEY]
+            return True
+
+        variants = [el for el in range(0, 1)]
+        variant = variants[0]
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success',
+                   additional_matcher=custom_matcher_caching_decision_id)
+
+            np.random.seed(self.sample_seed)
+            resp = decision_tracker.track(
+                variant=variant,
+                variants=variants,
+                givens=None, model_name=self.dummy_model_name,
+                variants_ranked_and_track_runners_up=
+                decision_tracker.should_track_runners_up(len(variants)),
+                timestamp=self.dummy_timestamp)
+
+            if resp is None:
+                print('The input request body and expected request body mismatch')
+            assert resp is not None
+            assert resp.status_code == 200
+            assert resp.text == 'success'
+
+        decision_id = decision_id_container['decision_id']
+
+        reward = None
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+
+            with raises(AssertionError) as aerr:
+                decision_tracker.add_reward(
+                    reward=reward, model_name=self.dummy_model_name, decision_id=decision_id)
+
+        reward = np.nan
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+
+            with raises(AssertionError) as aerr:
+                decision_tracker.add_reward(
+                    reward=reward, model_name=self.dummy_model_name, decision_id=decision_id)
+                assert aerr

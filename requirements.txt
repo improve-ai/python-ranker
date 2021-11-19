@@ -11,7 +11,7 @@ numpy==1.19.2
 xgboost==1.4.2
 scipy==1.7.0
 simplejson==3.17.2
-docker_py==1.10.6
 scikit_learn==0.19.2
+docker
 orjson
 svix-ksuid

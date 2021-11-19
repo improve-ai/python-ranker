@@ -47,14 +47,42 @@ class DecisionModel:
     def chooser(self, value: BasicChooser):
         self._chooser = value
 
+    @property
+    def givens_provider(self):
+        return self._givens_provider
+
+    @givens_provider.setter
+    def givens_provider(self, value):
+        self._givens_provider = value
+
+    @property
+    def track_url(self):
+        return self._track_url
+
+    @track_url.setter
+    def track_url(self, value):
+        self._track_url = value
+
+    @property
+    def id_(self):
+        return self._id_
+
+    @id_.setter
+    def id_(self, value):
+        self._id_ = value
+
     @constant
     def TIEBREAKER_MULTIPLIER() -> float:
         return 2**-23
 
-    def __init__(self, model_name: str):
+    def __init__(self, model_name: str, track_url: str = None):
         self.model_name = model_name
+        self.track_url = track_url
+
+        self.id_ = None
         self.tracker = None
         self.chooser = None
+        self.givens_provider = None
 
     def track_with(self, tracker):
 
@@ -85,10 +113,17 @@ class DecisionModel:
                 '`model_name` passed to contructor does not match loaded '
                 'model`s name -  using loaded model`s name')
 
-        self.model_name = self.chooser.model_name
+        # TODO unittest this
+        if self.model_name is None:
+            self.model_name = self.chooser.model_name
+        else:
+            self.chooser.model_name = self.model_name
+            warnings.warn(
+                'Model name passed to the constructor: {} will not be '
+                'overwritten by loaded model name: {}.'
+                .format(self.model_name, self.chooser.model_name))
 
-    @staticmethod
-    def load(model_url: str):
+    def load(self, model_url: str):
         """
         Synchronously loads XGBoost model from provided path, creates instance
         of DecisionModel and returns it
@@ -105,12 +140,18 @@ class DecisionModel:
 
         """
 
-        decision_model = DecisionModel(model_name=None)
-        decision_model._set_chooser(
-            chooser=DecisionModel._get_chooser(model_url=model_url))
+        # decision_model = DecisionModel(model_name=None)
+        # decision_model._set_chooser(
+        #     chooser=DecisionModel._get_chooser(model_url=model_url))
 
-        return decision_model
+        # return decision_model
 
+        self._set_chooser(chooser=DecisionModel._get_chooser(model_url=model_url))
+
+        return self
+
+    # TODO check if it should be static or not
+    # TODO remove mlmodel support
     @staticmethod
     def _get_chooser(
             model_url: str, loop: asyncio.BaseEventLoop = None) -> BasicChooser:
@@ -401,3 +442,21 @@ class DecisionModel:
 
         """
         return d.Decision(decision_model=self).choose_from(variants=variants)
+
+    def add_reward(self, reward: float):
+        # void addReward(double reward)
+        # Add rewards for the most recent Decision for this model name, even if
+        # that Decision occurred in a previous session. Sets model on the reward
+        # record to be equal to the current modelName.
+        # NaN, positive infinity, and negative infinity are not allowed and should throw exceptions
+
+        assert self.model_name is not None and self.id_ is not None
+        assert isinstance(reward, float) or isinstance(reward, int)
+        assert reward is not None
+        assert not np.isnan(reward)
+        assert not np.isinf(reward)
+
+        print('passed all assertions')
+
+        return self.tracker.add_reward(
+            reward=reward, model_name=self.model_name, decision_id=self.id_)

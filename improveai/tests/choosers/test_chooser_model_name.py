@@ -12,7 +12,7 @@ def test_none_model_name():
     chooser = BasicNativeXGBChooser()
     with raises(AssertionError) as aerr:
         chooser.model_name = None
-        assert aerr.value
+        # assert aerr.value
 
 
 # - test that regexp compliant model name passes regexp
@@ -40,4 +40,4 @@ def test_bad_model_name():
         with raises(AssertionError) as aerr:
             chooser = BasicNativeXGBChooser()
             chooser.model_name = bad_model_name
-            assert aerr.value
+            # assert aerr.value

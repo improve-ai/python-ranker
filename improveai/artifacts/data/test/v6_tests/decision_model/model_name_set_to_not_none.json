@@ -1,0 +1,9 @@
+{
+    "test_case": {
+        "model_filename": "dummy_v6.xgb",
+        "model_name": "custom-model-name"
+    },
+    "test_output": {
+        "model_name": "custom-model-name"
+    }
+}

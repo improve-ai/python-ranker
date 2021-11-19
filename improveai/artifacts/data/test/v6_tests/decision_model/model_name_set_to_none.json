@@ -1,0 +1,8 @@
+{
+    "test_case": {
+        "model_filename": "dummy_v6.xgb"
+    },
+    "test_output": {
+        "model_name": "dummy-model-0"
+    }
+}

@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+from ksuid import Ksuid
 import numpy as np
 from typing import Dict, List
 from warnings import warn
@@ -36,6 +37,10 @@ class Decision:
     def ranked_variants(self):
         return self.__ranked_variants
 
+    @property
+    def id_(self):
+        return self.__id_
+
     def __init__(self, decision_model: object):
 
         if decision_model is None:
@@ -49,6 +54,7 @@ class Decision:
         self.__memoized_variant = None
         self.__scores = None
         self.__ranked_variants = [None]
+        self.__id_ = None
 
         self.__variants__set = False
         self.__givens_set = False
@@ -103,11 +109,48 @@ class Decision:
 
         return self
 
+    def _set_message_id(self):
+        if self.__id_ is None:
+            id_ = str(Ksuid())
+            assert isinstance(id_, str)
+            Ksuid.from_base62(id_)
+            self.__id_ = id_
+        else:
+            warn('`id_` has already been set for this Decision')
+
+    def _cache_message_id_to_decision_model(self):
+        assert self.__id_ is not None
+        self.model.id_ = self.id_
+
+    def add_reward(self, reward: float or int):
+
+        if not self.chosen:
+            warn('`add_reward()` called before `get()`')
+        # TODO add reward
+
+        assert self.model.id_ == self.id_
+        assert self.model.model_name is not None and self.model.id_ is not None
+        assert reward is not None
+        assert isinstance(reward, float) or isinstance(reward, int)
+        assert not np.isnan(reward)
+        assert not np.isinf(reward)
+
+        # TODO check if decision_id is set correctly
+        return self.model.tracker.add_reward(
+            reward=reward, model_name=self.model.model_name, decision_id=self.id_)
+
     def get(self):
 
         if self.chosen:
             warn('The best variant has already been chosen')
+            self._cache_message_id_to_decision_model()
             return self.memoized_variant
+
+        # set message_id / decision_id only once
+        self._set_message_id()
+        self._cache_message_id_to_decision_model()
+
+        # set message_id / deicsion_id to decision model
 
         # TODO should scores be persisted inside Decision object
         self.__scores = self.model.score(variants=self.variants, givens=self.givens)
@@ -134,7 +177,7 @@ class Decision:
                     self.model.tracker.track(
                         variant=self.memoized_variant, variants=self.ranked_variants,
                         givens=self.givens, model_name=self.model.model_name,
-                        variants_ranked_and_track_runners_up=True)
+                        variants_ranked_and_track_runners_up=True, message_id=self.id_)
                 else:
                     self.__memoized_variant = \
                         dm.DecisionModel.top_scoring_variant(
@@ -143,7 +186,7 @@ class Decision:
                     self.model.tracker.track(
                         variant=self.memoized_variant, variants=self.variants,
                         givens=self.givens, model_name=self.model.model_name,
-                        variants_ranked_and_track_runners_up=False)
+                        variants_ranked_and_track_runners_up=False, message_id=self.id_)
 
             elif self.model.tracker is None:
                 raise ValueError('`tracker` object can`t be None')

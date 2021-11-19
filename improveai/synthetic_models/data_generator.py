@@ -2,6 +2,7 @@ from copy import deepcopy
 import numpy as np
 import hashlib
 import json
+from ksuid import Ksuid
 import pandas as pd
 import requests_mock as rqm
 from scipy import stats
@@ -401,7 +402,7 @@ class BasicSemiRandomDataGenerator:
             record = {
                 'timestamp': str(np.datetime_as_string(record_timestamp.to_datetime64())),
                 'history_id': "dummy - history",
-                'message_id': str(uuid4()),
+                'message_id': str(Ksuid()),  # str(uuid4()),
                 'type': 'decision',
                 'model': decision_model.model_name,
                 'variant': chosen_variant,

@@ -1,7 +1,7 @@
 import os
 
 
-USE_CYTHON_BACKEND = False
+USE_CYTHON_BACKEND = True
 IMPROVE_DIR = 'improveai'
 CYTHON_MODULE_DIR = 'cythonized_feature_encoding'
 
