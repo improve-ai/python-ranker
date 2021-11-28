@@ -115,7 +115,7 @@ Models are thread-safe and a single model can be used for multiple decisions.
 ### Synchronous Model Loading
 
 ```python
-product = DecisionModel.load(model_url=model_url).choose_from(["clutch", "dress", "jacket"]).get()
+product = DecisionModel(model_name=None).load(model_url=model_url).choose_from(["clutch", "dress", "jacket"]).get()
 ```
 
 Models can be loaded from the app bundle or from https URLs.
@@ -155,8 +155,8 @@ Set a *DecisionTracker* on the *DecisionModel* to automatically track decisions 
 ```python
 tracker = DecisionTracker(track_url=track_url)  # trackUrl is obtained from your Gym configuration
 
-font_size =
-    DecisionModel.load(model_url=model_url).track_with(tracker=tracker).chooseFrom([12, 16, 20]).get()
+font_size = \
+    DecisionModel(model_name=None).load(model_url=model_url).track_with(tracker=tracker).chooseFrom([12, 16, 20]).get()
 ```
 
 The decision is lazily evaluated and then automatically tracked as being causal upon calling *get()*.

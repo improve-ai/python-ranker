@@ -4,7 +4,8 @@ import numpy as np
 
 def convert_values_to_float32(val: object):
     if isinstance(val, float):
-        return float(str(np.float32(val)))
+        # return float(str(np.float32(val)))
+        return np.float32(val)
 
     if isinstance(val, dict):
         conv_val = {}
@@ -20,3 +21,10 @@ def convert_values_to_float32(val: object):
         return np.array([convert_values_to_float32(el) for el in val])
 
     return val
+
+
+def assert_dicts_identical(expected, calculated):
+    for expected_key in expected.keys():
+        expected_value = expected[expected_key]
+        calculated_value = calculated[expected_key]
+        assert expected_value == calculated_value

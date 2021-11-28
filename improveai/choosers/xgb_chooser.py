@@ -23,7 +23,7 @@ from improveai.utils.choosers_feature_encoding_tools import encoded_variants_to_
 FastFeatureEncoder = cfe.FeatureEncoder
 
 
-class BasicNativeXGBChooser(BasicChooser):
+class NativeXGBChooser(BasicChooser):
 
     @property
     def model(self) -> Booster:
@@ -91,7 +91,7 @@ class BasicNativeXGBChooser(BasicChooser):
         assert value is not None
         # if value is not None:
         assert isinstance(value, str)
-        assert re.search(BasicNativeXGBChooser.MODEL_NAME_REGEXP, value) is not None
+        assert re.search(NativeXGBChooser.MODEL_NAME_REGEXP, value) is not None
 
         self._model_name = value
 
@@ -354,7 +354,7 @@ class BasicNativeXGBChooser(BasicChooser):
 
 if __name__ == '__main__':
 
-    mlmc = BasicNativeXGBChooser()
+    mlmc = NativeXGBChooser()
 
     # test_model_pth = '../artifacts/models/12_11_2020_verses_conv.xgb'
     # test_model_pth = "https://improve-v5-resources-prod-models-117097735164.s3-us-west-2.amazonaws.com/models/mindful/latest/improve-stories-2.0.xgb.gz"

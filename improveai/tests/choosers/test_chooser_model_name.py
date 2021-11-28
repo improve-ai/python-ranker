@@ -2,14 +2,14 @@ import numpy as np
 from pytest import raises
 import string
 
-from improveai.choosers import BasicNativeXGBChooser
+from improveai.choosers import NativeXGBChooser
 
 BAD_SPECIAL_CHARACTERS = [el for el in '`~!@#$%^&*()=+[]{};:"<>,/?' + "'"]
 ALNUM_CHARS = [el for el in string.digits + string.ascii_letters]
 
 
 def test_none_model_name():
-    chooser = BasicNativeXGBChooser()
+    chooser = NativeXGBChooser()
     with raises(AssertionError) as aerr:
         chooser.model_name = None
         # assert aerr.value
@@ -22,7 +22,7 @@ def test_good_model_name():
         [''.join('a' for _ in range(64))]
 
     for good_model_name in good_model_names:
-        chooser = BasicNativeXGBChooser()
+        chooser = NativeXGBChooser()
         chooser.model_name = good_model_name
 
 
@@ -38,6 +38,6 @@ def test_bad_model_name():
 
     for bad_model_name in bad_model_names:
         with raises(AssertionError) as aerr:
-            chooser = BasicNativeXGBChooser()
+            chooser = NativeXGBChooser()
             chooser.model_name = bad_model_name
             # assert aerr.value

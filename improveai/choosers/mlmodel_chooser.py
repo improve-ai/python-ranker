@@ -16,7 +16,7 @@ from improveai.utils.choosers_feature_encoding_tools import \
 FastFeatureEncoder = cfe.FeatureEncoder
 
 
-class BasicMLModelChooser(BasicChooser):
+class MLModelChooser(BasicChooser):
 
     @property
     def model(self) -> ct.models.MLModel:
@@ -312,7 +312,7 @@ class BasicMLModelChooser(BasicChooser):
 
 if __name__ == '__main__':
 
-    mlmc = BasicMLModelChooser()
+    mlmc = MLModelChooser()
 
     # test_model_pth = '../artifacts/test_artifacts/improve-messages-2.0-3.mlmodel'
     test_model_pth = '../artifacts/models/v6_conv_model.mlmodel'

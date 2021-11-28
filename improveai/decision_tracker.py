@@ -142,10 +142,10 @@ class DecisionTracker:
         self._max_runners_up = new_val
 
     def __init__(
-            self, track_url: str, api_key: str = None, max_runners_up: int = 50):
+            self, track_url: str, max_runners_up: int = 50):
 
         self.track_url = track_url
-        self.api_key = api_key
+        # self.api_key = api_key
 
         # TODO determined whether it should be set once per tracker`s life or
         #  with each track request (?)
@@ -307,68 +307,6 @@ class DecisionTracker:
             block=lambda result, error: (
                 warn("Improve.track error: {}".format(error)) if error else 0, 0))
 
-    # def track_event(
-    #         self, event_name: str, properties: Dict[str, object] = None,
-    #         timestamp: object = None):
-    #     """
-    #     Executes post_improve_request constructing body from input params:
-    #     event, properties and givens
-    #
-    #     Parameters
-    #     ----------
-    #     event_name: str
-    #         name of event
-    #     properties: Dict[str, object]
-    #        part fo payload (?)
-    #     timestamp: object
-    #         timestamp of tracking request
-    #
-    #     Returns
-    #     -------
-    #     None
-    #         None
-    #
-    #     """
-    #
-    #     body = {self.TYPE_KEY: self.EVENT_TYPE}
-    #
-    #     if properties:
-    #         if not isinstance(properties, dict):
-    #             raise TypeError('`properties must be of a dict type`')
-    #
-    #     for key, val in zip(
-    #             [self.EVENT_KEY, self.PROPERTIES_KEY], [event_name, properties]):
-    #         if val:
-    #             body[key] = val
-    #
-    #     # TODO determine what sort of completion_block should be used
-    #     #  For now completion_block() set to 0
-    #     return self.post_improve_request(
-    #         body_values=body,
-    #         block=lambda result, error: (
-    #             warn("Improve.track error: {}".format(error))
-    #             if error else 0, 0), timestamp=timestamp)
-
-    # @staticmethod
-    # def _get_non_numpy_type_sample(sample: object):
-    #     """
-    #     Gets numeric object of non-numpy type (e.g. gets int object from uint8)
-    #
-    #     Parameters
-    #     ----------
-    #     sample: object
-    #         object from which basic python type will be extracted
-    #
-    #     Returns
-    #     -------
-    #     object
-    #         basic python typed object
-    #
-    #     """
-    #     if hasattr(sample, 'item'):
-    #         return sample.item()
-    #     return sample
-
     def get_sample(self, variant: object, variants: list, track_runners_up: bool):
         """
         Gets sample from ranked_variants. Takes runenrs up into account
@@ -467,8 +405,9 @@ class DecisionTracker:
 
         headers = {'Content-Type': 'application/json'}
 
-        if self.api_key:
-            headers[self.API_KEY_HEADER] = self.api_key
+        # TODO is api_key still desired
+        # if self.api_key:
+        #     headers[self.API_KEY_HEADER] = self.api_key
 
         assert self._is_valid_message_id(message_id=message_id)
 
@@ -541,9 +480,9 @@ class DecisionTracker:
 
 
 if __name__ == '__main__':
-    track_url = 'https://uqicecc39c.execute-api.us-east-2.amazonaws.com/track'
+    track_url = 'https://56s4479qni.execute-api.us-east-2.amazonaws.com/track'
 
-    dt = DecisionTracker(track_url=track_url, history_id='dummy-history-id-1')
+    dt = DecisionTracker(track_url=track_url)
 
     # resp = decision_tracker.track(
     #     variant=variant,
@@ -572,8 +511,10 @@ if __name__ == '__main__':
     # large_variant = ''.join(['x' for _ in range(1011100)])
 
     import time
+    # to make rewarding reproducible
+    np.random.seed(0)
 
-    for _ in range(80):
+    for d_idx in range(80):
 
         givens = {}
 
@@ -582,13 +523,19 @@ if __name__ == '__main__':
                 'g1': 0,
                 'g2': 1}
 
+        decision_id = str(Ksuid())
+
         resp = dt.track(
             variant=variants[0],
             variants=variants[:1],
             givens=givens, model_name='appconfig',
             variants_ranked_and_track_runners_up=False,
             timestamp=str(np.datetime_as_string(
-                        np.datetime64(datetime.now()), unit='ms', timezone='UTC')))
+                        np.datetime64(datetime.now()), unit='ms', timezone='UTC')),
+            message_id=decision_id)
+
+        # if d_idx < 40:
+        #     dt.add_reward(reward=1.0, model_name='appconfig', decision_id=decision_id)
 
         print(resp.status_code)
         time.sleep(0.1)

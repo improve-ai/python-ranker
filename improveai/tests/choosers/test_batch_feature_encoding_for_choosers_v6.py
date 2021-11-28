@@ -9,7 +9,7 @@ sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
 
 from improveai import FeatureEncoder
-from improveai.choosers.xgb_chooser import BasicNativeXGBChooser
+from improveai.choosers.xgb_chooser import NativeXGBChooser
 from improveai.utils.choosers_feature_encoding_tools import \
     encoded_variants_to_np
 import improveai.settings as improve_settings
@@ -39,7 +39,7 @@ class TestChooserFeatureEncoding(TestCase):
             os.getenv("V6_FEATURE_ENCODER_TEST_PYTHON_SPECIFIC_JSONS_DIR")
         # self.feature_encoder = FeatureEncoder(model_seed=self.encoder_seed)
 
-        self.xgb_chooser = BasicNativeXGBChooser()
+        self.xgb_chooser = NativeXGBChooser()
         xgb_path = os.getenv("V6_DUMMY_MODEL_PATH")
         self.xgb_chooser.load_model(input_model_src=xgb_path)
         self.batch_encoding_seed = int(os.getenv('V6_BATCH_ENCODING_SEED'))
@@ -108,12 +108,12 @@ class TestChooserFeatureEncoding(TestCase):
 
         tested_output_float32 = \
             convert_values_to_float32(val=tested_output_float64)
-        from pprint import pprint
-        pprint(tested_output_float32.tolist())
+
+        expected_output_float32 = convert_values_to_float32(expected_output)
 
         # np.testing.assert_array_equal(expected_output, tested_output_float32)
 
-        for v_ref, v_calc in zip(expected_output, tested_output_float32):
+        for v_ref, v_calc in zip(expected_output_float32, tested_output_float32):
             assert v_ref == v_calc
 
     def test_batch_variants_encoding_with_single_given(self):
@@ -171,7 +171,8 @@ class TestChooserFeatureEncoding(TestCase):
         missings_filled_array_float32 = \
             convert_values_to_float32(val=missings_filled_array_float64)
 
-        np.testing.assert_array_equal(expected_output, missings_filled_array_float32)
+        expected_output_float32 = convert_values_to_float32(expected_output)
+        np.testing.assert_array_equal(expected_output_float32, missings_filled_array_float32)
 
     def test_missing_features_filler_method_02(self):
         test_case_path = os.sep.join(

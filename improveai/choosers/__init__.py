@@ -1,2 +1,2 @@
-from improveai.choosers.mlmodel_chooser import BasicMLModelChooser
-from improveai.choosers.xgb_chooser import BasicNativeXGBChooser
+from improveai.choosers.mlmodel_chooser import MLModelChooser
+from improveai.choosers.xgb_chooser import NativeXGBChooser

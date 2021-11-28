@@ -159,12 +159,6 @@ cpdef double reverse_sprinkle(double sprinkled_x, double small_noise):
     return sprinkled_x / (1 + small_noise) - small_noise
 
 
-cpdef add_noise(dict into, double noise):
-    cdef double small_noise = shrink(noise)
-    for feature_name, value in into.items():
-        into[feature_name] = sprinkle(value, small_noise)
-
-
 cdef class FeatureEncoder:
     """
     This class serves as a preprocessor which allows to
@@ -226,6 +220,8 @@ cdef class FeatureEncoder:
 
         encode(givens, self.givens_seed, shrink(noise), into)
 
+        # TODO wait until the conversion mechanism is determined
+        # self._convert_values_to_float32(into=into)
         return into
 
     cpdef dict encode_variant(self, object variant, double noise=0.0, dict into=None):
@@ -243,6 +239,8 @@ cdef class FeatureEncoder:
         else:
             encode(variant, self.value_seed, small_noise, into)
 
+        # TODO wait until the conversion mechanism is determined
+        # self._convert_values_to_float32(into=into)
         return into
 
 
@@ -352,3 +350,19 @@ cdef class FeatureEncoder:
          if single_extra_features is not None else encoded_variant
          for encoded_variant, single_extra_features in
          zip(encoded_variants, extra_features)]
+
+    cpdef _convert_values_to_float32(self, dict into):
+        """
+        Converts all values in the input dict to float32
+
+        Parameters
+        ----------
+        into: dict
+            converted dict
+
+        Returns
+        -------
+
+        """
+        for k in into.keys():
+            into[k] = np.float32(into[k])

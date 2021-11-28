@@ -19,6 +19,7 @@ sys.path.append(
 import improveai.decision as d
 import improveai.decision_model as dm
 import improveai.decision_tracker as dt
+from improveai.choosers.xgb_chooser import NativeXGBChooser
 from improveai.utils.general_purpose_tools import read_jsonstring_from_file
 from improveai.tests.test_utils import convert_values_to_float32
 
@@ -374,8 +375,10 @@ class TestDecisionModel(TestCase):
         calculated_scores_float32 = convert_values_to_float32(calculated_scores)
 
         if evaluated_method_name == 'score':
+            expected_output_float32 = convert_values_to_float32(expected_output)
+
             np.testing.assert_array_equal(
-                calculated_scores_float32, expected_output)
+                calculated_scores_float32, expected_output_float32)
 
             return
 
@@ -730,11 +733,18 @@ class TestDecisionModel(TestCase):
             os.sep.join([self.predictors_fs_directory, test_data['test_case']['model_filename']])
 
         tested_model_name = test_data['test_case']['model_name']
+        chooser = NativeXGBChooser()
+        chooser.load_model(model_url)
+
+        # print('## chooser.model_name ##')
+        # print(chooser.model_name)
+        # assert False
 
         with warnings.catch_warnings(record=True) as w:
             decision_model = dm.DecisionModel(model_name=tested_model_name).load(model_url=model_url)
             assert len(w) != 0
         assert decision_model.model_name is not None
+        assert decision_model.model_name != chooser.model_name
 
         expected_output = test_data['test_output']['model_name']
 

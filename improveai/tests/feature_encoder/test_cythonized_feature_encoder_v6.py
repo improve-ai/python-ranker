@@ -18,12 +18,13 @@ sprinkle = cfe.sprinkle
 shrink = cfe.shrink
 reverse_sprinkle = cfe.reverse_sprinkle
 _get_previous_value = cfe._get_previous_value
-add_noise = cfe.add_noise
+
+# add_noise = cfe.add_noise
 
 
 import improveai.settings as improve_settings
 from improveai.utils.general_purpose_tools import read_jsonstring_from_file
-from improveai.tests.test_utils import convert_values_to_float32
+from improveai.tests.test_utils import convert_values_to_float32, assert_dicts_identical
 
 
 class TestEncoder(TestCase):
@@ -170,8 +171,17 @@ class TestEncoder(TestCase):
 
         tested_record_output_float32 = \
             convert_values_to_float32(tested_record_output_float64)
+        expected_output_float32 = convert_values_to_float32(expected_output)
 
-        assert expected_output == tested_record_output_float32
+        assert_dicts_identical(
+            expected=expected_output_float32, calculated=tested_record_output_float32)
+
+        # for expected_key in expected_output_float32.keys():
+        #     expected_value = expected_output_float32[expected_key]
+        #     calculated_value = tested_record_output_float32[expected_key]
+        #     assert expected_value == calculated_value
+
+        assert expected_output_float32 == tested_record_output_float32
 
     def _generic_test_encode_record_for_same_output_from_json_data(
             self, first_test_case_filename: str, second_test_case_filename: str,
@@ -382,8 +392,13 @@ class TestEncoder(TestCase):
         fully_encoded_variant_float32 = \
             convert_values_to_float32(fully_encoded_variant_float64)
 
-        np.testing.assert_array_equal(
-            expected_output, fully_encoded_variant_float32)
+        expected_output_float32 = convert_values_to_float32(expected_output)
+
+        assert_dicts_identical(
+            expected=expected_output_float32, calculated=fully_encoded_variant_float32)
+
+        # np.testing.assert_array_equal(
+        #     expected_output, fully_encoded_variant_float32)
 
         single_common_key = list(common_keys)[0]
 
@@ -436,7 +451,17 @@ class TestEncoder(TestCase):
         fully_encoded_variant_float32 = \
             convert_values_to_float32(fully_encoded_variant_float64)
 
-        assert fully_encoded_variant_float32 == expected_output
+        expected_output_float32 = convert_values_to_float32(expected_output)
+
+        assert_dicts_identical(
+            expected=expected_output_float32, calculated=fully_encoded_variant_float32)
+
+        # for expected_key in expected_output_float32.keys():
+        #     expected_value = expected_output_float32[expected_key]
+        #     calculated_value = fully_encoded_variant_float32[expected_key]
+        #     assert expected_value == calculated_value
+
+        # assert fully_encoded_variant_float32 == expected_output
 
     # test all None-like types (None, [], {}, np.NaN)
     def test_none_variant(self):
@@ -465,8 +490,12 @@ class TestEncoder(TestCase):
                     givens=deepcopy(given_input), noise=self.noise))
 
         tested_output_float32 = convert_values_to_float32(tested_output_float64)
+        expected_output_float32 = convert_values_to_float32(expected_output)
 
-        assert expected_output == tested_output_float32
+        assert_dicts_identical(
+            expected=expected_output_float32, calculated=tested_output_float32)
+
+        # assert expected_output == tested_output_float32
 
     def _test_encode_feature_vector(
             self, test_case_envvar, variant_key: str = 'variant',
@@ -539,7 +568,8 @@ class TestEncoder(TestCase):
         print('expected_output')
         print(expected_output)
 
-        np.testing.assert_array_equal(expected_output, tested_into_float32)
+        expected_output_float32 = np.array(expected_output).astype(np.float32)
+        np.testing.assert_array_equal(expected_output_float32, tested_into_float32)
 
     # def test_encode_feature_vector_with_numpy(
     #         self, variant_key: str = 'variant', givens_key: str = 'givens',
@@ -1281,54 +1311,58 @@ class TestEncoder(TestCase):
             assert os.getenv("V6_CYTHON_FEATURE_ENCODER_CONTEXT_TYPEERROR_MSG") \
                    in str(type_err.value)
 
-    def test_add_noise(
-            self, into_key: str = 'into', noise_key: str = 'noise',
-            test_input_key: str = 'test_case', test_output_key: str = 'test_output'):
-
-        test_case_filename = \
-            os.getenv('V6_FEATURE_ENCODER_TEST_ADD_NOISE_JSON', None)
-
-        if not test_case_filename:
-            raise ValueError(
-                'No envvar under key: V6_FEATURE_ENCODER_TEST_ADD_NOISE_JSON')
-
-        test_case_path = os.sep.join(
-            [self.v6_test_python_specific_data_directory, test_case_filename])
-
-        test_case = self._get_test_data(path_to_test_json=test_case_path)
-
-        pprint(test_case)
-
-        self._set_model_properties_from_test_case(test_case=test_case)
-
-        test_input = test_case.get(test_input_key, None)
-
-        if not test_input:
-            raise ValueError('Test input is None')
-
-        test_into_float64 = test_input.get(into_key, None)
-
-        if not test_into_float64:
-            raise ValueError(
-                'Key {} is missing from the test case'.format(into_key))
-
-        test_noise = test_case.get(noise_key, None)
-
-        if not test_noise:
-            raise ValueError(
-                'Key {} is missing from the test case'.format(noise_key))
-
-        expected_output = test_case.get(test_output_key, None)
-
-        if not expected_output:
-            raise ValueError(
-                'Key {} is missing from the test case'.format(test_output_key))
-
-        add_noise(into=test_into_float64, noise=test_noise)
-
-        test_into_float32 = convert_values_to_float32(test_into_float64)
-
-        assert test_into_float32 == expected_output
+    # def test_add_noise(
+    #         self, into_key: str = 'into', noise_key: str = 'noise',
+    #         test_input_key: str = 'test_case', test_output_key: str = 'test_output'):
+    #
+    #     test_case_filename = \
+    #         os.getenv('V6_FEATURE_ENCODER_TEST_ADD_NOISE_JSON', None)
+    #
+    #     if not test_case_filename:
+    #         raise ValueError(
+    #             'No envvar under key: V6_FEATURE_ENCODER_TEST_ADD_NOISE_JSON')
+    #
+    #     test_case_path = os.sep.join(
+    #         [self.v6_test_python_specific_data_directory, test_case_filename])
+    #
+    #     test_case = self._get_test_data(path_to_test_json=test_case_path)
+    #
+    #     pprint(test_case)
+    #
+    #     self._set_model_properties_from_test_case(test_case=test_case)
+    #
+    #     test_input = test_case.get(test_input_key, None)
+    #
+    #     if not test_input:
+    #         raise ValueError('Test input is None')
+    #
+    #     test_into_float64 = test_input.get(into_key, None)
+    #
+    #     if not test_into_float64:
+    #         raise ValueError(
+    #             'Key {} is missing from the test case'.format(into_key))
+    #
+    #     test_noise = test_case.get(noise_key, None)
+    #
+    #     if not test_noise:
+    #         raise ValueError(
+    #             'Key {} is missing from the test case'.format(noise_key))
+    #
+    #     expected_output = test_case.get(test_output_key, None)
+    #
+    #     if not expected_output:
+    #         raise ValueError(
+    #             'Key {} is missing from the test case'.format(test_output_key))
+    #
+    #     add_noise(into=test_into_float64, noise=test_noise)
+    #
+    #     test_into_float32 = convert_values_to_float32(test_into_float64)
+    #     expected_output_float32 = convert_values_to_float32(expected_output)
+    #
+    #     assert_dicts_identical(
+    #         expected=expected_output_float32, calculated=test_into_float32)
+    #
+    #     # assert test_into_float32 == expected_output
 
     def test_reverse_sprinkle(self):
 

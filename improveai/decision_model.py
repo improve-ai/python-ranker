@@ -7,8 +7,8 @@ import warnings
 import numpy as np
 
 from improveai.choosers.basic_choosers import BasicChooser
-from improveai.choosers.mlmodel_chooser import BasicMLModelChooser
-from improveai.choosers.xgb_chooser import BasicNativeXGBChooser
+from improveai.choosers.mlmodel_chooser import MLModelChooser
+from improveai.choosers.xgb_chooser import NativeXGBChooser
 import improveai.decision as d
 import improveai.decision_tracker as dt
 from improveai.utils.general_purpose_tools import constant
@@ -79,6 +79,9 @@ class DecisionModel:
         self.model_name = model_name
         self.track_url = track_url
 
+        if self.track_url:
+            self.tracker = dt.DecisionTracker(track_url=self.track_url)
+
         self.id_ = None
         self.tracker = None
         self.chooser = None
@@ -91,37 +94,6 @@ class DecisionModel:
 
         self.tracker = tracker
         return self
-
-    def _set_chooser(self, chooser: BasicChooser):
-        """
-        Sets chooser
-
-        Parameters
-        ----------
-        chooser: BasicChooser
-            chooser object to be used from within DecisionModel
-
-        Returns
-        -------
-
-        """
-        self.chooser = chooser
-        # At this point mode_name is set otherwise error would be thrown
-        if self.model_name != self.chooser.model_name \
-                and self.model_name is not None:
-            warnings.warn(
-                '`model_name` passed to contructor does not match loaded '
-                'model`s name -  using loaded model`s name')
-
-        # TODO unittest this
-        if self.model_name is None:
-            self.model_name = self.chooser.model_name
-        else:
-            self.chooser.model_name = self.model_name
-            warnings.warn(
-                'Model name passed to the constructor: {} will not be '
-                'overwritten by loaded model name: {}.'
-                .format(self.model_name, self.chooser.model_name))
 
     def load(self, model_url: str):
         """
@@ -140,18 +112,33 @@ class DecisionModel:
 
         """
 
-        # decision_model = DecisionModel(model_name=None)
-        # decision_model._set_chooser(
-        #     chooser=DecisionModel._get_chooser(model_url=model_url))
-
-        # return decision_model
-
-        self._set_chooser(chooser=DecisionModel._get_chooser(model_url=model_url))
+        self.chooser = DecisionModel._get_chooser(model_url=model_url)
+        self._resolve_model_name()
 
         return self
 
+    def _resolve_model_name(self):
+        """
+        If model name is not set loaded model name is used, otherwise model name
+        from constructor `wins`
+
+        Returns
+        -------
+
+        """
+        # TODO unittest this
+        if self.model_name is None:
+            self.model_name = self.chooser.model_name
+        else:
+            self.chooser.model_name = self.model_name
+            warnings.warn(
+                'Model name passed to the constructor: {} will not be '
+                'overwritten by loaded model name: {}.'
+                .format(self.model_name, self.chooser.model_name))
+
     # TODO check if it should be static or not
     # TODO remove mlmodel support
+    # TODO make sure what a callback should do (probably based on iOS implementation)
     @staticmethod
     def _get_chooser(
             model_url: str, loop: asyncio.BaseEventLoop = None) -> BasicChooser:
@@ -183,7 +170,7 @@ class DecisionModel:
             raise exc
 
         chooser = None
-        chooser_constructors = [BasicMLModelChooser, BasicNativeXGBChooser]
+        chooser_constructors = [MLModelChooser, NativeXGBChooser]
 
         for chooser_constructor in chooser_constructors:
 
@@ -222,8 +209,8 @@ class DecisionModel:
 
         """
 
-        self._set_chooser(
-            chooser=DecisionModel._get_chooser(model_url=model_url, loop=loop))
+        self.chooser = DecisionModel._get_chooser(model_url=model_url, loop=loop)
+        self._resolve_model_name()
 
     @staticmethod
     def _exception_while_loading_chooser(loop, context):
@@ -267,8 +254,7 @@ class DecisionModel:
         """
         loop = asyncio.get_event_loop()
         loop.set_exception_handler(DecisionModel._exception_while_loading_chooser)
-        loop.run_in_executor(
-            None, self._load_chooser_for_async, *[model_url, loop])
+        loop.run_in_executor(None, self._load_chooser_for_async, *[model_url, loop])
 
         return self
 
@@ -291,16 +277,22 @@ class DecisionModel:
 
         """
 
+        assert variants is not None
         # TODO should chooser be settable from the outside ?
-        if not self.chooser:  # add async support
-            return DecisionModel.generate_descending_gaussians(
-                count=len(variants))
+        if self.chooser is None:  # add async support
+            return DecisionModel.generate_descending_gaussians(count=len(variants))
 
-        scores = \
-            self.chooser.score(variants=variants, givens=givens) + \
-            np.array(
-                np.random.rand(len(variants)), dtype='float64') * \
-            self.TIEBREAKER_MULTIPLIER
+        try:
+            scores = \
+                self.chooser.score(variants=variants, givens=givens) + \
+                np.array(np.random.rand(len(variants)), dtype='float64') * \
+                self.TIEBREAKER_MULTIPLIER
+        except Exception as exc:
+            # TODO test this scenario
+            warnings.warn(
+                'Error when calculating predictions: {}. Returning Gaussian scores'
+                .format(exc))
+            scores = DecisionModel.generate_descending_gaussians(count=len(variants))
         return scores
 
     @staticmethod
@@ -355,8 +347,11 @@ class DecisionModel:
 
         """
 
+        assert variants is not None and scores is not None
+        # null if no variants for get() implementation
         if not DecisionModel._validate_variants_and_scores(
                 variants=variants, scores=scores):
+            warnings.warn('The variants of length 0 were provided. Returning None')
             return None
 
         return variants[np.argmax(scores)]
@@ -382,6 +377,8 @@ class DecisionModel:
 
         """
 
+        assert variants is not None and scores is not None
+        # null if no variants for get() implementation
         if not DecisionModel._validate_variants_and_scores(
                 variants=variants, scores=scores):
             return None
@@ -456,7 +453,12 @@ class DecisionModel:
         assert not np.isnan(reward)
         assert not np.isinf(reward)
 
-        print('passed all assertions')
-
-        return self.tracker.add_reward(
-            reward=reward, model_name=self.model_name, decision_id=self.id_)
+        if self.tracker is not None:
+            return self.tracker.add_reward(
+                reward=reward, model_name=self.model_name, decision_id=self.id_)
+        else:
+            if self.tracker is None:
+                warnings.warn(
+                    '`tracker` is not set (`tracker`is None) - reward not added')
+            if self.track_url is None:
+                warnings.warn('`track_url` is None - reward not added')

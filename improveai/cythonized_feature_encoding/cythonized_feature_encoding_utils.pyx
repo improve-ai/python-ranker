@@ -8,6 +8,32 @@ import numpy as np
 cimport numpy as np
 
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cpdef np_1d_to_float32_array_inplace(np.ndarray converted_array):
+    """
+    Converts in-place numpy array to float32 dtype
+
+    Parameters
+    ----------
+    converted_array: np.ndarray
+        array to be converted to float32
+
+    Returns
+    -------
+
+    """
+
+    cdef np.ndarray f32_input_copy = converted_array.copy().astype(np.float32)
+
+    # change dtype
+    converted_array.dtype = np.float32
+    # resize back to the original shape
+    converted_array.resize((len(f32_input_copy), ), refcheck=False)
+    # fill with original values
+    converted_array[:] = f32_input_copy
+
+
 cpdef encoded_variant_into_np_row(
         dict encoded_variant, list feature_names, np.ndarray into):
     """
@@ -33,7 +59,6 @@ cpdef encoded_variant_into_np_row(
         {feature_hash: index for index, feature_hash
          in enumerate(feature_names)}
 
-    # cdef np.ndarray filler =
     cdef np.ndarray filler = \
         np.array(
             [(hash_index_map.get(feature_name, None), value)
@@ -50,6 +75,9 @@ cpdef encoded_variant_into_np_row(
 
         into[subset_index] = np.nansum(
             np.array([into[subset_index], filler[:, 1]]), axis=0)
+
+    # TODO wait until the conversion mechanism is determined
+    # np_1d_to_float32_array_inplace(into)
 
 @cython.boundscheck(False)
 cpdef np.ndarray encode_variants_single_givens(
