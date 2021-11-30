@@ -170,8 +170,6 @@ class Decision:
 
                 # TODO should ranked_variants be persisted inside Decision object
                 track_runners_up = self.model.tracker.should_track_runners_up(len(self.variants))
-                print('### tracking runners up ###')
-                print(track_runners_up)
                 if track_runners_up:
                     # TODO should ranked_variants be persisted inside Decision object
                     self.__ranked_variants = \
