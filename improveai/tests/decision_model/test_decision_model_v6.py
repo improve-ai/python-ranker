@@ -641,29 +641,31 @@ class TestDecisionModel(TestCase):
         assert decision.givens == expected_output
         assert decision.variants == [None]
 
-    def test_set_tracker(self):
-        tracker = dt.DecisionTracker(track_url=self.track_url)
-        decision_model = \
-            dm.DecisionModel(model_name='test_choose_from_model')
-
-        assert decision_model.tracker is None
-
-        decision_model.track_with(tracker=tracker)
-
-        assert decision_model.tracker is not None
-        assert decision_model.tracker == tracker
-
-    def test_set_tracker_raises(self):
-        decision_model = \
-            dm.DecisionModel(model_name='test_choose_from_model')
-
-        assert decision_model.tracker is None
-
-        with raises(TypeError) as terr:
-
-            decision_model.track_with(tracker=None)
-
-            assert str(terr.value)
+    # track_with is no longer part of the API -> this test makes no sense
+    # def test_set_tracker(self):
+    #     tracker = dt.DecisionTracker(track_url=self.track_url)
+    #     decision_model = \
+    #         dm.DecisionModel(model_name='test_choose_from_model')
+    #
+    #     assert decision_model.tracker is None
+    #
+    #     decision_model.track_with(tracker=tracker)
+    #
+    #     assert decision_model.tracker is not None
+    #     assert decision_model.tracker == tracker
+    #
+    # track_with is no longer part of the API -> this test makes no sense
+    # def test_set_tracker_raises(self):
+    #     decision_model = \
+    #         dm.DecisionModel(model_name='test_choose_from_model')
+    #
+    #     assert decision_model.tracker is None
+    #
+    #     with raises(TypeError) as terr:
+    #
+    #         decision_model.track_with(tracker=None)
+    #
+    #         assert str(terr.value)
 
     def test_no_model_score_and_sort(self):
 
@@ -755,10 +757,13 @@ class TestDecisionModel(TestCase):
         model_url = os.getenv('V6_DUMMY_MODEL_PATH', None)
         assert model_url is not None
 
-        tracker = \
-            dt.DecisionTracker(track_url=self.track_url)
-        decision_model = dm.DecisionModel(model_name=None).load(model_url=model_url)
-        decision_model.track_with(tracker=tracker)
+        # tracker = dt.DecisionTracker(track_url=self.track_url)
+
+        decision_model = \
+            dm.DecisionModel(model_name=None, track_url=self.track_url)\
+            .load(model_url=model_url)
+
+        # decision_model.track_with(tracker=tracker)
 
         assert decision_model.id_ is None
 
@@ -787,10 +792,13 @@ class TestDecisionModel(TestCase):
         model_url = os.getenv('V6_DUMMY_MODEL_PATH', None)
         assert model_url is not None
 
-        tracker = \
-            dt.DecisionTracker(track_url=self.track_url)
-        decision_model = dm.DecisionModel(model_name=None).load(model_url=model_url)
-        decision_model.track_with(tracker=tracker)
+        # tracker = \
+        #     dt.DecisionTracker(track_url=self.track_url)
+        # decision_model.track_with(tracker=tracker)
+
+        decision_model = \
+            dm.DecisionModel(model_name=None, track_url=self.track_url)\
+            .load(model_url=model_url)
 
         assert decision_model.id_ is None
 
@@ -818,10 +826,14 @@ class TestDecisionModel(TestCase):
         model_url = os.getenv('V6_DUMMY_MODEL_PATH', None)
         assert model_url is not None
 
-        tracker = \
-            dt.DecisionTracker(track_url=self.track_url)
-        decision_model = dm.DecisionModel(model_name=None).load(model_url=model_url)
-        decision_model.track_with(tracker=tracker)
+        # tracker = \
+        #     dt.DecisionTracker(track_url=self.track_url)
+
+        decision_model = \
+            dm.DecisionModel(model_name=None, track_url=self.track_url)\
+            .load(model_url=model_url)
+
+        # decision_model.track_with(tracker=tracker)
 
         assert decision_model.id_ is None
 

@@ -84,17 +84,20 @@ class TestDecision(TestCase):
         self.test_jsons_data_directory = \
             os.getenv('V6_DECISION_TEST_SUITE_JSONS_DIR')
 
+        self.track_url = os.getenv('V6_DECISION_TRACKER_TEST_URL')
+
         self.decision_model_without_tracker = \
-            dm.DecisionModel(model_name=None).load(model_url=decision_tests_model_url)
+            dm.DecisionModel(model_name=None)\
+            .load(model_url=decision_tests_model_url)
 
         self.decision_model_with_tracker = \
-            dm.DecisionModel(model_name=None).load(model_url=decision_tests_model_url)
+            dm.DecisionModel(model_name=None, track_url=self.track_url)\
+            .load(model_url=decision_tests_model_url)
 
-        self.track_url = os.getenv('V6_DECISION_TRACKER_TEST_URL')
-        self.tracker = \
-            dt.DecisionTracker(track_url=self.track_url)
-
-        self.decision_model_with_tracker.track_with(tracker=self.tracker)
+        # self.tracker = \
+        #     dt.DecisionTracker(track_url=self.track_url)
+        #
+        # self.decision_model_with_tracker.track_with(tracker=self.tracker)
 
         self.mockup_variants = [
             {'$value': 123},
@@ -358,24 +361,28 @@ class TestDecision(TestCase):
 
     def test_get_05(self):
 
-        tracker = dt.DecisionTracker(track_url=self.track_url)
         decision = d.Decision(decision_model=self.decision_model_without_tracker)
-        decision.model.track_with(tracker=tracker)
+
+        # tracker = dt.DecisionTracker(track_url=self.track_url)
+        # decision.model.track_with(tracker=tracker)
 
         assert decision.chosen is False
 
-        with rqm.Mocker() as m:
-            m.post(self.track_url, text='success')
+        # TODO verify if get should truly raise for tracker == None
+        with raises(ValueError) as verr:
+            decision.choose_from(variants=[None]).given(givens={}).get()
 
-            with warnings.catch_warnings(record=True) as w:
-                warnings.simplefilter("always")
-                np.random.seed(self.tracks_seed)
-                memoized_variant = \
-                    decision.choose_from(variants=[None]).given(givens={}).get()
-                assert len(w) == 0
-
-        assert decision.chosen is True
-        assert memoized_variant is None
+        # with rqm.Mocker() as m:
+        #     m.post(self.track_url, text='success')
+        #
+        #     with warnings.catch_warnings(record=True) as w:
+        #         warnings.simplefilter("always")
+        #         np.random.seed(self.tracks_seed)
+        #         memoized_variant = \
+        #             decision.choose_from(variants=[None]).given(givens={}).get()
+        #         assert len(w) == 0
+        # assert memoized_variant is None
+        # assert decision.chosen is True
 
     def test_get_06(self):
         # this is a test case which covers tracking runners up from within

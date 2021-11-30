@@ -26,9 +26,11 @@ def test_sdk_against_all_synthetic_models():
             test_case = json.loads(tcf.read())
 
         # load model
-        dm = DecisionModel(model_name=None).load(os.sep.join([SDK_PATH, test_case['model_url']]))
-        dt = DecisionTracker(track_url=TRACK_URL)
-        dm.track_with(tracker=dt)
+        dm = DecisionModel(model_name=None, track_url=TRACK_URL)\
+            .load(os.sep.join([SDK_PATH, test_case['model_url']]))
+
+        # dt = DecisionTracker(track_url=TRACK_URL)
+        # dm.track_with(tracker=dt)
 
         all_givens = test_case['test_case']['givens']
         variants = test_case['test_case']['variants']
@@ -66,9 +68,11 @@ def test_primitive_predicts_identical_with_primitive_dicts():
             test_case = json.loads(tcf.read())
 
         # load model
-        dm = DecisionModel(model_name=None).load(os.sep.join([SDK_PATH, test_case['model_url']]))
-        dt = DecisionTracker(track_url=TRACK_URL)
-        dm.track_with(tracker=dt)
+        dm = DecisionModel(model_name=None, track_url=TRACK_URL)\
+            .load(os.sep.join([SDK_PATH, test_case['model_url']]))
+
+        # dt = DecisionTracker(track_url=TRACK_URL)
+        # dm.track_with(tracker=dt)
 
         all_givens = test_case['test_case']['givens']
 
@@ -120,9 +124,16 @@ def test_model_predicts_identical_for_nullish_variants():
         test_case = json.loads(tcf.read())
 
     # load model
-    dm = DecisionModel(model_name=None).load(os.sep.join([SDK_PATH, test_case['model_url']]))
-    dt = DecisionTracker(track_url=TRACK_URL)
-    dm.track_with(tracker=dt)
+    dm = \
+        DecisionModel(model_name=None, track_url=TRACK_URL)\
+        .load(os.sep.join([SDK_PATH, test_case['model_url']]))
+    print('### dm.tracker ###')
+    print(TRACK_URL)
+    print(dm.track_url)
+    print(dm.tracker)
+
+    # dt = DecisionTracker(track_url=TRACK_URL)
+    # dm.track_with(tracker=dt)
 
     variants = [None, {}, [], {'$value': None}]
     noise = 0.1

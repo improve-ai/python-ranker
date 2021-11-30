@@ -79,21 +79,21 @@ class DecisionModel:
         self.model_name = model_name
         self.track_url = track_url
 
+        self.tracker = None
         if self.track_url:
             self.tracker = dt.DecisionTracker(track_url=self.track_url)
 
         self.id_ = None
-        self.tracker = None
         self.chooser = None
         self.givens_provider = None
 
-    def track_with(self, tracker):
-
-        if not isinstance(tracker, dt.DecisionTracker):
-            raise TypeError('`tracker` should be an instance of DecisionTracker')
-
-        self.tracker = tracker
-        return self
+    # def track_with(self, tracker):
+    #
+    #     if not isinstance(tracker, dt.DecisionTracker):
+    #         raise TypeError('`tracker` should be an instance of DecisionTracker')
+    #
+    #     self.tracker = tracker
+    #     return self
 
     def load(self, model_url: str):
         """
