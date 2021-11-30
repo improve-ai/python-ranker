@@ -350,14 +350,11 @@ class TestDecision(TestCase):
 
         assert decision.chosen is False
 
-        with rqm.Mocker() as m:
-            m.post(self.track_url, text='success')
-            memoized_variant = \
+        with raises(AssertionError) as aerr:
+            with rqm.Mocker() as m:
+                m.post(self.track_url, text='success')
                 decision.choose_from(variants=None)\
-                .given(givens={}).get()
-
-        assert decision.chosen is True
-        assert memoized_variant is None
+                    .given(givens={}).get()
 
     def test_get_05(self):
 
@@ -388,7 +385,7 @@ class TestDecision(TestCase):
         # this is a test case which covers tracking runners up from within
         # get() call
 
-        variants = [el for el in range(20)]
+        variants = [el for el in range(100)]
         variants[9] = {
             "text": "lovely corgi",
             "chars": 12,
@@ -448,7 +445,7 @@ class TestDecision(TestCase):
             with warnings.catch_warnings(record=True) as w:
                 warnings.simplefilter("always")
 
-                np.random.seed(self.not_tracks_seed)
+                # np.random.seed(self.not_tracks_seed)
                 memoized_variant = \
                     decision.choose_from(variants=variants)\
                     .given(givens={}).get()
@@ -662,17 +659,11 @@ class TestDecision(TestCase):
 
         assert decision.chosen is False
 
-        with rqm.Mocker() as m:
-            m.post(self.track_url, text='success')
-            memoized_variant = \
+        with raises(AssertionError) as aerr:
+            with rqm.Mocker() as m:
+                m.post(self.track_url, text='success')
                 decision.choose_from(variants=test_variants)\
-                .given(givens=test_given).get()
-
-        assert decision.chosen is True
-
-        expected_output = test_data.get('test_output', None)
-
-        assert memoized_variant == expected_output
+                    .given(givens=test_given).get()
 
     def test_get_with_no_tracker(self):
         variants = [el for el in range(10)]

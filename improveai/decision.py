@@ -89,9 +89,12 @@ class Decision:
             return self
 
         # TODO is numpy array check necessary ? Maybe it is a waste of time
-        if variants is None or variants == [None] or variants == [] or \
-                (isinstance(variants, np.ndarray) and variants.size == 0):
-            return self
+        # this should take car of None, [] and np.array([]) cases
+        assert variants is not None and len(variants) > 0
+
+        # if variants is None or variants == [None] or variants == [] or \
+        #         (isinstance(variants, np.ndarray) and variants.size == 0):
+        #     return self
 
         if isinstance(variants, str) or isinstance(variants, dict):
             raise TypeError(
@@ -167,8 +170,10 @@ class Decision:
 
                 # TODO should ranked_variants be persisted inside Decision object
                 track_runners_up = self.model.tracker.should_track_runners_up(len(self.variants))
+                print('### tracking runners up ###')
+                print(track_runners_up)
                 if track_runners_up:
-                    # # TODO should ranked_variants be persisted inside Decision object
+                    # TODO should ranked_variants be persisted inside Decision object
                     self.__ranked_variants = \
                         dm.DecisionModel.rank(
                             variants=self.variants, scores=self.__scores)

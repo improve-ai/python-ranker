@@ -229,11 +229,10 @@ class DecisionModel:
 
         """
         print(
-            'Model loading failed with error: {}'.format(
-                context.get('message', None)))
+            'Model loading failed with error: {}'.format(context.get('message', None)))
         print(context.get('exception', None))
 
-        os.kill(os.getpid(), signal.SIGKILL)
+        # os.kill(os.getpid(), signal.SIGKILL)
 
     def load_async(self, model_url: str):
         """
