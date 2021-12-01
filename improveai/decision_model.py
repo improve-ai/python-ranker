@@ -31,13 +31,17 @@ class DecisionModel:
             assert re.search(DecisionModel.MODEL_NAME_REGEXP, value) is not None
         self._model_name = value
 
-    @property
-    def tracker(self):
-        return self._tracker
+    # @property
+    # def tracker(self):
+    #     return self._tracker
+    #
+    # @tracker.setter
+    # def tracker(self, value):
+    #     self._tracker = value
 
-    @tracker.setter
-    def tracker(self, value):
-        self._tracker = value
+    @property
+    def _tracker(self):
+        return self.__tracker
 
     @property
     def chooser(self) -> BasicChooser:
@@ -75,25 +79,24 @@ class DecisionModel:
     def TIEBREAKER_MULTIPLIER() -> float:
         return 2**-23
 
-    def __init__(self, model_name: str, track_url: str = None):
+    def __init__(
+            self, model_name: str, track_url: str = None, track_api_key: str = None):
         self.model_name = model_name
         self.track_url = track_url
 
-        self.tracker = None
+        # self.tracker = None
+        # if self.track_url:
+        #     self.tracker = \
+        #         dt.DecisionTracker(track_url=self.track_url, track_api_key=track_api_key)
+
+        self.__tracker = None
         if self.track_url:
-            self.tracker = dt.DecisionTracker(track_url=self.track_url)
+            self.__tracker = \
+                dt.DecisionTracker(track_url=self.track_url, track_api_key=track_api_key)
 
         self.id_ = None
         self.chooser = None
         self.givens_provider = None
-
-    # def track_with(self, tracker):
-    #
-    #     if not isinstance(tracker, dt.DecisionTracker):
-    #         raise TypeError('`tracker` should be an instance of DecisionTracker')
-    #
-    #     self.tracker = tracker
-    #     return self
 
     def load(self, model_url: str):
         """
@@ -452,11 +455,11 @@ class DecisionModel:
         assert not np.isnan(reward)
         assert not np.isinf(reward)
 
-        if self.tracker is not None:
-            return self.tracker.add_reward(
+        if self.__tracker is not None:
+            return self.__tracker.add_reward(
                 reward=reward, model_name=self.model_name, decision_id=self.id_)
         else:
-            if self.tracker is None:
+            if self.__tracker is None:
                 warnings.warn(
                     '`tracker` is not set (`tracker`is None) - reward not added')
             if self.track_url is None:

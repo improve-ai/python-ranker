@@ -130,7 +130,7 @@ def test_model_predicts_identical_for_nullish_variants():
     print('### dm.tracker ###')
     print(TRACK_URL)
     print(dm.track_url)
-    print(dm.tracker)
+    print(dm._tracker)
 
     # dt = DecisionTracker(track_url=TRACK_URL)
     # dm.track_with(tracker=dt)

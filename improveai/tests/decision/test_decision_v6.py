@@ -396,7 +396,7 @@ class TestDecision(TestCase):
         def custom_matcher(request):
 
             request_dict = deepcopy(request.json())
-            del request_dict[self.decision_model_with_tracker.tracker.MESSAGE_ID_KEY]
+            del request_dict[self.decision_model_with_tracker._tracker.MESSAGE_ID_KEY]
 
             if 'runners_up' in request_dict:
                 runners_up_tracked.append(True)
@@ -458,7 +458,7 @@ class TestDecision(TestCase):
         # this is a test case which covers tracking runners up from within
         # get() call
 
-        decision_tracker = self.decision_model_with_tracker.tracker
+        decision_tracker = self.decision_model_with_tracker._tracker
 
         expected_track_body = {
             decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
@@ -477,7 +477,7 @@ class TestDecision(TestCase):
         def custom_matcher(request):
 
             request_dict = deepcopy(request.json())
-            del request_dict[self.decision_model_with_tracker.tracker.MESSAGE_ID_KEY]
+            del request_dict[self.decision_model_with_tracker._tracker.MESSAGE_ID_KEY]
 
             if json.dumps(request_dict, sort_keys=False) != \
                     expected_request_json:
@@ -739,16 +739,16 @@ class TestDecision(TestCase):
         reward = 1
 
         expected_add_reward_body = {
-            decision.model.tracker.TYPE_KEY: decision.model.tracker.REWARD_TYPE,
-            decision.model.tracker.MODEL_KEY: self.decision_model_with_tracker.model_name,
-            decision.model.tracker.REWARD_KEY: reward,
-            decision.model.tracker.DECISION_ID_KEY: None,
+            decision.model._tracker.TYPE_KEY: decision.model._tracker.REWARD_TYPE,
+            decision.model._tracker.MODEL_KEY: self.decision_model_with_tracker.model_name,
+            decision.model._tracker.REWARD_KEY: reward,
+            decision.model._tracker.DECISION_ID_KEY: None,
         }
 
         def decision_id_matcher(request):
             request_dict = deepcopy(request.json())
-            expected_add_reward_body[decision.model.tracker.DECISION_ID_KEY] = \
-                request_dict[decision.model.tracker.MESSAGE_ID_KEY]
+            expected_add_reward_body[decision.model._tracker.DECISION_ID_KEY] = \
+                request_dict[decision.model._tracker.MESSAGE_ID_KEY]
             return True
 
         variants = [el for el in range(10)]
@@ -761,8 +761,8 @@ class TestDecision(TestCase):
 
         def custom_matcher(request):
             request_dict = deepcopy(request.json())
-            del request_dict[decision.model.tracker.MESSAGE_ID_KEY]
-            del request_dict[decision.model.tracker.TIMESTAMP_KEY]
+            del request_dict[decision.model._tracker.MESSAGE_ID_KEY]
+            del request_dict[decision.model._tracker.TIMESTAMP_KEY]
 
             if json.dumps(request_dict, sort_keys=False) != expected_request_json:
 

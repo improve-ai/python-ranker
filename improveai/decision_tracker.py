@@ -142,10 +142,10 @@ class DecisionTracker:
         self._max_runners_up = new_val
 
     def __init__(
-            self, track_url: str, max_runners_up: int = 50):
+            self, track_url: str, max_runners_up: int = 50, track_api_key: str = None):
 
         self.track_url = track_url
-        # self.api_key = api_key
+        self.api_key = track_api_key
 
         # TODO determined whether it should be set once per tracker`s life or
         #  with each track request (?)
@@ -405,9 +405,9 @@ class DecisionTracker:
 
         headers = {'Content-Type': 'application/json'}
 
-        # TODO is api_key still desired
-        # if self.api_key:
-        #     headers[self.API_KEY_HEADER] = self.api_key
+        # TODO unittest this
+        if self.api_key:
+            headers[self.API_KEY_HEADER] = self.api_key
 
         assert self._is_valid_message_id(message_id=message_id)
 

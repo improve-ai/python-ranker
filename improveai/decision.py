@@ -139,7 +139,7 @@ class Decision:
         assert not np.isinf(reward)
 
         # TODO check if decision_id is set correctly
-        return self.model.tracker.add_reward(
+        return self.model._tracker.add_reward(
             reward=reward, model_name=self.model.model_name, decision_id=self.id_)
 
     def get(self):
@@ -165,11 +165,10 @@ class Decision:
         if self.variants is not None and len(self.variants) != 0:
             # there should be no difference between effect of those 2 conditions
             # since this  clause is reached only once
-            # if self.model.tracker and not self.tracked:
-            if self.model.tracker:
+            if self.model._tracker:
 
                 # TODO should ranked_variants be persisted inside Decision object
-                track_runners_up = self.model.tracker.should_track_runners_up(len(self.variants))
+                track_runners_up = self.model._tracker.should_track_runners_up(len(self.variants))
                 if track_runners_up:
                     # TODO should ranked_variants be persisted inside Decision object
                     self.__ranked_variants = \
@@ -177,7 +176,7 @@ class Decision:
                             variants=self.variants, scores=self.__scores)
                     self.__memoized_variant = self.ranked_variants[0]
 
-                    self.model.tracker.track(
+                    self.model._tracker.track(
                         variant=self.memoized_variant, variants=self.ranked_variants,
                         givens=self.givens, model_name=self.model.model_name,
                         variants_ranked_and_track_runners_up=True, message_id=self.id_)
@@ -186,12 +185,12 @@ class Decision:
                         dm.DecisionModel.top_scoring_variant(
                             variants=self.variants, scores=self.__scores)
 
-                    self.model.tracker.track(
+                    self.model._tracker.track(
                         variant=self.memoized_variant, variants=self.variants,
                         givens=self.givens, model_name=self.model.model_name,
                         variants_ranked_and_track_runners_up=False, message_id=self.id_)
 
-            elif self.model.tracker is None:
+            elif self.model._tracker is None:
                 raise ValueError('`tracker` object can`t be None')
             else:
                 self.__memoized_variant = \
