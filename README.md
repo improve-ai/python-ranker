@@ -1,7 +1,7 @@
 # Improve.ai for python (3.7.9)
 
 
-## Fast AI Decisions for Swift and Objective C
+## Fast AI Decisions for Python
 
 [![License](https://img.shields.io/cocoapods/l/Improve.svg?style=flat)](http://cocoapods.org/pods/Improve)
 
@@ -24,6 +24,10 @@ To install python-sdk for Improve.ai:
       - sudo yum install python3-devel numpy
     - Ubuntu (18.04 and 20.04):
       - sudo apt install build-essential make gcc python3-dev python3-numpy python3-venv
+    - macOS:
+      - pyenv (allows ot install python 3.7.9)
+      - xgboost should be built
+      - venv usage is strongly encouraged
      
  1. clone repo: git clone https://github.com/improve-ai/python-sdk
     

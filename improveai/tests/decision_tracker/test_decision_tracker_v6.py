@@ -6,7 +6,7 @@ import requests_mock as rqm
 import os
 from pytest import fixture, raises
 import sys
-import warnings
+from warnings import warn
 
 sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
@@ -1657,3 +1657,42 @@ class TestDecisionTracker:
                 decision_tracker.add_reward(
                     reward=reward, model_name=self.dummy_model_name, decision_id=decision_id)
                 assert aerr
+
+    def test_tracker_with_api_headers(self):
+        # self, track_url: str, max_runners_up: int = 50, track_api_key: str = None
+        dummy_api_key = 'dummy-api-key'
+        decision_tracker = dtr.DecisionTracker(
+            track_url=self.track_url, track_api_key=dummy_api_key)
+
+        headers_cache = {'headers': None}
+
+        def cache_headers(request):
+            headers_cache['headers'] = request._request.headers
+            return True
+
+        mockup_body = {"k1": 1, "k2": 2}
+        expected_headers = {
+            'Content-Type': 'application/json',
+            decision_tracker.API_KEY_HEADER: dummy_api_key}
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success', additional_matcher=cache_headers)
+
+            resp = decision_tracker.post_improve_request(
+                body_values=mockup_body,
+                block=
+                lambda result, error: (
+                    warn("Improve.track error: {}".format(error))
+                    if error else 0, 0),
+                timestamp=self.dummy_timestamp)
+
+            if resp is None:
+                print('The input request body and expected request body mismatch')
+
+            assert resp is not None
+            assert resp.status_code == 200
+            assert resp.text == 'success'
+
+            for k, v in expected_headers.items():
+                assert k in headers_cache['headers']
+                assert v == headers_cache['headers'][k]
