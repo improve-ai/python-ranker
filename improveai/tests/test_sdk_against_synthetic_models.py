@@ -11,7 +11,7 @@ MODELS_DIR = os.getenv('V6_DECISION_MODEL_PREDICTORS_DIR')
 TRACK_URL = os.getenv('V6_DECISION_TRACKER_TEST_URL')
 SYNTHETIC_MODELS_DIR = os.sep.join([MODELS_DIR, 'synthetic_models'])
 SYNTHETIC_MODELS_TIEBREAKING_DIR = os.sep.join([MODELS_DIR, 'synthetic_models_tiebreaking'])
-SDK_PATH = os.getenv('SDK_HOME_PATH', '/home/kw/Projects/upwork/python-sdk')
+SDK_PATH = os.getenv('SDK_HOME_PATH', '/')
 
 
 def test_sdk_against_all_synthetic_models():
