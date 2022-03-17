@@ -383,7 +383,7 @@ class BasicSemiRandomDataGenerator:
                 else None
 
             # self.__scores = self.model.score(variants=self.variants, givens=self.givens)
-            scores = decision_model.score(variants=variants, givens=givens)
+            scores = decision_model._score(variants=variants, givens=givens)
             chosen_variant = variants[np.argmax(scores)]
 
             reward = self._get_record_reward_from_dict(
@@ -411,12 +411,12 @@ class BasicSemiRandomDataGenerator:
             if givens is not None:
                 record['givens'] = givens
 
-            track_runners_up = decision_model.tracker.should_track_runners_up(len(variants))
+            track_runners_up = decision_model.tracker._should_track_runners_up(len(variants))
 
             runners_up = None
             ranked_variants = decision_model.rank(variants=variants, scores=scores).tolist()
             if track_runners_up:
-                runners_up = decision_model.tracker.top_runners_up(ranked_variants)
+                runners_up = decision_model.tracker._top_runners_up(ranked_variants)
                 record['runners_up'] = runners_up
 
             if decision_model.tracker._is_sample_available(

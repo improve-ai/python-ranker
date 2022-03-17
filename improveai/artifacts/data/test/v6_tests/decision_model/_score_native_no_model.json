@@ -53,7 +53,18 @@
                 "words": 2
             }
         ],
-        "givens": {}
+        "givens": {
+            "device_manufacturer": "Apple",
+            "version_name": "4.3",
+            "os_name": "ios",
+            "day": 0,
+            "language": "English",
+            "page": 0,
+            "os_version": "12.1.2",
+            "country": "United States",
+            "carrier": "AT&T",
+            "device_model": "iPhone 7 Plus"
+        }
     },
     "test_output": [
         1.74481176421648,

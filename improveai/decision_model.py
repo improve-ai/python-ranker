@@ -1,7 +1,5 @@
 import asyncio
-import os
 import re
-import signal
 import warnings
 
 import numpy as np
@@ -9,9 +7,11 @@ import numpy as np
 from improveai.choosers.basic_choosers import BasicChooser
 from improveai.choosers.mlmodel_chooser import MLModelChooser
 from improveai.choosers.xgb_chooser import NativeXGBChooser
-import improveai.decision as d
+import improveai.decision_context as dc
 import improveai.decision_tracker as dt
-from improveai.utils.general_purpose_tools import constant
+from improveai.givens_provider import GivensProvider
+from improveai.settings import DEBUG
+from improveai.utils.general_purpose_tools import constant, check_variants
 
 
 class DecisionModel:
@@ -21,7 +21,7 @@ class DecisionModel:
 
     @property
     def model_name(self) -> str:
-        return self._model_name
+        return self.__model_name
 
     @model_name.setter
     def model_name(self, value: str):
@@ -30,14 +30,6 @@ class DecisionModel:
             assert isinstance(value, str)
             assert re.search(DecisionModel.MODEL_NAME_REGEXP, value) is not None
         self._model_name = value
-
-    # @property
-    # def tracker(self):
-    #     return self._tracker
-    #
-    # @tracker.setter
-    # def tracker(self, value):
-    #     self._tracker = value
 
     @property
     def _tracker(self):
@@ -81,13 +73,8 @@ class DecisionModel:
 
     def __init__(
             self, model_name: str, track_url: str = None, track_api_key: str = None):
-        self.model_name = model_name
+        self.__set_model_name(model_name=model_name)
         self.track_url = track_url
-
-        # self.tracker = None
-        # if self.track_url:
-        #     self.tracker = \
-        #         dt.DecisionTracker(track_url=self.track_url, track_api_key=track_api_key)
 
         self.__tracker = None
         if self.track_url:
@@ -96,7 +83,22 @@ class DecisionModel:
 
         self.id_ = None
         self.chooser = None
-        self.givens_provider = None
+        self.givens_provider = GivensProvider()
+
+    def __set_model_name(self, model_name: str):
+        """
+        Private helper method to set model name
+
+        Parameters
+        ----------
+        model_name: str
+            model name to be set
+        """
+
+        if model_name is not None:
+            assert isinstance(model_name, str)
+            assert re.search(DecisionModel.MODEL_NAME_REGEXP, model_name) is not None
+        self.__model_name = model_name
 
     def load(self, model_url: str):
         """
@@ -131,7 +133,7 @@ class DecisionModel:
         """
         # TODO unittest this
         if self.model_name is None:
-            self.model_name = self.chooser.model_name
+            self.__set_model_name(model_name=self.chooser.model_name)
         else:
             self.chooser.model_name = self.model_name
             warnings.warn(
@@ -235,8 +237,6 @@ class DecisionModel:
             'Model loading failed with error: {}'.format(context.get('message', None)))
         print(context.get('exception', None))
 
-        # os.kill(os.getpid(), signal.SIGKILL)
-
     def load_async(self, model_url: str):
         """
         Loads model im an async fashion;
@@ -260,8 +260,15 @@ class DecisionModel:
 
         return self
 
-    def score(
-            self, variants: list or np.ndarray, givens: dict) -> list or np.ndarray:
+    def score(self, variants: list or np.ndarray) -> np.ndarray:
+        # TODO make sure how givens should be created
+        # in iOS the call is almost identical (nil is passed to `givens` parameter of self.givens_provider.givens())
+        # TODO [CHECK] how does this correspond with DecisionContext's givens?
+        givens = self.givens_provider.givens(for_model=self)
+        # return equivalent of double scores
+        return self._score(variants=variants, givens=givens)
+
+    def _score(self, variants: list or np.ndarray, givens: dict) -> list or np.ndarray:
         """
         Call predict and calculate scores for provided variants
 
@@ -269,8 +276,6 @@ class DecisionModel:
         ----------
         variants: list or np.ndarray
             collection of variants to be scored
-        givens: dict
-            context to calculating scores
 
         Returns
         -------
@@ -278,15 +283,18 @@ class DecisionModel:
             scores
 
         """
-
-        assert variants is not None
+        check_variants(variants=variants)
+        # log givens for DEBUG == True
+        if DEBUG is True:
+            print(f'[DEBUG] givens: {givens}')
         # TODO should chooser be settable from the outside ?
         if self.chooser is None:  # add async support
-            return DecisionModel.generate_descending_gaussians(count=len(variants))
+            return DecisionModel._generate_descending_gaussians(count=len(variants))
 
         try:
             scores = \
-                self.chooser.score(variants=variants, givens=givens) + \
+                self.chooser.score(
+                    variants=variants, givens=givens) + \
                 np.array(np.random.rand(len(variants)), dtype='float64') * \
                 self.TIEBREAKER_MULTIPLIER
         except Exception as exc:
@@ -294,8 +302,8 @@ class DecisionModel:
             warnings.warn(
                 'Error when calculating predictions: {}. Returning Gaussian scores'
                 .format(exc))
-            scores = DecisionModel.generate_descending_gaussians(count=len(variants))
-        return scores
+            scores = DecisionModel._generate_descending_gaussians(count=len(variants))
+        return scores.astype(np.float64)
 
     @staticmethod
     def _validate_variants_and_scores(
@@ -392,7 +400,7 @@ class DecisionModel:
         return sorted_variants_w_scores[:, 0]
 
     @staticmethod
-    def generate_descending_gaussians(count: int) -> list or np.ndarray:
+    def _generate_descending_gaussians(count: int) -> list or np.ndarray:
         """
         Generates random floats and sorts in a descending fashion
 
@@ -412,7 +420,7 @@ class DecisionModel:
         random_scores[::-1].sort()
         return random_scores
 
-    def given(self, givens: dict) -> object:  # returns Decision
+    def given(self, givens: dict or None) -> dc.DecisionContext:  # returns DecisionContext?
         """
         Wrapper for chaining.
 
@@ -425,9 +433,11 @@ class DecisionModel:
         -------
 
         """
-        return d.Decision(decision_model=self).given(givens=givens)
 
-    def choose_from(self, variants: list) -> object:
+        return dc.DecisionContext(decision_model=self, givens=givens)
+        # return d.Decision(decision_model=self).given(givens=givens)
+
+    def choose_from(self, variants: list):
         """
         Wrapper for chaining
 
@@ -438,9 +448,14 @@ class DecisionModel:
 
         Returns
         -------
+        Decision
+            decision object with provided with already scored variants and best selected
 
         """
-        return d.Decision(decision_model=self).choose_from(variants=variants)
+        check_variants(variants=variants)
+        # return d.Decision(decision_model=self).choose_from(variants=variants)
+        # TODO how about the givens? Should GivensProvider be used here?
+        return dc.DecisionContext(decision_model=self, givens=None).choose_from(variants=variants)
 
     def add_reward(self, reward: float):
         # void addReward(double reward)
@@ -464,3 +479,7 @@ class DecisionModel:
                     '`tracker` is not set (`tracker`is None) - reward not added')
             if self.track_url is None:
                 warnings.warn('`track_url` is None - reward not added')
+
+    def which(self):
+        # TODO implement this method
+        pass

@@ -119,7 +119,7 @@ class TestDecisionTracker:
         decision_tracker = \
             dtr.DecisionTracker(track_url=self.track_url)
 
-        assert decision_tracker.should_track_runners_up(variants_count=1) is False
+        assert decision_tracker._should_track_runners_up(variants_count=1) is False
 
     def test_should_track_runners_up_0_max_runners_up(self):
 
@@ -127,28 +127,28 @@ class TestDecisionTracker:
             dtr.DecisionTracker(track_url=self.track_url, max_runners_up=0)
 
         np.random.seed(self.tracks_seed)
-        assert decision_tracker.should_track_runners_up(variants_count=100) is False
+        assert decision_tracker._should_track_runners_up(variants_count=100) is False
 
     def test_should_track_runners_up_true(self):
         decision_tracker = \
             dtr.DecisionTracker(track_url=self.track_url)
 
         np.random.seed(self.tracks_seed)
-        assert decision_tracker.should_track_runners_up(variants_count=self.variants_count) is True
+        assert decision_tracker._should_track_runners_up(variants_count=self.variants_count) is True
 
     def test_should_track_runners_up_false(self):
         decision_tracker = \
             dtr.DecisionTracker(track_url=self.track_url)
 
         np.random.seed(self.not_tracks_seed)
-        assert decision_tracker.should_track_runners_up(variants_count=self.variants_count) is False
+        assert decision_tracker._should_track_runners_up(variants_count=self.variants_count) is False
 
     def test_should_track_runners_up_2_variants(self):
         decision_tracker = \
             dtr.DecisionTracker(track_url=self.track_url)
 
         np.random.seed(self.not_tracks_seed)
-        assert decision_tracker.should_track_runners_up(variants_count=2) is True
+        assert decision_tracker._should_track_runners_up(variants_count=2) is True
 
     def test_top_runners_up(self):
 
@@ -157,7 +157,7 @@ class TestDecisionTracker:
                 track_url=self.track_url, max_runners_up=self.max_runners_up)
 
         top_runners_up = \
-            decision_tracker.top_runners_up(
+            decision_tracker._top_runners_up(
                 ranked_variants=self.variants)
 
         assert len(top_runners_up) == self.max_runners_up
@@ -171,7 +171,7 @@ class TestDecisionTracker:
                 track_url=self.track_url, max_runners_up=self.max_runners_up)
 
         top_runners_up = \
-            decision_tracker.top_runners_up(ranked_variants=[])
+            decision_tracker._top_runners_up(ranked_variants=[])
 
         assert top_runners_up is None
 
@@ -184,7 +184,7 @@ class TestDecisionTracker:
         ranked_variants = self.variants[:1]
 
         top_runners_up = \
-            decision_tracker.top_runners_up(ranked_variants=ranked_variants)
+            decision_tracker._top_runners_up(ranked_variants=ranked_variants)
 
         assert top_runners_up is None
 
@@ -197,7 +197,7 @@ class TestDecisionTracker:
         ranked_variants = [None]
 
         top_runners_up = \
-            decision_tracker.top_runners_up(ranked_variants=ranked_variants)
+            decision_tracker._top_runners_up(ranked_variants=ranked_variants)
 
         assert top_runners_up is None
 
@@ -210,7 +210,7 @@ class TestDecisionTracker:
                 track_url=self.track_url, max_runners_up=max_runners_up)
 
         top_runners_up = \
-            decision_tracker.top_runners_up(
+            decision_tracker._top_runners_up(
                 ranked_variants=self.variants)
 
         assert len(top_runners_up) == len(self.variants) - 1
@@ -1287,7 +1287,7 @@ class TestDecisionTracker:
             dtr.DecisionTracker(track_url=self.track_url)
 
         assert all(
-            [decision_tracker.should_track_runners_up(variants_count=2)
+            [decision_tracker._should_track_runners_up(variants_count=2)
              for _ in range(10)])
 
     def test_top_runners_up_2_variants(self):
@@ -1297,7 +1297,7 @@ class TestDecisionTracker:
 
         variants = [el for el in range(2)]
 
-        top_runners_up = decision_tracker.top_runners_up(ranked_variants=variants)
+        top_runners_up = decision_tracker._top_runners_up(ranked_variants=variants)
 
         assert top_runners_up == [1]
 
@@ -1345,7 +1345,7 @@ class TestDecisionTracker:
                 variants=variants,
                 givens=None, model_name=self.dummy_model_name,
                 variants_ranked_and_track_runners_up=
-                decision_tracker.should_track_runners_up(len(variants)),
+                decision_tracker._should_track_runners_up(len(variants)),
                 timestamp=self.dummy_timestamp)
 
             if resp is None:
@@ -1380,7 +1380,7 @@ class TestDecisionTracker:
                 variants=variants,
                 givens=None, model_name=self.dummy_model_name,
                 variants_ranked_and_track_runners_up=
-                decision_tracker.should_track_runners_up(len(variants)),
+                decision_tracker._should_track_runners_up(len(variants)),
                 timestamp=self.dummy_timestamp)
 
             if resp is None:
@@ -1457,7 +1457,7 @@ class TestDecisionTracker:
                 variants=variants,
                 givens=None, model_name=self.dummy_model_name,
                 variants_ranked_and_track_runners_up=
-                decision_tracker.should_track_runners_up(len(variants)),
+                decision_tracker._should_track_runners_up(len(variants)),
                 timestamp=self.dummy_timestamp)
 
             if resp is None:
@@ -1532,7 +1532,7 @@ class TestDecisionTracker:
                 variants=variants,
                 givens=None, model_name=self.dummy_model_name,
                 variants_ranked_and_track_runners_up=
-                decision_tracker.should_track_runners_up(len(variants)),
+                decision_tracker._should_track_runners_up(len(variants)),
                 timestamp=self.dummy_timestamp)
 
             if resp is None:
@@ -1575,7 +1575,7 @@ class TestDecisionTracker:
                 variants=variants,
                 givens=None, model_name=self.dummy_model_name,
                 variants_ranked_and_track_runners_up=
-                decision_tracker.should_track_runners_up(len(variants)),
+                decision_tracker._should_track_runners_up(len(variants)),
                 timestamp=self.dummy_timestamp)
 
             if resp is None:
@@ -1628,7 +1628,7 @@ class TestDecisionTracker:
                 variants=variants,
                 givens=None, model_name=self.dummy_model_name,
                 variants_ranked_and_track_runners_up=
-                decision_tracker.should_track_runners_up(len(variants)),
+                decision_tracker._should_track_runners_up(len(variants)),
                 timestamp=self.dummy_timestamp)
 
             if resp is None:

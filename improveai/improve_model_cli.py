@@ -95,7 +95,7 @@ if __name__ == '__main__':
     else:
 
         scores = \
-            dm.score(variants=variants, givens=givens)
+            dm._score(variants=variants, givens=givens)
 
         if pa.operation == 'score':
             result = scores

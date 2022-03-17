@@ -1,8 +1,6 @@
-from improveai import DecisionModel
-
-
 class GivensProvider:
 
-    # TODO make sure what exactly should this method do
-    def givens(self, decision_model: DecisionModel):
-        pass
+    # TODO how givens should be provided - should it be some sort of customized
+    #  implementation for each model dynamically providing givens?
+    def givens(self, for_model, givens: dict = {}) -> dict:
+        return givens

@@ -37,11 +37,11 @@ class TestDecision(TestCase):
         self._mockup_variants = value
 
     @property
-    def mockup_given(self):
+    def mockup_givens(self):
         return self._mockup_given
 
-    @mockup_given.setter
-    def mockup_given(self, value):
+    @mockup_givens.setter
+    def mockup_givens(self, value):
         self._mockup_given = value
         
     @property
@@ -103,7 +103,7 @@ class TestDecision(TestCase):
             {'$value': 123},
             {"$value": {'nested': 'dict'}, }]
 
-        self.mockup_given = {
+        self.mockup_givens = {
             'key1': [1, 2, 3],
             'key2': {'nested': 'dict'},
             'key3': 1,
@@ -139,110 +139,114 @@ class TestDecision(TestCase):
     def _generic_outer_setter_raises_test(
             self, decision: d.Decision, set_attr_name: str,
             set_attr_value: object):
+
+        print('### set_attr_value ###')
+        print(set_attr_name)
+        print(set_attr_value)
+
         with raises(AttributeError) as aerr:
             setattr(decision, set_attr_name, set_attr_value)
             assert str(aerr.value) == "AttributeError: can't set attribute"
 
     def test_model_setter(self):
         decision = d.Decision(decision_model=self.decision_model_without_tracker)
-        assert decision.model is not None
+        assert decision.decision_model is not None
 
         assert decision.variants == [None]
         assert decision.givens is None
         assert decision.chosen is False
-        assert decision.memoized_variant is None
+        assert decision.best is None
 
         self._generic_outer_setter_raises_test(
-            decision=decision, set_attr_name='model',
+            decision=decision, set_attr_name='decision_model',
             set_attr_value='dummy value')
 
         assert decision.variants == [None]
         assert decision.givens is None
         assert decision.chosen is False
-        assert decision.memoized_variant is None
+        assert decision.best is None
 
     def test_model_getter(self):
         decision = d.Decision(decision_model=self.decision_model_without_tracker)
-        assert decision.model is not None
-        assert decision.model == self.decision_model_without_tracker
+        assert decision.decision_model is not None
+        assert decision.decision_model == self.decision_model_without_tracker
 
     def test_choose_from_variants_setter(self):
-        decision = \
-            d.Decision(decision_model=self.decision_model_without_tracker)\
-            .choose_from(self.mockup_variants)
+        decision = d.Decision(decision_model=self.decision_model_without_tracker)
+        decision.variants = self.mockup_variants
 
         assert decision.variants is not None
         np.testing.assert_array_equal(decision.variants, self.mockup_variants)
 
         assert decision.givens is None
         assert decision.chosen is False
-        assert decision.memoized_variant is None
+        assert decision.best is None
 
-        self._generic_outer_setter_raises_test(
-            decision=decision, set_attr_name='variants',
-            set_attr_value='dummy_value')
+        with raises(AssertionError) as aerr:
+            setattr(decision, 'variants', 'dummy_value')
+            assert str(aerr.value)
 
     def test_choose_from_variants_setter_raises_type_error_for_string(self):
 
-        with raises(TypeError) as terr:
-            d.Decision(decision_model=self.decision_model_without_tracker)\
-                .choose_from(variants='dummy string')
-            assert str(terr.value)
+        with raises(AssertionError) as aerr:
+            decision_0 = d.Decision(decision_model=self.decision_model_without_tracker)
+            decision_0.variants = 'dummy string'
+            assert str(aerr.value)
 
     def test_choose_from_variants_setter_raises_type_error_for_non_iterable(
             self):
-        with raises(TypeError) as terr:
-            d.Decision(decision_model=self.decision_model_without_tracker) \
-                .choose_from(variants={'dummy': 'string'})
-            assert str(terr.value)
+        with raises(AssertionError) as aerr:
+            decision_1 = d.Decision(decision_model=self.decision_model_without_tracker)
+            decision_1.variants = {'dummy': 'string'}
 
-        with raises(TypeError) as terr:
-            d.Decision(decision_model=self.decision_model_without_tracker) \
-                .choose_from(variants=1234)
-            assert str(terr.value)
+            assert str(aerr.value)
 
-        with raises(TypeError) as terr:
-            d.Decision(decision_model=self.decision_model_without_tracker) \
-                .choose_from(variants=1234.1234)
-            assert str(terr.value)
+        with raises(AssertionError) as aerr:
+            decision_2 = d.Decision(decision_model=self.decision_model_without_tracker)
+            decision_2.variants = 1234
+            assert str(aerr.value)
+
+        with raises(AssertionError) as aerr:
+            decision_3 = d.Decision(decision_model=self.decision_model_without_tracker)
+            decision_3.variants = 1234.1234
+            assert str(aerr.value)
 
     def test_givens_setter(self):
-        decision = \
-            d.Decision(decision_model=self.decision_model_without_tracker)\
-            .given(self.mockup_given)
+        decision = d.Decision(decision_model=self.decision_model_without_tracker)
+        decision.givens = self.mockup_givens
 
         assert decision.givens is not None
-        assert decision.givens == self.mockup_given
+        assert decision.givens == self.mockup_givens
         assert isinstance(decision.givens, dict)
 
         assert decision.variants == [None]
         assert decision.chosen is False
-        assert decision.memoized_variant is None
+        assert decision.best is None
 
-        self._generic_outer_setter_raises_test(
-            decision=decision, set_attr_name='givens',
-            set_attr_value='dummy_value')
+        with raises(AssertionError) as aerr:
+            setattr(decision, 'givens', 'dummy_value')
+            assert str(aerr.value) == "AttributeError: can't set attribute"
 
     def test_givens_setter_raises_type_error_for_non_dict(self):
 
-        with raises(TypeError) as terr:
-            d.Decision(decision_model=self.decision_model_without_tracker)\
-                .given(givens='dummy string')
+        with raises(AssertionError) as terr:
+            decision = d.Decision(decision_model=self.decision_model_without_tracker)
+            decision.givens = 'dummy string'
             assert str(terr.value)
 
-        with raises(TypeError) as terr:
-            d.Decision(decision_model=self.decision_model_without_tracker) \
-                .given(givens=['dummy', 'string'])
+        with raises(AssertionError) as terr:
+            decision = d.Decision(decision_model=self.decision_model_without_tracker)
+            decision.givens = ['dummy', 'string']
             assert str(terr.value)
 
-        with raises(TypeError) as terr:
-            d.Decision(decision_model=self.decision_model_without_tracker) \
-                .given(givens=1234)
+        with raises(AssertionError) as terr:
+            decision = d.Decision(decision_model=self.decision_model_without_tracker)
+            decision.givens = 1234
             assert str(terr.value)
 
-        with raises(TypeError) as terr:
-            d.Decision(decision_model=self.decision_model_without_tracker) \
-                .given(givens=1234.1234)
+        with raises(AssertionError) as terr:
+            decision = d.Decision(decision_model=self.decision_model_without_tracker)
+            decision.givens = 1234.1234
             assert str(terr.value)
 
     # TODO test get() for 100% coverage
@@ -275,9 +279,9 @@ class TestDecision(TestCase):
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
-            memoized_variant = \
-                decision.choose_from(variants=test_variants)\
-                .given(givens=test_given).get()
+            decision.variants = test_variants
+            decision.givens = test_given
+            best_variant = decision.get()
 
         assert decision.chosen is True
 
@@ -286,7 +290,7 @@ class TestDecision(TestCase):
         if expected_output is None:
             raise ValueError('`test_output` can`t be empty')
 
-        assert memoized_variant == expected_output
+        assert best_variant == expected_output
 
     def test_get_02(self):
 
@@ -306,8 +310,8 @@ class TestDecision(TestCase):
         if test_variants is None:
             raise ValueError('`variants` can`t be empty')
 
-        test_given = test_case.get('givens', None)
-        if test_given is None:
+        test_givens = test_case.get('givens', None)
+        if test_givens is None:
             raise ValueError('`givens` can`t be empty')
 
         decision = d.Decision(decision_model=self.decision_model_with_tracker)
@@ -316,9 +320,9 @@ class TestDecision(TestCase):
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
-            memoized_variant = \
-                decision.choose_from(variants=test_variants)\
-                .given(givens=test_given).get()
+            decision.variants = test_variants
+            decision.givens = test_givens
+            best_variant = decision.get()
 
         assert decision.chosen is True
 
@@ -327,7 +331,7 @@ class TestDecision(TestCase):
         if expected_output is None:
             raise ValueError('`test_output` can`t be empty')
 
-        assert memoized_variant == expected_output
+        assert best_variant == expected_output
 
     def test_get_03(self):
 
@@ -337,12 +341,12 @@ class TestDecision(TestCase):
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
-            memoized_variant = \
-                decision.choose_from(variants=[None])\
-                .given(givens={}).get()
+            decision.variants = [None]
+            decision.givens = {}
+            best_variant = decision.get()
 
         assert decision.chosen is True
-        assert memoized_variant is None
+        assert best_variant is None
 
     def test_get_04(self):
 
@@ -353,8 +357,9 @@ class TestDecision(TestCase):
         with raises(AssertionError) as aerr:
             with rqm.Mocker() as m:
                 m.post(self.track_url, text='success')
-                decision.choose_from(variants=None)\
-                    .given(givens={}).get()
+                decision.variants = None
+                decision.givens = {}
+                decision.get()
 
     def test_get_05(self):
 
@@ -367,19 +372,9 @@ class TestDecision(TestCase):
 
         # TODO verify if get should truly raise for tracker == None
         with raises(ValueError) as verr:
-            decision.choose_from(variants=[None]).given(givens={}).get()
-
-        # with rqm.Mocker() as m:
-        #     m.post(self.track_url, text='success')
-        #
-        #     with warnings.catch_warnings(record=True) as w:
-        #         warnings.simplefilter("always")
-        #         np.random.seed(self.tracks_seed)
-        #         memoized_variant = \
-        #             decision.choose_from(variants=[None]).given(givens={}).get()
-        #         assert len(w) == 0
-        # assert memoized_variant is None
-        # assert decision.chosen is True
+            decision.variants = [None]
+            decision.givens = {}
+            decision.get()
 
     def test_get_06(self):
         # this is a test case which covers tracking runners up from within
@@ -414,16 +409,15 @@ class TestDecision(TestCase):
                     # np.random.seed(self.tracks_seed)
                     decision = d.Decision(decision_model=self.decision_model_with_tracker)
                     assert decision.chosen is False
-
-                    memoized_variant = \
-                        decision.choose_from(variants=variants)\
-                        .given(givens={}).get()
+                    decision.variants = variants
+                    decision.givens = {}
+                    best_variant = decision.get()
                     print('Got following warnings count')
                     print(len(w))
 
         assert any(runners_up_tracked)
         assert decision.chosen is True
-        assert memoized_variant == variants[9]
+        assert best_variant == variants[9]
 
     def test_get_07(self):
         # this is a test case which covers NOT tracking runners up from within
@@ -444,15 +438,13 @@ class TestDecision(TestCase):
 
             with warnings.catch_warnings(record=True) as w:
                 warnings.simplefilter("always")
-
-                # np.random.seed(self.not_tracks_seed)
-                memoized_variant = \
-                    decision.choose_from(variants=variants)\
-                    .given(givens={}).get()
+                decision.variants = variants
+                decision.givens = {}
+                best_variant = decision.get()
                 assert len(w) == 0
 
         assert decision.chosen is True
-        assert memoized_variant == variants[9]
+        assert best_variant == variants[9]
 
     def test_get_08(self):
         # this is a test case which covers tracking runners up from within
@@ -517,8 +509,8 @@ class TestDecision(TestCase):
         if test_variants is None:
             raise ValueError('`variants` can`t be empty')
 
-        test_given = test_case.get('givens', None)
-        if test_given is None:
+        test_givens = test_case.get('givens', None)
+        if test_givens is None:
             raise ValueError('`givens` can`t be empty')
 
         decision = d.Decision(decision_model=self.decision_model_with_tracker)
@@ -527,24 +519,24 @@ class TestDecision(TestCase):
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
-            memoized_variant = \
-                decision.choose_from(variants=test_variants)\
-                .given(givens=test_given).get()
+            decision.givens = test_givens
+            decision.variants = test_variants
+            best_variant = decision.get()
 
         assert decision.chosen is True
-        return decision, memoized_variant
+        return decision, best_variant
 
     def test_choose_from_already_chosen(self):
-        decision, memoized_variant = self._get_complete_decision()
+        decision, best_variant = self._get_complete_decision()
 
         assert decision.chosen is True
 
-        with warns(UserWarning) as uw:
-            decision.choose_from(variants=self.dummy_variants)
-            assert str(uw.list[0].message) == \
-                   'The best variant has already been chosen'
+        set_variants = decision.variants
 
-        assert memoized_variant == decision.memoized_variant
+        decision.variants = self.dummy_variants
+
+        assert decision.variants == set_variants
+        assert best_variant == decision.best
 
     def test_choose_from_variants_already_set(self):
         decision = d.Decision(decision_model=self.decision_model_without_tracker)
@@ -552,25 +544,21 @@ class TestDecision(TestCase):
         assert decision.variants == [None]
         assert decision.givens is None
         assert decision.chosen is False
-        assert decision.memoized_variant is None
+        assert decision.best is None
 
-        decision.choose_from(variants=self.dummy_variants)
-
-        assert decision.variants == self.dummy_variants
-        assert decision.givens is None
-        assert decision.chosen is False
-        assert decision.memoized_variant is None
-
-        with warns(UserWarning) as uw:
-            decision.choose_from(
-                variants=self.dummy_variants + self.dummy_variants)
-            assert str(uw.list[0].message) == \
-                   '`variants` have already been set - ignoring this call'
+        decision.variants = self.dummy_variants
 
         assert decision.variants == self.dummy_variants
         assert decision.givens is None
         assert decision.chosen is False
-        assert decision.memoized_variant is None
+        assert decision.best is None
+
+        decision.variants = self.dummy_variants + self.dummy_variants
+
+        assert decision.variants == self.dummy_variants
+        assert decision.givens is None
+        assert decision.chosen is False
+        assert decision.best is None
 
     def test_given_givens_already_set(self):
         decision = d.Decision(decision_model=self.decision_model_without_tracker)
@@ -578,39 +566,37 @@ class TestDecision(TestCase):
         assert decision.variants == [None]
         assert decision.givens is None
         assert decision.chosen is False
-        assert decision.memoized_variant is None
+        assert decision.best is None
 
-        decision.given(givens=self.dummy_givens)
+        decision.givens = self.dummy_givens
 
         assert decision.variants == [None]
         assert decision.givens is self.dummy_givens
         assert decision.chosen is False
-        assert decision.memoized_variant is None
+        assert decision.best is None
 
         appended_dummy_givens = deepcopy(self.dummy_givens)
         appended_dummy_givens['dummy1'] = 'givens'
 
-        with warns(UserWarning) as uw:
-            decision.given(givens=appended_dummy_givens)
-            assert str(uw.list[0].message) == \
-                   '`givens` have already been set - ignoring this call'
+        decision.givens = appended_dummy_givens
 
         assert decision.variants == [None]
         assert decision.givens is self.dummy_givens
         assert decision.chosen is False
-        assert decision.memoized_variant is None
+        assert decision.best is None
 
     def test_given_already_chosen(self):
-        decision, memoized_variant = self._get_complete_decision()
+        decision, best_variant = self._get_complete_decision()
 
         assert decision.chosen is True
 
-        with warns(UserWarning) as uw:
-            decision.given(givens={'dummy_given': 'abc'})
-            assert str(uw.list[0].message) == \
-                   'The best variant has already been chosen'
+        existing_givens = decision.givens
 
-        assert memoized_variant == decision.memoized_variant
+        assert {'dummy_given': 'abc'} != existing_givens
+        decision.givens = {'dummy_given': 'abc'}
+
+        assert decision.givens == existing_givens
+        assert best_variant == decision.best
 
     def test_get_already_chosen(self):
         decision, memoized_variant = self._get_complete_decision()
@@ -622,15 +608,8 @@ class TestDecision(TestCase):
             assert str(uw.list[0].message) == \
                    'The best variant has already been chosen'
 
-        assert memoized_variant == decision.memoized_variant == \
+        assert memoized_variant == decision.best == \
                memoized_variant_from_decision
-
-    def test_memoized_variant_set_from_outside(self):
-        decision = d.Decision(decision_model=self.decision_model_without_tracker)
-
-        with raises(AttributeError) as aerr:
-            decision.memoized_variant = 'dummy_variant'
-            # assert str(aerr.value)
 
     def test_get_with_zero_len_variants(self):
 
@@ -659,18 +638,18 @@ class TestDecision(TestCase):
 
         assert decision.chosen is False
 
-        with raises(AssertionError) as aerr:
+        with raises(ValueError) as verr:
             with rqm.Mocker() as m:
                 m.post(self.track_url, text='success')
-                decision.choose_from(variants=test_variants)\
-                    .given(givens=test_given).get()
+                decision.variants = test_variants
+                decision.givens = test_given
+                decision.get()
 
     def test_get_with_no_tracker(self):
         variants = [el for el in range(10)]
 
         with raises(ValueError) as verr:
-            d.Decision(decision_model=self.decision_model_without_tracker)\
-                .choose_from(variants=variants).get()
+            self.decision_model_without_tracker.choose_from(variants=variants).get()
             assert str(verr.value)
 
     def test_consistent_encoding(self):
@@ -712,12 +691,14 @@ class TestDecision(TestCase):
             m.post(self.track_url, text='success')
 
             decision_1 = d.Decision(decision_model=self.decision_model_with_tracker)
+            decision_1.variants = variants
             np.random.seed(consistency_seed)
-            decision_1.choose_from(variants=variants).get()
+            decision_1.get()
 
             decision_2 = d.Decision(decision_model=self.decision_model_with_tracker)
+            decision_2.variants = variants
             np.random.seed(consistency_seed)
-            decision_2.choose_from(variants=variants).get()
+            decision_2.get()
 
             np.testing.assert_array_equal(decision_1.scores, decision_2.scores)
 
@@ -725,10 +706,12 @@ class TestDecision(TestCase):
             m.post(self.track_url, text='success')
 
             decision_3 = d.Decision(decision_model=self.decision_model_with_tracker)
-            decision_3.choose_from(variants=variants).get()
+            decision_3.variants = variants
+            decision_3.get()
 
             decision_4 = d.Decision(decision_model=self.decision_model_with_tracker)
-            decision_4.choose_from(variants=variants).get()
+            decision_4.variants = variants
+            decision_4.get()
 
             with np.testing.assert_raises(AssertionError):
                 np.testing.assert_array_equal(decision_3.scores, decision_4.scores)
@@ -739,30 +722,31 @@ class TestDecision(TestCase):
         reward = 1
 
         expected_add_reward_body = {
-            decision.model._tracker.TYPE_KEY: decision.model._tracker.REWARD_TYPE,
-            decision.model._tracker.MODEL_KEY: self.decision_model_with_tracker.model_name,
-            decision.model._tracker.REWARD_KEY: reward,
-            decision.model._tracker.DECISION_ID_KEY: None,
+            decision.decision_model._tracker.TYPE_KEY: decision.decision_model._tracker.REWARD_TYPE,
+            decision.decision_model._tracker.MODEL_KEY: self.decision_model_with_tracker.model_name,
+            decision.decision_model._tracker.REWARD_KEY: reward,
+            decision.decision_model._tracker.DECISION_ID_KEY: None,
         }
 
         def decision_id_matcher(request):
             request_dict = deepcopy(request.json())
-            expected_add_reward_body[decision.model._tracker.DECISION_ID_KEY] = \
-                request_dict[decision.model._tracker.MESSAGE_ID_KEY]
+            expected_add_reward_body[decision.decision_model._tracker.DECISION_ID_KEY] = \
+                request_dict[decision.decision_model._tracker.MESSAGE_ID_KEY]
             return True
 
         variants = [el for el in range(10)]
 
         with rqm.Mocker() as m0:
             m0.post(self.track_url, text='success', additional_matcher=decision_id_matcher)
-            decision.choose_from(variants=variants).get()
+            decision.variants = variants
+            decision.get()
 
         expected_request_json = json.dumps(expected_add_reward_body, sort_keys=False)
 
         def custom_matcher(request):
             request_dict = deepcopy(request.json())
-            del request_dict[decision.model._tracker.MESSAGE_ID_KEY]
-            del request_dict[decision.model._tracker.TIMESTAMP_KEY]
+            del request_dict[decision.decision_model._tracker.MESSAGE_ID_KEY]
+            del request_dict[decision.decision_model._tracker.TIMESTAMP_KEY]
 
             if json.dumps(request_dict, sort_keys=False) != expected_request_json:
 
@@ -791,7 +775,9 @@ class TestDecision(TestCase):
 
         with rqm.Mocker() as m0:
             m0.post(self.track_url, text='success')
-            decision.choose_from(variants=variants).get()
+            decision.variants = variants
+            decision.get()
+            # decision.choose_from(variants=variants).get()
 
         reward = 'string'
 
@@ -807,7 +793,8 @@ class TestDecision(TestCase):
 
         with rqm.Mocker() as m0:
             m0.post(self.track_url, text='success')
-            decision.choose_from(variants=variants).get()
+            decision.variants = variants
+            decision.get()
 
         reward = math.inf
 
@@ -830,7 +817,8 @@ class TestDecision(TestCase):
 
         with rqm.Mocker() as m0:
             m0.post(self.track_url, text='success')
-            decision.choose_from(variants=variants).get()
+            decision.variants = variants
+            decision.get()
 
         reward = None
 

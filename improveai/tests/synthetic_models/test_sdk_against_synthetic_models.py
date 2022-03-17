@@ -45,9 +45,7 @@ def test_sdk_against_all_synthetic_models():
         for givens, output in zip(all_givens, expected_outputs):
             with rqm.Mocker() as m:
                 m.post(TRACK_URL, text='success')
-                decision = \
-                    Decision(decision_model=dm).choose_from(variants=variants) \
-                    .given(givens=givens)
+                decision = dm.given(givens=givens).choose_from(variants=variants)
                 # np.random.seed(seed)
                 dm.chooser.imposed_noise = noise
                 chosen_variant = decision.get()
@@ -88,9 +86,7 @@ def test_primitive_predicts_identical_with_primitive_dicts():
         for givens, output in zip(all_givens, expected_outputs):
             with rqm.Mocker() as m:
                 m.post(TRACK_URL, text='success')
-                decision = \
-                    Decision(decision_model=dm).choose_from(variants=variants) \
-                    .given(givens=givens)
+                decision = dm.given(givens=givens).choose_from(variants=variants)
                 # np.random.seed(seed)
                 dm.chooser.imposed_noise = noise
                 chosen_variant = decision.get()
@@ -102,9 +98,7 @@ def test_primitive_predicts_identical_with_primitive_dicts():
         for givens, output in zip(all_givens, expected_outputs):
             with rqm.Mocker() as m:
                 m.post(TRACK_URL, text='success')
-                decision = \
-                    Decision(decision_model=dm).choose_from(variants=dicts_variants) \
-                    .given(givens=givens)
+                decision = dm.given(givens=givens).choose_from(variants=dicts_variants)
                 # np.random.seed(seed)
                 dm.chooser.imposed_noise = noise
                 chosen_variant = decision.get()
@@ -141,9 +135,7 @@ def test_model_predicts_identical_for_nullish_variants():
 
     with rqm.Mocker() as m:
         m.post(TRACK_URL, text='success')
-        decision = \
-            Decision(decision_model=dm).choose_from(variants=variants) \
-            .given(givens=None)
+        decision = dm.given(givens=None).choose_from(variants=variants)
         # np.random.seed(seed)
         dm.chooser.imposed_noise = noise
         # calling to calc scores

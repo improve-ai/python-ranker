@@ -138,3 +138,20 @@ def sigmoid(x: float, logit_const: float) -> float:
     """
     exp_arg = logit_const - x
     return 1 / (1 + np.exp(exp_arg))
+
+
+def check_variants(variants: list or tuple or np.ndarray):
+    """
+    Check if variants are of desired type and if they are not an empty collection
+
+    Parameters
+    ----------
+    variants: list or tuple or np.ndarray
+        checked variants
+
+    """
+    assert variants is not None
+    assert (isinstance(variants, list) or isinstance(variants, tuple) or isinstance(variants, np.ndarray))
+    # raise if variants are an empty list
+    if len(variants) == 0:
+        raise ValueError('`variants` must not be an empty collection')

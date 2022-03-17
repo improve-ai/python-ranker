@@ -17,8 +17,8 @@ sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
 
 import improveai.decision as d
+import improveai.decision_context as dc
 import improveai.decision_model as dm
-import improveai.decision_tracker as dt
 from improveai.choosers.xgb_chooser import NativeXGBChooser
 from improveai.utils.general_purpose_tools import read_jsonstring_from_file
 from improveai.tests.test_utils import convert_values_to_float32
@@ -368,13 +368,21 @@ class TestDecisionModel(TestCase):
 
         decision_model = dm.DecisionModel(model_name=None).load(model_url=model_url)
 
+        if evaluated_method_name == 'score':
+            np.random.seed(score_seed)
+            calculated_scores = decision_model.score(variants=variants)
+            calculated_scores_float32 = convert_values_to_float32(calculated_scores)
+            expected_output_float32 = convert_values_to_float32(expected_output)
+            np.testing.assert_array_equal(calculated_scores_float32, expected_output_float32)
+            return
+
         np.random.seed(score_seed)
         # calculated_scores = decision_model.score(**empty_callable_kwargs)
-        calculated_scores = decision_model.score(variants=variants, givens=givens)
+        calculated_scores = decision_model._score(variants=variants, givens=givens)
 
         calculated_scores_float32 = convert_values_to_float32(calculated_scores)
 
-        if evaluated_method_name == 'score':
+        if evaluated_method_name == '_score':
             expected_output_float32 = convert_values_to_float32(expected_output)
 
             np.testing.assert_array_equal(
@@ -461,11 +469,16 @@ class TestDecisionModel(TestCase):
 
         decision_model = dm.DecisionModel(model_name='dummy-model')
 
-        np.random.seed(score_seed)
-        calculated_scores = decision_model.score(variants=variants, givens=givens)
-
         if evaluated_method_name == 'score':
+            np.random.seed(score_seed)
+            calculated_scores = decision_model.score(variants=variants)
+            np.testing.assert_array_equal(calculated_scores.tolist(), expected_output)
+            return
 
+        np.random.seed(score_seed)
+        calculated_scores = decision_model._score(variants=variants, givens=givens)
+
+        if evaluated_method_name == '_score':
             np.testing.assert_array_equal(
                 calculated_scores.tolist(), expected_output)
             return
@@ -474,8 +487,6 @@ class TestDecisionModel(TestCase):
             empty_callable_kwargs[scores_key] = calculated_scores
 
         np.random.seed(score_seed)
-        # evaluated_callable = getattr(dm.DecisionModel, evaluated_method_name)
-        # calculated_output = evaluated_callable(**empty_callable_kwargs)
         if evaluated_method_name == 'top_scoring_variant':
             calculated_output = \
                 dm.DecisionModel.top_scoring_variant(
@@ -491,6 +502,20 @@ class TestDecisionModel(TestCase):
                 expected_output, calculated_output)
         else:
             assert expected_output == calculated_output
+
+    def test__score_no_model(self):
+        self._generic_desired_decision_model_method_call_no_model(
+            test_data_filename=os.getenv(
+                'V6_DECISION_MODEL_TEST__SCORE_NATIVE_NO_MODEL_JSON'),
+            evaluated_method_name='_score',
+            empty_callable_kwargs={'variants': None, 'givens': None})
+
+    def test__score(self):
+        self._generic_desired_decision_model_method_call(
+            test_data_filename=os.getenv(
+                'V6_DECISION_MODEL_TEST__SCORE_NATIVE_JSON'),
+            evaluated_method_name='_score',
+            empty_callable_kwargs={'variants': None, 'givens': None})
 
     def test_score_no_model(self):
         self._generic_desired_decision_model_method_call_no_model(
@@ -567,7 +592,7 @@ class TestDecisionModel(TestCase):
 
         np.random.seed(score_seed)
         calculated_gaussians = \
-            dm.DecisionModel.generate_descending_gaussians(count=variants_count)
+            dm.DecisionModel._generate_descending_gaussians(count=variants_count)
 
         np.testing.assert_array_equal(calculated_gaussians, expected_output)
 
@@ -631,49 +656,21 @@ class TestDecisionModel(TestCase):
         if expected_output is None:
             raise ValueError('`test_output` can`t be None')
 
-        decision = \
-            dm.DecisionModel(model_name='test_choose_from_model') \
-            .given(givens=givens)
+        decision_context = \
+            dm.DecisionModel(model_name='test_choose_from_model').given(givens=givens)
 
-        assert isinstance(decision, d.Decision)
-        assert hasattr(decision, 'givens')
-        assert isinstance(decision.givens, dict)
-        assert decision.givens == expected_output
-        assert decision.variants == [None]
+        assert isinstance(decision_context, dc.DecisionContext)
+        assert hasattr(decision_context, 'givens')
+        assert isinstance(decision_context.givens, dict)
+        assert decision_context.givens == expected_output
 
-    # track_with is no longer part of the API -> this test makes no sense
-    # def test_set_tracker(self):
-    #     tracker = dt.DecisionTracker(track_url=self.track_url)
-    #     decision_model = \
-    #         dm.DecisionModel(model_name='test_choose_from_model')
-    #
-    #     assert decision_model.tracker is None
-    #
-    #     decision_model.track_with(tracker=tracker)
-    #
-    #     assert decision_model.tracker is not None
-    #     assert decision_model.tracker == tracker
-    #
-    # track_with is no longer part of the API -> this test makes no sense
-    # def test_set_tracker_raises(self):
-    #     decision_model = \
-    #         dm.DecisionModel(model_name='test_choose_from_model')
-    #
-    #     assert decision_model.tracker is None
-    #
-    #     with raises(TypeError) as terr:
-    #
-    #         decision_model.track_with(tracker=None)
-    #
-    #         assert str(terr.value)
-
-    def test_no_model_score_and_sort(self):
+    def test_no_model__score_and_sort(self):
 
         variants = [el for el in range(100)]
 
         decision_model = dm.DecisionModel(model_name='no-model')
 
-        scores_for_variants = decision_model.score(variants=variants, givens={})
+        scores_for_variants = decision_model._score(variants=variants, givens={})
 
         sorted_with_scores = \
             [v for _, v in
@@ -738,10 +735,6 @@ class TestDecisionModel(TestCase):
         chooser = NativeXGBChooser()
         chooser.load_model(model_url)
 
-        # print('## chooser.model_name ##')
-        # print(chooser.model_name)
-        # assert False
-
         with warnings.catch_warnings(record=True) as w:
             decision_model = dm.DecisionModel(model_name=tested_model_name).load(model_url=model_url)
             assert len(w) != 0
@@ -757,19 +750,15 @@ class TestDecisionModel(TestCase):
         model_url = os.getenv('V6_DUMMY_MODEL_PATH', None)
         assert model_url is not None
 
-        # tracker = dt.DecisionTracker(track_url=self.track_url)
-
         decision_model = \
             dm.DecisionModel(model_name=None, track_url=self.track_url)\
             .load(model_url=model_url)
-
-        # decision_model.track_with(tracker=tracker)
 
         assert decision_model.id_ is None
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
-            d.Decision(decision_model=decision_model).choose_from(list(range(10))).get()
+            decision_model.choose_from(list(range(10))).get()
 
         assert decision_model.id_ is not None
 
@@ -792,10 +781,6 @@ class TestDecisionModel(TestCase):
         model_url = os.getenv('V6_DUMMY_MODEL_PATH', None)
         assert model_url is not None
 
-        # tracker = \
-        #     dt.DecisionTracker(track_url=self.track_url)
-        # decision_model.track_with(tracker=tracker)
-
         decision_model = \
             dm.DecisionModel(model_name=None, track_url=self.track_url)\
             .load(model_url=model_url)
@@ -804,7 +789,7 @@ class TestDecisionModel(TestCase):
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
-            d.Decision(decision_model=decision_model).choose_from(list(range(10))).get()
+            decision_model.choose_from(list(range(10))).get()
 
         assert decision_model.id_ is not None
 
@@ -826,14 +811,9 @@ class TestDecisionModel(TestCase):
         model_url = os.getenv('V6_DUMMY_MODEL_PATH', None)
         assert model_url is not None
 
-        # tracker = \
-        #     dt.DecisionTracker(track_url=self.track_url)
-
         decision_model = \
             dm.DecisionModel(model_name=None, track_url=self.track_url)\
             .load(model_url=model_url)
-
-        # decision_model.track_with(tracker=tracker)
 
         assert decision_model.id_ is None
 
@@ -852,7 +832,7 @@ class TestDecisionModel(TestCase):
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success', additional_matcher=grab_decision_id_matcher)
-            d.Decision(decision_model=decision_model).choose_from(list(range(10))).get()
+            decision_model.choose_from(list(range(10))).get()
 
         assert decision_model.id_ is not None
 
@@ -882,24 +862,3 @@ class TestDecisionModel(TestCase):
             assert resp is not None
             assert resp.status_code == 200
             assert resp.text == 'success'
-
-    # def test_add_reward_string_reward(self):
-    #     # V6_DUMMY_MODEL_PATH
-    #     model_url = os.getenv('V6_DUMMY_MODEL_PATH', None)
-    #     assert model_url is not None
-    #
-    #     tracker = dt.DecisionTracker(track_url=self.track_url)
-    #     decision_model = dm.DecisionModel(model_name=None).load(model_url=model_url)
-    #     decision_model.track_with(tracker=tracker)
-    #
-    #     with rqm.Mocker() as m:
-    #         m.post(self.track_url, text='success')
-    #         d.Decision(decision_model=decision_model).choose_from(list(range(10))).get()
-    #
-    #     reward = 'string'
-    #
-    #     with rqm.Mocker() as m:
-    #         m.post(self.track_url, text='success')
-    #         with raises(AssertionError) as aerr:
-    #             decision_model.add_reward(reward=reward)
-    #             assert aerr.value
