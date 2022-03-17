@@ -44,8 +44,6 @@ class DecisionContext:
         decision = d.Decision(decision_model=self.decision_model)
         decision.variants = variants
         decision.givens = givens
-        print('### decision.givens from choose_from ###')
-        print(decision.givens)
         decision.scores = scores
         decision.best = best
 
