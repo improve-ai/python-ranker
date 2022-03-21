@@ -69,9 +69,6 @@ def test_primitive_predicts_identical_with_primitive_dicts():
         dm = DecisionModel(model_name=None, track_url=TRACK_URL)\
             .load(os.sep.join([SDK_PATH, test_case['model_url']]))
 
-        # dt = DecisionTracker(track_url=TRACK_URL)
-        # dm.track_with(tracker=dt)
-
         all_givens = test_case['test_case']['givens']
 
         if all_givens is None:

@@ -22,6 +22,7 @@ import improveai.decision_model as dm
 from improveai.choosers.xgb_chooser import NativeXGBChooser
 from improveai.utils.general_purpose_tools import read_jsonstring_from_file
 from improveai.tests.test_utils import convert_values_to_float32
+from improveai.tests.test_utils import get_test_data
 
 
 class TestDecisionModel(TestCase):
@@ -64,16 +65,6 @@ class TestDecisionModel(TestCase):
         self.track_url = os.getenv('V6_DECISION_TRACKER_TEST_URL', None)
         assert self.track_url is not None
 
-    def _get_test_data(
-            self, path_to_test_json: str, method: str = 'readlines') -> object:
-
-        loaded_jsonstring = read_jsonstring_from_file(
-            path_to_file=path_to_test_json, method=method)
-
-        loaded_json = json.loads(loaded_jsonstring)
-
-        return loaded_json
-
     def _assert_metadata_entries_equal(
             self, tested_metadata: dict, expected_metadata: dict,
             asserted_key: str):
@@ -107,7 +98,7 @@ class TestDecisionModel(TestCase):
                 self.test_cases_directory, test_data_filename)
 
         test_data = \
-            self._get_test_data(
+            get_test_data(
                 path_to_test_json=path_to_test_json, method='read')
 
         test_case = test_data.get(test_case_key, None)
@@ -186,7 +177,7 @@ class TestDecisionModel(TestCase):
                 self.test_cases_directory, test_data_filename)
 
         test_data = \
-            self._get_test_data(
+            get_test_data(
                 path_to_test_json=path_to_test_json, method='read')
 
         test_case = test_data.get(test_case_key, None)
@@ -231,9 +222,7 @@ class TestDecisionModel(TestCase):
             ('{}' + os.sep + '{}').format(
                 self.test_cases_directory, test_data_filename)
 
-        test_data = \
-            self._get_test_data(
-                path_to_test_json=path_to_test_json, method='read')
+        test_data = get_test_data(path_to_test_json=path_to_test_json, method='read')
 
         test_case = test_data.get(test_case_key, None)
 
@@ -322,9 +311,7 @@ class TestDecisionModel(TestCase):
             ('{}' + os.sep + '{}').format(
                 self.test_cases_directory, test_data_filename)
 
-        test_data = \
-            self._get_test_data(
-                path_to_test_json=path_to_test_json, method='read')
+        test_data = get_test_data(path_to_test_json=path_to_test_json, method='read')
 
         test_case = test_data.get(test_case_key, None)
 
@@ -427,9 +414,7 @@ class TestDecisionModel(TestCase):
             ('{}' + os.sep + '{}').format(
                 self.test_cases_directory, test_data_filename)
 
-        test_data = \
-            self._get_test_data(
-                path_to_test_json=path_to_test_json, method='read')
+        test_data = get_test_data(path_to_test_json=path_to_test_json, method='read')
 
         test_case = test_data.get(test_case_key, None)
 
@@ -569,9 +554,7 @@ class TestDecisionModel(TestCase):
                 self.test_cases_directory,
                 os.getenv('V6_DECISION_MODEL_TEST_GENERATE_DESCENDING_GAUSSIANS_JSON'))
 
-        test_data = \
-            self._get_test_data(
-                path_to_test_json=path_to_test_json, method='read')
+        test_data = get_test_data(path_to_test_json=path_to_test_json, method='read')
 
         test_case = test_data.get("test_case", None)
 
@@ -603,9 +586,7 @@ class TestDecisionModel(TestCase):
                 self.test_cases_directory,
                 os.getenv('V6_DECISION_MODEL_TEST_CHOOSE_FROM_JSON'))
 
-        test_data = \
-            self._get_test_data(
-                path_to_test_json=path_to_test_json, method='read')
+        test_data = get_test_data(path_to_test_json=path_to_test_json, method='read')
 
         test_case = test_data.get("test_case", None)
 
@@ -637,9 +618,7 @@ class TestDecisionModel(TestCase):
                 self.test_cases_directory,
                 os.getenv('V6_DECISION_MODEL_TEST_GIVEN_JSON'))
 
-        test_data = \
-            self._get_test_data(
-                path_to_test_json=path_to_test_json, method='read')
+        test_data = get_test_data(path_to_test_json=path_to_test_json, method='read')
 
         test_case = test_data.get("test_case", None)
 
@@ -706,9 +685,7 @@ class TestDecisionModel(TestCase):
         path_to_test_json = \
             os.sep.join([
                 self.test_cases_directory, os.getenv('V6_DECISION_MODEL_TEST_MODEL_NAME_SET_TO_NONE_JSON')])
-        test_data = \
-            self._get_test_data(
-                path_to_test_json=path_to_test_json, method='read')
+        test_data = get_test_data(path_to_test_json=path_to_test_json, method='read')
 
         model_url = \
             os.sep.join([self.predictors_fs_directory, test_data['test_case']['model_filename']])
@@ -724,9 +701,7 @@ class TestDecisionModel(TestCase):
         path_to_test_json = \
             os.sep.join([
                 self.test_cases_directory, os.getenv('V6_DECISION_MODEL_TEST_MODEL_NAME_SET_TO_NOT_NONE_JSON')])
-        test_data = \
-            self._get_test_data(
-                path_to_test_json=path_to_test_json, method='read')
+        test_data = get_test_data(path_to_test_json=path_to_test_json, method='read')
 
         model_url = \
             os.sep.join([self.predictors_fs_directory, test_data['test_case']['model_filename']])

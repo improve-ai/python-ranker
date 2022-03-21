@@ -47,7 +47,7 @@ To install python-sdk for Improve.ai:
     pip3 install -r requirements.txt --no-cache-dir
 
 
- 6. run the following commands to install improve_ai python package:
+ 6. run the following commands to install improveai python package:
 
     
     python3 setup.py build_ext --inplace && python3 setup.py install

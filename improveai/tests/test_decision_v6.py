@@ -16,6 +16,7 @@ import improveai.decision as d
 import improveai.decision_model as dm
 import improveai.decision_tracker as dt
 from improveai.utils.general_purpose_tools import read_jsonstring_from_file
+from improveai.tests.test_utils import get_test_data
 
 
 class TestDecision(TestCase):
@@ -94,11 +95,6 @@ class TestDecision(TestCase):
             dm.DecisionModel(model_name=None, track_url=self.track_url)\
             .load(model_url=decision_tests_model_url)
 
-        # self.tracker = \
-        #     dt.DecisionTracker(track_url=self.track_url)
-        #
-        # self.decision_model_with_tracker.track_with(tracker=self.tracker)
-
         self.mockup_variants = [
             {'$value': 123},
             {"$value": {'nested': 'dict'}, }]
@@ -118,16 +114,6 @@ class TestDecision(TestCase):
 
         self.dummy_history_id = 'dummy-history-id'
         self.dummy_timestamp = '2021-05-11T02:32:27.007Z'
-
-    def _get_test_data(
-            self, path_to_test_json: str, method: str = 'readlines') -> object:
-
-        loaded_jsonstring = read_jsonstring_from_file(
-            path_to_file=path_to_test_json, method=method)
-
-        loaded_json = json.loads(loaded_jsonstring)
-
-        return loaded_json
 
     # test constructor raises ValueError
     def test_raises_value_error_when_model_none(self):
@@ -256,9 +242,7 @@ class TestDecision(TestCase):
         path_to_test_case_file = \
             os.sep.join([self.test_jsons_data_directory, test_case_filename])
 
-        test_data = \
-            self._get_test_data(
-                path_to_test_json=path_to_test_case_file, method='read')
+        test_data = get_test_data(path_to_test_json=path_to_test_case_file, method='read')
 
         test_case = test_data.get("test_case", None)
         if test_case is None:
@@ -298,9 +282,7 @@ class TestDecision(TestCase):
         path_to_test_case_file = \
             os.sep.join([self.test_jsons_data_directory, test_case_filename])
 
-        test_data = \
-            self._get_test_data(
-                path_to_test_json=path_to_test_case_file, method='read')
+        test_data = get_test_data(path_to_test_json=path_to_test_case_file, method='read')
 
         test_case = test_data.get("test_case", None)
         if test_case is None:
@@ -497,9 +479,7 @@ class TestDecision(TestCase):
         path_to_test_case_file = \
             os.sep.join([self.test_jsons_data_directory, test_case_filename])
 
-        test_data = \
-            self._get_test_data(
-                path_to_test_json=path_to_test_case_file, method='read')
+        test_data = get_test_data(path_to_test_json=path_to_test_case_file, method='read')
 
         test_case = test_data.get("test_case", None)
         if test_case is None:
@@ -618,9 +598,7 @@ class TestDecision(TestCase):
         path_to_test_case_file = \
             os.sep.join([self.test_jsons_data_directory, test_case_filename])
 
-        test_data = \
-            self._get_test_data(
-                path_to_test_json=path_to_test_case_file, method='read')
+        test_data = get_test_data(path_to_test_json=path_to_test_case_file, method='read')
 
         test_case = test_data.get("test_case", None)
         if test_case is None:
