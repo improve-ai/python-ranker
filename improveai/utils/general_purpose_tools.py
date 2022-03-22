@@ -155,3 +155,14 @@ def check_variants(variants: list or tuple or np.ndarray):
     # raise if variants are an empty list
     if len(variants) == 0:
         raise ValueError('`variants` must not be an empty collection')
+
+
+def get_variants_for_which(variants: list or tuple or np.ndarray):
+    if len(variants) == 1:
+        # if the first element is a list -> it is ok to use such list as variants
+        # if the first element is not a list / tuple / np.ndarray raise
+        assert isinstance(variants[0], list) or isinstance(variants[0], tuple) or isinstance(variants[0], np.ndarray)
+        return variants[0]
+
+    return variants
+

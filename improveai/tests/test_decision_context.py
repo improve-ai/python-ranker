@@ -5,7 +5,8 @@ from unittest import TestCase
 
 import improveai.decision_model as dm
 import improveai.decision_context as dc
-from improveai.tests.test_utils import get_test_data, convert_values_to_float32
+from improveai.tests.test_utils import assert_valid_decision, get_test_data, \
+    convert_values_to_float32
 
 
 class TestDecisionContext(TestCase):
@@ -40,25 +41,19 @@ class TestDecisionContext(TestCase):
         self.decision_context_test_cases_dir = os.getenv('DECISION_CONTEXT_TEST_CASES_DIR', None)
         assert self.decision_context_test_cases_dir is not None
 
-    def _assert_valid_decision(
-            self, decision, expected_variants, expected_givens, expected_scores, expected_best):
-        # validate givens
-        assert decision.givens == expected_givens
-        # validate variants
-        np.testing.assert_array_equal(decision.variants, expected_variants)
-        # validate scores
-
-        for s0, s1 in zip(convert_values_to_float32(decision.scores), convert_values_to_float32(expected_scores)):
-            ds = s0 - s1
-            if ds != 0:
-                print('score: {} | expected score: {}'.format(s0, s1))
-
-        np.testing.assert_array_equal(
-            convert_values_to_float32(decision.scores),
-            convert_values_to_float32(expected_scores))
-
-        # validate best
-        assert convert_values_to_float32(decision.best) == convert_values_to_float32(expected_best)
+    # def _assert_valid_decision(
+    #         self, decision, expected_variants, expected_givens, expected_scores, expected_best):
+    #     # validate givens
+    #     assert decision.givens == expected_givens
+    #     # validate variants
+    #     np.testing.assert_array_equal(decision.variants, expected_variants)
+    #     # validate scores
+    #     np.testing.assert_array_equal(
+    #         convert_values_to_float32(decision.scores),
+    #         convert_values_to_float32(expected_scores))
+    #
+    #     # validate best
+    #     assert convert_values_to_float32(decision.best) == convert_values_to_float32(expected_best)
 
     # test choose_from
     # - valid variants, valid givens
@@ -90,7 +85,7 @@ class TestDecisionContext(TestCase):
         expected_best = test_output.get('best', None)
         assert expected_best is not None
 
-        self._assert_valid_decision(
+        assert_valid_decision(
             decision=decision, expected_variants=expected_variants,
             expected_givens=expected_givens, expected_scores=expected_scores,
             expected_best=expected_best)
@@ -171,4 +166,37 @@ class TestDecisionContext(TestCase):
             with raises(AssertionError) as aerr:
                 dc.DecisionContext(decision_model=self.test_decision_model, givens=valid_givens).score(variants=iv)
 
-    # TODO test which
+    # # TODO test which
+    # def test_which_valid_list_variants(self):
+    #     path_to_test_json = \
+    #         os.sep.join([
+    #             self.test_cases_directory, os.getenv('DECISION_MODEL_TEST_WHICH_JSON')])
+    #     test_case_json = get_test_data(path_to_test_json)
+    #
+    #     test_case = test_case_json.get('test_case', None)
+    #     assert test_case is not None
+    #
+    #     predictor_filename = test_case.get('model_filename', None)
+    #
+    #     model_url = \
+    #         ('{}' + os.sep + '{}').format(
+    #             self.predictors_fs_directory, predictor_filename)
+    #
+    #     assert model_url is not None
+    #
+    #     decision_model = \
+    #         dm.DecisionModel(model_name=None, track_url=self.track_url) \
+    #             .load(model_url=model_url)
+    #
+    #     variants = test_case.get('variants', None)
+    #     assert variants is not None
+    #     scores_seed = test_case_json.get('scores_seed', None)
+    #     assert scores_seed is not None
+    #
+    #     expected_output = test_case_json.get('test_output', None)
+    #     assert expected_output is not None
+    #     expected_best = expected_output.get('best', None)
+    #     assert expected_best is not None
+    #     np.random.seed(scores_seed)
+    #     best = decision_model.which(*variants)
+    #     assert best == expected_best

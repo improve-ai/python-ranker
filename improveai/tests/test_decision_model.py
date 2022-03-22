@@ -20,7 +20,6 @@ import improveai.decision as d
 import improveai.decision_context as dc
 import improveai.decision_model as dm
 from improveai.choosers.xgb_chooser import NativeXGBChooser
-from improveai.utils.general_purpose_tools import read_jsonstring_from_file
 from improveai.tests.test_utils import convert_values_to_float32
 from improveai.tests.test_utils import get_test_data
 
@@ -837,3 +836,182 @@ class TestDecisionModel(TestCase):
             assert resp is not None
             assert resp.status_code == 200
             assert resp.text == 'success'
+
+    def test_which_valid_list_variants(self):
+        path_to_test_json = \
+            os.sep.join([
+                self.test_cases_directory, os.getenv('DECISION_MODEL_TEST_WHICH_JSON')])
+        test_case_json = get_test_data(path_to_test_json)
+
+        test_case = test_case_json.get('test_case', None)
+        assert test_case is not None
+
+        predictor_filename = test_case.get('model_filename', None)
+
+        model_url = \
+            ('{}' + os.sep + '{}').format(
+                self.predictors_fs_directory, predictor_filename)
+
+        assert model_url is not None
+
+        decision_model = \
+            dm.DecisionModel(model_name=None, track_url=self.track_url) \
+            .load(model_url=model_url)
+
+        variants = test_case.get('variants', None)
+        assert variants is not None
+        scores_seed = test_case_json.get('scores_seed', None)
+        assert scores_seed is not None
+
+        expected_output = test_case_json.get('test_output', None)
+        assert expected_output is not None
+        expected_best = expected_output.get('best', None)
+        assert expected_best is not None
+        np.random.seed(scores_seed)
+        best = decision_model.which(*variants)
+        assert best == expected_best
+
+    def test_which_valid_list_variants_no_model(self):
+        path_to_test_json = \
+            os.sep.join([
+                self.test_cases_directory, os.getenv('DECISION_MODEL_TEST_WHICH_NO_MODEL_JSON')])
+        test_case_json = get_test_data(path_to_test_json)
+
+        test_case = test_case_json.get('test_case', None)
+        assert test_case is not None
+
+        decision_model = \
+            dm.DecisionModel(model_name=None, track_url=self.track_url)
+
+        variants = test_case.get('variants', None)
+        assert variants is not None
+        scores_seed = test_case_json.get('scores_seed', None)
+        assert scores_seed is not None
+
+        expected_output = test_case_json.get('test_output', None)
+        assert expected_output is not None
+        expected_best = expected_output.get('best', None)
+        assert expected_best is not None
+        np.random.seed(scores_seed)
+        best = decision_model.which(*variants)
+        assert best == expected_best
+
+    def test_which_valid_tuple_variants(self):
+        path_to_test_json = \
+            os.sep.join([
+                self.test_cases_directory, os.getenv('DECISION_MODEL_TEST_WHICH_JSON')])
+        test_case_json = get_test_data(path_to_test_json)
+
+        test_case = test_case_json.get('test_case', None)
+        assert test_case is not None
+
+        predictor_filename = test_case.get('model_filename', None)
+
+        model_url = \
+            ('{}' + os.sep + '{}').format(
+                self.predictors_fs_directory, predictor_filename)
+
+        assert model_url is not None
+
+        decision_model = \
+            dm.DecisionModel(model_name=None, track_url=self.track_url) \
+            .load(model_url=model_url)
+
+        variants = test_case.get('variants', None)
+        assert variants is not None
+        variants = tuple(variants)
+        scores_seed = test_case_json.get('scores_seed', None)
+        assert scores_seed is not None
+
+        expected_output = test_case_json.get('test_output', None)
+        assert expected_output is not None
+        expected_best = expected_output.get('best', None)
+        assert expected_best is not None
+        np.random.seed(scores_seed)
+        best = decision_model.which(*variants)
+        assert best == expected_best
+
+    def test_which_valid_ndarray_variants(self):
+        path_to_test_json = \
+            os.sep.join([
+                self.test_cases_directory, os.getenv('DECISION_MODEL_TEST_WHICH_JSON')])
+        test_case_json = get_test_data(path_to_test_json)
+
+        test_case = test_case_json.get('test_case', None)
+        assert test_case is not None
+
+        predictor_filename = test_case.get('model_filename', None)
+
+        model_url = \
+            ('{}' + os.sep + '{}').format(
+                self.predictors_fs_directory, predictor_filename)
+
+        assert model_url is not None
+
+        decision_model = \
+            dm.DecisionModel(model_name=None, track_url=self.track_url) \
+            .load(model_url=model_url)
+
+        variants = test_case.get('variants', None)
+        assert variants is not None
+        variants = np.array(variants)
+        scores_seed = test_case_json.get('scores_seed', None)
+        assert scores_seed is not None
+
+        expected_output = test_case_json.get('test_output', None)
+        assert expected_output is not None
+        expected_best = expected_output.get('best', None)
+        assert expected_best is not None
+        np.random.seed(scores_seed)
+        best = decision_model.which(*variants)
+        assert best == expected_best
+
+    def test_which_invalid_variants(self):
+        path_to_test_json = \
+            os.sep.join([
+                self.test_cases_directory, os.getenv('DECISION_MODEL_TEST_WHICH_JSON')])
+        test_case_json = get_test_data(path_to_test_json)
+
+        test_case = test_case_json.get('test_case', None)
+        assert test_case is not None
+
+        predictor_filename = test_case.get('model_filename', None)
+
+        model_url = \
+            ('{}' + os.sep + '{}').format(
+                self.predictors_fs_directory, predictor_filename)
+        assert model_url is not None
+
+        decision_model = \
+            dm.DecisionModel(model_name=None, track_url=self.track_url) \
+            .load(model_url=model_url)
+
+        invalid_variants = ['a', 1, 1.123]
+        for ivs in invalid_variants:
+            with raises(AssertionError) as aerr:
+                decision_model.which(*[ivs])
+
+    def test_which_zero_length_variants(self):
+        path_to_test_json = \
+            os.sep.join([
+                self.test_cases_directory, os.getenv('DECISION_MODEL_TEST_WHICH_JSON')])
+        test_case_json = get_test_data(path_to_test_json)
+
+        test_case = test_case_json.get('test_case', None)
+        assert test_case is not None
+
+        predictor_filename = test_case.get('model_filename', None)
+
+        model_url = \
+            ('{}' + os.sep + '{}').format(
+                self.predictors_fs_directory, predictor_filename)
+        assert model_url is not None
+
+        decision_model = \
+            dm.DecisionModel(model_name=None, track_url=self.track_url) \
+            .load(model_url=model_url)
+
+        invalid_variants = [[], np.array([])]
+        for ivs in invalid_variants:
+            with raises(ValueError) as verr:
+                decision_model.which(*[ivs])

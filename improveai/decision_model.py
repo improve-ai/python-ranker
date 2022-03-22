@@ -7,11 +7,13 @@ import numpy as np
 from improveai.choosers.basic_choosers import BasicChooser
 from improveai.choosers.mlmodel_chooser import MLModelChooser
 from improveai.choosers.xgb_chooser import NativeXGBChooser
+import improveai.decision as d
 import improveai.decision_context as dc
 import improveai.decision_tracker as dt
-from improveai.givens_provider import GivensProvider
+import improveai.givens_provider as gp
 from improveai.settings import DEBUG
-from improveai.utils.general_purpose_tools import constant, check_variants
+from improveai.utils.general_purpose_tools import constant, check_variants, \
+    get_variants_for_which
 
 
 class DecisionModel:
@@ -83,7 +85,7 @@ class DecisionModel:
 
         self.id_ = None
         self.chooser = None
-        self.givens_provider = GivensProvider()
+        self.givens_provider = gp.GivensProvider()
 
     def __set_model_name(self, model_name: str):
         """
@@ -261,6 +263,20 @@ class DecisionModel:
         return self
 
     def score(self, variants: list or np.ndarray) -> np.ndarray:
+        """
+        Scores provided variants with available givens
+
+        Parameters
+        ----------
+        variants: list or tuple or np.ndarray
+            array of variants to choose from
+
+        Returns
+        -------
+        np.ndarray
+            array of float64 scores
+
+        """
         # TODO make sure how givens should be created
         # in iOS the call is almost identical (nil is passed to `givens` parameter of self.givens_provider.givens())
         # TODO [CHECK] how does this correspond with DecisionContext's givens?
@@ -455,6 +471,7 @@ class DecisionModel:
         check_variants(variants=variants)
         # return d.Decision(decision_model=self).choose_from(variants=variants)
         # TODO how about the givens? Should GivensProvider be used here?
+        #  in iOS here givens are set to nil
         return dc.DecisionContext(decision_model=self, givens=None).choose_from(variants=variants)
 
     def add_reward(self, reward: float):
@@ -480,6 +497,24 @@ class DecisionModel:
             if self.track_url is None:
                 warnings.warn('`track_url` is None - reward not added')
 
-    def which(self):
-        # TODO implement this method
-        pass
+    def which(self, *variants):
+        """
+        A short hand version of chooseFrom that returns the chosen result directly,
+        automatically tracking the decision in the process. This would be a varargs
+        version of chooseFrom that would also take an array as the only argument.
+        If the only argument was not an array it would throw an exception.
+        Since the Decision object is not returned, rewards would only be tracked
+        through DecisionModel.addReward
+
+        Parameters
+        ----------
+        *variants: list or tuple or np.ndarray
+            array of variants passed as positional parameters
+
+        Returns
+        -------
+        d.Decision
+            snapshot of the Decision made with provided variants and available givens
+
+        """
+        return self.choose_from(variants=get_variants_for_which(variants=variants)).get()

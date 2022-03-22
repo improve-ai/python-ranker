@@ -1,4 +1,3 @@
-import math
 from collections.abc import Iterable
 from copy import deepcopy
 from datetime import datetime
@@ -6,7 +5,6 @@ import json
 import numpy as np
 import requests as rq
 from typing import Dict
-from uuid import uuid4
 from warnings import warn
 
 # todo change when ready
@@ -331,7 +329,7 @@ class DecisionTracker:
 
         assert isinstance(track_runners_up, bool)
 
-        if not isinstance(variants, list):
+        if not (isinstance(variants, list) or isinstance(variants, tuple) or isinstance(variants, np.ndarray)):
             raise TypeError(
                 'Provided variants are of a wrong type: {}. Only list type is '
                 'allowed'.format(type(variants)))
