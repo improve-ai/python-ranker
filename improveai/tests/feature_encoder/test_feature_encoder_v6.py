@@ -71,14 +71,14 @@ class TestEncoder(TestCase):
 
     @fixture(autouse=True)
     def prepare_artifacts(self):
-        # self.encoder_seed = int(os.getenv("V6_FEATURE_ENCODER_MODEL_SEED"))
-        # self.noise_seed = int(os.getenv("V6_FEATURE_ENCODER_NOISE_SEED"))
+        # self.encoder_seed = int(os.getenv("FEATURE_ENCODER_MODEL_SEED"))
+        # self.noise_seed = int(os.getenv("FEATURE_ENCODER_NOISE_SEED"))
 
         self.v6_test_suite_data_directory = \
-            os.getenv("V6_FEATURE_ENCODER_TEST_SUITE_JSONS_DIR")
+            os.getenv("FEATURE_ENCODER_TEST_SUITE_JSONS_DIR")
 
         self.v6_test_python_specific_data_directory = \
-            os.getenv("V6_FEATURE_ENCODER_TEST_PYTHON_SPECIFIC_JSONS_DIR")
+            os.getenv("FEATURE_ENCODER_TEST_PYTHON_SPECIFIC_JSONS_DIR")
         # self.feature_encoder = FeatureEncoder(model_seed=self.encoder_seed)
 
         # np.random.seed(self.noise_seed)
@@ -88,7 +88,7 @@ class TestEncoder(TestCase):
 
     def _set_feature_names(self):
         b = xgb.Booster()
-        b.load_model(os.getenv("V6_DUMMY_MODEL_PATH"))
+        b.load_model(os.getenv("DUMMY_MODEL_PATH"))
 
         user_defined_metadata = json.loads(b.attr('user_defined_metadata'))[
             'json']
@@ -445,7 +445,7 @@ class TestEncoder(TestCase):
 
         test_case_path = os.sep.join(
             [self.v6_test_suite_data_directory,
-             os.getenv("V6_FEATURE_ENCODER_TEST_NONE_JSON")])
+             os.getenv("FEATURE_ENCODER_TEST_NONE_JSON")])
 
         test_case = \
             self._get_test_data(path_to_test_json=test_case_path)
@@ -547,11 +547,11 @@ class TestEncoder(TestCase):
     #         test_output_key: str = 'test_output'):
     #
     #     test_case_filename = \
-    #         os.getenv('V6_FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_JSON', None)
+    #         os.getenv('FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_JSON', None)
     #
     #     if not test_case_filename:
     #         raise ValueError(
-    #             'No envvar under key: V6_FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_JSON')
+    #             'No envvar under key: FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_JSON')
     #
     #     test_case_path = os.sep.join(
     #         [self.v6_test_suite_data_directory, test_case_filename])
@@ -611,89 +611,89 @@ class TestEncoder(TestCase):
 
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_EMPTY_LIST_JSON"))
+                "FEATURE_ENCODER_TEST_EMPTY_LIST_JSON"))
 
     def test_empty_dict(self):
 
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_EMPTY_DICT_JSON"))
+                "FEATURE_ENCODER_TEST_EMPTY_DICT_JSON"))
 
     def test_dict_with_null_value(self):
 
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_NONE_JSON"))
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_NONE_JSON"))
 
     def test_npnan(self):
 
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_NAN_JSON"))
+                "FEATURE_ENCODER_TEST_NAN_JSON"))
 
     # Test all primitive types: "string", true, false, 0, 0.0, 1, 1.0, -1, -1.0
     def test_true(self):
 
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_BOOL_TRUE_JSON"))
+                "FEATURE_ENCODER_TEST_BOOL_TRUE_JSON"))
 
     def test_false(self):
 
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_BOOL_FALSE_JSON"))
+                "FEATURE_ENCODER_TEST_BOOL_FALSE_JSON"))
 
     def test_string(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_STRING_JSON"))
+                "FEATURE_ENCODER_TEST_STRING_JSON"))
 
     def test_int_0(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_INT_0_JSON"))
+                "FEATURE_ENCODER_TEST_INT_0_JSON"))
 
     def test_float_0(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_FLOAT_0_JSON"))
+                "FEATURE_ENCODER_TEST_FLOAT_0_JSON"))
 
     def test_int_1(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_INT_1_JSON"))
+                "FEATURE_ENCODER_TEST_INT_1_JSON"))
 
     def test_int64_small(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_INT64_SMALL_JSON"))
+                "FEATURE_ENCODER_TEST_INT64_SMALL_JSON"))
 
     def test_int64_big(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_INT64_BIG_JSON"))
+                "FEATURE_ENCODER_TEST_INT64_BIG_JSON"))
 
     def test_float_1(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_FLOAT_1_JSON"))
+                "FEATURE_ENCODER_TEST_FLOAT_1_JSON"))
 
     def test_int_m1(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_INT_M1_JSON"))
+                "FEATURE_ENCODER_TEST_INT_M1_JSON"))
 
     def test_float_m1(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_FLOAT_M1_JSON"))
+                "FEATURE_ENCODER_TEST_FLOAT_M1_JSON"))
 
     def test_big_float(self):
 
         test_case_path = os.sep.join(
             [self.v6_test_suite_data_directory,
-             os.getenv("V6_FEATURE_ENCODER_TEST_BIG_FLOAT_JSON")])
+             os.getenv("FEATURE_ENCODER_TEST_BIG_FLOAT_JSON")])
 
         test_case = \
             self._get_test_data(path_to_test_json=test_case_path)
@@ -735,159 +735,159 @@ class TestEncoder(TestCase):
     def test_small_float(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_SMALL_FLOAT_JSON"))
+                "FEATURE_ENCODER_TEST_SMALL_FLOAT_JSON"))
 
     def test_special_characters_string(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_SPECIAL_CHARACTERS_STRING_JSON"))
+                "FEATURE_ENCODER_TEST_SPECIAL_CHARACTERS_STRING_JSON"))
 
     def test_special_characters_in_key_string(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_SPECIAL_CHARACTERS_IN_KEY_STRING_JSON"))
+                "FEATURE_ENCODER_TEST_SPECIAL_CHARACTERS_IN_KEY_STRING_JSON"))
 
     def test_unicode_emoji_01(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_UNICODE_EMOJI_01_JSON"))
+                "FEATURE_ENCODER_TEST_UNICODE_EMOJI_01_JSON"))
 
     def test_unicode_emoji_02(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_UNICODE_EMOJI_02_JSON"))
+                "FEATURE_ENCODER_TEST_UNICODE_EMOJI_02_JSON"))
 
     def test_unicode_emoji_in_key(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_UNICODE_EMOJI_IN_KEY_JSON"))
+                "FEATURE_ENCODER_TEST_UNICODE_EMOJI_IN_KEY_JSON"))
 
     def test_unicode_string_01(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_UNICODE_STRING_01_JSON"))
+                "FEATURE_ENCODER_TEST_UNICODE_STRING_01_JSON"))
 
     def test_unicode_string_02(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_UNICODE_STRING_02_JSON"))
+                "FEATURE_ENCODER_TEST_UNICODE_STRING_02_JSON"))
 
     def test_unicode_string_with_u0000(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_UNICODE_STRING_WITH_U0000_JSON"))
+                "FEATURE_ENCODER_TEST_UNICODE_STRING_WITH_U0000_JSON"))
 
     def test_unicode_u0000(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_UNICODE_U0000_JSON"))
+                "FEATURE_ENCODER_TEST_UNICODE_U0000_JSON"))
 
     def test_unicode_zero_length_string(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_ZERO_LENGTH_STRING_JSON"))
+                "FEATURE_ENCODER_TEST_ZERO_LENGTH_STRING_JSON"))
 
     def test_newline_tab_return_symbols_string(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_NEWLINE_TAB_RETURN_SYMBOLS_STRING_JSON"))
+                "FEATURE_ENCODER_TEST_NEWLINE_TAB_RETURN_SYMBOLS_STRING_JSON"))
 
     def test_noise_0_with_float(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_NOISE_0_WITH_FLOAT_JSON"))
+                "FEATURE_ENCODER_TEST_NOISE_0_WITH_FLOAT_JSON"))
 
     def test_noise_0_with_int(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_NOISE_0_WITH_INT_JSON"))
+                "FEATURE_ENCODER_TEST_NOISE_0_WITH_INT_JSON"))
 
     def test_noise_0_with_primitive_dict_float(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_NOISE_0_WITH_PRIMITIVE_DICT_FLOAT_JSON"))
+                "FEATURE_ENCODER_TEST_NOISE_0_WITH_PRIMITIVE_DICT_FLOAT_JSON"))
 
     def test_noise_0_with_primitive_dict_int(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_NOISE_0_WITH_PRIMITIVE_DICT_INT_JSON"))
+                "FEATURE_ENCODER_TEST_NOISE_0_WITH_PRIMITIVE_DICT_INT_JSON"))
 
     def test_noise_0_with_string(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_NOISE_0_WITH_STRING_JSON"))
+                "FEATURE_ENCODER_TEST_NOISE_0_WITH_STRING_JSON"))
 
     def test_noise_1_with_string(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_NOISE_1_WITH_STRING_JSON"))
+                "FEATURE_ENCODER_TEST_NOISE_1_WITH_STRING_JSON"))
 
     def test_noise_2_128(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_NOISE_2_128_JSON"))
+                "FEATURE_ENCODER_TEST_NOISE_2_128_JSON"))
 
     def test_noise_3_128(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_NOISE_3_128_JSON"))
+                "FEATURE_ENCODER_TEST_NOISE_3_128_JSON"))
 
     def test_noise_2_256(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_NOISE_2_256_JSON"))
+                "FEATURE_ENCODER_TEST_NOISE_2_256_JSON"))
 
     def test_noise_3_256(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_NOISE_3_256_JSON"))
+                "FEATURE_ENCODER_TEST_NOISE_3_256_JSON"))
 
     def test_big_int32_seed(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_SEED_BIG_INT32_JSON"))
+                "FEATURE_ENCODER_TEST_SEED_BIG_INT32_JSON"))
 
     def test_leading_zeros_in_feature_names_01(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_LEADING_ZEROS_IN_FEATURE_NAME_01"))
+                "FEATURE_ENCODER_TEST_LEADING_ZEROS_IN_FEATURE_NAME_01"))
 
     def test_leading_zeros_in_feature_names_02(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_LEADING_ZEROS_IN_FEATURE_NAME_02"))
+                "FEATURE_ENCODER_TEST_LEADING_ZEROS_IN_FEATURE_NAME_02"))
 
     def test_sprinkle_equals_zero(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_SPRINKLED_EQUALS_ZERO_JSON"))
+                "FEATURE_ENCODER_TEST_SPRINKLED_EQUALS_ZERO_JSON"))
 
     def test_encode_feature_vector(self):
         self._test_encode_feature_vector(
-            test_case_envvar='V6_FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_JSON')
+            test_case_envvar='FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_JSON')
 
     def test_encode_feature_vector_numpy(self):
         self._test_encode_feature_vector(
-            test_case_envvar='V6_FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_JSON',
+            test_case_envvar='FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_JSON',
             force_numpy=True)
 
     def test_encode_feature_vector_variant_nan(self):
         self._test_encode_feature_vector(
-            test_case_envvar='V6_FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_VARIANT_NAN_JSON')
+            test_case_envvar='FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_VARIANT_NAN_JSON')
 
 
     def test_encode_feature_vector_variant_nan_givens_none_extra_features(self):
         self._test_encode_feature_vector(
-            test_case_envvar='V6_FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_VARIANT_NAN_GIVENS_NONE_EXTRA_FEATURES_JSON')
+            test_case_envvar='FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_VARIANT_NAN_GIVENS_NONE_EXTRA_FEATURES_JSON')
 
     def test_encode_feature_vector_variant_none(self):
         self._test_encode_feature_vector(
-            test_case_envvar='V6_FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_VARIANT_NONE_JSON')
+            test_case_envvar='FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_VARIANT_NONE_JSON')
 
 
     def test_encode_feature_vector_variant_none_givens_none_extra_features(self):
         self._test_encode_feature_vector(
-            test_case_envvar='V6_FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_VARIANT_NONE_GIVENS_NONE_EXTRA_FEATURES_JSON')
+            test_case_envvar='FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_VARIANT_NONE_GIVENS_NONE_EXTRA_FEATURES_JSON')
 
     def test_noise_out_of_bounds_raises(self):
         fe = FeatureEncoder(model_seed=0)
@@ -911,123 +911,123 @@ class TestEncoder(TestCase):
     def test_same_output_int_bool_1(self):
 
         self._generic_test_encode_record_for_same_output_from_json_data(
-            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_INT_1_JSON'),
-            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_BOOL_TRUE_JSON'))
+            first_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_INT_1_JSON'),
+            second_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_BOOL_TRUE_JSON'))
 
     def test_same_output_big_int64_primitive_dict_big_int64(self):
 
         self._generic_test_encode_record_for_same_output_from_json_data(
-            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_INT64_BIG_JSON'),
-            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT64_BIG_JSON'))
+            first_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_INT64_BIG_JSON'),
+            second_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT64_BIG_JSON'))
 
     def test_same_output_small_int64_primitive_dict_small_int64(self):
 
         self._generic_test_encode_record_for_same_output_from_json_data(
-            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_INT64_SMALL_JSON'),
-            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT64_SMALL_JSON'))
+            first_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_INT64_SMALL_JSON'),
+            second_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT64_SMALL_JSON'))
 
     def test_same_output_int_bool_0(self):
         self._generic_test_encode_record_for_same_output_from_json_data(
-            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_INT_0_JSON'),
-            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_BOOL_FALSE_JSON'))
+            first_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_INT_0_JSON'),
+            second_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_BOOL_FALSE_JSON'))
 
     def test_same_output_float_bool_1(self):
 
         self._generic_test_encode_record_for_same_output_from_json_data(
-            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_FLOAT_1_JSON'),
-            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_BOOL_TRUE_JSON'))
+            first_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_FLOAT_1_JSON'),
+            second_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_BOOL_TRUE_JSON'))
 
     def test_same_output_float_bool_0(self):
 
         self._generic_test_encode_record_for_same_output_from_json_data(
-            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_FLOAT_0_JSON'),
-            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_BOOL_FALSE_JSON'))
+            first_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_FLOAT_0_JSON'),
+            second_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_BOOL_FALSE_JSON'))
 
     def test_same_output_int_dict_0(self):
 
         self._generic_test_encode_record_for_same_output_from_json_data(
-            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_INT_0_JSON'),
-            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT_0_JSON'))
+            first_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_INT_0_JSON'),
+            second_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT_0_JSON'))
 
     def test_same_output_float_dict_0(self):
 
         self._generic_test_encode_record_for_same_output_from_json_data(
-            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_FLOAT_0_JSON'),
-            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_FLOAT_0_JSON'))
+            first_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_FLOAT_0_JSON'),
+            second_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_PRIMITIVE_DICT_FLOAT_0_JSON'))
 
     def test_same_output_special_characters_string(self):
 
         self._generic_test_encode_record_for_same_output_from_json_data(
-            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_SPECIAL_CHARACTERS_STRING_JSON'),
-            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_SPECIAL_CHARACTERS_STRING_JSON'))
+            first_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_SPECIAL_CHARACTERS_STRING_JSON'),
+            second_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_PRIMITIVE_DICT_SPECIAL_CHARACTERS_STRING_JSON'))
 
     def test_same_output_unicode_emoji_01(self):
 
         self._generic_test_encode_record_for_same_output_from_json_data(
-            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_UNICODE_EMOJI_01_JSON'),
-            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_EMOJI_01_JSON'))
+            first_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_UNICODE_EMOJI_01_JSON'),
+            second_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_EMOJI_01_JSON'))
 
     def test_same_output_unicode_emoji_02(self):
 
         self._generic_test_encode_record_for_same_output_from_json_data(
-            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_UNICODE_EMOJI_02_JSON'),
-            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_EMOJI_02_JSON'))
+            first_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_UNICODE_EMOJI_02_JSON'),
+            second_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_EMOJI_02_JSON'))
 
     def test_same_output_unicode_string_01(self):
 
         self._generic_test_encode_record_for_same_output_from_json_data(
-            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_UNICODE_STRING_01_JSON'),
-            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_STRING_01_JSON'))
+            first_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_UNICODE_STRING_01_JSON'),
+            second_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_STRING_01_JSON'))
 
     def test_same_output_unicode_string_02(self):
 
         self._generic_test_encode_record_for_same_output_from_json_data(
-            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_UNICODE_STRING_02_JSON'),
-            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_STRING_02_JSON'))
+            first_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_UNICODE_STRING_02_JSON'),
+            second_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_STRING_02_JSON'))
 
     def test_same_output_unicode_string_with_u0000(self):
 
         self._generic_test_encode_record_for_same_output_from_json_data(
-            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_UNICODE_STRING_WITH_U0000_JSON'),
-            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_STRING_WITH_U0000_JSON'))
+            first_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_UNICODE_STRING_WITH_U0000_JSON'),
+            second_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_STRING_WITH_U0000_JSON'))
 
     def test_same_output_unicode_u0000(self):
 
         self._generic_test_encode_record_for_same_output_from_json_data(
-            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_UNICODE_U0000_JSON'),
-            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_U0000_JSON'))
+            first_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_UNICODE_U0000_JSON'),
+            second_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_U0000_JSON'))
 
     def test_same_output_zero_length_string(self):
 
         self._generic_test_encode_record_for_same_output_from_json_data(
-            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_ZERO_LENGTH_STRING_JSON'),
-            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_ZERO_LENGTH_STRING_JSON'))
+            first_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_ZERO_LENGTH_STRING_JSON'),
+            second_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_PRIMITIVE_DICT_ZERO_LENGTH_STRING_JSON'))
 
     def test_same_output_newline_tab_return_symbols_string(self):
 
         self._generic_test_encode_record_for_same_output_from_json_data(
-            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_NEWLINE_TAB_RETURN_SYMBOLS_STRING_JSON'),
-            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_NEWLINE_TAB_RETURN_SYMBOLS_STRING_JSON'))
+            first_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_NEWLINE_TAB_RETURN_SYMBOLS_STRING_JSON'),
+            second_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_PRIMITIVE_DICT_NEWLINE_TAB_RETURN_SYMBOLS_STRING_JSON'))
 
     def test_same_output_noise_2_256_3_256(self):
         pass
 
         self._generic_test_encode_record_for_same_output_from_json_data(
-            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_NOISE_2_256_JSON'),
-            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_NOISE_3_256_JSON'))
+            first_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_NOISE_2_256_JSON'),
+            second_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_NOISE_3_256_JSON'))
 
     def test_different_output_noise_2_128_3_128(self):
 
         self._generic_test_encode_record_for_different_output_from_json_data(
-            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_NOISE_2_128_JSON'),
-            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_NOISE_3_128_JSON'))
+            first_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_NOISE_2_128_JSON'),
+            second_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_NOISE_3_128_JSON'))
 
     # Test all primitive dicts: "string", true, false, 0, 0.0, 1, 1.0, -1, -1.0
     def test_primitive_dict_big_float(self):
 
         test_case_path = os.sep.join(
             [self.v6_test_suite_data_directory,
-             os.getenv("V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_BIG_FLOAT_JSON")])
+             os.getenv("FEATURE_ENCODER_TEST_PRIMITIVE_DICT_BIG_FLOAT_JSON")])
 
         test_case = \
             self._get_test_data(path_to_test_json=test_case_path)
@@ -1069,194 +1069,194 @@ class TestEncoder(TestCase):
     def test_primitive_dict_big_int_negative(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_BIG_INT_NEGATIVE_JSON"))
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_BIG_INT_NEGATIVE_JSON"))
 
     def test_primitive_dict_big_int_positive(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_BIG_INT_POSITIVE_JSON"))
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_BIG_INT_POSITIVE_JSON"))
 
     def test_primitive_dict_big_int64(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT64_BIG_JSON"))
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT64_BIG_JSON"))
 
     def test_primitive_dict_small_int64(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT64_SMALL_JSON"))
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT64_SMALL_JSON"))
 
     def test_primitive_dict_bool_false(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_BOOL_FALSE_JSON"))
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_BOOL_FALSE_JSON"))
 
     def test_primitive_dict_bool_true(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_BOOL_TRUE_JSON"))
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_BOOL_TRUE_JSON"))
 
     def test_primitive_dict_float_0(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_FLOAT_0_JSON"))
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_FLOAT_0_JSON"))
 
     def test_primitive_dict_float_1(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_FLOAT_1_JSON"))
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_FLOAT_1_JSON"))
 
     def test_primitive_dict_float_m1(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_FLOAT_M1_JSON"))
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_FLOAT_M1_JSON"))
 
     def test_foo_bar(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_FOO_BAR_JSON"))
+                "FEATURE_ENCODER_TEST_FOO_BAR_JSON"))
 
     def test_dit_foo_bar(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_DICT_FOO_BAR_JSON"))
+                "FEATURE_ENCODER_TEST_DICT_FOO_BAR_JSON"))
 
     def test_primitive_dict_foo_bar(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_FOO_BAR_JSON"))
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_FOO_BAR_JSON"))
 
     def test_foo_bar_primitive_dict_equals_list(self):
         self._generic_test_encode_record_for_same_output_from_json_data(
-            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_FOO_BAR_JSON'),
-            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_FOO_BAR_JSON'))
+            first_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_FOO_BAR_JSON'),
+            second_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_PRIMITIVE_DICT_FOO_BAR_JSON'))
 
     def test_foo_bar_dict_equals_list(self):
 
         self._generic_test_encode_record_for_same_output_from_json_data(
             first_test_case_filename=os.getenv(
-                'V6_FEATURE_ENCODER_TEST_FOO_BAR_JSON'),
+                'FEATURE_ENCODER_TEST_FOO_BAR_JSON'),
             second_test_case_filename=os.getenv(
-                'V6_FEATURE_ENCODER_TEST_DICT_FOO_BAR_JSON'))
+                'FEATURE_ENCODER_TEST_DICT_FOO_BAR_JSON'))
 
     def test_same_output_string_dict(self):
 
         self._generic_test_encode_record_for_same_output_from_json_data(
-            first_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_STRING_JSON'),
-            second_test_case_filename=os.getenv('V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_STRING_JSON'))
+            first_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_STRING_JSON'),
+            second_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_PRIMITIVE_DICT_STRING_JSON'))
 
     def test_primitive_dict_int_0(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT_0_JSON"))
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT_0_JSON"))
 
     def test_primitive_dict_int_1(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT_1_JSON"))
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT_1_JSON"))
 
     def test_primitive_dict_int_m1(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT_M1_JSON"))
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT_M1_JSON"))
 
     def test_primitive_dict_small_float(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_SMALL_FLOAT_JSON"))
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_SMALL_FLOAT_JSON"))
 
     def test_primitive_dict_string(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_STRING_JSON"))
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_STRING_JSON"))
 
     def test_primitive_dict_special_characters_string(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_SPECIAL_CHARACTERS_STRING_JSON"))
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_SPECIAL_CHARACTERS_STRING_JSON"))
 
     def test_primitive_dict_unicode_emoji_01(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_EMOJI_01_JSON"))
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_EMOJI_01_JSON"))
 
     def test_primitive_dict_unicode_emoji_02(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_EMOJI_02_JSON"))
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_EMOJI_02_JSON"))
 
     def test_primitive_dict_unicode_string_01(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_STRING_01_JSON"))
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_STRING_01_JSON"))
 
     def test_primitive_dict_unicode_string_02(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_STRING_02_JSON"))
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_STRING_02_JSON"))
 
     def test_primitive_dict_unicode_string_with_u0000(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_STRING_WITH_U0000_JSON"))
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_STRING_WITH_U0000_JSON"))
 
     def test_primitive_dict_unicode_u0000(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_U0000_JSON"))
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_UNICODE_U0000_JSON"))
 
     def test_primitive_dict_zero_length_string(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_ZERO_LENGTH_STRING_JSON"))
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_ZERO_LENGTH_STRING_JSON"))
 
     def test_primitive_dict_newline_tab_return_symbols_string(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_PRIMITIVE_DICT_NEWLINE_TAB_RETURN_SYMBOLS_STRING_JSON"))
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_NEWLINE_TAB_RETURN_SYMBOLS_STRING_JSON"))
 
     def test_nested_list(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_NESTED_LIST_JSON"))
+                "FEATURE_ENCODER_TEST_NESTED_LIST_JSON"))
 
     def test_nested_dict_string_keys(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_NESTED_DICT_STRING_KEYS_JSON"))
+                "FEATURE_ENCODER_TEST_NESTED_DICT_STRING_KEYS_JSON"))
 
     def test_external_collisions_01(self):
         self._generic_test_external_collisions(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_EXTERNAL_COLLISIONS_01_JSON"),
+                "FEATURE_ENCODER_TEST_EXTERNAL_COLLISIONS_01_JSON"),
             input_data_key='test_case', expected_output_data_key='test_output',
             data_read_method='read')
 
     def test_external_collisions_02(self):
         self._generic_test_external_collisions(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_EXTERNAL_COLLISIONS_02_JSON"),
+                "FEATURE_ENCODER_TEST_EXTERNAL_COLLISIONS_02_JSON"),
             input_data_key='test_case', expected_output_data_key='test_output',
             data_read_method='read')
 
     def test_internal_collision_01(self):
         self._generic_test_internal_collisions(
             test_case_filename=os.getenv(
-                    "V6_FEATURE_ENCODER_TEST_INTERNAL_COLLISIONS_01_JSON"),
+                    "FEATURE_ENCODER_TEST_INTERNAL_COLLISIONS_01_JSON"),
             input_data_key='test_case', expected_output_data_key='test_output',
             data_read_method='read')
 
     def test_internal_collision_02(self):
         self._generic_test_internal_collisions(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_INTERNAL_COLLISIONS_02_JSON"),
+                "FEATURE_ENCODER_TEST_INTERNAL_COLLISIONS_02_JSON"),
             input_data_key='test_case', expected_output_data_key='test_output',
             data_read_method='read')
 
     def test_internal_collision_03(self):
         self._generic_test_internal_collisions(
             test_case_filename=os.getenv(
-                "V6_FEATURE_ENCODER_TEST_INTERNAL_COLLISIONS_03_JSON"),
+                "FEATURE_ENCODER_TEST_INTERNAL_COLLISIONS_03_JSON"),
             input_data_key='test_case', expected_output_data_key='test_output',
             data_read_method='read')
 
@@ -1274,7 +1274,7 @@ class TestEncoder(TestCase):
                 self.feature_encoder.encode_givens(
                     givens=illegal_primitive, noise=noise)
 
-            assert os.getenv("V6_FEATURE_ENCODER_CONTEXT_TYPEERROR_MSG") \
+            assert os.getenv("FEATURE_ENCODER_CONTEXT_TYPEERROR_MSG") \
                    in str(type_err.value)
 
     # def test_add_noise(
@@ -1282,11 +1282,11 @@ class TestEncoder(TestCase):
     #         test_input_key: str = 'test_case', test_output_key: str = 'test_output'):
     #
     #     test_case_filename = \
-    #         os.getenv('V6_FEATURE_ENCODER_TEST_ADD_NOISE_JSON', None)
+    #         os.getenv('FEATURE_ENCODER_TEST_ADD_NOISE_JSON', None)
     #
     #     if not test_case_filename:
     #         raise ValueError(
-    #             'No envvar under key: V6_FEATURE_ENCODER_TEST_ADD_NOISE_JSON')
+    #             'No envvar under key: FEATURE_ENCODER_TEST_ADD_NOISE_JSON')
     #
     #     test_case_path = os.sep.join(
     #         [self.v6_test_python_specific_data_directory, test_case_filename])
@@ -1356,11 +1356,11 @@ class TestEncoder(TestCase):
             test_input_key: str = 'test_case'):
 
         test_case_filename = \
-            os.getenv('V6_FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_JSON', None)
+            os.getenv('FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_JSON', None)
 
         if not test_case_filename:
             raise ValueError(
-                'No envvar under key: V6_FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_JSON')
+                'No envvar under key: FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_JSON')
 
         test_case_path = os.sep.join(
             [self.v6_test_suite_data_directory, test_case_filename])
@@ -1403,7 +1403,7 @@ class TestEncoder(TestCase):
                 feature_names=test_feature_names,
                 noise=self.noise, into=tested_into)
 
-            assert os.getenv("V6_FEATURE_ENCODER_ENCODE_FEATURE_VECTOR_INTO_IS_NONE_VALERROR_MSG") \
+            assert os.getenv("FEATURE_ENCODER_ENCODE_FEATURE_VECTOR_INTO_IS_NONE_VALERROR_MSG") \
                    in str(val_err.value)
 
     def test_encode_feature_vector_raises_on_worng_type_of_extra_features(
@@ -1413,11 +1413,11 @@ class TestEncoder(TestCase):
             test_input_key: str = 'test_case'):
 
         test_case_filename = \
-            os.getenv('V6_FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_JSON', None)
+            os.getenv('FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_JSON', None)
 
         if not test_case_filename:
             raise ValueError(
-                'No envvar under key: V6_FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_JSON')
+                'No envvar under key: FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_JSON')
 
         test_case_path = os.sep.join(
             [self.v6_test_suite_data_directory, test_case_filename])
@@ -1458,7 +1458,7 @@ class TestEncoder(TestCase):
                 feature_names=test_feature_names,
                 noise=self.noise, into=tested_into)
 
-            assert os.getenv("V6_FEATURE_ENCODER_ENCODE_FEATURE_VECTOR_WRONG_TYPE_OF_EXTRA_FEATURES_TYPEERROR_MSG") \
+            assert os.getenv("FEATURE_ENCODER_ENCODE_FEATURE_VECTOR_WRONG_TYPE_OF_EXTRA_FEATURES_TYPEERROR_MSG") \
                    in str(type_err.value)
 
     def test_add_multiple_extra_features(self):

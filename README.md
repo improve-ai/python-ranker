@@ -50,7 +50,7 @@ To install python-sdk for Improve.ai:
  6. run the following commands to install improveai python package:
 
     
-    python3 setup.py build_ext --inplace && python3 setup.py install
+    python3 setup.py install
 
 
 ### Hello World!

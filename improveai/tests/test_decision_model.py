@@ -56,12 +56,12 @@ class TestDecisionModel(TestCase):
     @fixture(autouse=True)
     def prepare_env(self):
         self.test_cases_directory = \
-            os.getenv('V6_DECISION_MODEL_TEST_CASES_DIRECTORY')
+            os.getenv('DECISION_MODEL_TEST_CASES_DIRECTORY')
 
         self.predictors_fs_directory = \
-            os.getenv('V6_DECISION_MODEL_PREDICTORS_DIR')
+            os.getenv('DECISION_MODEL_PREDICTORS_DIR')
 
-        self.track_url = os.getenv('V6_DECISION_TRACKER_TEST_URL', None)
+        self.track_url = os.getenv('DECISION_TRACKER_TEST_URL', None)
         assert self.track_url is not None
 
     def _assert_metadata_entries_equal(
@@ -255,25 +255,25 @@ class TestDecisionModel(TestCase):
 
         self._generic_test_loaded_model(
             test_data_filename=os.getenv(
-                'V6_DECISION_MODEL_TEST_LOAD_MODEL_FS_NATIVE_JSON'),
+                'DECISION_MODEL_TEST_LOAD_MODEL_FS_NATIVE_JSON'),
             expected_predictor_type=xgb.Booster)
 
     def test_load_model_sync_mlmodel_fs(self):
         self._generic_test_loaded_model(
             test_data_filename=os.getenv(
-                'V6_DECISION_MODEL_TEST_LOAD_MODEL_FS_MLMODEL_JSON'),
+                'DECISION_MODEL_TEST_LOAD_MODEL_FS_MLMODEL_JSON'),
             expected_predictor_type=ct.models.MLModel)
 
     def test_load_model_sync_native_fs_no_model(self):
 
         self._generic_test_loaded_fs_none_model(
             test_data_filename=os.getenv(
-                'V6_DECISION_MODEL_TEST_LOAD_MODEL_FS_NATIVE_NO_MODEL_JSON'))
+                'DECISION_MODEL_TEST_LOAD_MODEL_FS_NATIVE_NO_MODEL_JSON'))
 
     def test_load_model_sync_mlmodel_fs_no_model(self):
         self._generic_test_loaded_fs_none_model(
             test_data_filename=os.getenv(
-                'V6_DECISION_MODEL_TEST_LOAD_MODEL_FS_MLMODEL_NO_MODEL_JSON'))
+                'DECISION_MODEL_TEST_LOAD_MODEL_FS_MLMODEL_NO_MODEL_JSON'))
 
     # TODO uncomment once v6 model url is available
     # def test_load_model_sync_native_url(self):
@@ -282,20 +282,20 @@ class TestDecisionModel(TestCase):
     def test_load_model_sync_native_url_no_model(self):
         self._generic_test_loaded_url_none_model(
             test_data_filename=os.getenv(
-                'V6_DECISION_MODEL_TEST_LOAD_MODEL_URL_NO_MODEL_JSON'))
+                'DECISION_MODEL_TEST_LOAD_MODEL_URL_NO_MODEL_JSON'))
 
     # ASYNC tests
     # test model loading
     def test_load_model_async_native_fs(self):
         self._generic_test_loaded_model(
             test_data_filename=os.getenv(
-                'V6_DECISION_MODEL_TEST_LOAD_MODEL_FS_NATIVE_JSON'),
+                'DECISION_MODEL_TEST_LOAD_MODEL_FS_NATIVE_JSON'),
             expected_predictor_type=xgb.Booster, load_mode='async')
 
     def test_load_model_async_mlmodel_fs(self):
         self._generic_test_loaded_model(
             test_data_filename=os.getenv(
-                'V6_DECISION_MODEL_TEST_LOAD_MODEL_FS_MLMODEL_JSON'),
+                'DECISION_MODEL_TEST_LOAD_MODEL_FS_MLMODEL_JSON'),
             expected_predictor_type=ct.models.MLModel, load_mode='async')
 
     def _generic_desired_decision_model_method_call(
@@ -490,35 +490,35 @@ class TestDecisionModel(TestCase):
     def test__score_no_model(self):
         self._generic_desired_decision_model_method_call_no_model(
             test_data_filename=os.getenv(
-                'V6_DECISION_MODEL_TEST__SCORE_NATIVE_NO_MODEL_JSON'),
+                'DECISION_MODEL_TEST__SCORE_NATIVE_NO_MODEL_JSON'),
             evaluated_method_name='_score',
             empty_callable_kwargs={'variants': None, 'givens': None})
 
     def test__score(self):
         self._generic_desired_decision_model_method_call(
             test_data_filename=os.getenv(
-                'V6_DECISION_MODEL_TEST__SCORE_NATIVE_JSON'),
+                'DECISION_MODEL_TEST__SCORE_NATIVE_JSON'),
             evaluated_method_name='_score',
             empty_callable_kwargs={'variants': None, 'givens': None})
 
     def test_score_no_model(self):
         self._generic_desired_decision_model_method_call_no_model(
             test_data_filename=os.getenv(
-                'V6_DECISION_MODEL_TEST_SCORE_NATIVE_NO_MODEL_JSON'),
+                'DECISION_MODEL_TEST_SCORE_NATIVE_NO_MODEL_JSON'),
             evaluated_method_name='score',
             empty_callable_kwargs={'variants': None, 'givens': None})
 
     def test_score(self):
         self._generic_desired_decision_model_method_call(
             test_data_filename=os.getenv(
-                'V6_DECISION_MODEL_TEST_SCORE_NATIVE_JSON'),
+                'DECISION_MODEL_TEST_SCORE_NATIVE_JSON'),
             evaluated_method_name='score',
             empty_callable_kwargs={'variants': None, 'givens': None})
 
     def test_top_scoring_variant_no_model(self):
         self._generic_desired_decision_model_method_call_no_model(
             test_data_filename=os.getenv(
-                'V6_DECISION_MODEL_TEST_TOP_SCORING_VARIANT_NATIVE_NO_MODEL_JSON'),
+                'DECISION_MODEL_TEST_TOP_SCORING_VARIANT_NATIVE_NO_MODEL_JSON'),
             evaluated_method_name='top_scoring_variant',
             empty_callable_kwargs={
                 'variants': None, 'givens': None, 'scores': None})
@@ -526,7 +526,7 @@ class TestDecisionModel(TestCase):
     def test_top_scoring_variant(self):
         self._generic_desired_decision_model_method_call(
             test_data_filename=os.getenv(
-                'V6_DECISION_MODEL_TEST_TOP_SCORING_VARIANT_NATIVE_JSON'),
+                'DECISION_MODEL_TEST_TOP_SCORING_VARIANT_NATIVE_JSON'),
             evaluated_method_name='top_scoring_variant',
             empty_callable_kwargs={
                 'variants': None, 'givens': None, 'scores': None})
@@ -534,7 +534,7 @@ class TestDecisionModel(TestCase):
     def test_ranked_no_model(self):
         self._generic_desired_decision_model_method_call_no_model(
             test_data_filename=os.getenv(
-                'V6_DECISION_MODEL_TEST_RANK_NATIVE_NO_MODEL_JSON'),
+                'DECISION_MODEL_TEST_RANK_NATIVE_NO_MODEL_JSON'),
             evaluated_method_name='rank',
             empty_callable_kwargs={
                 'variants': None, 'givens': None, 'scores': None})
@@ -542,7 +542,7 @@ class TestDecisionModel(TestCase):
     def test_ranked(self):
         self._generic_desired_decision_model_method_call(
             test_data_filename=os.getenv(
-                'V6_DECISION_MODEL_TEST_RANK_NATIVE_JSON'),
+                'DECISION_MODEL_TEST_RANK_NATIVE_JSON'),
             evaluated_method_name='rank',
             empty_callable_kwargs={
                 'variants': None, 'givens': None, 'scores': None})
@@ -551,7 +551,7 @@ class TestDecisionModel(TestCase):
         path_to_test_json = \
             ('{}' + os.sep + '{}').format(
                 self.test_cases_directory,
-                os.getenv('V6_DECISION_MODEL_TEST_GENERATE_DESCENDING_GAUSSIANS_JSON'))
+                os.getenv('DECISION_MODEL_TEST_GENERATE_DESCENDING_GAUSSIANS_JSON'))
 
         test_data = get_test_data(path_to_test_json=path_to_test_json, method='read')
 
@@ -583,7 +583,7 @@ class TestDecisionModel(TestCase):
         path_to_test_json = \
             ('{}' + os.sep + '{}').format(
                 self.test_cases_directory,
-                os.getenv('V6_DECISION_MODEL_TEST_CHOOSE_FROM_JSON'))
+                os.getenv('DECISION_MODEL_TEST_CHOOSE_FROM_JSON'))
 
         test_data = get_test_data(path_to_test_json=path_to_test_json, method='read')
 
@@ -615,7 +615,7 @@ class TestDecisionModel(TestCase):
         path_to_test_json = \
             ('{}' + os.sep + '{}').format(
                 self.test_cases_directory,
-                os.getenv('V6_DECISION_MODEL_TEST_GIVEN_JSON'))
+                os.getenv('DECISION_MODEL_TEST_GIVEN_JSON'))
 
         test_data = get_test_data(path_to_test_json=path_to_test_json, method='read')
 
@@ -683,7 +683,7 @@ class TestDecisionModel(TestCase):
     def test_none_model_name_overwritten(self):
         path_to_test_json = \
             os.sep.join([
-                self.test_cases_directory, os.getenv('V6_DECISION_MODEL_TEST_MODEL_NAME_SET_TO_NONE_JSON')])
+                self.test_cases_directory, os.getenv('DECISION_MODEL_TEST_MODEL_NAME_SET_TO_NONE_JSON')])
         test_data = get_test_data(path_to_test_json=path_to_test_json, method='read')
 
         model_url = \
@@ -699,7 +699,7 @@ class TestDecisionModel(TestCase):
     def test_not_none_model_name_warns(self):
         path_to_test_json = \
             os.sep.join([
-                self.test_cases_directory, os.getenv('V6_DECISION_MODEL_TEST_MODEL_NAME_SET_TO_NOT_NONE_JSON')])
+                self.test_cases_directory, os.getenv('DECISION_MODEL_TEST_MODEL_NAME_SET_TO_NOT_NONE_JSON')])
         test_data = get_test_data(path_to_test_json=path_to_test_json, method='read')
 
         model_url = \
@@ -721,7 +721,7 @@ class TestDecisionModel(TestCase):
 
     def test_add_reward_inf(self):
         # V6_DUMMY_MODEL_PATH
-        model_url = os.getenv('V6_DUMMY_MODEL_PATH', None)
+        model_url = os.getenv('DUMMY_MODEL_PATH', None)
         assert model_url is not None
 
         decision_model = \
@@ -752,7 +752,7 @@ class TestDecisionModel(TestCase):
 
     def test_add_reward_none(self):
         # V6_DUMMY_MODEL_PATH
-        model_url = os.getenv('V6_DUMMY_MODEL_PATH', None)
+        model_url = os.getenv('DUMMY_MODEL_PATH', None)
         assert model_url is not None
 
         decision_model = \
@@ -782,7 +782,7 @@ class TestDecisionModel(TestCase):
                 decision_model.add_reward(reward=reward)
 
     def test_add_reward(self):
-        model_url = os.getenv('V6_DUMMY_MODEL_PATH', None)
+        model_url = os.getenv('DUMMY_MODEL_PATH', None)
         assert model_url is not None
 
         decision_model = \

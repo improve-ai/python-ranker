@@ -84,24 +84,24 @@ class TestDecisionTracker:
     def prep_env(self):
 
         self.tracks_seed = \
-            int(os.getenv('V6_DECISION_TRACKER_TRACKS_SEED'))
+            int(os.getenv('DECISION_TRACKER_TRACKS_SEED'))
 
         self.not_tracks_seed = \
-            int(os.getenv('V6_DECISION_TRACKER_NOT_TRACKS_SEED'))
+            int(os.getenv('DECISION_TRACKER_NOT_TRACKS_SEED'))
 
-        self.track_url = os.getenv('V6_DECISION_TRACKER_TEST_URL')
-        self.api_key = os.getenv('V6_DECISION_TRACKER_TEST_API_KEY')
+        self.track_url = os.getenv('DECISION_TRACKER_TEST_URL')
+        self.api_key = os.getenv('DECISION_TRACKER_TEST_API_KEY')
 
         self.variants_count = \
-            int(os.getenv('V6_DECISION_TRACKER_SHOULD_TRACK_RUNNERS_UP_VARIANTS_COUNT'))
+            int(os.getenv('DECISION_TRACKER_SHOULD_TRACK_RUNNERS_UP_VARIANTS_COUNT'))
 
         self.variants = list(range(100))
         self.max_runners_up = \
-            int(os.getenv('V6_DECISION_TRACKER_MAX_RUNNERS_UP'))
+            int(os.getenv('DECISION_TRACKER_MAX_RUNNERS_UP'))
 
-        self.sample_seed = int(os.getenv('V6_DECISION_TRACKER_SAMPLE_SEED'))
+        self.sample_seed = int(os.getenv('DECISION_TRACKER_SAMPLE_SEED'))
         self.first_sample_identical_with_variant_seed = \
-            int(os.getenv('V6_DECISION_TRACKER_FIRST_SAMPLE_IDENTICAL_WITH_VARIANT_SEED'))
+            int(os.getenv('DECISION_TRACKER_FIRST_SAMPLE_IDENTICAL_WITH_VARIANT_SEED'))
 
         self.dummy_variant = {'dummy0': 'variant'}
         self.dummy_ranked_variants = \
@@ -408,7 +408,7 @@ class TestDecisionTracker:
         track_runners_up = False
 
         expected_sample = \
-            int(os.getenv('V6_DECISION_TRACKER_SAMPLE_NOT_TRACKS'))
+            int(os.getenv('DECISION_TRACKER_SAMPLE_NOT_TRACKS'))
 
         np.random.seed(self.sample_seed)
         sample = decision_tracker.get_sample(
@@ -505,7 +505,7 @@ class TestDecisionTracker:
         track_runners_up = True
 
         expected_sample = \
-            int(os.getenv('V6_DECISION_TRACKER_SAMPLE_TRACKS'))
+            int(os.getenv('DECISION_TRACKER_SAMPLE_TRACKS'))
 
         np.random.seed(self.sample_seed)
         sample = decision_tracker.get_sample(

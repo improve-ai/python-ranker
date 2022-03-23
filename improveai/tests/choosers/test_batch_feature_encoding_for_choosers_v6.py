@@ -29,20 +29,20 @@ class TestChooserFeatureEncoding(TestCase):
 
     @fixture(autouse=True)
     def prepare_artifacts(self):
-        # self.encoder_seed = int(os.getenv("V6_FEATURE_ENCODER_MODEL_SEED"))
-        # self.noise_seed = int(os.getenv("V6_FEATURE_ENCODER_NOISE_SEED"))
+        # self.encoder_seed = int(os.getenv("FEATURE_ENCODER_MODEL_SEED"))
+        # self.noise_seed = int(os.getenv("FEATURE_ENCODER_NOISE_SEED"))
 
         self.v6_test_suite_data_directory = \
-            os.getenv("V6_FEATURE_ENCODER_TEST_SUITE_JSONS_DIR")
+            os.getenv("FEATURE_ENCODER_TEST_SUITE_JSONS_DIR")
 
         self.v6_test_python_specific_data_directory = \
-            os.getenv("V6_FEATURE_ENCODER_TEST_PYTHON_SPECIFIC_JSONS_DIR")
+            os.getenv("FEATURE_ENCODER_TEST_PYTHON_SPECIFIC_JSONS_DIR")
         # self.feature_encoder = FeatureEncoder(model_seed=self.encoder_seed)
 
         self.xgb_chooser = NativeXGBChooser()
-        xgb_path = os.getenv("V6_DUMMY_MODEL_PATH")
+        xgb_path = os.getenv("DUMMY_MODEL_PATH")
         self.xgb_chooser.load_model(input_model_src=xgb_path)
-        self.batch_encoding_seed = int(os.getenv('V6_BATCH_ENCODING_SEED'))
+        self.batch_encoding_seed = int(os.getenv('BATCH_ENCODING_SEED'))
 
     def _get_test_data(
             self, path_to_test_json: str, method: str = 'readlines') -> object:
@@ -119,7 +119,7 @@ class TestChooserFeatureEncoding(TestCase):
     def test_batch_variants_encoding_with_single_given(self):
         self._generic_test_batch_input_encoding(
             test_case_filename=os.getenv(
-                "V6_CHOOSERS_FEATURE_ENCODER_TEST_BATCH_ENCODING_JSONLINES"),
+                "CHOOSERS_FEATURE_ENCODER_TEST_BATCH_ENCODING_JSONLINES"),
             expected_output_data_key="single_givens_test_output",
             single_given_encoding=True, data_read_method='read')
 
@@ -130,7 +130,7 @@ class TestChooserFeatureEncoding(TestCase):
 
         self._generic_test_batch_input_encoding(
             test_case_filename=os.getenv(
-                "V6_CHOOSERS_FEATURE_ENCODER_TEST_BATCH_ENCODING_JSONLINES"),
+                "CHOOSERS_FEATURE_ENCODER_TEST_BATCH_ENCODING_JSONLINES"),
             expected_output_data_key="single_givens_test_output",
             single_given_encoding=True, data_read_method='read')
 
@@ -139,7 +139,7 @@ class TestChooserFeatureEncoding(TestCase):
     def test_missing_features_filler_method_01(self):
         test_case_path = os.sep.join(
             [self.v6_test_python_specific_data_directory,
-             os.getenv("V6_CHOOSERS_FEATURE_ENCODER_TEST_BATCH_FILLING_MISSING_FEATURES_01")])
+             os.getenv("CHOOSERS_FEATURE_ENCODER_TEST_BATCH_FILLING_MISSING_FEATURES_01")])
 
         test_case = \
             self._get_test_data(path_to_test_json=test_case_path, method="read")
@@ -177,7 +177,7 @@ class TestChooserFeatureEncoding(TestCase):
     def test_missing_features_filler_method_02(self):
         test_case_path = os.sep.join(
             [self.v6_test_python_specific_data_directory,
-             os.getenv("V6_CHOOSERS_FEATURE_ENCODER_TEST_BATCH_FILLING_MISSING_FEATURES_02")])
+             os.getenv("CHOOSERS_FEATURE_ENCODER_TEST_BATCH_FILLING_MISSING_FEATURES_02")])
 
         test_case = \
             self._get_test_data(path_to_test_json=test_case_path, method="read")
@@ -216,7 +216,7 @@ class TestChooserFeatureEncoding(TestCase):
     def test_missing_features_filler_method_02_with_numpy(self):
         test_case_path = os.sep.join(
             [self.v6_test_python_specific_data_directory,
-             os.getenv("V6_CHOOSERS_FEATURE_ENCODER_TEST_BATCH_FILLING_MISSING_FEATURES_02")])
+             os.getenv("CHOOSERS_FEATURE_ENCODER_TEST_BATCH_FILLING_MISSING_FEATURES_02")])
 
         test_case = \
             self._get_test_data(path_to_test_json=test_case_path, method="read")

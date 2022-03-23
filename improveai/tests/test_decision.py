@@ -80,12 +80,12 @@ class TestDecision(TestCase):
     @fixture(autouse=True)
     def prep_env(self):
         # create an instance of DecisionModel
-        decision_tests_model_url = os.getenv('V6_DUMMY_MODEL_PATH')
+        decision_tests_model_url = os.getenv('DUMMY_MODEL_PATH')
 
         self.test_jsons_data_directory = \
-            os.getenv('V6_DECISION_TEST_SUITE_JSONS_DIR')
+            os.getenv('DECISION_TEST_SUITE_JSONS_DIR')
 
-        self.track_url = os.getenv('V6_DECISION_TRACKER_TEST_URL')
+        self.track_url = os.getenv('DECISION_TRACKER_TEST_URL')
 
         self.decision_model_without_tracker = \
             dm.DecisionModel(model_name=None)\
@@ -108,9 +108,9 @@ class TestDecision(TestCase):
         self.dummy_variants = ['dummy_variant']
         self.dummy_givens = {'dummy': 'givens'}
 
-        self.tracks_seed = int(os.getenv('V6_DECISION_TRACKER_TRACKS_SEED'))
+        self.tracks_seed = int(os.getenv('DECISION_TRACKER_TRACKS_SEED'))
         self.not_tracks_seed = \
-            int(os.getenv('V6_DECISION_TRACKER_NOT_TRACKS_SEED'))
+            int(os.getenv('DECISION_TRACKER_NOT_TRACKS_SEED'))
 
         self.dummy_history_id = 'dummy-history-id'
         self.dummy_timestamp = '2021-05-11T02:32:27.007Z'
@@ -238,7 +238,7 @@ class TestDecision(TestCase):
     # TODO test get() for 100% coverage
     def test_get_01(self):
 
-        test_case_filename = os.getenv('V6_DECISION_TEST_GET_01_JSON')
+        test_case_filename = os.getenv('DECISION_TEST_GET_01_JSON')
         path_to_test_case_file = \
             os.sep.join([self.test_jsons_data_directory, test_case_filename])
 
@@ -278,7 +278,7 @@ class TestDecision(TestCase):
 
     def test_get_02(self):
 
-        test_case_filename = os.getenv('V6_DECISION_TEST_GET_02_JSON')
+        test_case_filename = os.getenv('DECISION_TEST_GET_02_JSON')
         path_to_test_case_file = \
             os.sep.join([self.test_jsons_data_directory, test_case_filename])
 
@@ -475,7 +475,7 @@ class TestDecision(TestCase):
                 assert request_validity['request_body_ok']
 
     def _get_complete_decision(self):
-        test_case_filename = os.getenv('V6_DECISION_TEST_GET_02_JSON')
+        test_case_filename = os.getenv('DECISION_TEST_GET_02_JSON')
         path_to_test_case_file = \
             os.sep.join([self.test_jsons_data_directory, test_case_filename])
 
@@ -594,7 +594,7 @@ class TestDecision(TestCase):
     def test_get_with_zero_len_variants(self):
 
         test_case_filename = \
-            os.getenv('V6_DECISION_TEST_GET_ZERO_LENGTH_VARIANTS_JSON')
+            os.getenv('DECISION_TEST_GET_ZERO_LENGTH_VARIANTS_JSON')
         path_to_test_case_file = \
             os.sep.join([self.test_jsons_data_directory, test_case_filename])
 
@@ -660,7 +660,7 @@ class TestDecision(TestCase):
 
     def test_get_consistent_scores(self):
         variants = [{'num': el, 'string': str(el)} for el in range(10)]
-        consistency_seed = int(os.getenv('V6_DECISION_TEST_CONSISTENCY_SEED'))
+        consistency_seed = int(os.getenv('DECISION_TEST_CONSISTENCY_SEED'))
 
         if consistency_seed is None:
             raise ValueError('consistency seed must not be None')
