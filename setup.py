@@ -3,8 +3,8 @@ from setuptools import Extension, find_packages, setup
 import os
 import pydoc
 
-from improveai.settings import CYTHON_MODULE_DIR, IMPROVE_DIR
-
+IMPROVE_DIR = 'improveai'
+CYTHON_MODULE_DIR = 'cythonized_feature_encoding'
 
 if __name__ == '__main__':
 
@@ -55,10 +55,10 @@ if __name__ == '__main__':
             include_dirs=[np.get_include(), os.sep.join(['.', IMPROVE_DIR, CYTHON_MODULE_DIR])])
 
     setup(name='improveai',
-          version='0.1',
-          description='v6 Decision API',
+          version='7.0.0',
+          description='Improve AI Python SDK',
           author='Justin Chapweske',
-          author_email='',
+          author_email='support@improve.ai',
           url='https://github.com/improve-ai/python-sdk',
           packages=find_packages(exclude=['*tests*']),
           install_requires=["numpy", "setuptools", "wheel", "Cython"] + install_reqs,
