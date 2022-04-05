@@ -225,28 +225,29 @@ class DecisionModel:
             'Model loading failed with error: {}'.format(context.get('message', None)))
         print(context.get('exception', None))
 
-    def load_async(self, model_url: str):
-        """
-        Loads model im an async fashion;
-
-        IMPORTANT:
-        Please note that this is an EXPERIMENTAL/DEPRECATED method and might be
-        changed in the near future
-
-        Parameters
-        ----------
-        model_url: str
-            path / url to model
-
-        Returns
-        -------
-
-        """
-        loop = asyncio.get_event_loop()
-        loop.set_exception_handler(DecisionModel._exception_while_loading_chooser)
-        loop.run_in_executor(None, self._load_chooser_for_async, *[model_url, loop])
-
-        return self
+    # DEPRECATED
+    # def load_async(self, model_url: str):
+    #     """
+    #     Loads model im an async fashion;
+    #
+    #     IMPORTANT:
+    #     Please note that this is an EXPERIMENTAL/DEPRECATED method and might be
+    #     changed in the near future
+    #
+    #     Parameters
+    #     ----------
+    #     model_url: str
+    #         path / url to model
+    #
+    #     Returns
+    #     -------
+    #
+    #     """
+    #     loop = asyncio.get_event_loop()
+    #     loop.set_exception_handler(DecisionModel._exception_while_loading_chooser)
+    #     loop.run_in_executor(None, self._load_chooser_for_async, *[model_url, loop])
+    #
+    #     return self
 
     def score(self, variants: list or np.ndarray) -> np.ndarray:
         """
@@ -300,7 +301,6 @@ class DecisionModel:
                 np.array(np.random.rand(len(variants)), dtype='float64') * \
                 self.TIEBREAKER_MULTIPLIER
         except Exception as exc:
-            # TODO test this scenario
             warnings.warn(
                 'Error when calculating predictions: {}. Returning Gaussian scores'
                 .format(exc))
@@ -334,7 +334,6 @@ class DecisionModel:
             raise ValueError('Lengths of `variants` and `scores` mismatch!')
 
         if len(variants) == 0:
-            # TODO is this desired ?
             return False
 
         return True
@@ -437,7 +436,6 @@ class DecisionModel:
         """
 
         return dc.DecisionContext(decision_model=self, givens=givens)
-        # return d.Decision(decision_model=self).given(givens=givens)
 
     def choose_from(self, variants: list):
         """
@@ -455,7 +453,6 @@ class DecisionModel:
 
         """
         check_variants(variants=variants)
-        # return d.Decision(decision_model=self).choose_from(variants=variants)
         # TODO how about the givens? Should GivensProvider be used here?
         #  in iOS here givens are set to nil
         return dc.DecisionContext(decision_model=self, givens=None).choose_from(variants=variants)

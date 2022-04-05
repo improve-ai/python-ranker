@@ -1,80 +1,78 @@
-# Improve.ai for python (3.7.9)
+# Improve.ai for python (3.7+)
 
 
 ## Fast AI Decisions for Python
 
-[![License](https://img.shields.io/cocoapods/l/Improve.svg?style=flat)](http://cocoapods.org/pods/Improve)
-
-It's like an AI *if/then* statement. Quickly make decisions that configure your app to maximize revenue, performance, user retention, or any other metric.
-
+Improve AI provides quick on-device AI decisions that get smarter over time. It's like an AI *if/then* statement. Replace guesses in your app's configuration with AI decisions to increase your app's revenue, user retention, or any other metric automatically.
 
 ## Installation
 
-Python-SDK for Improve.ai is currently available only on github.
 
-To install python-sdk for Improve.ai:
-
- 0. install prerequisites:
-    - Fedora:
-      - sudo yum groupinstall "Development Tools"
-      - sudo yum install python3-devel python3-Bottleneck python3-numpy
-    - Amazon Linux 2:
-      - sudo yum update
-      - yum groupinstall "Development Tools"
-      - sudo yum install python3-devel numpy
-    - Ubuntu (18.04 and 20.04):
-      - sudo apt install build-essential make gcc python3-dev python3-numpy python3-venv
-    - macOS:
-      - pyenv (allows ot install python 3.7.9)
-      - xgboost should be built
-      - venv usage is strongly encouraged
-     
- 1. clone repo: git clone https://github.com/improve-ai/python-sdk
-    
- 2. make sure you are in the cloned (python-sdk) folder
-    
- 3. activate your virtualenv (if you are using one, if not you can skip this step; using venv is advised)
-    
- 4. install wheel and cmake:
-
-    
-    pip3 install wheel cmake --no-cache-dir
-
-    
- 5. install requirements:
-
-    
-    pip3 install -r requirements.txt --no-cache-dir
+### Installation prerequisites
+ - python 3.7+
+ - `gcc` and python headers: `python3-dev` or `python3-devel` (`sudo apt install gcc python3-dev` for apt and `sudo yum install gcc python3-devel` for yum or dnf)
+ - for macOS you might also need to [build xgboost from sources](https://xgboost.readthedocs.io/en/stable/build.html) (otherwise `pip3 install xgboost` might fail)
+ - if possible virtual environment (e.g. venv) usage is strongly encouraged
 
 
- 6. run the following commands to install improveai python package:
+### Install with pip
 
-    
-    python3 setup.py install
+To install from pypi sources simply use pip:
+
+`pip3 install improveai`
 
 
-### Hello World!
+### Install from cloned git repo
 
-What is the best greeting?
+To install from cloned repo:     
+ 1. clone repo: git clone https://github.com/improve-ai/python-sdk    
+ 2. make sure you are in the cloned folder (python-sdk)    
+ 3. activate your virtualenv (if you are using one, if not you can skip this step; using venv is advised)    
+ 4. install wheel and cmake:    
+    `pip3 install wheel cmake --no-cache-dir`
+ 5. install requirements:    
+    `pip3 install -r requirements.txt --no-cache-dir`
+ 6. to build package wheel call:
+    `python3 -m build`
+ 7. install built wheel with pip: 
+    `pip3 install dist/improveai-7.0.1*.whl`
+    where `*` represents system specific part of wheel name
+
+
+## Usage
+
+### Greeting
+
+Improve AI makes quick on-device AI decisions that get smarter over time.
+
+The heart of Improve AI is the which statement. which is like an AI if/then statement.
 
 ```python
 from improveai import DecisionModel
 
-# prepare JSON encodable variants to choose from:
-hello_variants = [
-    {'text': "Hello World!"},
-    {'text': "Hi World!"},
-    {'text': "Howdy World!"}]
-
-givens = {'language': 'cowboy'}
-
-# Get the best greeting
-greeting = \
-    DecisionModel(model_name="greetings").given(givens=givens)\
-    .choose_from(variants=hello_variants).get()
+greeting = DecisionModel(model_name='greetings').which('Hello', 'Howdy', 'Hola')
 ```
 
-*greeting* should result in *Howdy World* assuming it performs best when *language* is *cowboy*.
+`which()` makes decisions on-device using a decision model. Decision models are easily trained by assigning rewards for positive outcomes.
+
+```python
+from improveai import DecisionModel
+
+# create an instance of Decision object
+decision = DecisionModel(model_name='greetings').choose_from(variants=['Hello', 'Howdy', 'Hola'])
+# choose best greeting with get()
+best_greeting = decision.get()
+
+# add reward to the Decision
+decision.add_reward(reward=1.0)
+```
+
+Rewards are credited to the decisions - you can add them to the existing decision object with an `add_reward()` call. 
+`Decision.get()` will make the decision that provides the highest expected reward. 
+When the rewards are business metrics, such as revenue or user retention, 
+the decisions will optimize to automatically improve those metrics over time.
+
+That's like A/B testing on steroids.
 
 
 ### Numbers Too
@@ -82,7 +80,9 @@ greeting = \
 What discount should we offer?
 
 ```python
-discount = DecisionModel(model_name='discounts').choose_from(variants=[0.1, 0.2, 0.3]).get()
+from improveai import DecisionModel
+
+discount = DecisionModel(model_name='discounts').which(0.1, 0.2, 0.3)
 ```
 
 ## Booleans
@@ -90,7 +90,15 @@ discount = DecisionModel(model_name='discounts').choose_from(variants=[0.1, 0.2,
 Dynamically enable feature flags for best performance...
 
 ```python
-feature_flag = DecisionModel(model_name='feature_flags').choose_from(variants=[True, False]).get()
+from improveai import DecisionModel
+
+# example decision attributes
+givens = {'string attribute': 'string attribute value',
+          'float attribute': 123.132,  # float attribute value
+          'bool attribute': True}  # bool attribute value
+
+# choose best feature flag considering example attributes
+feature_flag = DecisionModel(model_name='feature_flags').given(givens=givens).which(True, False)
 ```
 
 
@@ -98,180 +106,126 @@ feature_flag = DecisionModel(model_name='feature_flags').choose_from(variants=[T
 
 
 ```python
+from improveai import DecisionModel
+
 theme_variants = [
     {"textColor": "#000000", "backgroundColor": "#ffffff" },
     { "textColor": "#F0F0F0", "backgroundColor": "#aaaaaa" }]
 
-theme = DecisionModel(model_name='themes').choose_from(variants=theme_variants).get()
+# lists of variants should be passed to which() as pythonic *args
+theme = DecisionModel(model_name='themes').which(*theme_variants)
 ```
+
+Passing list of `variants` as pythonic `*args` will make `which()` interpret it as a list of variants
+`DecisionModel.which()` accepts pythonic `*args`. 
+This means that `DecisionModel.which(*variants)` will interpret each element of `variants` list as a separate variant
+while `DecisionModel.which(variants)` will interpret `variants` as a single variant of a list type.
 
 Improve learns to use the attributes of each key and value in a complex variant to make the optimal decision.
 
 Variants can be any JSON encodeable data structure of arbitrary complexity, including nested dictionaries, arrays, strings, numbers, nulls, and booleans.
 
+### Decisions are Contextual
 
-## Models
-
-A *DecisionModel* contains the AI decision logic, analogous to a large number of *if/then* statements.
-
-Models are thread-safe and a single model can be used for multiple decisions.
-
-### Synchronous Model Loading
+Unlike A/B testing or feature flags, Improve AI uses context to make the best decision for each user.
+Custom context can be provided via given().
 
 ```python
-product = DecisionModel(model_name=None).load(model_url=model_url).choose_from(["clutch", "dress", "jacket"]).get()
+from improveai import DecisionModel
+
+cowboy_givens = {"language": "cowboy"}
+
+# create model object
+greetings_model = DecisionModel(model_name='greetings')
+# load greetings model 
+greetings_model.load('<trained greetings model url>')
+
+greeting = greetings_model.given(givens=cowboy_givens).which("Hello", "Howdy", "Hola")
 ```
 
-Models can be loaded from the app bundle or from https URLs.
+Given the language is cowboy and `greetings_model` was successfully loaded, 
+the variant with the highest expected reward should be *"Howdy"* and the model would learn to make that choice.
 
-### Asynchronous Model Loading
+### Example: Optimizing an Upsell Offer
 
-Asynchronous model loading allows decisions to be made at any point, even before the model is loaded.  If the model isn't yet loaded or fails to load, the first variant will be returned as the decision.
+Improve AI is powerful and flexible. Variants can be any JSON encodeable data structure including strings, 
+numbers, booleans, lists, and dictionaries.
+
+For a dungeon crawler game, say the user was purchasing an item using an In App Purchase. 
+We can use Improve AI to choose an additional product to display as an upsell offer during checkout. 
+With a few lines of code, we can train a model that will learn to optimize the upsell offer given the original product being purchased.
 
 ```python
-from improveai import DecisionModel, DecisionTracker
+from improveai import DecisionModel
 
-track_url = 'http://your.track.url'
-api_key = '<tracker API key>'
-history_id = '<history_id to be used by tracker>'
 
-tracker = DecisionTracker(track_url=track_url, api_key=api_key, history_id=history_id)
+# create DecisionModel object
+upsell_model = DecisionModel(model_name='upsell_model')
 
-model_url = '/ model/ path / or / url'
+# load model from a path / url
+upsell_model_url = '<example upsell model url>'
+upsell_model.load(model_url=upsell_model_url)
 
-model = DecisionModel(model_name="greetings")
-model.track_with(tracker=tracker)
-model.load_async(model_url=model_url)
+product = {'name': 'red sword', 'price': 4.99}
+# create upsell Decision object
+upsell_decision = \
+    upsell_model.given(givens=product).\
+        choose_from(
+        [{ "name": "gold", "quantity": 100, "price": 1.99 },
+         { "name": "diamonds", "quantity": 10, "price": 2.99 },
+         { "name": "red scabbard", "price": 0.99 }])
 
-# It is very unlikely that the model will be loaded by the time this is called, 
-# so "Hello World" would be returned and tracked as the decision
-greeting = model.choose_from(variants=['Hello World', 'Howdy World', 'Yo World']).get()
+# get best upsell
+upsell = upsell_decision.get()
 ```
 
-## Tracking & Training Models
+The product to be purchased is the red sword. Notice that the variants are dictionaries with a mix of string and numeric values.
 
-The magic of Improve AI is it's learning process, whereby models continuously improve by training on past decisions. To accomplish this, decisions and events are tracked to your deployment of the Improve AI Gym.
-
-### Tracking Decisions
-
-Set a *DecisionTracker* on the *DecisionModel* to automatically track decisions and enable learning.  A single *DecisionTracker* instance can be shared by multiple models.
+The rewards in this case might be any additional revenue from the upsell.
 
 ```python
-tracker = DecisionTracker(track_url=track_url)  # trackUrl is obtained from your Gym configuration
+upsell_purchased = True  # flag indicating if decision was correct
 
-font_size = \
-    DecisionModel(model_name=None).load(model_url=model_url).track_with(tracker=tracker).chooseFrom([12, 16, 20]).get()
+if upsell_purchased:
+    upsell_decision.add_reward(upsell['price'])
 ```
 
-The decision is lazily evaluated and then automatically tracked as being causal upon calling *get()*.
+While it is reasonable to hypothesize that the red scabbord might be the best upsell offer to pair with the red sword, it is still a guess. Any time a guess is made on the value of a variable, instead use Improve AI to decide.
 
-For this reason, wait to call *get()* until the decision will actually be used.
+*Replace guesses with AI decisions.*
 
-### Tracking Events
 
-Events are the mechanism by which decisions are rewarded or penalized.  In most cases these will mirror the normal analytics events that your app tracks and can be integrated with any event tracking singletons in your app.
+### Example: Performance Tuning
+
+In the 2000s I was writing a lot of video streaming code. 
+The initial motivation for Improve AI came out of my frustrations with attempting to 
+tune video streaming clients across heterogeneous networks.
+
+I was forced to make guesses on performance sensitive configuration defaults through 
+slow trial and error. My client configuration code maybe looked something like this:
 
 ```python
-tracker.track_event(event_name="Purchased", properties={"product_id": 8, "value": 19.99})
+config = {"bufferSize": 2048,
+          "videoBitrate": 384000}
 ```
 
-Like most analytics packages, *track* takes an *event* name and an optional *properties* dictionary.  The only property with special significance is *value*, which indicates a reward value for decisions prior to that event.  
+This is the code I wish I could have written:
 
-If *value* is ommitted then the default reward value of an event is *0.001*.
+```python
+config = configModel.which({"bufferSize": [1024, 2048, 4096, 8192],
+                            "videoBitrate": [256000, 384000, 512000]})
+```
 
-By default, each decision is rewarded the total value of all events that occur within 48 hours of the decision.
+Improve AI frees us from having to overthink our configuration values during development. 
+We simply give it some reasonable variants and let it learn from real world usage.
 
-Assuming a typical app where user retention and engagement are valuable, we recommend tracking all of your analytics events with the *DecisionTracker*.  You can customize the rewards assignment logic later in the Improve AI Gym.
+Look for places where you're relying on guesses or an executive decision and consider 
+instead directly optimizing for the outcomes you desire.
 
 ## Privacy
   
 It is strongly recommended to never include Personally Identifiable Information (PII) in variants or givens so that it is never tracked, persisted, or used as training data.
 
-## An Ask
+## Help Improve Our World
 
-Thank you so much for enjoying my labor of love. Please only use it to create things that are good, true, and beautiful. - Justin
-
-## License
-
-Improve AI is copyright Mind Blown Apps, LLC. All rights reserved.  May not be used without a license.
-
-
-[comment]: <> (---)
-
-[comment]: <> (### ImproveModel CLI)
-
-[comment]: <> (The prepared CLI takes as input:)
-
-[comment]: <> ( - one of supported method names to execute:)
-
-[comment]: <> (    - score - calculates predictions on all provided input data)
-
-[comment]: <> (    - sort - scores input and returns it ordered descendingly)
-
-[comment]: <> (    - choose - scores input and returns best choice along with score)
-
-[comment]: <> ( - desired model type to use out of 2 supported mdoel types:)
-
-[comment]: <> (    - *.mlmodel)
-
-[comment]: <> (    - *.xgb &#40;xgboost native format&#41;)
-
-[comment]: <> ( - path to desired model)
-
-[comment]: <> ( - JSON string with input data encapsulated with '' -> '<json string>')
-
-[comment]: <> ( - JSON string with context encapsulated with '' -> '<json string>')
-
-[comment]: <> (In order to use prepared ImproveModel CLI:)
-
-[comment]: <> ( - make sure to change directory to python-sdk folder)
-
-[comment]: <> ( - call improve_model_cli.py in the following fashion <br>)
-
-[comment]: <> ( python3.7 improve_model_cli.py [desired method name] [desired model type] [path to deired model] --variant [input JSON string] --context [context JSON string] --model_metadata [metadata JSON string])
- 
-[comment]: <> (To see example results please call: <br>)
-
-[comment]: <> (python3.7 improve_model_cli.py score xgb_native test_artifacts/model.xgb)
-
-[comment]: <> (To use CLI with files &#40;i.e. for variants/context/model metadata/results&#41; please use:)
-
-[comment]: <> (python3.7 improve_model_cli.py score xgb_native artifacts/models/improve-messages-2.0.xgb --variants_pth artifacts/data/real/meditations.json --context_pth artifacts/test_artifacts/sorting_context.json --results_pth artifacts/results/20_11_2020_meditations_sanity_check.json --prettify_json )
-
-[comment]: <> (### Results)
-
-[comment]: <> (Currently supported objectives:)
-
-[comment]: <> ( - regression - returns [input JSON string, score value, 0] for each observation)
-
-[comment]: <> ( - binary classification - returns [input JSON string, class 1 probability, class 1 label] for each observation)
-
-[comment]: <> ( - multiple classification - returns [input JSON string, highest class probability, most probable class label] for each observation)
-
-[comment]: <> (Results are always returned as a JSON strings: <br>)
-
-[comment]: <> ([[input JSON string, value, label], ...])
-
-[comment]: <> ( - score method returns list of all inputs scored)
-
-[comment]: <> ( - sort method returns list of all inputs scored &#40;if multiclass classification is the case then the list is sorted for each class from highest to lowest scores&#41;)
-
-[comment]: <> ( - choose method returns best highest scored variant info &#40;[input JSON string, value, label]&#41;. For binary classification best scores for class 1 are returned. For multiple classification best choices in each class are returned. Ties are broken randomly. )
-
-
-[comment]: <> (### Model Conversion)
-
-[comment]: <> (To convert **xgboost** model to **mlmodel** please use:)
-
-[comment]: <> (python3.7 transformers/mlmodels_generators.py --src_model_pth test_artifacts/model.xgb --model_metadata_pth test_artifacts/model.json --trgt_model_pth test_artifacts/conv_model.mlmodel)
-
-[comment]: <> (### XGBoost model appending)
-
-[comment]: <> (To append **xgboost** model with desired model metadata please use:)
-
-[comment]: <> (python3.7 transformers/xgb_model_generators.py --src_model_pth test_artifacts/model.xgb --model_metadata_pth test_artifacts/model.json --trgt_model_pth test_artifacts/conv_model.mlmodel )
-
-
-[comment]: <> (## Cython compatibility issues fix -> symlink numpy)
-
-[comment]: <> (sudo ln -s /usr/lib/python3.9/dist-packages/numpy/core/include/numpy /usr/include/numpy)
+Thank you so much for enjoying my labor of love. Please onlyThe mission of Improve AI is to make our corner of the world a little bit better each day. When each of us improve our corner of the world, the whole world becomes better. If your product or work does not make the world better, do not use Improve AI. Otherwise, welcome, I hope you find value in my labor of love. - Justin Chapweske

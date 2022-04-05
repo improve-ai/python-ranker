@@ -109,7 +109,6 @@ class Decision:
 
         if not self.chosen:
             warn('`add_reward()` called before `get()`')
-        # TODO add reward
 
         assert self.decision_model.id_ == self.id_
         assert self.decision_model.model_name is not None and self.decision_model.id_ is not None
@@ -118,7 +117,6 @@ class Decision:
         assert not np.isnan(reward)
         assert not np.isinf(reward)
 
-        # TODO check if decision_id is set correctly
         return self.decision_model._tracker.add_reward(
             reward=reward, model_name=self.decision_model.model_name, decision_id=self.id_)
 
@@ -131,29 +129,20 @@ class Decision:
 
         # set message_id / decision_id only once
         self._set_message_id()
+        # set message_id / deicsion_id to decision model
         self._cache_message_id_to_decision_model()
 
-        # set message_id / deicsion_id to decision model
-
-        # TODO should scores be persisted inside Decision object
         self.__scores = self.decision_model._score(variants=self.variants, givens=self.givens)
-        # TODO is that needed
-        # ranked_variants = None
 
-        # TODO make sure this is bit is executed only once per Decision's
-        #  lifetime ?
         if self.variants is not None and len(self.variants) != 0:
             # there should be no difference between effect of those 2 conditions
             # since this  clause is reached only once
             if self.decision_model._tracker:
 
-                # TODO should ranked_variants be persisted inside Decision object
                 track_runners_up = self.decision_model._tracker._should_track_runners_up(len(self.variants))
                 if track_runners_up:
-                    # TODO should ranked_variants be persisted inside Decision object
                     self.__ranked_variants = \
-                        dm.DecisionModel.rank(
-                            variants=self.variants, scores=self.__scores)
+                        dm.DecisionModel.rank(variants=self.variants, scores=self.__scores)
                     self.__best = self.ranked_variants[0]
 
                     self.decision_model._tracker.track(
@@ -162,8 +151,7 @@ class Decision:
                         variants_ranked_and_track_runners_up=True, message_id=self.id_)
                 else:
                     self.__best = \
-                        dm.DecisionModel.top_scoring_variant(
-                            variants=self.variants, scores=self.__scores)
+                        dm.DecisionModel.top_scoring_variant(variants=self.variants, scores=self.__scores)
 
                     self.decision_model._tracker.track(
                         variant=self.best, variants=self.variants,

@@ -285,17 +285,17 @@ class TestDecisionModel(TestCase):
 
     # ASYNC tests
     # test model loading
-    def test_load_model_async_native_fs(self):
-        self._generic_test_loaded_model(
-            test_data_filename=os.getenv(
-                'DECISION_MODEL_TEST_LOAD_MODEL_FS_NATIVE_JSON'),
-            expected_predictor_type=xgb.Booster, load_mode='async')
-
-    def test_load_model_async_mlmodel_fs(self):
-        self._generic_test_loaded_model(
-            test_data_filename=os.getenv(
-                'DECISION_MODEL_TEST_LOAD_MODEL_FS_MLMODEL_JSON'),
-            expected_predictor_type=ct.models.MLModel, load_mode='async')
+    # def test_load_model_async_native_fs(self):
+    #     self._generic_test_loaded_model(
+    #         test_data_filename=os.getenv(
+    #             'DECISION_MODEL_TEST_LOAD_MODEL_FS_NATIVE_JSON'),
+    #         expected_predictor_type=xgb.Booster, load_mode='async')
+    #
+    # def test_load_model_async_mlmodel_fs(self):
+    #     self._generic_test_loaded_model(
+    #         test_data_filename=os.getenv(
+    #             'DECISION_MODEL_TEST_LOAD_MODEL_FS_MLMODEL_JSON'),
+    #         expected_predictor_type=ct.models.MLModel, load_mode='async')
 
     def _generic_desired_decision_model_method_call(
             self, test_data_filename: str, evaluated_method_name: str,
@@ -748,8 +748,12 @@ class TestDecisionModel(TestCase):
         assert expected_output is not None
         expected_best = expected_output.get('best', None)
         assert expected_best is not None
-        np.random.seed(scores_seed)
-        best = decision_model.which(*variants)
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+            np.random.seed(scores_seed)
+            best = decision_model.which(*variants)
+
         assert best == expected_best
 
     def test_which_valid_list_variants_no_model(self):
@@ -773,8 +777,12 @@ class TestDecisionModel(TestCase):
         assert expected_output is not None
         expected_best = expected_output.get('best', None)
         assert expected_best is not None
-        np.random.seed(scores_seed)
-        best = decision_model.which(*variants)
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+            np.random.seed(scores_seed)
+            best = decision_model.which(*variants)
+
         assert best == expected_best
 
     def test_which_valid_tuple_variants(self):
@@ -808,8 +816,12 @@ class TestDecisionModel(TestCase):
         assert expected_output is not None
         expected_best = expected_output.get('best', None)
         assert expected_best is not None
-        np.random.seed(scores_seed)
-        best = decision_model.which(*variants)
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+            np.random.seed(scores_seed)
+            best = decision_model.which(*variants)
+
         assert best == expected_best
 
     def test_which_valid_ndarray_variants(self):
@@ -843,8 +855,12 @@ class TestDecisionModel(TestCase):
         assert expected_output is not None
         expected_best = expected_output.get('best', None)
         assert expected_best is not None
-        np.random.seed(scores_seed)
-        best = decision_model.which(*variants)
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+            np.random.seed(scores_seed)
+            best = decision_model.which(*variants)
+
         assert best == expected_best
 
     def test_which_invalid_variants(self):
