@@ -46,8 +46,8 @@ if __name__ == '__main__':
 
     setup(
         name='improveai',
-        version='7.0.0',
-        description='Decision API',
+        version='7.0.1',
+        description='Improve AI: AI Decisions for iOS, Android, and the Cloud',
         author='Justin Chapweske',
         author_email='support@improve.ai',
         url='https://github.com/improve-ai/python-sdk',
