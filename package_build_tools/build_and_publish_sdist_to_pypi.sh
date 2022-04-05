@@ -9,7 +9,6 @@ rm -rf .tox/ dist/ improveai_test.egg-info/ improveai/cythonized_feature_encodin
 
 pip3 install --upgrade pip wheel build twine
 # compile *.c cython files (python will look for *.pyx files to import)
-#python3 setup.py sdist
 python3 -m build
 
 # upload to pypi

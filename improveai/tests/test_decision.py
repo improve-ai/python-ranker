@@ -113,7 +113,6 @@ class TestDecision(TestCase):
         self.dummy_history_id = 'dummy-history-id'
         self.dummy_timestamp = '2021-05-11T02:32:27.007Z'
 
-    # test constructor raises ValueError
     def test_raises_value_error_when_model_none(self):
         with raises(AssertionError) as aerr:
             d.Decision(decision_model=None)
@@ -122,13 +121,13 @@ class TestDecision(TestCase):
         with raises(AssertionError) as aerr:
             d.Decision(decision_model='abc')
 
-    def test_raises_value_error_when_model_int(self):
+    def test_raises_value_error_when_model_number(self):
         with raises(AssertionError) as aerr:
-            d.Decision(decision_model=123)
+            d.Decision(decision_model=123.13)
 
-    def test_raises_value_error_when_model_float(self):
+    def test_raises_value_error_when_model_bool(self):
         with raises(AssertionError) as aerr:
-            d.Decision(decision_model=123.123)
+            d.Decision(decision_model=True)
 
     def _generic_outer_setter_raises_test(
             self, decision: d.Decision, set_attr_name: str,

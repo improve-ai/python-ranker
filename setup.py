@@ -45,15 +45,8 @@ if __name__ == '__main__':
         "svix-ksuid"]
 
     setup(
-        name='improveai',
-        version='7.0.1',
-        description='Improve AI: AI Decisions for iOS, Android, and the Cloud',
-        author='Improve AI',
-        author_email='support@improve.ai',
-        url='https://github.com/improve-ai/python-sdk',
         packages=find_packages(exclude=['*.tox*', '*tests*']),
         install_requires=install_requires,
         ext_modules=cythonize([cython_feature_encoding_utils_ext, cython_feature_encoder_ext], language_level="3"),
         include_dirs=[np.get_include(), '.'],
-        include_package_data=True,
-        zip_safe=False)
+        include_package_data=True)
