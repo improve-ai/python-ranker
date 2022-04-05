@@ -72,8 +72,7 @@ class Decision:
 
     def __init__(self, decision_model: object):
 
-        if decision_model is None:
-            raise ValueError('`decision_model` can`t be None')
+        assert isinstance(decision_model, dm.DecisionModel)
 
         self.__decision_model = decision_model
         self.__chosen = False

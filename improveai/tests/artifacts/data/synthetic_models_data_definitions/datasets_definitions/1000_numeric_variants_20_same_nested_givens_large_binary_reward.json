@@ -1,0 +1,40 @@
+{
+    "dataset_name": "1000_numeric_variants_20_same_nested_givens_large_binary_reward",
+    "timespan": {
+        "data_starts": "2021-01-01 00:00:00",
+        "data_ends": "2021-12-31 00:00:00",
+        "time_seed": 9
+    },
+    "variants_definition": {
+        "values": null,
+        "eval_call": "[0.0] + [el if np.random.rand() > 0.5 else el + np.random.rand() for el in range(1, 1000)]",
+        "distribution_name": "#uniform#"
+    },
+    "givens_definition": {
+        "values": [
+            {
+                "a": "b",
+                "c": {
+                    "d": [
+                        0.0,
+                        1.2,
+                        2
+                    ],
+                    "e": true,
+                    "f": "AsD"
+                }
+            }
+        ],
+        "eval_call": null,
+        "distribution_name": "#uniform#"
+    },
+    "variants_to_givens_mapping": null,
+    "givens_fraction": 0.2,
+    "reward_mapping": {
+        "0|0": 1000
+    },
+    "max_allowed_regret_ratio": 0.9,
+    "records_per_epoch": 10000,
+    "epochs": 5,
+    "data_seed": 0
+}

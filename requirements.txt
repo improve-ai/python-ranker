@@ -1,17 +1,11 @@
-pandas==1.1.2
-Cython==0.29.14
-coolname==1.1.0
+Cython>=0.29.14
 xxhash==2.0.0
+# for centOS7 5+ is too high
 coremltools==4.1
-requests_mock==1.9.2
-requests==2.24.0
-pytest==6.1.2
-dask==2021.9.1
-numpy==1.19.2
+requests>=2.24.0
+numpy>=1.19.2
+# highest version currently supported by coremltools
 xgboost==1.4.2
-scipy==1.7.0
 simplejson==3.17.2
-scikit_learn==0.19.2
-docker
 orjson
 svix-ksuid

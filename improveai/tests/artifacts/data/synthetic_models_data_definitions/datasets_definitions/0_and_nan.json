@@ -1,0 +1,63 @@
+{
+    "dataset_name": "0_and_nan",
+    "timespan": {
+        "data_starts": "2021-01-01 00:00:00",
+        "data_ends": "2021-12-31 00:00:00",
+        "time_seed": 9
+    },
+    "variants_definition": {
+        "values": [
+            {
+                "a": 0.0,
+                "b": {
+                    "x": [
+                        0,
+                        1.0,
+                        2
+                    ],
+                    "y": false,
+                    "z": {
+                        "value": "abc"
+                    }
+                }
+            },
+            {
+                "a": 2.0,
+                "c": {
+                    "u": [
+                        10,
+                        3.0
+                    ],
+                    "v": false,
+                    "q": {
+                        "value": "xyz"
+                    }
+                }
+            }
+        ],
+        "eval_call": null,
+        "distribution_name": "#uniform#"
+    },
+    "givens_definition": {
+        "values": [
+            {
+                "value": "A"
+            },
+            {
+                "value": "B"
+            }
+        ],
+        "eval_call": null,
+        "distribution_name": "#uniform#"
+    },
+    "noise": 0.0,
+    "variants_to_givens_mapping": null,
+    "givens_fraction": 0.2,
+    "reward_mapping": {
+        "0|0": 1,
+        "1|#any#": 0
+    },
+    "records_per_epoch": 2000,
+    "epochs": 3,
+    "data_seed": 0
+}

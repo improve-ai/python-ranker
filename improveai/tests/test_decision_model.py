@@ -20,8 +20,7 @@ import improveai.decision as d
 import improveai.decision_context as dc
 import improveai.decision_model as dm
 from improveai.choosers.xgb_chooser import NativeXGBChooser
-from improveai.tests.test_utils import convert_values_to_float32
-from improveai.tests.test_utils import get_test_data
+from improveai.tests.test_utils import convert_values_to_float32, get_test_data
 
 
 class TestDecisionModel(TestCase):
@@ -718,124 +717,6 @@ class TestDecisionModel(TestCase):
         expected_output = test_data['test_output']['model_name']
 
         assert decision_model.model_name == expected_output
-
-    def test_add_reward_inf(self):
-        # V6_DUMMY_MODEL_PATH
-        model_url = os.getenv('DUMMY_MODEL_PATH', None)
-        assert model_url is not None
-
-        decision_model = \
-            dm.DecisionModel(model_name=None, track_url=self.track_url)\
-            .load(model_url=model_url)
-
-        assert decision_model.id_ is None
-
-        with rqm.Mocker() as m:
-            m.post(self.track_url, text='success')
-            decision_model.choose_from(list(range(10))).get()
-
-        assert decision_model.id_ is not None
-
-        reward = math.inf
-
-        with rqm.Mocker() as m:
-            m.post(self.track_url, text='success')
-            with raises(AssertionError) as aerr:
-                decision_model.add_reward(reward=reward)
-
-        reward = -math.inf
-
-        with rqm.Mocker() as m:
-            m.post(self.track_url, text='success')
-            with raises(AssertionError) as aerr:
-                decision_model.add_reward(reward=reward)
-
-    def test_add_reward_none(self):
-        # V6_DUMMY_MODEL_PATH
-        model_url = os.getenv('DUMMY_MODEL_PATH', None)
-        assert model_url is not None
-
-        decision_model = \
-            dm.DecisionModel(model_name=None, track_url=self.track_url)\
-            .load(model_url=model_url)
-
-        assert decision_model.id_ is None
-
-        with rqm.Mocker() as m:
-            m.post(self.track_url, text='success')
-            decision_model.choose_from(list(range(10))).get()
-
-        assert decision_model.id_ is not None
-
-        reward = None
-
-        with rqm.Mocker() as m:
-            m.post(self.track_url, text='success')
-            with raises(AssertionError) as aerr:
-                decision_model.add_reward(reward=reward)
-
-        reward = np.nan
-
-        with rqm.Mocker() as m:
-            m.post(self.track_url, text='success')
-            with raises(AssertionError) as aerr:
-                decision_model.add_reward(reward=reward)
-
-    def test_add_reward(self):
-        model_url = os.getenv('DUMMY_MODEL_PATH', None)
-        assert model_url is not None
-
-        decision_model = \
-            dm.DecisionModel(model_name=None, track_url=self.track_url)\
-            .load(model_url=model_url)
-
-        assert decision_model.id_ is None
-
-        reward = 1.0
-
-        expected_add_reward_body = {
-            decision_model._tracker.TYPE_KEY: decision_model._tracker.REWARD_TYPE,
-            decision_model._tracker.MODEL_KEY: decision_model.model_name,
-            decision_model._tracker.REWARD_KEY: reward,
-            decision_model._tracker.DECISION_ID_KEY: None}
-
-        def grab_decision_id_matcher(request):
-            request_dict = deepcopy(request.json())
-            expected_add_reward_body[decision_model._tracker.DECISION_ID_KEY] = \
-                request_dict[decision_model._tracker.MESSAGE_ID_KEY]
-
-        with rqm.Mocker() as m:
-            m.post(self.track_url, text='success', additional_matcher=grab_decision_id_matcher)
-            decision_model.choose_from(list(range(10))).get()
-
-        assert decision_model.id_ is not None
-
-        expected_request_json = json.dumps(expected_add_reward_body, sort_keys=False)
-
-        def custom_matcher(request):
-            request_dict = deepcopy(request.json())
-            del request_dict[decision_model._tracker.MESSAGE_ID_KEY]
-            del request_dict[decision_model._tracker.TIMESTAMP_KEY]
-
-            if json.dumps(request_dict, sort_keys=False) != expected_request_json:
-
-                print('raw request body:')
-                print(request.text)
-                print('compared request string')
-                print(json.dumps(request_dict, sort_keys=False))
-                print('expected body:')
-                print(expected_request_json)
-                return None
-            return True
-
-        with rqm.Mocker() as m:
-            m.post(self.track_url, text='success', additional_matcher=custom_matcher)
-            resp = decision_model.add_reward(reward=reward)
-            if resp is None:
-                print('The input request body and expected request body mismatch')
-            assert resp is not None
-            assert resp.status_code == 200
-            assert resp.text == 'success'
 
     def test_which_valid_list_variants(self):
         path_to_test_json = \

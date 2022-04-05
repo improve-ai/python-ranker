@@ -1,10 +1,9 @@
-import numpy as np
 import json
 import os
 import requests_mock as rqm
 from tqdm import tqdm
 
-from improveai import DecisionModel, DecisionTracker, Decision
+from improveai import DecisionModel
 
 
 MODELS_DIR = os.getenv('DECISION_MODEL_PREDICTORS_DIR')

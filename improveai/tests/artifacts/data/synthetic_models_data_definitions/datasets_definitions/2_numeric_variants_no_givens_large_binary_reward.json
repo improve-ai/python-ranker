@@ -1,0 +1,26 @@
+{
+    "dataset_name": "2_numeric_variants_no_givens_large_binary_reward",
+    "timespan": {
+        "data_starts": "2021-01-01 00:00:00",
+        "data_ends": "2021-12-31 00:00:00",
+        "time_seed": 9
+    },
+    "variants_definition": {
+        "values": [
+            1.0,
+            2
+        ],
+        "eval_call": null,
+        "distribution_name": "#uniform#"
+    },
+    "givens_definition": {},
+    "variants_to_givens_mapping": null,
+    "givens_fraction": 1.0,
+    "reward_mapping": {
+        "0|#any#": 100,
+        "1|#any#": 0
+    },
+    "records_per_epoch": 2000,
+    "epochs": 3,
+    "data_seed": 0
+}

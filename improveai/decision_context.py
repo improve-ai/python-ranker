@@ -45,7 +45,7 @@ class DecisionContext:
 
         Returns
         -------
-        d.Decision
+        Decision
             snapshot of the Decision made with provided variants and available givens
 
         """
@@ -102,7 +102,7 @@ class DecisionContext:
 
         Returns
         -------
-        d.Decision
+        Decision
             snapshot of the Decision made with provided variants and available givens
 
         """

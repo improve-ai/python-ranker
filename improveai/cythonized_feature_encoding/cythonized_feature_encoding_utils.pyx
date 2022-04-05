@@ -161,14 +161,6 @@ cpdef double[:, :] encoded_variants_to_np(
                  for feature_name, value in processed_variant.items()
                  if name_to_index.get(feature_name, None) is not None])
 
-        # this might be faster if there are less feature names than keys in
-        # processed variants
-        # filler = \
-        #     np.array(
-        #         [(idx, processed_variant.get(val, None))
-        #          for idx, val in enumerate(feature_names)
-        #          if processed_variant.get(val, None)])
-
         if len(filler) > 0:
             encoded_variants_array[encoded_variant_ixd, filler[:, 0]\
                 .astype(int)] = filler[:, 1]

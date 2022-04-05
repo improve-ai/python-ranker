@@ -2,10 +2,9 @@ from argparse import ArgumentParser
 import json
 import numpy as np
 import os
-import requests_mock as rqm
 import simplejson
 
-from improveai import DecisionModel, DecisionTracker
+from improveai import DecisionModel, DecisionContext
 from utils.general_purpose_tools import read_jsonstring_from_file
 
 
@@ -14,8 +13,7 @@ if __name__ == '__main__':
     ap = ArgumentParser()
     ap.add_argument(
         '--operation', default='score',
-        help='Which action of 4 available should be performed: {}'.format(
-            DecisionModel.SUPPORTED_CALLS))
+        help='Which action of 4 available should be performed: {}'.format(DecisionModel.SUPPORTED_CALLS))
     ap.add_argument('--model_url', help='Path to model file', required=True)
     ap.add_argument(
         '--variants', help='Path to JSONfile with variants or a JSON itself',
@@ -57,9 +55,7 @@ if __name__ == '__main__':
 
     pa = ap.parse_args()
 
-    dm = DecisionModel(model_name=None).load(model_url=pa.model_url)
-    tracker = DecisionTracker(track_url=pa.track_url, history_id='cli-call-history-id')
-    dm.track_with(tracker=tracker)
+    dm = DecisionModel(model_name=None, track_url=pa.track_url).load(model_url=pa.model_url)
 
     if pa.operation not in DecisionModel.SUPPORTED_CALLS:
         raise ValueError(
@@ -69,31 +65,27 @@ if __name__ == '__main__':
     if pa.operation != 'get':
         assert hasattr(dm, pa.operation)
 
-    # inputs = {}
-    # for key, value in zip(['variants', 'givens'], [pa.variants, pa.givens]):
-    #     json_loads_value = value
-    #     if os.path.isfile(value):
-    #         # load jsonfile
-    #         json_loads_value = read_jsonstring_from_file(path_to_file=value)
-    #     inputs[key] = json.loads(json_loads_value)
-
     variants = json.loads(
         read_jsonstring_from_file(path_to_file=pa.variants) if os.path.isfile(pa.variants) else pa.variants)
     givens = json.loads(
         read_jsonstring_from_file(path_to_file=pa.givens) if os.path.isfile(pa.givens) else pa.givens)
-
+    dc = DecisionContext(decision_model=dm, givens=givens)
     if pa.operation == 'get':
 
-        decision = dm.choose_from(variants=variants).given(givens=givens)
+        decision = dc.choose_from(variants=variants)
         if pa.mockup_track_endpoint:
+            try:
+                import requests_mock as rqm
+            except ImportError as ierr:
+                raise ImportError(
+                    'Please install requests_mock package to mock track endpoint: pip3 install requests_mock')
+
             with rqm.Mocker() as m:
                 m.post(pa.track_url, text='success')
                 result = decision.get()
         else:
             result = decision.get()
-
     else:
-
         scores = \
             dm._score(variants=variants, givens=givens)
 
@@ -101,7 +93,6 @@ if __name__ == '__main__':
             result = scores
         else:
             desired_operation = getattr(dm, pa.operation)
-            # inputs['scores'] = scores
             result = desired_operation(**{'variants': variants, 'scores': scores})
 
         if isinstance(result, np.ndarray):

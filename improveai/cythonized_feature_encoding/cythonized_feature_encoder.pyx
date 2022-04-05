@@ -11,9 +11,10 @@ import xxhash
 
 cpdef object xxhash3 = xxhash.xxh3_64_intdigest
 
-from improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils \
-    import encoded_variant_into_np_row, encode_variants_multiple_givens, \
-    encoded_variants_to_np
+# from improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils \
+#     import encoded_variant_into_np_row, encode_variants_multiple_givens, \
+#     encoded_variants_to_np
+import improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils as cfeu
 
 
 @cython.boundscheck(False)
@@ -274,7 +275,7 @@ cdef class FeatureEncoder:
         # n + nan = nan so you'll have to check for nan values on into
 
         # i7 10th gen time per iter - 7.464-05 [s] / 0.96% of pure python time
-        encoded_variant_into_np_row(
+        cfeu.encoded_variant_into_np_row(
             encoded_variant=encoded_variant, feature_names=feature_names,
             into=into)
 
@@ -308,12 +309,12 @@ cdef class FeatureEncoder:
 
         # i7 10th gen time per variant - 2.778e-05 [s] |
         # 33% of pure python implementation runtime per iter
-        encoded_variants = encode_variants_multiple_givens(
+        encoded_variants = cfeu.encode_variants_multiple_givens(
             variants=variants, multiple_givens=multiple_givens,
             multiple_extra_features=multiple_extra_features, noise=noise,
             feature_encoder=self.encode_variant,
             givens_encoder=self.encode_givens)
-        encoded_variants_array = encoded_variants_to_np(
+        encoded_variants_array = cfeu.encoded_variants_to_np(
             encoded_variants=encoded_variants, feature_names=feature_names)
 
         return encoded_variants_array

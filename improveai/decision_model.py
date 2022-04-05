@@ -31,7 +31,7 @@ class DecisionModel:
         if value is not None:
             assert isinstance(value, str)
             assert re.search(DecisionModel.MODEL_NAME_REGEXP, value) is not None
-        self._model_name = value
+        self.__model_name = value
 
     @property
     def _tracker(self):
@@ -75,7 +75,8 @@ class DecisionModel:
 
     def __init__(
             self, model_name: str, track_url: str = None, track_api_key: str = None):
-        self.__set_model_name(model_name=model_name)
+        # self.__set_model_name(model_name=model_name)
+        self.model_name = model_name
         self.track_url = track_url
 
         self.__tracker = None
@@ -86,21 +87,6 @@ class DecisionModel:
         self.id_ = None
         self.chooser = None
         self.givens_provider = gp.GivensProvider()
-
-    def __set_model_name(self, model_name: str):
-        """
-        Private helper method to set model name
-
-        Parameters
-        ----------
-        model_name: str
-            model name to be set
-        """
-
-        if model_name is not None:
-            assert isinstance(model_name, str)
-            assert re.search(DecisionModel.MODEL_NAME_REGEXP, model_name) is not None
-        self.__model_name = model_name
 
     def load(self, model_url: str):
         """
@@ -135,7 +121,7 @@ class DecisionModel:
         """
         # TODO unittest this
         if self.model_name is None:
-            self.__set_model_name(model_name=self.chooser.model_name)
+            self.model_name = self.chooser.model_name
         else:
             self.chooser.model_name = self.model_name
             warnings.warn(
@@ -473,29 +459,6 @@ class DecisionModel:
         # TODO how about the givens? Should GivensProvider be used here?
         #  in iOS here givens are set to nil
         return dc.DecisionContext(decision_model=self, givens=None).choose_from(variants=variants)
-
-    def add_reward(self, reward: float):
-        # void addReward(double reward)
-        # Add rewards for the most recent Decision for this model name, even if
-        # that Decision occurred in a previous session. Sets model on the reward
-        # record to be equal to the current modelName.
-        # NaN, positive infinity, and negative infinity are not allowed and should throw exceptions
-
-        assert self.model_name is not None and self.id_ is not None
-        assert isinstance(reward, float) or isinstance(reward, int)
-        assert reward is not None
-        assert not np.isnan(reward)
-        assert not np.isinf(reward)
-
-        if self.__tracker is not None:
-            return self.__tracker.add_reward(
-                reward=reward, model_name=self.model_name, decision_id=self.id_)
-        else:
-            if self.__tracker is None:
-                warnings.warn(
-                    '`tracker` is not set (`tracker`is None) - reward not added')
-            if self.track_url is None:
-                warnings.warn('`track_url` is None - reward not added')
 
     def which(self, *variants):
         """

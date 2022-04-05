@@ -6,7 +6,8 @@ from typing import Dict, List
 
 
 from improveai.feature_encoder import FeatureEncoder
-from improveai.cythonized_feature_encoding import cfe
+# from improveai.cythonized_feature_encoding import cfe
+import improveai.cythonized_feature_encoding.cythonized_feature_encoder as cfe
 from improveai.choosers.basic_choosers import BasicChooser
 from improveai.settings import USE_CYTHON_BACKEND
 from improveai.utils.general_purpose_tools import constant
@@ -314,17 +315,17 @@ if __name__ == '__main__':
 
     mlmc = MLModelChooser()
 
-    # test_model_pth = '../artifacts/test_artifacts/improve-messages-2.0-3.mlmodel'
-    test_model_pth = '../artifacts/models/v6_conv_model.mlmodel'
+    # test_model_pth = '../tests/artifacts/test_artifacts/improve-messages-2.0-3.mlmodel'
+    test_model_pth = '../tests/artifacts/models/v6_conv_model.mlmodel'
     # test_model_pth = "https://improve-v5-resources-prod-models-117097735164.s3-us-west-2.amazonaws.com/models/mindful/latest/improve-messages-2.0.mlmodel"
     # test_model_pth = "/Users/os/Downloads/improve-messages-2.0.mlmodel.gz"
     mlmc.load_model(input_model_src=test_model_pth)
 
-    with open('../artifacts/test_artifacts/context.json', 'r') as mj:
+    with open('../tests/artifacts/test_artifacts/context.json', 'r') as mj:
         json_str = mj.readline()
         context = json.loads(json_str)
 
-    with open('../artifacts/test_artifacts/meditations.json', 'r') as vj:
+    with open('../tests/artifacts/test_artifacts/meditations.json', 'r') as vj:
         json_str = vj.readlines()
         variants = json.loads(''.join(json_str))
 

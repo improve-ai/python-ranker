@@ -1,0 +1,8 @@
+{"model_url": "improveai/tests/artifacts/models/synthetic_models/happy_sunday/model.xgb.gz",
+  "metadata": {"case_name": "happy_sunday",
+    "train_stats": {
+      "epoch_0": {"max_reward": 65390, "achieved_reward": 28718.0, "regret": 36672.0},
+      "epoch_1": {"max_reward": 68360, "achieved_reward": 61406.0, "regret": 6954.0},
+      "epoch_2": {"max_reward": 74300, "achieved_reward": 68204.0, "regret": 6096.0},
+      "epoch_3": {"max_reward": 71330, "achieved_reward": 64925.0, "regret": 6405.0},
+      "epoch_4": {"max_reward": 83210, "achieved_reward": 82496.0, "regret": 714.0}}}, "test_case": {"variants": ["Have a great day!", "Have an OK day!", "Happy Sunday!"], "givens": [{"weekday": 0}, {"weekday": 1}, {"weekday": 2}, {"weekday": 3}, {"weekday": 4}, {"weekday": 5}, {"weekday": 6}], "noise": 0.5488135039273248, "python_seed": 0}, "expected_output": [{"variant": "Have a great day!", "scores": [0.030781155683219902, -0.014366480946318344, 0.010721576543256768]}, {"variant": "Have a great day!", "scores": [0.017047172643363945, -0.005436831578389838, -0.02799454782743739]}, {"variant": "Have a great day!", "scores": [0.018406989283979408, -0.012152528814748959, -0.01657022055824088]}, {"variant": "Have a great day!", "scores": [0.010916642144442074, -0.012406838550941185, -0.017267077086761465]}, {"variant": "Have a great day!", "scores": [0.019499408312261574, -0.004287750884668067, -0.01663935077030944]}, {"variant": "Have a great day!", "scores": [0.014759401090562813, -0.04640210462339325, -0.01490195733149337]}, {"variant": "Happy Sunday!", "scores": [-0.6856348456366653, -0.32332098899014394, 0.6465649131254406]}]}

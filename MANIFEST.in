@@ -1,3 +1,8 @@
+global-exclude .tox/*
+global-exclude improveai/cythonized_feature_encoding/__pycache__/*
+global-exclude *__pycache__*
+global-exclude *.so
+global-exclude *.c
 
-global-include *.py[odx]
+global-include *.pyx
 global-include *.h

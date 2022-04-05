@@ -3,7 +3,7 @@ import math
 import numpy as np
 import xxhash
 
-import improveai.settings as improve_settings
+from improveai import settings as improve_settings
 from improveai.cythonized_feature_encoding import cfeu
 
 

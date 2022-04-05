@@ -276,6 +276,9 @@ class TestDecisionContext(TestCase):
                 dc.DecisionContext(decision_model=self.test_decision_model, givens=valid_givens).score(variants=iv)
 
     def _generic_test_which(self, test_case_json_name, variants_converter=None):
+        print('### self.decision_context_test_cases_dir ###')
+        print(self.decision_context_test_cases_dir)
+        print(test_case_json_name)
         path_to_test_json = \
             os.sep.join([self.decision_context_test_cases_dir, test_case_json_name])
 

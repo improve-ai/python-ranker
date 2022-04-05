@@ -14,8 +14,6 @@ sys.path.append(
 
 import improveai.decision as d
 import improveai.decision_model as dm
-import improveai.decision_tracker as dt
-from improveai.utils.general_purpose_tools import read_jsonstring_from_file
 from improveai.tests.test_utils import get_test_data
 
 
@@ -117,10 +115,20 @@ class TestDecision(TestCase):
 
     # test constructor raises ValueError
     def test_raises_value_error_when_model_none(self):
-        with raises(ValueError) as verr:
+        with raises(AssertionError) as aerr:
             d.Decision(decision_model=None)
-            # assert that value error is thrown
-            assert str(verr.value)
+
+    def test_raises_value_error_when_model_str(self):
+        with raises(AssertionError) as aerr:
+            d.Decision(decision_model='abc')
+
+    def test_raises_value_error_when_model_int(self):
+        with raises(AssertionError) as aerr:
+            d.Decision(decision_model=123)
+
+    def test_raises_value_error_when_model_float(self):
+        with raises(AssertionError) as aerr:
+            d.Decision(decision_model=123.123)
 
     def _generic_outer_setter_raises_test(
             self, decision: d.Decision, set_attr_name: str,
