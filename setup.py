@@ -48,7 +48,7 @@ if __name__ == '__main__':
         name='improveai',
         version='7.0.1',
         description='Improve AI: AI Decisions for iOS, Android, and the Cloud',
-        author='Justin Chapweske',
+        author='Improve AI',
         author_email='support@improve.ai',
         url='https://github.com/improve-ai/python-sdk',
         packages=find_packages(exclude=['*.tox*', '*tests*']),
