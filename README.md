@@ -22,14 +22,14 @@ To install from pypi sources simply use pip:
 `pip3 install improveai`
 
 
-### Install from cloned git repo
+### Build and install from cloned git repo
 
 To install from cloned repo:     
  1. clone repo: git clone https://github.com/improve-ai/python-sdk    
  2. make sure you are in the cloned folder (python-sdk)    
  3. activate your virtualenv (if you are using one, if not you can skip this step; using venv is advised)    
  4. install wheel and cmake:    
-    `pip3 install wheel cmake --no-cache-dir`
+    `pip3 install --upgrade pip build wheel cmake --no-cache-dir`
  5. install requirements:    
     `pip3 install -r requirements.txt --no-cache-dir`
  6. to build package wheel call:
