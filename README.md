@@ -212,7 +212,7 @@ config = {"bufferSize": 2048,
 This is the code I wish I could have written:
 
 ```python
-config = configModel.which({"bufferSize": [1024, 2048, 4096, 8192],
+config = config_model.which({"bufferSize": [1024, 2048, 4096, 8192],
                             "videoBitrate": [256000, 384000, 512000]})
 ```
 
