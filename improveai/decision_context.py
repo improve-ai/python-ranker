@@ -3,7 +3,7 @@ import numpy as np
 import improveai.decision as d
 import improveai.decision_model as dm
 import improveai.givens_provider as gp
-from improveai.utils.general_purpose_tools import check_variants, get_variants_for_which
+from improveai.utils.general_purpose_tools import check_variants, get_variants_from_args
 
 
 class DecisionContext:
@@ -34,7 +34,7 @@ class DecisionContext:
         self.decision_model = decision_model
         self.givens = givens
 
-    def choose_from(self, variants):
+    def choose_from(self, variants, scores: np.ndarray or list or None = None):
         """
         Makes a Decision without tracking it
 
@@ -42,6 +42,8 @@ class DecisionContext:
         ----------
         variants: list or tuple or np.ndarray
             array of variants to choose from
+        scores: np.ndarray or list or None
+            list of scores for variants
 
         Returns
         -------
@@ -49,19 +51,25 @@ class DecisionContext:
             snapshot of the Decision made with provided variants and available givens
 
         """
+
         check_variants(variants=variants)
         # givens must be provided at this point -> they are needed for decision snapshot
         givens = gp.GivensProvider().givens(for_model=self.decision_model, givens=self.givens)
         # calculate scores (with _score() method) -> givens are provided inside it
-        # scores will also be cached to decision object
-        scores = self.decision_model._score(variants=variants, givens=givens)
+        # if scores are provided
+        scores_for_decision = scores
+        if scores_for_decision is None:
+            # calculate scores
+            # scores will also be cached to decision object
+            scores_for_decision = self.decision_model._score(variants=variants, givens=givens)
+
         # calculate the best variant without tracking (calling get())
-        best = self.decision_model.top_scoring_variant(variants=variants, scores=scores)
+        best = self.decision_model.top_scoring_variant(variants=variants, scores=scores_for_decision)
         # cache all info to decision object
         decision = d.Decision(decision_model=self.decision_model)
         decision.variants = variants
         decision.givens = givens
-        decision.scores = scores
+        decision.scores = scores_for_decision  # scores
         decision.best = best
 
         return decision
@@ -81,6 +89,7 @@ class DecisionContext:
             array of float64 scores
 
         """
+
         # TODO how givens should be provided here?
         # I assumed that this should be done like in iOS SDK
         givens = gp.GivensProvider().givens(for_model=self.decision_model, givens=self.givens)
@@ -106,4 +115,5 @@ class DecisionContext:
             snapshot of the Decision made with provided variants and available givens
 
         """
-        return self.choose_from(variants=get_variants_for_which(variants=variants)).get()
+
+        return self.choose_from(variants=get_variants_from_args(variants=variants)).get()

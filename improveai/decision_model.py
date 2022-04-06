@@ -13,7 +13,7 @@ import improveai.decision_tracker as dt
 import improveai.givens_provider as gp
 from improveai.settings import DEBUG
 from improveai.utils.general_purpose_tools import constant, check_variants, \
-    get_variants_for_which
+    get_variants_from_args
 
 
 class DecisionModel:
@@ -118,7 +118,7 @@ class DecisionModel:
         -------
 
         """
-        # TODO unittest this
+
         if self.model_name is None:
             self.model_name = self.chooser.model_name
         else:
@@ -169,6 +169,7 @@ class DecisionModel:
             array of float64 scores
 
         """
+
         # TODO make sure how givens should be created
         # in iOS the call is almost identical (nil is passed to `givens` parameter of self.givens_provider.givens())
         # TODO [CHECK] how does this correspond with DecisionContext's givens?
@@ -191,6 +192,7 @@ class DecisionModel:
             scores
 
         """
+
         check_variants(variants=variants)
         # log givens for DEBUG == True
         if DEBUG is True:
@@ -326,7 +328,7 @@ class DecisionModel:
         random_scores[::-1].sort()
         return random_scores
 
-    def given(self, givens: dict or None) -> dc.DecisionContext:  # returns DecisionContext?
+    def given(self, givens: dict or None) -> dc.DecisionContext:
         """
         Wrapper for chaining.
 
@@ -342,14 +344,17 @@ class DecisionModel:
 
         return dc.DecisionContext(decision_model=self, givens=givens)
 
-    def choose_from(self, variants: list):
+    def choose_from(
+            self, variants: np.ndarray or list or tuple, scores: list or np.ndarray = None):
         """
         Wrapper for chaining
 
         Parameters
         ----------
-        variants: np.ndarray
+        variants: np.ndarray or list or tuple
             variants to be set
+        scores: list or np.ndarray
+            list of already calculated scores
 
         Returns
         -------
@@ -357,12 +362,13 @@ class DecisionModel:
             decision object with provided with already scored variants and best selected
 
         """
+
         check_variants(variants=variants)
         # TODO how about the givens? Should GivensProvider be used here?
         #  in iOS here givens are set to nil
-        return dc.DecisionContext(decision_model=self, givens=None).choose_from(variants=variants)
+        return dc.DecisionContext(decision_model=self, givens=None).choose_from(variants=variants, scores=scores)
 
-    def which(self, *variants):
+    def which(self, *variants: list or tuple or np.ndarray):
         """
         A short hand version of chooseFrom that returns the chosen result directly,
         automatically tracking the decision in the process. This would be a varargs
@@ -382,4 +388,94 @@ class DecisionModel:
             snapshot of the Decision made with provided variants and available givens
 
         """
-        return self.choose_from(variants=get_variants_for_which(variants=variants)).get()
+
+        return self.choose_from(variants=get_variants_from_args(variants=variants)).get()
+
+    def choose_first(self, variants: list or tuple or np.ndarray):
+        """
+        Chooses first from provided variants using gaussian scores (_generate_descending_gaussians())
+
+        Parameters
+        ----------
+        variants: list or tuple or np.ndarray
+            collection of variants passed as positional parameters
+
+        Returns
+        -------
+        d.Decision
+            A decision with first variants as the best one and gaussian scores
+
+        """
+
+        check_variants(variants=variants)
+        return dc.DecisionContext(decision_model=self, givens=None)\
+            .choose_from(
+                variants=variants,
+                scores=self._generate_descending_gaussians(len(variants)))
+
+    def first(self, *variants: list or np.ndarray):
+        """
+        Makes decision using first variant as best and tracks it.
+        Accepts variants as pythonic args
+
+        Parameters
+        ----------
+        variants: list or tuple or np.ndarray
+            collection of variants of which first will be chosen
+
+        Returns
+        -------
+        object
+            chosen and tracked variant
+
+        """
+
+        # TODO how should this requirement be handled in py
+        # Rewards can only be added via DecisionModel.addReward()
+        return self.choose_first(variants=get_variants_from_args(variants=variants)).get()
+
+    def choose_random(self, variants: list or tuple or np.ndarray):
+        """
+        Shuffles variants to return Decision with gaussian scores and random best variant
+
+        Parameters
+        ----------
+        variants: list or tuple or np.ndarray
+            collection of variants of which random will be chosen
+
+        Returns
+        -------
+        d.Decision
+            Decision with random ly chosen best variant
+
+        """
+
+        # check variants
+        check_variants(variants=variants)
+        # copy and shuffle
+        variants_copy = \
+            np.array(variants) if not isinstance(variants, np.ndarray) else variants.copy()
+        np.random.shuffle(variants_copy)
+        # choose first to generate gaussian scores
+        return self.choose_first(variants=variants)
+
+    def random(self, *variants: list or np.ndarray):
+        """
+        Makes decision using randomly selected variant as best and tracks it.
+        Accepts variants as pythonic args
+
+        Parameters
+        ----------
+        variants: list or np.ndarray
+            collection of variants of which first will be chosen
+
+        Returns
+        -------
+        object
+            randomly selected and tracked best variant
+
+        """
+
+        # TODO how should this requirement be handled in py
+        # Rewards can only be added via DecisionModel.addReward()
+        return self.choose_random(variants=get_variants_from_args(variants=variants)).get()

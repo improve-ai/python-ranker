@@ -14,11 +14,12 @@ class Decision:
 
     @variants.setter
     def variants(self, value: list or np.ndarray or tuple):
-        # TODO test variants setter behaviour
         if self.__variants_set is False:
             check_variants(variants=value)
             self.__variants = value
             self.__variants_set = True
+        else:
+            warn('`variants` have already been set for this Decision')
 
     @property
     def givens(self) -> dict or None:
@@ -31,6 +32,8 @@ class Decision:
             assert isinstance(value, dict) or value is None
             self.__givens = value
             self.__givens_set = True
+        else:
+            warn('`givens` have already been set for this Decision')
 
     @property
     def decision_model(self) -> object:
@@ -50,6 +53,8 @@ class Decision:
         if self.__best_set is False:
             self.__best = value
             self.__best_set = True
+        else:
+            warn('`best` has already been calculated / set for this Decision')
 
     @property
     def scores(self):
@@ -57,10 +62,19 @@ class Decision:
 
     @scores.setter
     def scores(self, value):
+
         # TODO test scores setter behaviour
         if self.__scores_set is False:
+            assert value is not None
+            assert (isinstance(value, list) or isinstance(value, np.ndarray))
+            assert len(value) > 0
+            assert self.variants is not None
+            assert len(value) == len(self.variants)
+
             self.__scores = value
             self.__scores_set = True
+        else:
+            warn('`scores` have already been calculated / set for this Decision')
 
     @property
     def ranked_variants(self):
@@ -162,8 +176,32 @@ class Decision:
                 raise ValueError('`tracker` object can`t be None')
             else:
                 self.__best = \
-                    dm.DecisionModel.top_scoring_variant(
-                        variants=self.variants, scores=self.__scores)
+                    dm.DecisionModel.top_scoring_variant(variants=self.variants, scores=self.__scores)
 
+        self.__chosen = True
+        return self.best
+
+    def peek(self):
+        """
+        Calculates best (or returns) best variant without tracking it
+
+        Returns
+        -------
+        object
+            best variant
+
+        """
+
+        if self.chosen:
+            self._cache_message_id_to_decision_model()
+            return self.best
+        # set message_id / decision_id only once
+        self._set_message_id()
+        # set message_id / deicsion_id to decision model
+        self._cache_message_id_to_decision_model()
+        self.__scores = self.decision_model._score(variants=self.variants, givens=self.givens)
+        # Memoizes the chosen variant so same value is returned on subsequent calls
+        self.__best = dm.DecisionModel.top_scoring_variant(variants=self.variants, scores=self.__scores)
+        # The chosen variant is not tracked
         self.__chosen = True
         return self.best
