@@ -899,3 +899,112 @@ class TestDecisionModel(TestCase):
         for ivs in invalid_variants:
             with raises(ValueError) as verr:
                 decision_model.which(*[ivs])
+
+    # TODO test choose_first()
+    def test_choose_first_raises_for_string(self):
+        with raises(AssertionError) as aerr:
+            dm.DecisionModel('dummy-model').choose_first(variants='abc')
+
+    def test_choose_first_raises_for_numeric(self):
+        with raises(AssertionError) as aerr:
+            dm.DecisionModel('dummy-model').choose_first(variants=123.123)
+
+    def test_choose_first_raises_for_bool(self):
+        with raises(AssertionError) as aerr:
+            dm.DecisionModel('dummy-model').choose_first(variants=True)
+
+    def test_choose_first_raises_for_empty_variants(self):
+        with raises(ValueError) as verr:
+            dm.DecisionModel('dummy-model').choose_first(variants=[])
+
+        with raises(ValueError) as verr:
+            dm.DecisionModel('dummy-model').choose_first(variants=np.array([]))
+
+        with raises(ValueError) as verr:
+            dm.DecisionModel('dummy-model').choose_first(variants=tuple())
+
+    def test_choose_first_raises_for_none(self):
+        with raises(AssertionError) as aerr:
+            dm.DecisionModel('dummy-model').choose_first(variants=None)
+
+    # TODO test first()
+    def test_first_raises_for_string(self):
+        with raises(AssertionError) as aerr:
+            dm.DecisionModel('dummy-model').first('abc')
+
+    def test_first_raises_for_numeric(self):
+        with raises(AssertionError) as aerr:
+            dm.DecisionModel('dummy-model').first(123.123)
+
+    def test_first_raises_for_bool(self):
+        with raises(AssertionError) as aerr:
+            dm.DecisionModel('dummy-model').first(True)
+
+    def test_first_raises_for_empty_variants(self):
+        with raises(ValueError) as verr:
+            dm.DecisionModel('dummy-model').first(*[])
+
+        with raises(ValueError) as verr:
+            dm.DecisionModel('dummy-model').first(*np.array([]))
+
+        with raises(ValueError) as verr:
+            dm.DecisionModel('dummy-model').first(*tuple())
+
+    def test_first_raises_for_none(self):
+        with raises(AssertionError) as aerr:
+            dm.DecisionModel('dummy-model').first(None)
+
+    # TODO test choose_random()
+    def test_choose_random_raises_for_string(self):
+        with raises(AssertionError) as aerr:
+            dm.DecisionModel('dummy-model').choose_random(variants='abc')
+
+    def test_choose_random_raises_for_numeric(self):
+        with raises(AssertionError) as aerr:
+            dm.DecisionModel('dummy-model').choose_random(variants=123.123)
+
+    def test_choose_random_raises_for_bool(self):
+        with raises(AssertionError) as aerr:
+            dm.DecisionModel('dummy-model').choose_random(variants=True)
+
+    def test_choose_random_raises_for_empty_variants(self):
+        with raises(ValueError) as verr:
+            dm.DecisionModel('dummy-model').choose_random(variants=[])
+
+        with raises(ValueError) as verr:
+            dm.DecisionModel('dummy-model').choose_random(variants=np.array([]))
+
+        with raises(ValueError) as verr:
+            dm.DecisionModel('dummy-model').choose_random(variants=tuple())
+
+    def test_choose_random_raises_for_none(self):
+        with raises(AssertionError) as aerr:
+            dm.DecisionModel('dummy-model').choose_random(variants=None)
+
+    # TODO random()
+    def test_random_raises_for_string(self):
+        with raises(AssertionError) as aerr:
+            dm.DecisionModel('dummy-model').random('abc')
+
+    def test_random_raises_for_numeric(self):
+        with raises(AssertionError) as aerr:
+            dm.DecisionModel('dummy-model').random(123.123)
+
+    def test_random_raises_for_bool(self):
+        with raises(AssertionError) as aerr:
+            dm.DecisionModel('dummy-model').random(True)
+
+    def test_random_raises_for_empty_variants(self):
+        with raises(ValueError) as verr:
+            dm.DecisionModel('dummy-model').random(*[])
+
+        with raises(ValueError) as verr:
+            dm.DecisionModel('dummy-model').random(*np.array([]))
+
+        with raises(ValueError) as verr:
+            dm.DecisionModel('dummy-model').random(*tuple())
+
+    def test_random_raises_for_none(self):
+        with raises(AssertionError) as aerr:
+            dm.DecisionModel('dummy-model').random(None)
+
