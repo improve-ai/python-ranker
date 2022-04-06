@@ -5,7 +5,7 @@ import warnings
 import numpy as np
 
 from improveai.choosers.basic_choosers import BasicChooser
-from improveai.choosers.mlmodel_chooser import MLModelChooser
+# from improveai.choosers._mlmodel_chooser import MLModelChooser
 from improveai.choosers.xgb_chooser import NativeXGBChooser
 import improveai.decision as d
 import improveai.decision_context as dc
@@ -75,7 +75,6 @@ class DecisionModel:
 
     def __init__(
             self, model_name: str, track_url: str = None, track_api_key: str = None):
-        # self.__set_model_name(model_name=model_name)
         self.model_name = model_name
         self.track_url = track_url
 
@@ -105,7 +104,7 @@ class DecisionModel:
 
         """
 
-        self.chooser = DecisionModel._get_chooser(model_url=model_url)
+        self.chooser = self._get_chooser(model_url=model_url)
         self._resolve_model_name()
 
         return self
@@ -129,12 +128,7 @@ class DecisionModel:
                 'overwritten by loaded model name: {}.'
                 .format(self.model_name, self.chooser.model_name))
 
-    # TODO check if it should be static or not
-    # TODO remove mlmodel support
-    # TODO make sure what a callback should do (probably based on iOS implementation)
-    @staticmethod
-    def _get_chooser(
-            model_url: str, loop: asyncio.BaseEventLoop = None) -> BasicChooser:
+    def _get_chooser(self, model_url: str) -> BasicChooser:
         """
         Synchronously loads XGBoost model from provided path, creates instance
         of Chooser and returns it
@@ -151,103 +145,14 @@ class DecisionModel:
 
         """
 
-        true_exception = None
         try:
             model_src = BasicChooser.get_model_src(model_src=model_url)
         except Exception as exc:
-            if loop is not None:
-                loop.call_exception_handler(context={
-                    'message': 'Failed to load model from url: {}'.format(
-                        model_url),
-                    'exception': exc})
             raise exc
 
-        chooser = None
-        chooser_constructors = [MLModelChooser, NativeXGBChooser]
-
-        for chooser_constructor in chooser_constructors:
-
-            chooser = None
-
-            try:
-                chooser = chooser_constructor()
-                chooser.load_model(input_model_src=model_src)
-                break
-
-            except Exception as exc:
-
-                true_exception = exc
-
-        if (chooser is None or chooser.model is None) and loop is not None:
-            loop.call_exception_handler(context={
-                'message': 'Failed to load model from url: {}'.format(model_url),
-                'exception': true_exception})
-
+        chooser = NativeXGBChooser()
+        chooser.load_model(input_model_src=model_src)
         return chooser
-
-    def _load_chooser_for_async(
-            self, model_url: str, loop: asyncio.BaseEventLoop = None):
-        """
-        Wrapper around chooser loading procedure for async operation
-
-        Parameters
-        ----------
-        model_url: str
-            path / url to model
-        loop: object
-            asyncio loop
-
-        Returns
-        -------
-
-        """
-
-        self.chooser = DecisionModel._get_chooser(model_url=model_url, loop=loop)
-        self._resolve_model_name()
-
-    @staticmethod
-    def _exception_while_loading_chooser(loop, context):
-        """
-        Custom exception handler for asyncio
-
-        Parameters
-        ----------
-        loop: object
-            asyncio loop
-        context: dict
-            dict with info about error
-
-        Returns
-        -------
-
-        """
-        print(
-            'Model loading failed with error: {}'.format(context.get('message', None)))
-        print(context.get('exception', None))
-
-    # DEPRECATED
-    # def load_async(self, model_url: str):
-    #     """
-    #     Loads model im an async fashion;
-    #
-    #     IMPORTANT:
-    #     Please note that this is an EXPERIMENTAL/DEPRECATED method and might be
-    #     changed in the near future
-    #
-    #     Parameters
-    #     ----------
-    #     model_url: str
-    #         path / url to model
-    #
-    #     Returns
-    #     -------
-    #
-    #     """
-    #     loop = asyncio.get_event_loop()
-    #     loop.set_exception_handler(DecisionModel._exception_while_loading_chooser)
-    #     loop.run_in_executor(None, self._load_chooser_for_async, *[model_url, loop])
-    #
-    #     return self
 
     def score(self, variants: list or np.ndarray) -> np.ndarray:
         """

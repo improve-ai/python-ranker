@@ -12,8 +12,6 @@ from xgboost.core import XGBoostError
 
 from improveai.feature_encoder import FeatureEncoder
 from improveai.choosers.basic_choosers import BasicChooser
-# import improveai.cythonized_feature_encoding.cythonized_feature_encoder as cfe
-# import improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils as cfeu
 from improveai.cythonized_feature_encoding import cfe, cfeu
 from improveai.settings import USE_CYTHON_BACKEND
 from improveai.utils.general_purpose_tools import constant

@@ -85,6 +85,7 @@ if __name__ == '__main__':
                 result = decision.get()
         else:
             result = decision.get()
+        scores = decision.scores
     else:
         scores = \
             dm._score(variants=variants, givens=givens)
