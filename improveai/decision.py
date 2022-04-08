@@ -146,7 +146,12 @@ class Decision:
         # set message_id / deicsion_id to decision model
         self._cache_message_id_to_decision_model()
 
-        self.__scores = self.decision_model._score(variants=self.variants, givens=self.givens)
+        # calculate scores if it was not already set
+        if self.scores is None:
+            self.__scores = self.decision_model._score(variants=self.variants, givens=self.givens)
+        else:
+            # check if scores have proper length
+            assert len(self.scores) == len(self.variants)
 
         if self.variants is not None and len(self.variants) != 0:
             # there should be no difference between effect of those 2 conditions
@@ -164,8 +169,10 @@ class Decision:
                         givens=self.givens, model_name=self.decision_model.model_name,
                         variants_ranked_and_track_runners_up=True, message_id=self.id_)
                 else:
-                    self.__best = \
-                        dm.DecisionModel.top_scoring_variant(variants=self.variants, scores=self.__scores)
+                    # calculate best if it was not already set
+                    if self.best is None:
+                        self.__best = \
+                            dm.DecisionModel.top_scoring_variant(variants=self.variants, scores=self.__scores)
 
                     self.decision_model._tracker.track(
                         variant=self.best, variants=self.variants,

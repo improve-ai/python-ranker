@@ -66,7 +66,7 @@
             "device_model": "iPhone 7 Plus"
         }
     },
-    "test_output": [
+    "test_output": {"ranked_variants": [
         {
             "text": "lovely corgi",
             "chars": 12,
@@ -117,7 +117,7 @@
             "chars": 14,
             "words": 2
         }
-    ],
+    ]},
     "model_seed": 1,
     "scores_seed": 1
 }

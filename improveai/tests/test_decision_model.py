@@ -1,3 +1,4 @@
+from copy import copy
 import json
 import numpy as np
 import os
@@ -18,7 +19,8 @@ import improveai.decision as d
 import improveai.decision_context as dc
 import improveai.decision_model as dm
 from improveai.choosers.xgb_chooser import NativeXGBChooser
-from improveai.tests.test_utils import convert_values_to_float32, get_test_data
+from improveai.tests.test_utils import convert_values_to_float32, get_test_data, \
+    assert_valid_decision
 
 
 class TestDecisionModel(TestCase):
@@ -340,11 +342,17 @@ class TestDecisionModel(TestCase):
 
         decision_model = dm.DecisionModel(model_name=None).load(model_url=model_url)
 
+        expected_scores = None
+        if evaluated_method_name in ['score', '_score']:
+            expected_scores = expected_output.get('scores', None)
+
         if evaluated_method_name == 'score':
             np.random.seed(score_seed)
             calculated_scores = decision_model.score(variants=variants)
             calculated_scores_float32 = convert_values_to_float32(calculated_scores)
-            expected_output_float32 = convert_values_to_float32(expected_output)
+
+            assert expected_scores is not None
+            expected_output_float32 = convert_values_to_float32(expected_scores)
             np.testing.assert_array_equal(calculated_scores_float32, expected_output_float32)
             return
 
@@ -355,11 +363,11 @@ class TestDecisionModel(TestCase):
         calculated_scores_float32 = convert_values_to_float32(calculated_scores)
 
         if evaluated_method_name == '_score':
-            expected_output_float32 = convert_values_to_float32(expected_output)
+            assert expected_scores is not None
+            expected_output_float32 = convert_values_to_float32(expected_scores)
 
             np.testing.assert_array_equal(
                 calculated_scores_float32, expected_output_float32)
-
             return
 
         if scores_key in empty_callable_kwargs:
@@ -368,32 +376,61 @@ class TestDecisionModel(TestCase):
         np.random.seed(score_seed)
         # evaluated_callable = getattr(dm.DecisionModel, evaluated_method_name)
         if evaluated_method_name == 'top_scoring_variant':
-            calculated_output = \
-                dm.DecisionModel.top_scoring_variant(
-                    variants=variants, scores=calculated_scores)
+            calculated_best = \
+                dm.DecisionModel.top_scoring_variant(variants=variants, scores=calculated_scores)
+            expected_best = expected_output.get('best', None)
+            assert expected_best is not None
+            assert calculated_best == expected_best
         elif evaluated_method_name == 'rank':
-            calculated_output = \
+            calculated_ranked_variants = \
                 dm.DecisionModel.rank(variants=variants, scores=calculated_scores)
+            expected_ranked_variants = expected_output.get('ranked_variants', None)
+            np.testing.assert_array_equal(
+                expected_ranked_variants, calculated_ranked_variants)
+        elif evaluated_method_name == 'choose_first':
+            # get decision object
+            decision = decision_model.choose_first(variants=variants)
+
+            expected_scores = expected_output.get('scores', None)
+            assert expected_scores is not None
+            expected_best = expected_output.get('best', None)
+            assert expected_best is not None
+
+            # assert that returned decision is correct
+            assert_valid_decision(
+                decision=decision, expected_variants=variants, expected_givens=givens,
+                expected_scores=expected_scores, expected_best=expected_best)
+        elif evaluated_method_name == 'first':
+            # assert that returned variant is correct
+            best_variant = decision_model.first(*variants)
+            # assert that best variant is equal to expected output
+            assert best_variant == expected_output
+        elif evaluated_method_name == 'choose_random':
+            decision = decision_model.choose_random(variants=variants)
+
+            expected_scores = expected_output.get('scores', None)
+            assert expected_scores is not None
+            expected_best = expected_output.get('best', None)
+            assert expected_best is not None
+
+            # assert that returned decision is correct
+            assert_valid_decision(
+                decision=decision, expected_variants=variants, expected_givens=givens,
+                expected_scores=expected_scores, expected_best=expected_best)
+        elif evaluated_method_name == 'random':
+            # assert that returned variant is correct
+            best_variant = decision_model.random(*variants)
+            # assert that best variant is equal to expected output
+            assert best_variant == expected_output
         else:
             raise ValueError('Unsupported method: {}'.format(evaluated_method_name))
 
-        print('### calc vs true ###')
-        from pprint import pprint
-        pprint(calculated_output)
-
-        if isinstance(expected_output, list):
-            np.testing.assert_array_equal(
-                expected_output, calculated_output)
-        else:
-            assert expected_output == calculated_output
-
     def _generic_desired_decision_model_method_call_no_model(
             self, test_data_filename: str, evaluated_method_name: str,
-            empty_callable_kwargs: dict, test_case_key: str = 'test_case',
-            test_output_key: str = 'test_output',
-            variants_key: str = 'variants', givens_key: str = 'givens',
-            predictor_filename_key: str = 'model_filename',
-            scores_key: str = 'scores', scores_seed_key: str = 'scores_seed'):
+            test_case_key: str = 'test_case', test_output_key: str = 'test_output',
+            variants_key: str = 'variants', variants_input_type: str = 'list',
+            givens_key: str = 'givens',
+            scores_seed_key: str = 'scores_seed'):
 
         path_to_test_json = \
             ('{}' + os.sep + '{}').format(
@@ -402,83 +439,141 @@ class TestDecisionModel(TestCase):
         test_data = get_test_data(path_to_test_json=path_to_test_json, method='read')
 
         test_case = test_data.get(test_case_key, None)
-
-        if test_case is None:
-            raise ValueError('Test case can`t be None')
+        assert test_case is not None
 
         variants = test_case.get(variants_key, None)
+        assert variants is not None
 
-        if variants_key in empty_callable_kwargs:
-            empty_callable_kwargs[variants_key] = variants
-
-        if variants is None:
-            raise ValueError('Variants can`t be None')
+        if variants_input_type == 'numpy':
+            variants = np.array(variants)
+        elif variants_input_type == 'tuple':
+            variants = tuple(variants)
 
         givens = test_case.get(givens_key, None)
 
-        if givens_key in empty_callable_kwargs:
-            empty_callable_kwargs[givens_key] = givens
-
-        if givens is None:
-            raise ValueError('Context can`t be None')
-
         score_seed = test_data.get(scores_seed_key, None)
+        assert score_seed is not None
 
-        if score_seed is None:
-            raise ValueError('`scores_seed` can`t be empty')
-
-        predictor_filename = test_case.get(predictor_filename_key, None)
-
-        if predictor_filename is None:
-            raise ValueError('`model_filename` can`t be empty')
+        # predictor_filename = test_case.get(predictor_filename_key, None)
+        # assert predictor_filename is not None
 
         expected_output = test_data.get(test_output_key, None)
-
-        if expected_output is None:
-            raise ValueError('`test_output` can`t be None')
+        assert expected_output is not None
 
         decision_model = dm.DecisionModel(model_name='dummy-model')
+
+        expected_scores = None
+        if evaluated_method_name in ['score', '_score']:
+            expected_scores = expected_output.get('scores', None)
 
         if evaluated_method_name == 'score':
             np.random.seed(score_seed)
             calculated_scores = decision_model.score(variants=variants)
-            np.testing.assert_array_equal(calculated_scores.tolist(), expected_output)
+            calculated_scores_float32 = convert_values_to_float32(calculated_scores)
+
+            assert expected_scores is not None
+            expected_output_float32 = convert_values_to_float32(expected_scores)
+            np.testing.assert_array_equal(calculated_scores_float32, expected_output_float32)
             return
 
         np.random.seed(score_seed)
         calculated_scores = decision_model._score(variants=variants, givens=givens)
 
-        if evaluated_method_name == '_score':
-            np.testing.assert_array_equal(
-                calculated_scores.tolist(), expected_output)
-            return
+        calculated_scores_float32 = convert_values_to_float32(calculated_scores)
 
-        if scores_key in empty_callable_kwargs:
-            empty_callable_kwargs[scores_key] = calculated_scores
+        if evaluated_method_name == '_score':
+            assert expected_scores is not None
+            expected_output_float32 = convert_values_to_float32(expected_scores)
+
+            np.testing.assert_array_equal(
+                calculated_scores_float32, expected_output_float32)
+            return
 
         np.random.seed(score_seed)
         if evaluated_method_name == 'top_scoring_variant':
-            calculated_output = \
-                dm.DecisionModel.top_scoring_variant(
-                    variants=variants, scores=calculated_scores)
+            calculated_best = \
+                dm.DecisionModel.top_scoring_variant(variants=variants, scores=calculated_scores)
+            expected_best = expected_output.get('best', None)
+            assert expected_best is not None
+            assert calculated_best == expected_best
         elif evaluated_method_name == 'rank':
-            calculated_output = \
+            calculated_ranked_variants = \
                 dm.DecisionModel.rank(variants=variants, scores=calculated_scores)
+            expected_ranked_variants = expected_output.get('ranked_variants', None)
+            np.testing.assert_array_equal(
+                expected_ranked_variants, calculated_ranked_variants)
+        elif evaluated_method_name == 'choose_first':
+            # get decision object
+            np.random.seed(score_seed)
+            decision = decision_model.choose_first(variants=variants)
+
+            expected_scores = expected_output.get('scores', None)
+            assert expected_scores is not None
+            expected_best = expected_output.get('best', None)
+            assert expected_best is not None
+
+            # assert that returned decision is correct
+            assert_valid_decision(
+                decision=decision, expected_variants=variants, expected_givens=givens,
+                expected_scores=expected_scores, expected_best=expected_best)
+        elif evaluated_method_name == 'first':
+            # assert that returned variant is correct
+            with rqm.Mocker() as m:
+                m.post(self.track_url, text='success')
+                decision_model = dm.DecisionModel(model_name='dummy-model', track_url=self.track_url)
+                np.random.seed(score_seed)
+                best_variant = decision_model.first(*variants)
+            # assert that best variant is equal to expected output
+            expected_best = expected_output.get('best', None)
+            assert best_variant == expected_best
+        elif evaluated_method_name == 'choose_random':
+            np.random.seed(score_seed)
+            decision = decision_model.choose_random(variants=variants)
+
+            expected_scores = expected_output.get('scores', None)
+            assert expected_scores is not None
+            expected_best = expected_output.get('best', None)
+            assert expected_best is not None
+
+            if variants_input_type == 'tuple':
+                expected_variants = list(variants)
+            else:
+                expected_variants = variants.copy()
+
+            np.random.seed(score_seed)
+            np.random.shuffle(expected_variants)
+            # assert that returned decision is correct
+            assert_valid_decision(
+                decision=decision, expected_variants=expected_variants, expected_givens=givens,
+                expected_scores=expected_scores, expected_best=expected_best)
+        elif evaluated_method_name == 'random':
+            # assert that returned variant is correct
+            with rqm.Mocker() as m:
+                m.post(self.track_url, text='success')
+                decision_model = dm.DecisionModel(model_name='dummy-model', track_url=self.track_url)
+                np.random.seed(score_seed)
+                best_variant = decision_model.random(*variants)
+
+            if variants_input_type == 'tuple':
+                expected_variants = list(variants)
+            else:
+                expected_variants = variants.copy()
+
+            np.random.seed(score_seed)
+            np.random.shuffle(expected_variants)
+            # assert that best variant is equal to expected output
+            expected_best = expected_output.get('best', None)
+            assert expected_best is not None
+
+            assert best_variant == expected_best
         else:
             raise ValueError('Unsupported method: {}'.format(evaluated_method_name))
-
-        if isinstance(expected_output, list):
-            np.testing.assert_array_equal(
-                expected_output, calculated_output)
-        else:
-            assert expected_output == calculated_output
 
     def test__score_no_model(self):
         self._generic_desired_decision_model_method_call_no_model(
             test_data_filename=os.getenv(
                 'DECISION_MODEL_TEST__SCORE_NATIVE_NO_MODEL_JSON'),
-            evaluated_method_name='_score',
-            empty_callable_kwargs={'variants': None, 'givens': None})
+            evaluated_method_name='_score')
 
     def test__score(self):
         self._generic_desired_decision_model_method_call(
@@ -491,8 +586,7 @@ class TestDecisionModel(TestCase):
         self._generic_desired_decision_model_method_call_no_model(
             test_data_filename=os.getenv(
                 'DECISION_MODEL_TEST_SCORE_NATIVE_NO_MODEL_JSON'),
-            evaluated_method_name='score',
-            empty_callable_kwargs={'variants': None, 'givens': None})
+            evaluated_method_name='score')
 
     def test_score(self):
         self._generic_desired_decision_model_method_call(
@@ -505,9 +599,7 @@ class TestDecisionModel(TestCase):
         self._generic_desired_decision_model_method_call_no_model(
             test_data_filename=os.getenv(
                 'DECISION_MODEL_TEST_TOP_SCORING_VARIANT_NATIVE_NO_MODEL_JSON'),
-            evaluated_method_name='top_scoring_variant',
-            empty_callable_kwargs={
-                'variants': None, 'givens': None, 'scores': None})
+            evaluated_method_name='top_scoring_variant')
 
     def test_top_scoring_variant(self):
         self._generic_desired_decision_model_method_call(
@@ -521,9 +613,7 @@ class TestDecisionModel(TestCase):
         self._generic_desired_decision_model_method_call_no_model(
             test_data_filename=os.getenv(
                 'DECISION_MODEL_TEST_RANK_NATIVE_NO_MODEL_JSON'),
-            evaluated_method_name='rank',
-            empty_callable_kwargs={
-                'variants': None, 'givens': None, 'scores': None})
+            evaluated_method_name='rank')
 
     def test_ranked(self):
         self._generic_desired_decision_model_method_call(
@@ -554,15 +644,16 @@ class TestDecisionModel(TestCase):
         score_seed = test_data.get("scores_seed", None)
 
         expected_output = test_data.get("test_output", None)
+        assert expected_output is not None
 
-        if expected_output is None:
-            raise ValueError('`test_output` can`t be None')
+        expected_scores = expected_output.get('scores', None)
+        assert expected_scores is not None
 
         np.random.seed(score_seed)
         calculated_gaussians = \
             dm.DecisionModel._generate_descending_gaussians(count=variants_count)
 
-        np.testing.assert_array_equal(calculated_gaussians, expected_output)
+        np.testing.assert_array_equal(calculated_gaussians, expected_scores)
 
     def test_choose_from(self):
 
@@ -584,18 +675,26 @@ class TestDecisionModel(TestCase):
             raise ValueError('Variants can`t be None')
 
         expected_output = test_data.get("test_output", None)
+        assert expected_output is not None
 
-        if expected_output is None:
-            raise ValueError('`test_output` can`t be None')
+        expected_scores = expected_output.get('scores', None)
+        assert expected_scores is not None
 
+        expected_best = expected_output.get('best', None)
+        assert expected_best is not None
+
+        scores_seed = test_data.get('scores_seed', None)
+        assert scores_seed is not None
+
+        np.random.seed(scores_seed)
         decision = \
             dm.DecisionModel(model_name='test_choose_from_model')\
             .choose_from(variants=variants)
 
         assert isinstance(decision, d.Decision)
-        assert hasattr(decision, 'variants')
-        np.testing.assert_array_equal(decision.variants, expected_output)
-        assert decision.givens is None
+        assert_valid_decision(
+            decision=decision, expected_variants=variants, expected_givens=None,
+            expected_scores=expected_scores, expected_best=expected_best)
 
     def test_given(self):
         path_to_test_json = \
@@ -616,9 +715,10 @@ class TestDecisionModel(TestCase):
             raise ValueError('givens can`t be None')
 
         expected_output = test_data.get("test_output", None)
+        assert expected_output is not None
 
-        if expected_output is None:
-            raise ValueError('`test_output` can`t be None')
+        expected_givens = expected_output.get('givens', None)
+        assert expected_givens is not None
 
         decision_context = \
             dm.DecisionModel(model_name='test_choose_from_model').given(givens=givens)
@@ -626,7 +726,7 @@ class TestDecisionModel(TestCase):
         assert isinstance(decision_context, dc.DecisionContext)
         assert hasattr(decision_context, 'givens')
         assert isinstance(decision_context.givens, dict)
-        assert decision_context.givens == expected_output
+        assert decision_context.givens == expected_givens
 
     def test_no_model__score_and_sort(self):
 
@@ -901,15 +1001,30 @@ class TestDecisionModel(TestCase):
                 decision_model.which(*[ivs])
 
     # TODO test choose_first()
-    def test_choose_first_raises_for_string(self):
+    def test_choose_first_valid_variants_list(self):
+        self._generic_desired_decision_model_method_call_no_model(
+            test_data_filename=os.getenv('DECISION_MODEL_TEST_CHOOSE_FIRST_VALID_VARIANTS_JSON'),
+            evaluated_method_name='choose_first')
+
+    def test_choose_first_valid_variants_numpy(self):
+        self._generic_desired_decision_model_method_call_no_model(
+            test_data_filename=os.getenv('DECISION_MODEL_TEST_CHOOSE_FIRST_VALID_VARIANTS_JSON'),
+            evaluated_method_name='choose_first', variants_input_type='numpy')
+
+    def test_choose_first_valid_variants_tuple(self):
+        self._generic_desired_decision_model_method_call_no_model(
+            test_data_filename=os.getenv('DECISION_MODEL_TEST_CHOOSE_FIRST_VALID_VARIANTS_JSON'),
+            evaluated_method_name='choose_first', variants_input_type='tuple')
+
+    def test_choose_first_raises_for_string_variants(self):
         with raises(AssertionError) as aerr:
             dm.DecisionModel('dummy-model').choose_first(variants='abc')
 
-    def test_choose_first_raises_for_numeric(self):
+    def test_choose_first_raises_for_numeric_variants(self):
         with raises(AssertionError) as aerr:
             dm.DecisionModel('dummy-model').choose_first(variants=123.123)
 
-    def test_choose_first_raises_for_bool(self):
+    def test_choose_first_raises_for_bool_variants(self):
         with raises(AssertionError) as aerr:
             dm.DecisionModel('dummy-model').choose_first(variants=True)
 
@@ -923,20 +1038,35 @@ class TestDecisionModel(TestCase):
         with raises(ValueError) as verr:
             dm.DecisionModel('dummy-model').choose_first(variants=tuple())
 
-    def test_choose_first_raises_for_none(self):
+    def test_choose_first_raises_for_none_variants(self):
         with raises(AssertionError) as aerr:
             dm.DecisionModel('dummy-model').choose_first(variants=None)
 
     # TODO test first()
-    def test_first_raises_for_string(self):
+    def test_first_valid_variants_list(self):
+        self._generic_desired_decision_model_method_call_no_model(
+            test_data_filename=os.getenv('DECISION_MODEL_TEST_FIRST_VALID_VARIANTS_JSON'),
+            evaluated_method_name='first')
+
+    def test_first_valid_variants_numpy(self):
+        self._generic_desired_decision_model_method_call_no_model(
+            test_data_filename=os.getenv('DECISION_MODEL_TEST_FIRST_VALID_VARIANTS_JSON'),
+            evaluated_method_name='first', variants_input_type='numpy')
+
+    def test_first_valid_variants_tuple(self):
+        self._generic_desired_decision_model_method_call_no_model(
+            test_data_filename=os.getenv('DECISION_MODEL_TEST_FIRST_VALID_VARIANTS_JSON'),
+            evaluated_method_name='first', variants_input_type='tuple')
+
+    def test_first_raises_for_string_variants(self):
         with raises(AssertionError) as aerr:
             dm.DecisionModel('dummy-model').first('abc')
 
-    def test_first_raises_for_numeric(self):
+    def test_first_raises_for_numeric_variants(self):
         with raises(AssertionError) as aerr:
             dm.DecisionModel('dummy-model').first(123.123)
 
-    def test_first_raises_for_bool(self):
+    def test_first_raises_for_bool_variants(self):
         with raises(AssertionError) as aerr:
             dm.DecisionModel('dummy-model').first(True)
 
@@ -950,20 +1080,35 @@ class TestDecisionModel(TestCase):
         with raises(ValueError) as verr:
             dm.DecisionModel('dummy-model').first(*tuple())
 
-    def test_first_raises_for_none(self):
+    def test_first_raises_for_none_variants(self):
         with raises(AssertionError) as aerr:
             dm.DecisionModel('dummy-model').first(None)
 
     # TODO test choose_random()
-    def test_choose_random_raises_for_string(self):
+    def test_choose_random_valid_variants_list(self):
+        self._generic_desired_decision_model_method_call_no_model(
+            test_data_filename=os.getenv('DECISION_MODEL_TEST_CHOOSE_RANDOM_VALID_VARIANTS_JSON'),
+            evaluated_method_name='choose_random')
+
+    def test_choose_random_valid_variants_numpy(self):
+        self._generic_desired_decision_model_method_call_no_model(
+            test_data_filename=os.getenv('DECISION_MODEL_TEST_CHOOSE_RANDOM_VALID_VARIANTS_JSON'),
+            evaluated_method_name='choose_random', variants_input_type='numpy')
+
+    def test_choose_random_valid_variants_tuple(self):
+        self._generic_desired_decision_model_method_call_no_model(
+            test_data_filename=os.getenv('DECISION_MODEL_TEST_CHOOSE_RANDOM_VALID_VARIANTS_JSON'),
+            evaluated_method_name='choose_random', variants_input_type='tuple')
+
+    def test_choose_random_raises_for_string_variants(self):
         with raises(AssertionError) as aerr:
             dm.DecisionModel('dummy-model').choose_random(variants='abc')
 
-    def test_choose_random_raises_for_numeric(self):
+    def test_choose_random_raises_for_numeric_variants(self):
         with raises(AssertionError) as aerr:
             dm.DecisionModel('dummy-model').choose_random(variants=123.123)
 
-    def test_choose_random_raises_for_bool(self):
+    def test_choose_random_raises_for_bool_variants(self):
         with raises(AssertionError) as aerr:
             dm.DecisionModel('dummy-model').choose_random(variants=True)
 
@@ -977,20 +1122,35 @@ class TestDecisionModel(TestCase):
         with raises(ValueError) as verr:
             dm.DecisionModel('dummy-model').choose_random(variants=tuple())
 
-    def test_choose_random_raises_for_none(self):
+    def test_choose_random_raises_for_none_variants(self):
         with raises(AssertionError) as aerr:
             dm.DecisionModel('dummy-model').choose_random(variants=None)
 
     # TODO random()
-    def test_random_raises_for_string(self):
+    def test_random_valid_variants_list(self):
+        self._generic_desired_decision_model_method_call_no_model(
+            test_data_filename=os.getenv('DECISION_MODEL_TEST_RANDOM_VALID_VARIANTS_JSON'),
+            evaluated_method_name='random')
+
+    def test_random_valid_variants_numpy(self):
+        self._generic_desired_decision_model_method_call_no_model(
+            test_data_filename=os.getenv('DECISION_MODEL_TEST_RANDOM_VALID_VARIANTS_JSON'),
+            evaluated_method_name='random', variants_input_type='numpy')
+
+    def test_random_valid_variants_tuple(self):
+        self._generic_desired_decision_model_method_call_no_model(
+            test_data_filename=os.getenv('DECISION_MODEL_TEST_RANDOM_VALID_VARIANTS_JSON'),
+            evaluated_method_name='random', variants_input_type='tuple')
+
+    def test_random_raises_for_string_variants(self):
         with raises(AssertionError) as aerr:
             dm.DecisionModel('dummy-model').random('abc')
 
-    def test_random_raises_for_numeric(self):
+    def test_random_raises_for_numeric_variants(self):
         with raises(AssertionError) as aerr:
             dm.DecisionModel('dummy-model').random(123.123)
 
-    def test_random_raises_for_bool(self):
+    def test_random_raises_for_bool_variants(self):
         with raises(AssertionError) as aerr:
             dm.DecisionModel('dummy-model').random(True)
 
@@ -1004,7 +1164,7 @@ class TestDecisionModel(TestCase):
         with raises(ValueError) as verr:
             dm.DecisionModel('dummy-model').random(*tuple())
 
-    def test_random_raises_for_none(self):
+    def test_random_raises_for_none_variants(self):
         with raises(AssertionError) as aerr:
             dm.DecisionModel('dummy-model').random(None)
 

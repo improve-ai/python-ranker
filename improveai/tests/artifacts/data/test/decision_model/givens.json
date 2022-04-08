@@ -65,7 +65,7 @@
             "device_model": "iPhone 7 Plus"
         }
     },
-    "test_output": {
+    "test_output": {"givens": {
             "device_manufacturer": "Apple",
             "version_name": "4.3",
             "os_name": "ios",
@@ -76,7 +76,7 @@
             "country": "United States",
             "carrier": "AT&T",
             "device_model": "iPhone 7 Plus"
-        },
+        }},
     "model_seed": 1,
     "scores_seed": 1
 }

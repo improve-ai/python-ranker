@@ -832,3 +832,21 @@ class TestDecision(TestCase):
         decision = d.Decision(decision_model=self.decision_model_with_tracker)
         decision._set_message_id()
         assert decision.id_ is not None
+
+    def test_peek_valid_variants_no_givens(self):
+
+        pass
+
+    def test_peek_valid_variants_valid_givens(self):
+
+        pass
+
+    def test_peek_already_chosen(self):
+
+        pass
+
+    def test_peek_raises_for_no_variants(self):
+
+        pass
+
+

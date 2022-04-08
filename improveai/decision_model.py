@@ -408,7 +408,7 @@ class DecisionModel:
         """
 
         check_variants(variants=variants)
-        return dc.DecisionContext(decision_model=self, givens=None)\
+        return dc.DecisionContext(decision_model=self, givens=None) \
             .choose_from(
                 variants=variants,
                 scores=self._generate_descending_gaussians(len(variants)))
@@ -457,7 +457,7 @@ class DecisionModel:
             np.array(variants) if not isinstance(variants, np.ndarray) else variants.copy()
         np.random.shuffle(variants_copy)
         # choose first to generate gaussian scores
-        return self.choose_first(variants=variants)
+        return self.choose_first(variants=variants_copy)
 
     def random(self, *variants: list or np.ndarray):
         """
