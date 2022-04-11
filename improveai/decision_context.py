@@ -116,4 +116,6 @@ class DecisionContext:
 
         """
 
-        return self.choose_from(variants=get_variants_from_args(variants=variants)).get()
+        decision = self.choose_from(variants=get_variants_from_args(variants=variants))
+        best = decision.get()
+        return best, decision.id_

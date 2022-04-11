@@ -1,6 +1,7 @@
-from copy import copy
+from copy import deepcopy
 import json
 import numpy as np
+import math
 import os
 from pytest import fixture, raises
 import pickle
@@ -20,7 +21,7 @@ import improveai.decision_context as dc
 import improveai.decision_model as dm
 from improveai.choosers.xgb_chooser import NativeXGBChooser
 from improveai.tests.test_utils import convert_values_to_float32, get_test_data, \
-    assert_valid_decision
+    assert_valid_decision, is_valid_ksuid
 
 
 class TestDecisionModel(TestCase):
@@ -190,10 +191,6 @@ class TestDecisionModel(TestCase):
         with raises(ValueError) as verr:
             if load_mode == 'sync':
                 decision_model = dm.DecisionModel(model_name=None).load(model_url=model_url)
-            elif load_mode == 'async':
-                decision_model = dm.DecisionModel(model_name='dummy-model')
-                decision_model.load_async(model_url=model_url)
-                time.sleep(3)
             else:
                 raise RuntimeError(
                     'Allowed values for `load_mode` are sync and async')
@@ -402,9 +399,14 @@ class TestDecisionModel(TestCase):
                 expected_scores=expected_scores, expected_best=expected_best)
         elif evaluated_method_name == 'first':
             # assert that returned variant is correct
-            best_variant = decision_model.first(*variants)
+            best_variant, decision_id = decision_model.first(*variants)
             # assert that best variant is equal to expected output
-            assert best_variant == expected_output
+
+            expected_best = expected_output.get('best', None)
+            assert expected_best is not None
+
+            assert best_variant == expected_best
+            assert is_valid_ksuid(decision_id)
         elif evaluated_method_name == 'choose_random':
             decision = decision_model.choose_random(variants=variants)
 
@@ -419,9 +421,14 @@ class TestDecisionModel(TestCase):
                 expected_scores=expected_scores, expected_best=expected_best)
         elif evaluated_method_name == 'random':
             # assert that returned variant is correct
-            best_variant = decision_model.random(*variants)
+            best_variant, decision_id = decision_model.random(*variants)
             # assert that best variant is equal to expected output
-            assert best_variant == expected_output
+
+            expected_best = expected_output.get('best', None)
+            assert expected_best is not None
+
+            assert best_variant == expected_best
+            assert is_valid_ksuid(decision_id)
         else:
             raise ValueError('Unsupported method: {}'.format(evaluated_method_name))
 
@@ -522,10 +529,13 @@ class TestDecisionModel(TestCase):
                 m.post(self.track_url, text='success')
                 decision_model = dm.DecisionModel(model_name='dummy-model', track_url=self.track_url)
                 np.random.seed(score_seed)
-                best_variant = decision_model.first(*variants)
+                best_variant, decision_id = decision_model.first(*variants)
             # assert that best variant is equal to expected output
             expected_best = expected_output.get('best', None)
+
             assert best_variant == expected_best
+            assert is_valid_ksuid(decision_id)
+
         elif evaluated_method_name == 'choose_random':
             np.random.seed(score_seed)
             decision = decision_model.choose_random(variants=variants)
@@ -552,7 +562,7 @@ class TestDecisionModel(TestCase):
                 m.post(self.track_url, text='success')
                 decision_model = dm.DecisionModel(model_name='dummy-model', track_url=self.track_url)
                 np.random.seed(score_seed)
-                best_variant = decision_model.random(*variants)
+                best_variant, decision_id = decision_model.random(*variants)
 
             if variants_input_type == 'tuple':
                 expected_variants = list(variants)
@@ -566,6 +576,7 @@ class TestDecisionModel(TestCase):
             assert expected_best is not None
 
             assert best_variant == expected_best
+            assert is_valid_ksuid(decision_id)
         else:
             raise ValueError('Unsupported method: {}'.format(evaluated_method_name))
 
@@ -839,7 +850,8 @@ class TestDecisionModel(TestCase):
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
             np.random.seed(scores_seed)
-            best = decision_model.which(*variants)
+            best, decision_id = decision_model.which(*variants)
+            assert is_valid_ksuid(decision_id)
 
         assert best == expected_best
 
@@ -868,7 +880,8 @@ class TestDecisionModel(TestCase):
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
             np.random.seed(scores_seed)
-            best = decision_model.which(*variants)
+            best, decision_id = decision_model.which(*variants)
+            assert is_valid_ksuid(decision_id)
 
         assert best == expected_best
 
@@ -907,7 +920,8 @@ class TestDecisionModel(TestCase):
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
             np.random.seed(scores_seed)
-            best = decision_model.which(*variants)
+            best, decision_id = decision_model.which(*variants)
+            assert is_valid_ksuid(decision_id)
 
         assert best == expected_best
 
@@ -946,7 +960,8 @@ class TestDecisionModel(TestCase):
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
             np.random.seed(scores_seed)
-            best = decision_model.which(*variants)
+            best, decision_id = decision_model.which(*variants)
+            assert is_valid_ksuid(decision_id)
 
         assert best == expected_best
 
@@ -1168,3 +1183,120 @@ class TestDecisionModel(TestCase):
         with raises(AssertionError) as aerr:
             dm.DecisionModel('dummy-model').random(None)
 
+    def test_add_reward_inf(self):
+        # V6_DUMMY_MODEL_PATH
+        model_url = os.getenv('DUMMY_MODEL_PATH', None)
+        assert model_url is not None
+
+        decision_model = \
+            dm.DecisionModel(model_name=None, track_url=self.track_url)\
+            .load(model_url=model_url)
+
+        assert decision_model.id_ is None
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+            decision_model.choose_from(list(range(10))).get()
+
+        assert decision_model.id_ is not None
+
+        reward = math.inf
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+            with raises(AssertionError) as aerr:
+                decision_model.add_reward(reward=reward)
+
+        reward = -math.inf
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+            with raises(AssertionError) as aerr:
+                decision_model.add_reward(reward=reward)
+
+    def test_add_reward_none(self):
+        # V6_DUMMY_MODEL_PATH
+        model_url = os.getenv('DUMMY_MODEL_PATH', None)
+        assert model_url is not None
+
+        decision_model = \
+            dm.DecisionModel(model_name=None, track_url=self.track_url)\
+            .load(model_url=model_url)
+
+        assert decision_model.id_ is None
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+            decision_model.choose_from(list(range(10))).get()
+
+        assert decision_model.id_ is not None
+
+        reward = None
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+            with raises(AssertionError) as aerr:
+                decision_model.add_reward(reward=reward)
+
+        reward = np.nan
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+            with raises(AssertionError) as aerr:
+                decision_model.add_reward(reward=reward)
+
+    def test_add_reward(self):
+        model_url = os.getenv('DUMMY_MODEL_PATH', None)
+        assert model_url is not None
+
+        decision_model = \
+            dm.DecisionModel(model_name=None, track_url=self.track_url)\
+            .load(model_url=model_url)
+
+        assert decision_model.id_ is None
+
+        reward = 1.0
+
+        expected_add_reward_body = {
+            decision_model._tracker.TYPE_KEY: decision_model._tracker.REWARD_TYPE,
+            decision_model._tracker.MODEL_KEY: decision_model.model_name,
+            decision_model._tracker.REWARD_KEY: reward,
+            decision_model._tracker.DECISION_ID_KEY: None}
+
+        def grab_decision_id_matcher(request):
+            request_dict = deepcopy(request.json())
+            expected_add_reward_body[decision_model._tracker.DECISION_ID_KEY] = \
+                request_dict[decision_model._tracker.MESSAGE_ID_KEY]
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success', additional_matcher=grab_decision_id_matcher)
+            decision_model.choose_from(list(range(10))).get()
+
+        assert decision_model.id_ is not None
+
+        expected_request_json = json.dumps(expected_add_reward_body, sort_keys=False)
+
+        def custom_matcher(request):
+            request_dict = deepcopy(request.json())
+            del request_dict[decision_model._tracker.MESSAGE_ID_KEY]
+            del request_dict[decision_model._tracker.TIMESTAMP_KEY]
+
+            if json.dumps(request_dict, sort_keys=False) != expected_request_json:
+
+                print('raw request body:')
+                print(request.text)
+                print('compared request string')
+                print(json.dumps(request_dict, sort_keys=False))
+                print('expected body:')
+                print(expected_request_json)
+                return None
+            return True
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success', additional_matcher=custom_matcher)
+            resp = decision_model.add_reward(reward=reward)
+            if resp is None:
+                print('The input request body and expected request body mismatch')
+            assert resp is not None
+            assert resp.status_code == 200
+            assert resp.text == 'success'

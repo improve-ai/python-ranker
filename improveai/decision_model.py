@@ -389,7 +389,9 @@ class DecisionModel:
 
         """
 
-        return self.choose_from(variants=get_variants_from_args(variants=variants)).get()
+        decision = self.choose_from(variants=get_variants_from_args(variants=variants))
+        best = decision.get()
+        return best, decision.id_
 
     def choose_first(self, variants: list or tuple or np.ndarray):
         """
@@ -432,7 +434,9 @@ class DecisionModel:
 
         # TODO how should this requirement be handled in py
         # Rewards can only be added via DecisionModel.addReward()
-        return self.choose_first(variants=get_variants_from_args(variants=variants)).get()
+        decision = self.choose_first(variants=get_variants_from_args(variants=variants))
+        best = decision.get()
+        return best, decision.id_
 
     def choose_random(self, variants: list or tuple or np.ndarray):
         """
@@ -478,4 +482,27 @@ class DecisionModel:
 
         # TODO how should this requirement be handled in py
         # Rewards can only be added via DecisionModel.addReward()
-        return self.choose_random(variants=get_variants_from_args(variants=variants)).get()
+        decision = self.choose_random(variants=get_variants_from_args(variants=variants))
+        best = decision.get()
+        return best, decision.id_
+
+    def add_reward(self, reward: float):
+        # void addReward(double reward)
+        # Add rewards for the most recent Decision for this model name, even if
+        # that Decision occurred in a previous session. Sets model on the reward
+        # record to be equal to the current modelName.
+        # NaN, positive infinity, and negative infinity are not allowed and should throw exceptions
+        assert self.model_name is not None and self.id_ is not None
+        assert isinstance(reward, float) or isinstance(reward, int)
+        assert reward is not None
+        assert not np.isnan(reward)
+        assert not np.isinf(reward)
+        if self.__tracker is not None:
+            return self.__tracker.add_reward(
+                reward=reward, model_name=self.model_name, decision_id=self.id_)
+        else:
+            if self.__tracker is None:
+                warnings.warn(
+                    '`tracker` is not set (`tracker`is None) - reward not added')
+            if self.track_url is None:
+                warnings.warn('`track_url` is None - reward not added')

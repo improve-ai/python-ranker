@@ -7,7 +7,7 @@ from unittest import TestCase
 import improveai.decision_model as dm
 import improveai.decision_context as dc
 from improveai.tests.test_utils import assert_valid_decision, get_test_data, \
-    convert_values_to_float32
+    convert_values_to_float32, is_valid_ksuid
 
 
 class TestDecisionContext(TestCase):
@@ -313,8 +313,10 @@ class TestDecisionContext(TestCase):
         with rqm.Mocker() as m:
             m.post(self.test_track_url, text='success')
             np.random.seed(scores_seed)
-            best = decision_context.which(*variants)
+            best, decision_id = decision_context.which(*variants)
             assert best == expected_best
+            assert is_valid_ksuid(decision_id)
+
 
     # TODO test which
     def test_which_valid_list_variants_valid_givens(self):

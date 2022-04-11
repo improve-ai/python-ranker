@@ -1,4 +1,6 @@
+import datetime
 import json
+from ksuid import Ksuid
 import numpy as np
 
 from improveai.utils.general_purpose_tools import read_jsonstring_from_file
@@ -53,3 +55,24 @@ def assert_valid_decision(decision, expected_variants, expected_givens, expected
 
     # validate best
     assert convert_values_to_float32(decision.best) == convert_values_to_float32(expected_best)
+
+
+def is_valid_ksuid(id_):
+    if not isinstance(id_, str):
+        return False
+
+    if len(id_) != 27:
+        return False
+
+    try:
+        # Disallow KSUIDs from the future, otherwise it could severely hurt
+        # the performance of the partitions by creating a huge partition in the future
+        # that new records keep aggregating into. At some point that partition would
+        # no longer fit in RAM and processing could seize.
+        if Ksuid.from_base62(id_).datetime > datetime.datetime.now(datetime.timezone.utc):
+            return False
+    except:
+        # there was an exception parsing the KSUID, fail
+        return False
+
+    return True
