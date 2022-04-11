@@ -1,5 +1,6 @@
  {
     "test_case": {
+        "model_filename": "dummy_v6.xgb",
         "variants": [
             {
             "text": "lovely corgi",
@@ -52,19 +53,31 @@
             "words": 2
             }],
         "givens": {
-                "device_manufacturer": "Apple",
-                "version_name": "4.3",
-                "os_name": "ios",
-                "day": 0,
-                "language": "English",
-                "page": 0,
-                "os_version": "12.1.2",
-                "country": "United States",
-                "carrier": "AT&T",
-                "device_model": "iPhone 7 Plus"
-            }
+            "device_manufacturer": "Apple",
+            "version_name": "4.3",
+            "os_name": "ios",
+            "day": 0,
+            "language": "English",
+            "page": 0,
+            "os_version": "12.1.2",
+            "country": "United States",
+            "carrier": "AT&T",
+            "device_model": "iPhone 7 Plus"
+        }
     },
-    "test_output": {"best":  {
+    "test_output": {
+        "scores": [
+            0.2449124271064393,
+            0.04034646229319272,
+            0.04433084530622633,
+            0.04433082676004062,
+            0.061234302650522564,
+            0.04588001579167979,
+            0.08268069124945725,
+            0.05520075074046543,
+            0.06123435587486434,
+            0.06123434161478453],
+        "best":  {
         "text": "lovely corgi",
         "chars": 12,
         "words": 2}},

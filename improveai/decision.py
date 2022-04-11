@@ -47,6 +47,10 @@ class Decision:
     def best(self):
         return self.__best
 
+    @property
+    def tracked(self):
+        return self.__tracked
+
     @best.setter
     def best(self, value):
         # TODO test best setter behaviour (previously memoized_variant)
@@ -90,6 +94,7 @@ class Decision:
 
         self.__decision_model = decision_model
         self.__chosen = False
+        self.__tracked = False
 
         self.__variants = [None]
         self.__variants_set = False
@@ -153,7 +158,7 @@ class Decision:
             # check if scores have proper length
             assert len(self.scores) == len(self.variants)
 
-        if self.variants is not None and len(self.variants) != 0:
+        if self.variants is not None and len(self.variants) != 0 and not self.__tracked:
             # there should be no difference between effect of those 2 conditions
             # since this  clause is reached only once
             if self.decision_model._tracker:
@@ -179,6 +184,7 @@ class Decision:
                         givens=self.givens, model_name=self.decision_model.model_name,
                         variants_ranked_and_track_runners_up=False, message_id=self.id_)
 
+                self.__tracked = True
             elif self.decision_model._tracker is None:
                 raise ValueError('`tracker` object can`t be None')
             else:
@@ -188,6 +194,7 @@ class Decision:
         self.__chosen = True
         return self.best
 
+    # TODO check if None variants are allowed (currently [None] is used to initialize)
     def peek(self):
         """
         Calculates best (or returns) best variant without tracking it
@@ -206,7 +213,8 @@ class Decision:
         self._set_message_id()
         # set message_id / deicsion_id to decision model
         self._cache_message_id_to_decision_model()
-        self.__scores = self.decision_model._score(variants=self.variants, givens=self.givens)
+        if not self.__scores:
+            self.__scores = self.decision_model._score(variants=self.variants, givens=self.givens)
         # Memoizes the chosen variant so same value is returned on subsequent calls
         self.__best = dm.DecisionModel.top_scoring_variant(variants=self.variants, scores=self.__scores)
         # The chosen variant is not tracked

@@ -252,17 +252,13 @@ class TestDecision(TestCase):
         test_data = get_test_data(path_to_test_json=path_to_test_case_file, method='read')
 
         test_case = test_data.get("test_case", None)
-        if test_case is None:
-            raise ValueError('`test_case` can`t be empty')
+        assert test_case is not None
 
         test_variants = test_case.get('variants', None)
-
-        if test_variants is None:
-            raise ValueError('`variants` can`t be empty')
+        assert test_variants is not None
 
         test_given = test_case.get('givens', None)
-        if test_given is None:
-            raise ValueError('`givens` can`t be empty')
+        assert test_given is not None
 
         decision = d.Decision(decision_model=self.decision_model_with_tracker)
 
@@ -277,11 +273,12 @@ class TestDecision(TestCase):
         assert decision.chosen is True
 
         expected_output = test_data.get('test_output', None)
+        assert expected_output is not None
 
-        if expected_output is None:
-            raise ValueError('`test_output` can`t be empty')
+        expected_best = expected_output.get('best', None)
+        assert expected_best is not None
 
-        assert best_variant == expected_output
+        assert best_variant == expected_best
 
     def test_get_02(self):
 
@@ -292,16 +289,13 @@ class TestDecision(TestCase):
         test_data = get_test_data(path_to_test_json=path_to_test_case_file, method='read')
 
         test_case = test_data.get("test_case", None)
-        if test_case is None:
-            raise ValueError('`test_case` can`t be empty')
+        assert test_case is not None
 
         test_variants = test_case.get('variants', None)
-        if test_variants is None:
-            raise ValueError('`variants` can`t be empty')
+        assert test_variants is not None
 
         test_givens = test_case.get('givens', None)
-        if test_givens is None:
-            raise ValueError('`givens` can`t be empty')
+        assert test_givens is not None
 
         decision = d.Decision(decision_model=self.decision_model_with_tracker)
 
@@ -316,11 +310,12 @@ class TestDecision(TestCase):
         assert decision.chosen is True
 
         expected_output = test_data.get('test_output', None)
+        assert expected_output is not None
 
-        if expected_output is None:
-            raise ValueError('`test_output` can`t be empty')
+        expected_best = expected_output.get('best', None)
+        assert expected_best is not None
 
-        assert best_variant == expected_output
+        assert best_variant == expected_best
 
     def test_get_03(self):
 
@@ -833,20 +828,79 @@ class TestDecision(TestCase):
         decision._set_message_id()
         assert decision.id_ is not None
 
-    def test_peek_valid_variants_no_givens(self):
+    def _generic_test_peek(self, test_case_filename: str, no_chooser: bool = False):
+        path_to_test_case_file = \
+            os.sep.join([self.test_jsons_data_directory, test_case_filename])
 
-        pass
+        test_data = get_test_data(path_to_test_json=path_to_test_case_file, method='read')
+
+        test_case = test_data.get("test_case", None)
+        assert test_case is not None
+
+        test_variants = test_case.get('variants', None)
+        assert test_variants is not None
+
+        test_givens = test_case.get('givens', None)
+
+        if no_chooser:
+            self.decision_model_with_tracker.chooser = None
+
+        decision = d.Decision(decision_model=self.decision_model_with_tracker)
+
+        assert decision.chosen is False
+
+        decision.variants = test_variants
+        decision.givens = test_givens
+
+        expected_output = test_data.get('test_output', None)
+        assert expected_output is not None
+
+        expected_best = expected_output.get('best', None)
+        assert expected_best is not None
+
+        expected_scores = expected_output.get('scores', None)
+        assert expected_scores is not None
+
+        decision.variants = test_variants
+        decision.givens = test_givens
+        calculated_best = decision.peek()
+
+        assert expected_best == calculated_best
+        assert decision.id_ is not None
+        assert self.decision_model_with_tracker.id_ is not None
+        assert decision.id_ == self.decision_model_with_tracker.id_
+
+    def test_peek_valid_variants_no_givens(self):
+        test_case_filename = \
+            os.getenv('DECISION_TEST_PEEK_VALID_VARIANTS_NO_GIVENS_JSON', None)
+        assert test_case_filename is not None
+        self._generic_test_peek(test_case_filename=test_case_filename)
+
+    def test_peek_valid_variants_no_givens_no_model(self):
+        test_case_filename = \
+            os.getenv('DECISION_TEST_PEEK_VALID_VARIANTS_NO_GIVENS_NO_MODEL_JSON', None)
+        assert test_case_filename is not None
+        self._generic_test_peek(test_case_filename=test_case_filename)
 
     def test_peek_valid_variants_valid_givens(self):
+        test_case_filename = \
+            os.getenv('DECISION_TEST_PEEK_VALID_VARIANTS_VALID_GIVENS_JSON', None)
+        assert test_case_filename is not None
+        self._generic_test_peek(test_case_filename=test_case_filename)
 
-        pass
+    def test_peek_valid_variants_valid_givens_no_model(self):
+        test_case_filename = \
+            os.getenv('DECISION_TEST_PEEK_VALID_VARIANTS_VALID_GIVENS_NO_MODEL_JSON', None)
+        assert test_case_filename is not None
+        self._generic_test_peek(test_case_filename=test_case_filename)
 
     def test_peek_already_chosen(self):
-
-        pass
+        test_case_filename = \
+            os.getenv('DECISION_TEST_PEEK_ALREADY_CHOSEN_JSON', None)
+        assert test_case_filename is not None
+        self._generic_test_peek(test_case_filename=test_case_filename)
 
     def test_peek_raises_for_no_variants(self):
-
-        pass
-
-
+        decision = d.Decision(decision_model=self.decision_model_with_tracker)
+        best = decision.peek()
+        assert best is None
