@@ -1,5 +1,7 @@
 from codecs import decode
 from copy import deepcopy
+import datetime
+from ksuid import Ksuid
 import numpy as np
 
 
@@ -166,3 +168,23 @@ def get_variants_from_args(variants: list or tuple or np.ndarray):
 
     return variants
 
+
+def is_valid_ksuid(id_):
+    if not isinstance(id_, str):
+        return False
+
+    if len(id_) != 27:
+        return False
+
+    try:
+        # Disallow KSUIDs from the future, otherwise it could severely hurt
+        # the performance of the partitions by creating a huge partition in the future
+        # that new records keep aggregating into. At some point that partition would
+        # no longer fit in RAM and processing could seize.
+        if Ksuid.from_base62(id_).datetime > datetime.datetime.now(datetime.timezone.utc):
+            return False
+    except:
+        # there was an exception parsing the KSUID, fail
+        return False
+
+    return True

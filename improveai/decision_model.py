@@ -13,7 +13,7 @@ import improveai.decision_tracker as dt
 import improveai.givens_provider as gp
 from improveai.settings import DEBUG
 from improveai.utils.general_purpose_tools import constant, check_variants, \
-    get_variants_from_args
+    get_variants_from_args, is_valid_ksuid
 
 
 class DecisionModel:
@@ -486,20 +486,24 @@ class DecisionModel:
         best = decision.get()
         return best, decision.id_
 
-    def add_reward(self, reward: float):
+    def add_reward(self, reward: float, decision_id: str = None):
         # void addReward(double reward)
         # Add rewards for the most recent Decision for this model name, even if
         # that Decision occurred in a previous session. Sets model on the reward
         # record to be equal to the current modelName.
         # NaN, positive infinity, and negative infinity are not allowed and should throw exceptions
-        assert self.model_name is not None and self.id_ is not None
+        assert self.model_name is not None  #  and self.id_ is not None
         assert isinstance(reward, float) or isinstance(reward, int)
         assert reward is not None
         assert not np.isnan(reward)
         assert not np.isinf(reward)
+
+        # make sure provided decision id is valid
+        assert decision_id is not None and is_valid_ksuid(decision_id)
+
         if self.__tracker is not None:
             return self.__tracker.add_reward(
-                reward=reward, model_name=self.model_name, decision_id=self.id_)
+                reward=reward, model_name=self.model_name, decision_id=decision_id)  #  self.id_)
         else:
             if self.__tracker is None:
                 warnings.warn(

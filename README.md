@@ -38,6 +38,11 @@ To install from cloned repo:
     `pip3 install dist/improveai-7.0.1*.whl`
     where `*` represents system specific part of wheel name
 
+## Initialization
+
+```python
+import improveai
+```
 
 ## Usage
 
@@ -45,7 +50,7 @@ To install from cloned repo:
 
 Improve AI makes quick on-device AI decisions that get smarter over time.
 
-The heart of Improve AI is the which statement. which is like an AI if/then statement.
+The heart of Improve AI is the which statement. `which()` is like an AI if/then statement.
 
 ```python
 from improveai import DecisionModel
@@ -53,22 +58,22 @@ from improveai import DecisionModel
 greeting = DecisionModel(model_name='greetings').which('Hello', 'Howdy', 'Hola')
 ```
 
-`which()` makes decisions on-device using a decision model. Decision models are easily trained by assigning rewards for positive outcomes.
+`which()` makes decisions on-device using a decision model. 
+Decision models are easily trained by assigning rewards for positive outcomes.
 
 ```python
 from improveai import DecisionModel
 
 # create an instance of Decision object
-decision = DecisionModel(model_name='greetings').choose_from(variants=['Hello', 'Howdy', 'Hola'])
-# choose best greeting with get()
-best_greeting = decision.get()
+decision_model = DecisionModel(model_name='greetings')
+best_greeting, decision_id = decision_model.which(*['Hello', 'Howdy', 'Hola'])
 
 # add reward to the Decision
-decision.add_reward(reward=1.0)
+decision_model.add_reward(reward=1.0)
 ```
 
-Rewards are credited to the decisions - you can add them to the existing decision object with an `add_reward()` call. 
-`Decision.get()` will make the decision that provides the highest expected reward. 
+Rewards are credited to the decisions - you can add them to the existing decision with an `add_reward()` call. 
+`DecisionModel().which(*variants)` will make the decision that provides the highest expected reward. 
 When the rewards are business metrics, such as revenue or user retention, 
 the decisions will optimize to automatically improve those metrics over time.
 
@@ -127,8 +132,37 @@ Variants can be any JSON encodeable data structure of arbitrary complexity, incl
 
 ### Decisions are Contextual
 
-Unlike A/B testing or feature flags, Improve AI uses context to make the best decision for each user.
-Custom context can be provided via given().
+Unlike A/B testing or feature flags, Improve AI uses *context* to make the best decision for each user.
+On iOS, the following *context* is automatically included:
+
+- $country - two letter country code
+- $lang - two letter language code
+- $tz - numeric GMT offset
+- $carrier - cellular network
+- $device - string portion of device model
+- $devicev - device version
+- $os - string portion of OS name
+- $osv - OS version
+- $pixels - screen width x screen height
+- $app - app name
+- $appv - app version
+- $sdkv - Improve AI SDK version
+- $weekday - (ISO 8601, monday==1.0, sunday==7.0) plus fractional part of day
+- $time - fractional day since midnight
+- $runtime - fractional days since session start
+- $day - fractional days since born
+- $d - the number of decisions for this model
+- $r - total rewards for this model
+- $r/d - total rewards/decisions
+- $d/day - decisions/$day
+
+
+
+Using the context, on a Spanish speaker's device we expect our greetings model to learn to choose *"Hola"*.
+
+
+Custom context can be provided via given():
+
 
 ```python
 from improveai import DecisionModel
@@ -140,16 +174,16 @@ greetings_model = DecisionModel(model_name='greetings')
 # load greetings model 
 greetings_model.load('<trained greetings model url>')
 
-greeting = greetings_model.given(givens=cowboy_givens).which("Hello", "Howdy", "Hola")
+greeting, _ = greetings_model.given(givens=cowboy_givens).which("Hello", "Howdy", "Hola")
 ```
 
-Given the language is cowboy and `greetings_model` was successfully loaded, 
+Given the language is *cowboy* and `greetings_model` was successfully loaded, 
 the variant with the highest expected reward should be *"Howdy"* and the model would learn to make that choice.
 
 ### Example: Optimizing an Upsell Offer
 
-Improve AI is powerful and flexible. Variants can be any JSON encodeable data structure including strings, 
-numbers, booleans, lists, and dictionaries.
+Improve AI is powerful and flexible. Variants can be any JSON encodeable data structure including **strings**, 
+**numbers**, **booleans**, **lists**, and **dictionaries**.
 
 For a dungeon crawler game, say the user was purchasing an item using an In App Purchase. 
 We can use Improve AI to choose an additional product to display as an upsell offer during checkout. 
@@ -168,15 +202,11 @@ upsell_model.load(model_url=upsell_model_url)
 
 product = {'name': 'red sword', 'price': 4.99}
 # create upsell Decision object
-upsell_decision = \
+upsell, upsell_decision_id = \
     upsell_model.given(givens=product).\
-        choose_from(
-        [{ "name": "gold", "quantity": 100, "price": 1.99 },
-         { "name": "diamonds", "quantity": 10, "price": 2.99 },
-         { "name": "red scabbard", "price": 0.99 }])
-
-# get best upsell
-upsell = upsell_decision.get()
+        which(*[{ "name": "gold", "quantity": 100, "price": 1.99 },
+                { "name": "diamonds", "quantity": 10, "price": 2.99 },
+                { "name": "red scabbard", "price": 0.99 }])
 ```
 
 The product to be purchased is the red sword. Notice that the variants are dictionaries with a mix of string and numeric values.
@@ -187,10 +217,11 @@ The rewards in this case might be any additional revenue from the upsell.
 upsell_purchased = True  # flag indicating if decision was correct
 
 if upsell_purchased:
-    upsell_decision.add_reward(upsell['price'])
+    # assign reward
+    upsell_model.add_reward(upsell['price'], decision_id=upsell_decision_id)
 ```
 
-While it is reasonable to hypothesize that the red scabbord might be the best upsell offer to pair with the red sword, it is still a guess. Any time a guess is made on the value of a variable, instead use Improve AI to decide.
+While it is reasonable to hypothesize that the red scabbard might be the best upsell offer to pair with the red sword, it is still a guess. Any time a guess is made on the value of a variable, instead use Improve AI to decide.
 
 *Replace guesses with AI decisions.*
 
@@ -216,6 +247,17 @@ config = config_model.which({"bufferSize": [1024, 2048, 4096, 8192],
                             "videoBitrate": [256000, 384000, 512000]})
 ```
 
+This example decides multiple variables simultaneously. Notice that instead of a single list of variants, a dictionary mapping keys to lists of variants is provided to which. This multi-variate mode jointly optimizes both variables for the highest expected reward.
+
+The rewards in this case might be negative to penalize any stalls during video playback.
+
+
+```python
+stalled_video_decision_id = '<stalled video decision id>'
+if video_stalled:
+    config_model.add_reward(-0.001, decision_id=stalled_video_decision_id)
+```
+
 Improve AI frees us from having to overthink our configuration values during development. 
 We simply give it some reasonable variants and let it learn from real world usage.
 
@@ -228,4 +270,4 @@ It is strongly recommended to never include Personally Identifiable Information 
 
 ## Help Improve Our World
 
-Thank you so much for enjoying my labor of love. Please onlyThe mission of Improve AI is to make our corner of the world a little bit better each day. When each of us improve our corner of the world, the whole world becomes better. If your product or work does not make the world better, do not use Improve AI. Otherwise, welcome, I hope you find value in my labor of love. - Justin Chapweske
+The mission of Improve AI is to make our corner of the world a little bit better each day. When each of us improve our corner of the world, the whole world becomes better. If your product or work does not make the world better, do not use Improve AI. Otherwise, welcome, I hope you find value in my labor of love. - Justin Chapweske

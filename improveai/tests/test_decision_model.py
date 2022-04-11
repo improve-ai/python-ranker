@@ -1202,14 +1202,14 @@ class TestDecisionModel(TestCase):
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
             with raises(AssertionError) as aerr:
-                decision_model.add_reward(reward=reward)
+                decision_model.add_reward(reward=reward, decision_id=decision_model.id_)
 
         reward = -math.inf
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
             with raises(AssertionError) as aerr:
-                decision_model.add_reward(reward=reward)
+                decision_model.add_reward(reward=reward, decision_id=decision_model.id_)
 
     def test_add_reward_none(self):
         # V6_DUMMY_MODEL_PATH
@@ -1233,14 +1233,14 @@ class TestDecisionModel(TestCase):
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
             with raises(AssertionError) as aerr:
-                decision_model.add_reward(reward=reward)
+                decision_model.add_reward(reward=reward, decision_id=decision_model.id_)
 
         reward = np.nan
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
             with raises(AssertionError) as aerr:
-                decision_model.add_reward(reward=reward)
+                decision_model.add_reward(reward=reward, decision_id=decision_model.id_)
 
     def test_add_reward(self):
         model_url = os.getenv('DUMMY_MODEL_PATH', None)
@@ -1291,7 +1291,7 @@ class TestDecisionModel(TestCase):
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success', additional_matcher=custom_matcher)
-            resp = decision_model.add_reward(reward=reward)
+            resp = decision_model.add_reward(reward=reward, decision_id=decision_model.id_)
             if resp is None:
                 print('The input request body and expected request body mismatch')
             assert resp is not None
