@@ -227,9 +227,6 @@ class TestDecisionModel(TestCase):
         with raises(ValueError) as verr:
             if load_mode == 'sync':
                 decision_model = dm.DecisionModel(model_name=None).load(model_url=model_url)
-            elif load_mode == 'async':
-                decision_model = dm.DecisionModel(model_name='dummy-model')
-                decision_model.load_async(model_url=model_url)
             else:
                 raise RuntimeError(
                     'Allowed values for `load_mode` are sync and async')
