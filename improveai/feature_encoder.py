@@ -8,6 +8,7 @@ from improveai.cythonized_feature_encoding import cfeu
 
 
 xxhash3 = xxhash.xxh3_64_intdigest
+JSON_SERIALIZABLE_TYPES = [int, float, str, bool, list, tuple, dict]
 
 
 class FeatureEncoder:
@@ -242,6 +243,43 @@ class FeatureEncoder:
             into[k] = np.float32(into[k])
 
 
+def _is_object_json_serializable(object_):
+    """
+    Checks if input value is JSON serializable
+
+    Parameters
+    ----------
+    object_: object
+        object to be checked
+
+    Returns
+    -------
+    bool
+        True if input is JSON serializable False otherwise
+    """
+    return any([isinstance(object_, type_) for type_ in JSON_SERIALIZABLE_TYPES]) or object_ is None
+
+
+def _has_top_level_string_keys(checked_dict):
+    """
+    Check if all top level keys are of a string type. This is a helper function
+    for encode() and since encode recurs in case of nested dicts only top level
+    keys need to be checked. Return False on first encountered non-string key
+
+    Parameters
+    ----------
+    checked_dict: dict
+        dict which top level keys will be checked
+
+    Returns
+    -------
+    bool
+        True if all keys are strings otherwise False
+
+    """
+    return all([isinstance(k, str) for k in checked_dict.keys()])
+
+
 # - None, json null, {}, [], nan, are treated as missing feature_names and ignored.
 # NaN is technically not allowed in JSON but check anyway.
 # - boolean true and false are encoded as 1.0 and 0.0 respectively.
@@ -250,6 +288,8 @@ class FeatureEncoder:
 # - a small amount of noise is incorporated to avoid overfitting
 # - feature names are 8 hexidecimal characters
 def encode(object_, seed, small_noise, features):
+
+    assert _is_object_json_serializable(object_)
 
     if isinstance(object_, (int, float)):  # bool is an instanceof int
         if math.isnan(object_):  # nan is treated as missing feature, return
@@ -296,6 +336,7 @@ def encode(object_, seed, small_noise, features):
         return
 
     if isinstance(object_, dict):
+        assert _has_top_level_string_keys(object_)
         for key, value in object_.items():
             encode(
                 value, xxhash3(key, seed=seed), small_noise, features)

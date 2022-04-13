@@ -10,13 +10,57 @@ cimport numpy as np
 import xxhash
 
 cdef object xxhash3 = xxhash.xxh3_64_intdigest
+cdef list JSON_SERIALIZABLE_TYPES = [int, float, str, bool, list, tuple, dict]
 
 import improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils as cfeu
 
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
+cpdef _is_object_json_serializable(object object_):
+    """
+    Checks if input value is JSON serializable
+
+    Parameters
+    ----------
+    object_: object
+        object to be checked
+
+    Returns
+    -------
+    bool
+        True if input is JSON serializable False otherwise
+    """
+    return any([isinstance(object_, type_) for type_ in JSON_SERIALIZABLE_TYPES]) or object_ is None
+
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cpdef _has_top_level_string_keys(checked_dict):
+    """
+    Check if all top level keys are of a string type. This is a helper function 
+    for encode() and since encode recurs in case of nested dicts only top level 
+    keys need to be checked. Return False on first encountered non-string key
+
+    Parameters
+    ----------
+    checked_dict: dict
+        dict which top level keys will be checked
+
+    Returns
+    -------
+    bool
+        True if all keys are strings otherwise False
+
+    """
+    return all([isinstance(k, str) for k in checked_dict.keys()])
+
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
 cpdef encode(object object_, unsigned long long seed, double small_noise, dict features):
+
+    assert _is_object_json_serializable(object_=object_)
 
     cdef str feature_name = None
     cdef double previous_object_
@@ -72,6 +116,7 @@ cpdef encode(object object_, unsigned long long seed, double small_noise, dict f
         return
 
     if isinstance(object_, dict):
+        assert _has_top_level_string_keys(object_)
         for key, value in object_.items():
             encode(
                 value, xxhash3(key, seed=seed), small_noise, features)

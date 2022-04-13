@@ -1478,3 +1478,76 @@ class TestEncoder(TestCase):
         expected_result = [{'0': 1, '1': 1} for _ in range(3)]
 
         assert expected_result == dummy_encoded_variants
+
+    def test__is_object_json_serializable_valid_types(self):
+        valid_objects = \
+            [1, 1.123, True, False, 'abc', None, [1, 2, 3], {'1': 2, 3: '4'}, (1, 2, 3, 4)]
+        assert all(cfe._is_object_json_serializable(object_) for object_ in valid_objects)
+
+    def test__is_object_json_serializable_raises_for_invalid_types(self):
+
+        # test for custom object
+        class CustomObject:
+            pass
+
+        # example types which are not JSON serializable
+        assert not cfe._is_object_json_serializable(CustomObject())
+        assert not cfe._is_object_json_serializable(np.array([1, 2, 3]))
+        assert not cfe._is_object_json_serializable(object)
+
+    def test__has_top_level_string_keys_all_string_keys(self):
+        assert cfe._has_top_level_string_keys({'a': 1, 'b': 2, 'c': {1: 2, 3: 4}})
+
+    def test__has_top_level_string_keys_raises_for_non_string_keys(self):
+
+        assert not cfe._has_top_level_string_keys({1: 3, '2': 4})
+        assert not cfe._has_top_level_string_keys({1.234: 3, '2': 4})
+        assert not cfe._has_top_level_string_keys({True: 3, '2': 4})
+        assert not cfe._has_top_level_string_keys({False: 3, '2': 4})
+        assert not cfe._has_top_level_string_keys({None: 3, '2': 4})
+        assert not cfe._has_top_level_string_keys({(1, 2, 3): 3, '2': 4})
+        assert not cfe._has_top_level_string_keys({object: 3, '2': 4})
+
+    def test_encode_valid_types(self):
+        valid_objects = \
+            [1, 1.123, True, False, 'abc', None, [1, 2, 3], {'1': 2, '3': '4'}, (1, 2, 3, 4)]
+        for vo in valid_objects:
+            # object_, seed, small_noise, features
+            cfe.encode(object_=vo, seed=7335560060985733464, small_noise=0.0, features={})
+
+    def test_encode_raises_for_invalid_types(self):
+        # test for custom object
+        class CustomObject:
+            pass
+
+        # example types which are not JSON serializable
+        with raises(AssertionError) as aerr:
+            cfe.encode(object_=CustomObject(), seed=7335560060985733464, small_noise=0.0, features={})
+
+        with raises(AssertionError) as aerr:
+            cfe.encode(object_=np.array([1, 2, 3]), seed=7335560060985733464, small_noise=0.0, features={})
+
+        with raises(AssertionError) as aerr:
+            cfe.encode(object_=object, seed=7335560060985733464, small_noise=0.0, features={})
+
+    def test_encode_raises_for_non_string_keys(self):
+        with raises(AssertionError) as aerr:
+            cfe.encode(object_={'a': 1, 'b': 2, 3: 3}, seed=7335560060985733464, small_noise=0.0, features={})
+
+        with raises(AssertionError) as aerr:
+            cfe.encode(object_={'a': 1, 'b': 2, 3.3: 3}, seed=7335560060985733464, small_noise=0.0, features={})
+
+        with raises(AssertionError) as aerr:
+            cfe.encode(object_={'a': 1, 'b': 2, True: 3}, seed=7335560060985733464, small_noise=0.0, features={})
+
+        with raises(AssertionError) as aerr:
+            cfe.encode(object_={'a': 1, 'b': 2, False: 3}, seed=7335560060985733464, small_noise=0.0, features={})
+
+        with raises(AssertionError) as aerr:
+            cfe.encode(object_={'a': 1, 'b': 2, None: 3}, seed=7335560060985733464, small_noise=0.0, features={})
+
+        with raises(AssertionError) as aerr:
+            cfe.encode(object_={'a': 1, 'b': 2, (1, 2, 3): 3}, seed=7335560060985733464, small_noise=0.0, features={})
+
+        with raises(AssertionError) as aerr:
+            cfe.encode(object_={'a': 1, 'b': 2, 'c': {'1': 1, 2: 2}}, seed=7335560060985733464, small_noise=0.0, features={})
