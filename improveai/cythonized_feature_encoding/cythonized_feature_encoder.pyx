@@ -9,7 +9,7 @@ import numpy as np
 cimport numpy as np
 import xxhash
 
-cpdef object xxhash3 = xxhash.xxh3_64_intdigest
+cdef object xxhash3 = xxhash.xxh3_64_intdigest
 
 import improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils as cfeu
 
