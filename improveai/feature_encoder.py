@@ -68,14 +68,10 @@ class FeatureEncoder:
             into = {}
 
         encode(givens, self.givens_seed, shrink(noise), into)
-
-        # TODO wait until the conversion mechanism is determined
-        # self._convert_values_to_float32(into=into)
         return into
 
     def encode_variant(self, variant, noise=0.0, into=None):
 
-        # TODO maybe this check is only a waste of runtime
         self._check_noise_value(noise=noise)
 
         if into is None:
@@ -88,8 +84,6 @@ class FeatureEncoder:
         else:
             encode(variant, self.value_seed, small_noise, into)
 
-        # TODO wait until the conversion mechanism is determined
-        # self._convert_values_to_float32(into=into)
         return into
 
     def encode_feature_vector(
@@ -117,14 +111,10 @@ class FeatureEncoder:
             encoded_variant.update(extra_features)
 
         # n + nan = nan so you'll have to check for nan values on into
-        # TODO once python-SDK is available from pip this should be changed
         if improve_settings.USE_CYTHON_BACKEND:
-        # if USE_CYTHON_BACKEND:
-            # i7 10th gen time per iter - 7.464-05 [s] / 0.96% of pure python time
             cfeu.encoded_variant_into_np_row(
                 encoded_variant=encoded_variant, feature_names=feature_names, into=into)
         else:
-            # i7 10th gen time per iter - 7.755e-05 [s]
             hash_index_map = \
                 {feature_hash: index for index, feature_hash
                  in enumerate(feature_names)}
@@ -141,9 +131,6 @@ class FeatureEncoder:
 
                 into[subset_index] = np.nansum(
                     np.array([into[subset_index], filler[:, 1]]), axis=0)
-
-        # TODO wait until the conversion mechanism is determined
-        # np_to_float32_inplace(into)
 
     def encode_to_np_matrix(
             self, variants: Iterable, multiple_givens: Iterable,
@@ -186,11 +173,7 @@ class FeatureEncoder:
         if not isinstance(feature_names, list):
             feature_names = list(feature_names)
 
-        # TODO once python-SDK is available from pip this should be changed
         if improve_settings.USE_CYTHON_BACKEND:
-        # if USE_CYTHON_BACKEND:
-            # i7 10th gen time per variant - 2.778e-05 [s] |
-            # 33% of pure python implementation runtime per iter
             encoded_variants = cfeu.encode_variants_multiple_givens(
                 variants=variants, multiple_givens=multiple_givens,
                 multiple_extra_features=multiple_extra_features, noise=noise,
@@ -199,7 +182,6 @@ class FeatureEncoder:
             encoded_variants_array = cfeu.encoded_variants_to_np(
                 encoded_variants=encoded_variants, feature_names=feature_names)
         else:
-            # i7 10th gen time per variant - 7.995e-05 [s]
             encoded_variants_array = np.full((len(variants), len(feature_names)), np.nan)
 
             [self.encode_feature_vector(
@@ -208,10 +190,6 @@ class FeatureEncoder:
              for variant, givens, extra_features, into
              in zip(variants, multiple_givens, multiple_extra_features,
                     encoded_variants_array)]
-
-        # TODO wait until the conversion mechanism is determined
-        # return np.float32(encoded_variants_array)
-
         return encoded_variants_array
 
     def add_extra_features(self, encoded_variants: list, extra_features: list):
@@ -392,12 +370,6 @@ def reverse_sprinkle(sprinkled_x, small_noise):
 
     """
     return sprinkled_x / (1 + small_noise) - small_noise
-
-
-# def add_noise(into, noise):
-#     small_noise = shrink(noise)
-#     for feature_name, value in into.items():
-#         into[feature_name] = sprinkle(value, small_noise)
 
 
 def np_to_float32_inplace(converted_array: np.ndarray):

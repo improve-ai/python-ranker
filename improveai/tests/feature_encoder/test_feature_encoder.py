@@ -539,74 +539,6 @@ class TestEncoder(TestCase):
         expected_output_float32 = np.array(expected_output).astype(np.float32)
         np.testing.assert_array_equal(expected_output_float32, tested_into_float32)
 
-    # def test_encode_feature_vector_with_numpy(
-    #         self, variant_key: str = 'variant', givens_key: str = 'givens',
-    #         extra_features_key: str = 'extra_features',
-    #         feature_names_key: str = 'feature_names',
-    #         test_input_key: str = 'test_case',
-    #         test_output_key: str = 'test_output'):
-    #
-    #     test_case_filename = \
-    #         os.getenv('FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_JSON', None)
-    #
-    #     if not test_case_filename:
-    #         raise ValueError(
-    #             'No envvar under key: FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_JSON')
-    #
-    #     test_case_path = os.sep.join(
-    #         [self.v6_test_suite_data_directory, test_case_filename])
-    #
-    #     test_case = self._get_test_data(path_to_test_json=test_case_path)
-    #
-    #     # TODO finish up
-    #
-    #     self._set_model_properties_from_test_case(test_case=test_case)
-    #
-    #     test_input = test_case.get(test_input_key, None)
-    #
-    #     if not test_input:
-    #         raise ValueError('Test input is None')
-    #
-    #     test_variant = test_input.get(variant_key, None)
-    #
-    #     if not test_variant:
-    #         raise ValueError('Test variant is missing')
-    #
-    #     test_givens = test_input.get(givens_key, None)
-    #
-    #     if not test_givens:
-    #         raise ValueError('Test givens is missing')
-    #
-    #     test_extra_features = test_input.get(extra_features_key, None)
-    #
-    #     if not test_extra_features:
-    #         raise ValueError('Test extra features are missing')
-    #
-    #     test_feature_names = test_input.get(feature_names_key, None)
-    #
-    #     if not test_feature_names:
-    #         raise ValueError('Test feature names are missing')
-    #
-    #     expected_output = test_case.get(test_output_key, None)
-    #
-    #     tested_into_float64 = np.full(len(test_feature_names), np.nan)
-    #
-    #     # done for 100% coverage
-    #     orig_use_cython_backend = improve_settings.USE_CYTHON_BACKEND
-    #     improve_settings.USE_CYTHON_BACKEND = False
-    #
-    #     self.feature_encoder.encode_feature_vector(
-    #         variant=test_variant, givens=test_givens,
-    #         extra_features=test_extra_features,
-    #         feature_names=test_feature_names, noise=self.noise,
-    #         into=tested_into_float64)
-    #
-    #     improve_settings.USE_CYTHON_BACKEND = orig_use_cython_backend
-    #
-    #     tested_into_float32 = convert_values_to_float32(tested_into_float64)
-    #
-    #     np.testing.assert_array_equal(expected_output, tested_into_float32)
-
     def test_empty_list(self):
 
         self._generic_test_encode_record_from_json_data(
@@ -1423,8 +1355,6 @@ class TestEncoder(TestCase):
             [self.v6_test_suite_data_directory, test_case_filename])
 
         test_case = self._get_test_data(path_to_test_json=test_case_path)
-
-        # TODO finish up
 
         self._set_model_properties_from_test_case(test_case=test_case)
 

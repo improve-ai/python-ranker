@@ -1,4 +1,3 @@
-import warnings
 from copy import deepcopy
 import json
 import math
@@ -8,6 +7,7 @@ import os
 from pytest import fixture, raises, warns
 import sys
 from unittest import TestCase
+import warnings
 
 sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
@@ -242,7 +242,6 @@ class TestDecision(TestCase):
             decision.givens = 1234.1234
             assert str(terr.value)
 
-    # TODO test get() for 100% coverage
     def test_get_01(self):
 
         test_case_filename = os.getenv('DECISION_TEST_GET_01_JSON')
@@ -349,12 +348,8 @@ class TestDecision(TestCase):
 
         decision = d.Decision(decision_model=self.decision_model_without_tracker)
 
-        # tracker = dt.DecisionTracker(track_url=self.track_url)
-        # decision.model.track_with(tracker=tracker)
-
         assert decision.chosen is False
 
-        # TODO verify if get should truly raise for tracker == None
         with raises(ValueError) as verr:
             decision.variants = [None]
             decision.givens = {}
@@ -438,7 +433,6 @@ class TestDecision(TestCase):
 
         expected_track_body = {
             decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
-            decision_tracker.HISTORY_ID_KEY: self.dummy_history_id,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.decision_model_with_tracker.model_name,
             decision_tracker.VARIANT_KEY: None,
@@ -585,10 +579,7 @@ class TestDecision(TestCase):
 
         assert decision.chosen is True
 
-        with warns(UserWarning) as uw:
-            memoized_variant_from_decision = decision.get()
-            assert str(uw.list[0].message) == \
-                   'The best variant has already been chosen'
+        memoized_variant_from_decision = decision.get()
 
         assert memoized_variant == decision.best == \
                memoized_variant_from_decision
@@ -633,7 +624,7 @@ class TestDecision(TestCase):
             assert str(verr.value)
 
     def test_consistent_encoding(self):
-        # TODO since it is impossible to access encoded features from get() call
+        # since it is impossible to access encoded features from get() call
         #  I'll simply test encoding method used by chooser
         chooser = self.decision_model_with_tracker.chooser
 
@@ -741,12 +732,7 @@ class TestDecision(TestCase):
 
         with rqm.Mocker() as m1:
             m1.post(self.track_url, text='success', additional_matcher=custom_matcher)
-            resp = decision.add_reward(reward=reward)
-            if resp is None:
-                print('The input request body and expected request body mismatch')
-            assert resp is not None
-            assert resp.status_code == 200
-            assert resp.text == 'success'
+            decision.add_reward(reward=reward)
 
     def test_add_reward_string_reward(self):
         decision = d.Decision(decision_model=self.decision_model_with_tracker)
@@ -867,8 +853,6 @@ class TestDecision(TestCase):
 
         assert expected_best == calculated_best
         assert decision.id_ is not None
-        assert self.decision_model_with_tracker.id_ is not None
-        assert decision.id_ == self.decision_model_with_tracker.id_
 
     def test_peek_valid_variants_no_givens(self):
         test_case_filename = \
@@ -904,3 +888,194 @@ class TestDecision(TestCase):
         decision = d.Decision(decision_model=self.decision_model_with_tracker)
         best = decision.peek()
         assert best is None
+
+    def test_variants_setter_valid_int_variants(self):
+        decision = d.Decision(self.decision_model_with_tracker)
+        expected_variants = [1, 2, 3, 4]
+        decision.variants = expected_variants
+
+        assert decision.variants == expected_variants
+
+        with warns(UserWarning) as uw:
+            decision.variants = expected_variants
+            assert len(uw) != 0
+            assert uw.list[0].message
+
+    def test_variants_setter_valid_str_variants(self):
+        decision = d.Decision(self.decision_model_with_tracker)
+        expected_variants = ['1', '2', '3', '4']
+        decision.variants = expected_variants
+
+        assert decision.variants == expected_variants
+
+        with warns(UserWarning) as uw:
+            decision.variants = expected_variants
+            assert len(uw) != 0
+            assert uw.list[0].message
+
+    def test_variants_setter_valid_bool_variants(self):
+        decision = d.Decision(self.decision_model_with_tracker)
+        expected_variants = [True, False]
+        decision.variants = expected_variants
+
+        assert decision.variants == expected_variants
+
+        with warns(UserWarning) as uw:
+            decision.variants = expected_variants
+            assert len(uw) != 0
+            assert uw.list[0].message
+
+    def test_variants_setter_valid_object_variants(self):
+        decision = d.Decision(self.decision_model_with_tracker)
+        expected_variants = [1, {'2': 3, '4': [5, 6], '6': {7: 8}}, [9, 10, 11]]
+        decision.variants = expected_variants
+
+        assert decision.variants == expected_variants
+
+        with warns(UserWarning) as uw:
+            decision.variants = expected_variants
+            assert len(uw) != 0
+            assert uw.list[0].message
+
+    def test_variants_setter_raises_for_zero_length_variants(self):
+        decision = d.Decision(self.decision_model_with_tracker)
+        with raises(ValueError) as verr:
+            decision.variants = []
+
+    def test_variants_setter_raises_for_none_variants(self):
+        decision = d.Decision(self.decision_model_with_tracker)
+        with raises(AssertionError) as aerr:
+            decision.variants = None
+
+    def test_variants_setter_raises_for_bad_type_variants(self):
+        decision = d.Decision(self.decision_model_with_tracker)
+        with raises(AssertionError) as aerr:
+            decision.variants = 123
+
+        with raises(AssertionError) as aerr:
+            decision.variants = 123.123
+
+        with raises(AssertionError) as aerr:
+            decision.variants = '123'
+
+        with raises(AssertionError) as aerr:
+            decision.variants = True
+
+        with raises(AssertionError) as aerr:
+            decision.variants = {}
+
+        with raises(AssertionError) as aerr:
+            decision.variants = {'1': 2, '3': '4'}
+
+    def test_givens_setter_valid_givens(self):
+        decision = d.Decision(self.decision_model_with_tracker)
+        expected_givens = {'g0': 1, 'g1': 2, 'g3': {1: 2, '3': 4}}
+        decision.givens = expected_givens
+
+        assert decision.givens == expected_givens
+
+        with warns(UserWarning) as uw:
+            decision.givens = expected_givens
+            assert len(uw) != 0
+            assert uw.list[0].message
+
+    def test_givens_setter_valid_empty_givens(self):
+        decision = d.Decision(self.decision_model_with_tracker)
+        expected_givens = {}
+        decision.givens = expected_givens
+
+        assert decision.givens == expected_givens
+
+        with warns(UserWarning) as uw:
+            decision.givens = expected_givens
+            assert len(uw) != 0
+            assert uw.list[0].message
+
+    def test_givens_setter_raises_for_bad_type_givens(self):
+        decision = d.Decision(self.decision_model_with_tracker)
+        with raises(AssertionError) as aerr:
+            decision.givens = 123
+
+        with raises(AssertionError) as aerr:
+            decision.givens = 123.123
+
+        with raises(AssertionError) as aerr:
+            decision.givens = '123'
+
+        with raises(AssertionError) as aerr:
+            decision.givens = True
+
+        with raises(AssertionError) as aerr:
+            decision.givens = []
+
+        with raises(AssertionError) as aerr:
+            decision.givens = np.array([])
+
+        with raises(AssertionError) as aerr:
+            decision.givens = tuple([1, 2, 3])
+
+################################################################################
+
+    def test_scores_setter_valid_scores(self):
+        decision = d.Decision(self.decision_model_with_tracker)
+        expected_variants = [1, 2, 3, 4]
+        expected_scores = [0.1, 0.2, 0.3, 0.4]
+
+        decision.variants = expected_variants
+        decision.scores = expected_scores
+
+        assert decision.variants == expected_variants
+        assert decision.scores == expected_scores
+
+        with warns(UserWarning) as uw:
+            decision.variants = expected_variants
+            assert len(uw) != 0
+            assert uw.list[0].message
+
+    def test_scores_setter_raises_for_scores_shorter_than_variants(self):
+        decision = d.Decision(self.decision_model_with_tracker)
+        expected_variants = [1, 2, 3]
+        decision.variants = expected_variants
+
+        expected_scores = [0.1, 0.2, 0.3, 0.4]
+
+        with raises(AssertionError) as aerr:
+            decision.scores = expected_scores
+
+    def test_scores_setter_raises_for_empty_scores(self):
+        decision = d.Decision(self.decision_model_with_tracker)
+        expected_variants = [1, 2, 3]
+        decision.variants = expected_variants
+        expected_scores = []
+
+        with raises(AssertionError) as aerr:
+            decision.scores = expected_scores
+
+    def test_scores_setter_raises_for_none_scores(self):
+        decision = d.Decision(self.decision_model_with_tracker)
+        expected_variants = [1, 2, 3]
+        decision.variants = expected_variants
+        expected_scores = None
+
+        with raises(AssertionError) as aerr:
+            decision.scores = expected_scores
+
+    def test_scores_setter_for_bad_types(self):
+        decision = d.Decision(self.decision_model_with_tracker)
+        expected_variants = [1, 2, 3]
+        decision.variants = expected_variants
+
+        with raises(AssertionError) as aerr:
+            decision.scores = 123
+
+        with raises(AssertionError) as aerr:
+            decision.scores = 123.123
+
+        with raises(AssertionError) as aerr:
+            decision.scores = '123'
+
+        with raises(AssertionError) as aerr:
+            decision.scores = {'1': 123, '2': '123'}
+
+        with raises(AssertionError) as aerr:
+            decision.scores = {'1': 123, '2': '123'}

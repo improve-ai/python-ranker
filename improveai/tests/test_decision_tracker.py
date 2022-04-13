@@ -2,16 +2,18 @@ from copy import deepcopy
 import json
 import math
 import numpy as np
+import requests
 import requests_mock as rqm
 import os
 from pytest import fixture, raises
 import sys
-from warnings import warn
+from warnings import warn, catch_warnings, simplefilter
 
 sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
 
 import improveai.decision_tracker as dtr
+from improveai.utils.general_purpose_tools import is_valid_ksuid
 
 
 class TestDecisionTracker:
@@ -597,18 +599,17 @@ class TestDecisionTracker:
             m.post(self.track_url, text='success',
                    additional_matcher=custom_matcher)
 
-            resp = decision_tracker.track(
-                variant=None,
-                variants=[None],
-                givens=None, model_name=self.dummy_model_name,
-                variants_ranked_and_track_runners_up=False,
-                timestamp=self.dummy_timestamp)
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                decision_id = decision_tracker.track(
+                    variant=None,
+                    variants=[None],
+                    givens=None, model_name=self.dummy_model_name,
+                    variants_ranked_and_track_runners_up=False,
+                    timestamp=self.dummy_timestamp)
+                assert len(w) == 0
 
-            if resp is None:
-                print('The input request body and expected request body mismatch')
-            assert resp is not None
-            assert resp.status_code == 200
-            assert resp.text == 'success'
+            assert is_valid_ksuid(decision_id)
 
     def test_track_none_given_no_runners_up(self):
 
@@ -647,19 +648,18 @@ class TestDecisionTracker:
             m.post(self.track_url, text='success',
                    additional_matcher=custom_matcher)
 
-            np.random.seed(self.sample_seed)
-            resp = decision_tracker.track(
-                variant=variant,
-                variants=variants,
-                givens=None, model_name=self.dummy_model_name,
-                variants_ranked_and_track_runners_up=False,
-                timestamp=self.dummy_timestamp)
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                np.random.seed(self.sample_seed)
+                decision_id = decision_tracker.track(
+                    variant=variant,
+                    variants=variants,
+                    givens=None, model_name=self.dummy_model_name,
+                    variants_ranked_and_track_runners_up=False,
+                    timestamp=self.dummy_timestamp)
+                assert len(w) == 0
 
-            if resp is None:
-                print('The input request body and expected request body mismatch')
-            assert resp is not None
-            assert resp.status_code == 200
-            assert resp.text == 'success'
+            assert is_valid_ksuid(decision_id)
 
     def test_track_none_given(self):
 
@@ -700,19 +700,18 @@ class TestDecisionTracker:
             m.post(self.track_url, text='success',
                    additional_matcher=custom_matcher)
 
-            np.random.seed(self.sample_seed)
-            resp = decision_tracker.track(
-                variant=variant,
-                variants=variants,
-                givens=None, model_name=self.dummy_model_name,
-                variants_ranked_and_track_runners_up=True,
-                timestamp=self.dummy_timestamp)
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                np.random.seed(self.sample_seed)
+                decision_id = decision_tracker.track(
+                    variant=variant,
+                    variants=variants,
+                    givens=None, model_name=self.dummy_model_name,
+                    variants_ranked_and_track_runners_up=True,
+                    timestamp=self.dummy_timestamp)
+                assert len(w) == 0
 
-            if resp is None:
-                print('The input request body and expected request body mismatch')
-            assert resp is not None
-            assert resp.status_code == 200
-            assert resp.text == 'success'
+            assert is_valid_ksuid(decision_id)
 
     def test_track_2_variants_01(self):
 
@@ -752,19 +751,19 @@ class TestDecisionTracker:
             m.post(self.track_url, text='success',
                    additional_matcher=custom_matcher)
 
-            np.random.seed(self.sample_seed)
-            resp = decision_tracker.track(
-                variant=variant,
-                variants=variants,
-                givens=None, model_name=self.dummy_model_name,
-                variants_ranked_and_track_runners_up=True,
-                timestamp=self.dummy_timestamp)
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                np.random.seed(self.sample_seed)
+                decision_id = decision_tracker.track(
+                    variant=variant,
+                    variants=variants,
+                    givens=None, model_name=self.dummy_model_name,
+                    variants_ranked_and_track_runners_up=True,
+                    timestamp=self.dummy_timestamp)
 
-            if resp is None:
-                print('The input request body and expected request body mismatch')
-            assert resp is not None
-            assert resp.status_code == 200
-            assert resp.text == 'success'
+                assert len(w) == 0
+
+            assert is_valid_ksuid(decision_id)
 
     def test_track_2_variants_02(self):
 
@@ -804,19 +803,18 @@ class TestDecisionTracker:
             m.post(self.track_url, text='success',
                    additional_matcher=custom_matcher)
 
-            np.random.seed(self.sample_seed)
-            resp = decision_tracker.track(
-                variant=variant,
-                variants=variants,
-                givens=None, model_name=self.dummy_model_name,
-                variants_ranked_and_track_runners_up=True,
-                timestamp=self.dummy_timestamp)
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                np.random.seed(self.sample_seed)
+                decision_id = decision_tracker.track(
+                    variant=variant,
+                    variants=variants,
+                    givens=None, model_name=self.dummy_model_name,
+                    variants_ranked_and_track_runners_up=True,
+                    timestamp=self.dummy_timestamp)
+                assert len(w) == 0
 
-            if resp is None:
-                print('The input request body and expected request body mismatch')
-            assert resp is not None
-            assert resp.status_code == 200
-            assert resp.text == 'success'
+            assert is_valid_ksuid(decision_id)
 
     def test_track_2_variants_03(self):
 
@@ -857,19 +855,18 @@ class TestDecisionTracker:
             m.post(self.track_url, text='success',
                    additional_matcher=custom_matcher)
 
-            np.random.seed(self.sample_seed)
-            resp = decision_tracker.track(
-                variant=variant,
-                variants=variants,
-                givens=None, model_name=self.dummy_model_name,
-                variants_ranked_and_track_runners_up=variants_ranked_and_track_runners_up,
-                timestamp=self.dummy_timestamp)
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                np.random.seed(self.sample_seed)
+                decision_id = decision_tracker.track(
+                    variant=variant,
+                    variants=variants,
+                    givens=None, model_name=self.dummy_model_name,
+                    variants_ranked_and_track_runners_up=variants_ranked_and_track_runners_up,
+                    timestamp=self.dummy_timestamp)
+                assert len(w) == 0
 
-            if resp is None:
-                print('The input request body and expected request body mismatch')
-            assert resp is not None
-            assert resp.status_code == 200
-            assert resp.text == 'success'
+            assert is_valid_ksuid(decision_id)
 
     def test_track_2_variants_no_runners_up_sample(self):
 
@@ -912,19 +909,18 @@ class TestDecisionTracker:
             m.post(self.track_url, text='success',
                    additional_matcher=custom_matcher)
 
-            np.random.seed(self.sample_seed)
-            resp = decision_tracker.track(
-                variant=variant,
-                variants=variants,
-                givens=None, model_name=self.dummy_model_name,
-                variants_ranked_and_track_runners_up=variants_ranked_and_track_runners_up,
-                timestamp=self.dummy_timestamp)
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                np.random.seed(self.sample_seed)
+                decision_id = decision_tracker.track(
+                    variant=variant,
+                    variants=variants,
+                    givens=None, model_name=self.dummy_model_name,
+                    variants_ranked_and_track_runners_up=variants_ranked_and_track_runners_up,
+                    timestamp=self.dummy_timestamp)
+                assert len(w) == 0
 
-            if resp is None:
-                print('The input request body and expected request body mismatch')
-            assert resp is not None
-            assert resp.status_code == 200
-            assert resp.text == 'success'
+            assert is_valid_ksuid(decision_id)
 
     def test_track_2_variants_raises_for_variants_ranked_and_track_runners_up_false(self):
         decision_tracker = \
@@ -981,13 +977,16 @@ class TestDecisionTracker:
             m.post(self.track_url, text='success',
                    additional_matcher=custom_matcher)
 
-            np.random.seed(self.sample_seed)
-            decision_tracker.track(
-                variant=variant,
-                variants=variants,
-                givens=None, model_name=self.dummy_model_name,
-                variants_ranked_and_track_runners_up=variants_ranked_and_track_runners_up,
-                timestamp=self.dummy_timestamp)
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                np.random.seed(self.sample_seed)
+                decision_tracker.track(
+                    variant=variant,
+                    variants=variants,
+                    givens=None, model_name=self.dummy_model_name,
+                    variants_ranked_and_track_runners_up=variants_ranked_and_track_runners_up,
+                    timestamp=self.dummy_timestamp)
+                assert len(w) == 0
 
     def test_track_2_variants_zero_max_runners_up(self):
 
@@ -1031,13 +1030,16 @@ class TestDecisionTracker:
             m.post(self.track_url, text='success',
                    additional_matcher=custom_matcher)
 
-            np.random.seed(self.sample_seed)
-            decision_tracker.track(
-                variant=variant,
-                variants=variants,
-                givens=None, model_name=self.dummy_model_name,
-                variants_ranked_and_track_runners_up=variants_ranked_and_track_runners_up,
-                timestamp=self.dummy_timestamp)
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                np.random.seed(self.sample_seed)
+                decision_tracker.track(
+                    variant=variant,
+                    variants=variants,
+                    givens=None, model_name=self.dummy_model_name,
+                    variants_ranked_and_track_runners_up=variants_ranked_and_track_runners_up,
+                    timestamp=self.dummy_timestamp)
+                assert len(w) == 0
 
     def test_track(self):
 
@@ -1081,19 +1083,18 @@ class TestDecisionTracker:
             m.post(self.track_url, text='success',
                    additional_matcher=custom_matcher)
 
-            np.random.seed(self.sample_seed)
-            resp = decision_tracker.track(
-                variant=variant,
-                variants=variants,
-                givens=givens, model_name=self.dummy_model_name,
-                variants_ranked_and_track_runners_up=True,
-                timestamp=self.dummy_timestamp)
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                np.random.seed(self.sample_seed)
+                decision_id = decision_tracker.track(
+                    variant=variant,
+                    variants=variants,
+                    givens=givens, model_name=self.dummy_model_name,
+                    variants_ranked_and_track_runners_up=True,
+                    timestamp=self.dummy_timestamp)
+                assert len(w) == 0
 
-            if resp is None:
-                print('The input request body and expected request body mismatch')
-            assert resp is not None
-            assert resp.status_code == 200
-            assert resp.text == 'success'
+            assert is_valid_ksuid(decision_id)
 
     def test_track_best_not_first_ranked_and_tracks(self):
 
@@ -1156,19 +1157,18 @@ class TestDecisionTracker:
             m.post(self.track_url, text='success',
                    additional_matcher=custom_matcher)
 
-            np.random.seed(self.sample_seed)
-            resp = decision_tracker.track(
-                variant=variant,
-                variants=np.array(variants),
-                givens=givens, model_name=self.dummy_model_name,
-                variants_ranked_and_track_runners_up=True,
-                timestamp=self.dummy_timestamp)
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                np.random.seed(self.sample_seed)
+                decision_id = decision_tracker.track(
+                    variant=variant,
+                    variants=np.array(variants),
+                    givens=givens, model_name=self.dummy_model_name,
+                    variants_ranked_and_track_runners_up=True,
+                    timestamp=self.dummy_timestamp)
+                assert len(w) == 0
 
-            if resp is None:
-                print('The input request body and expected request body mismatch')
-            assert resp is not None
-            assert resp.status_code == 200
-            assert resp.text == 'success'
+            assert is_valid_ksuid(decision_id)
 
     def test_track_2_variants_and_sample(self):
 
@@ -1210,19 +1210,18 @@ class TestDecisionTracker:
             m.post(self.track_url, text='success',
                    additional_matcher=custom_matcher)
 
-            np.random.seed(self.sample_seed)
-            resp = decision_tracker.track(
-                variant=variant,
-                variants=variants,
-                givens=None, model_name=self.dummy_model_name,
-                variants_ranked_and_track_runners_up=True,
-                timestamp=self.dummy_timestamp)
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                np.random.seed(self.sample_seed)
+                decision_id = decision_tracker.track(
+                    variant=variant,
+                    variants=variants,
+                    givens=None, model_name=self.dummy_model_name,
+                    variants_ranked_and_track_runners_up=True,
+                    timestamp=self.dummy_timestamp)
+                assert len(w) == 0
 
-            if resp is None:
-                print('The input request body and expected request body mismatch')
-            assert resp is not None
-            assert resp.status_code == 200
-            assert resp.text == 'success'
+            assert is_valid_ksuid(decision_id)
 
     def test_track_2_variants_max_runners_up_0(self):
 
@@ -1264,23 +1263,19 @@ class TestDecisionTracker:
             m.post(self.track_url, text='success',
                    additional_matcher=custom_matcher)
 
-            np.random.seed(self.sample_seed)
-            resp = decision_tracker.track(
-                variant=variant,
-                variants=variants,
-                givens=None, model_name=self.dummy_model_name,
-                variants_ranked_and_track_runners_up=True,
-                timestamp=self.dummy_timestamp)
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                np.random.seed(self.sample_seed)
+                decision_id = decision_tracker.track(
+                    variant=variant,
+                    variants=variants,
+                    givens=None, model_name=self.dummy_model_name,
+                    variants_ranked_and_track_runners_up=True,
+                    timestamp=self.dummy_timestamp)
+                assert len(w) == 0
 
-            if resp is None:
-                print('The input request body and expected request body mismatch')
-            assert resp is not None
-            assert resp.status_code == 200
-            assert resp.text == 'success'
+            assert is_valid_ksuid(decision_id)
 
-    # TODO determine if:
-    #   - those tests are 100% correct
-    #   - max_runners_up = 0 be overridden by count = 2 and runners up should be tracked
     def test_should_track_runners_up_2_variants_1(self):
 
         decision_tracker = \
@@ -1339,22 +1334,20 @@ class TestDecisionTracker:
             m.post(self.track_url, text='success',
                    additional_matcher=custom_matcher)
 
-            np.random.seed(self.sample_seed)
-            resp = decision_tracker.track(
-                variant=variant,
-                variants=variants,
-                givens=None, model_name=self.dummy_model_name,
-                variants_ranked_and_track_runners_up=
-                decision_tracker._should_track_runners_up(len(variants)),
-                timestamp=self.dummy_timestamp)
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                np.random.seed(self.sample_seed)
+                decision_id = decision_tracker.track(
+                    variant=variant,
+                    variants=variants,
+                    givens=None, model_name=self.dummy_model_name,
+                    variants_ranked_and_track_runners_up=
+                    decision_tracker._should_track_runners_up(len(variants)),
+                    timestamp=self.dummy_timestamp)
+                assert len(w) == 0
 
-            if resp is None:
-                print('The input request body and expected request body mismatch')
-            assert resp is not None
-            assert resp.status_code == 200
-            assert resp.text == 'success'
+            assert is_valid_ksuid(decision_id)
 
-    # TODO test for max_runners_up = 0
     def test_add_float_reward(self):
 
         decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
@@ -1374,20 +1367,19 @@ class TestDecisionTracker:
             m.post(self.track_url, text='success',
                    additional_matcher=custom_matcher_caching_decision_id)
 
-            np.random.seed(self.sample_seed)
-            resp = decision_tracker.track(
-                variant=variant,
-                variants=variants,
-                givens=None, model_name=self.dummy_model_name,
-                variants_ranked_and_track_runners_up=
-                decision_tracker._should_track_runners_up(len(variants)),
-                timestamp=self.dummy_timestamp)
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                np.random.seed(self.sample_seed)
+                decision_id = decision_tracker.track(
+                    variant=variant,
+                    variants=variants,
+                    givens=None, model_name=self.dummy_model_name,
+                    variants_ranked_and_track_runners_up=
+                    decision_tracker._should_track_runners_up(len(variants)),
+                    timestamp=self.dummy_timestamp)
+                assert len(w) == 0
 
-            if resp is None:
-                print('The input request body and expected request body mismatch')
-            assert resp is not None
-            assert resp.status_code == 200
-            assert resp.text == 'success'
+            assert is_valid_ksuid(decision_id)
 
         decision_id = decision_id_container['decision_id']
         reward = 1.0
@@ -1422,16 +1414,12 @@ class TestDecisionTracker:
             m.post(self.track_url, text='success',
                    additional_matcher=custom_matcher)
 
-            resp = decision_tracker.add_reward(
-                reward=reward, model_name=self.dummy_model_name, decision_id=decision_id)
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                decision_tracker.add_reward(
+                    reward=reward, model_name=self.dummy_model_name, decision_id=decision_id)
+                assert len(w) == 0
 
-            if resp is None:
-                print('The input request body and expected request body mismatch')
-            assert resp is not None
-            assert resp.status_code == 200
-            assert resp.text == 'success'
-
-    # TODO test for max_runners_up = 0
     def test_add_int_reward(self):
 
         decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
@@ -1451,20 +1439,19 @@ class TestDecisionTracker:
             m.post(self.track_url, text='success',
                    additional_matcher=custom_matcher_caching_decision_id)
 
-            np.random.seed(self.sample_seed)
-            resp = decision_tracker.track(
-                variant=variant,
-                variants=variants,
-                givens=None, model_name=self.dummy_model_name,
-                variants_ranked_and_track_runners_up=
-                decision_tracker._should_track_runners_up(len(variants)),
-                timestamp=self.dummy_timestamp)
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                np.random.seed(self.sample_seed)
+                decision_id = decision_tracker.track(
+                    variant=variant,
+                    variants=variants,
+                    givens=None, model_name=self.dummy_model_name,
+                    variants_ranked_and_track_runners_up=
+                    decision_tracker._should_track_runners_up(len(variants)),
+                    timestamp=self.dummy_timestamp)
+                assert len(w) == 0
 
-            if resp is None:
-                print('The input request body and expected request body mismatch')
-            assert resp is not None
-            assert resp.status_code == 200
-            assert resp.text == 'success'
+            assert is_valid_ksuid(decision_id)
 
         decision_id = decision_id_container['decision_id']
         reward = 1
@@ -1499,14 +1486,11 @@ class TestDecisionTracker:
             m.post(self.track_url, text='success',
                    additional_matcher=custom_matcher)
 
-            resp = decision_tracker.add_reward(
-                reward=reward, model_name=self.dummy_model_name, decision_id=decision_id)
-
-            if resp is None:
-                print('The input request body and expected request body mismatch')
-            assert resp is not None
-            assert resp.status_code == 200
-            assert resp.text == 'success'
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                decision_tracker.add_reward(
+                    reward=reward, model_name=self.dummy_model_name, decision_id=decision_id)
+                assert len(w) == 0
 
     def test_add_reward_bad_reward_type(self):
         decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
@@ -1526,20 +1510,19 @@ class TestDecisionTracker:
             m.post(self.track_url, text='success',
                    additional_matcher=custom_matcher_caching_decision_id)
 
-            np.random.seed(self.sample_seed)
-            resp = decision_tracker.track(
-                variant=variant,
-                variants=variants,
-                givens=None, model_name=self.dummy_model_name,
-                variants_ranked_and_track_runners_up=
-                decision_tracker._should_track_runners_up(len(variants)),
-                timestamp=self.dummy_timestamp)
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                np.random.seed(self.sample_seed)
+                decision_id = decision_tracker.track(
+                    variant=variant,
+                    variants=variants,
+                    givens=None, model_name=self.dummy_model_name,
+                    variants_ranked_and_track_runners_up=
+                    decision_tracker._should_track_runners_up(len(variants)),
+                    timestamp=self.dummy_timestamp)
+                assert len(w) == 0
 
-            if resp is None:
-                print('The input request body and expected request body mismatch')
-            assert resp is not None
-            assert resp.status_code == 200
-            assert resp.text == 'success'
+            assert is_valid_ksuid(decision_id)
 
         decision_id = decision_id_container['decision_id']
         reward = 'bad_reward'
@@ -1569,20 +1552,19 @@ class TestDecisionTracker:
             m.post(self.track_url, text='success',
                    additional_matcher=custom_matcher_caching_decision_id)
 
-            np.random.seed(self.sample_seed)
-            resp = decision_tracker.track(
-                variant=variant,
-                variants=variants,
-                givens=None, model_name=self.dummy_model_name,
-                variants_ranked_and_track_runners_up=
-                decision_tracker._should_track_runners_up(len(variants)),
-                timestamp=self.dummy_timestamp)
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                np.random.seed(self.sample_seed)
+                decision_id = decision_tracker.track(
+                    variant=variant,
+                    variants=variants,
+                    givens=None, model_name=self.dummy_model_name,
+                    variants_ranked_and_track_runners_up=
+                    decision_tracker._should_track_runners_up(len(variants)),
+                    timestamp=self.dummy_timestamp)
+                assert len(w) == 0
 
-            if resp is None:
-                print('The input request body and expected request body mismatch')
-            assert resp is not None
-            assert resp.status_code == 200
-            assert resp.text == 'success'
+            assert is_valid_ksuid(decision_id)
 
         decision_id = decision_id_container['decision_id']
 
@@ -1622,20 +1604,19 @@ class TestDecisionTracker:
             m.post(self.track_url, text='success',
                    additional_matcher=custom_matcher_caching_decision_id)
 
-            np.random.seed(self.sample_seed)
-            resp = decision_tracker.track(
-                variant=variant,
-                variants=variants,
-                givens=None, model_name=self.dummy_model_name,
-                variants_ranked_and_track_runners_up=
-                decision_tracker._should_track_runners_up(len(variants)),
-                timestamp=self.dummy_timestamp)
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                np.random.seed(self.sample_seed)
+                decision_id = decision_tracker.track(
+                    variant=variant,
+                    variants=variants,
+                    givens=None, model_name=self.dummy_model_name,
+                    variants_ranked_and_track_runners_up=
+                    decision_tracker._should_track_runners_up(len(variants)),
+                    timestamp=self.dummy_timestamp)
+                assert len(w) == 0
 
-            if resp is None:
-                print('The input request body and expected request body mismatch')
-            assert resp is not None
-            assert resp.status_code == 200
-            assert resp.text == 'success'
+            assert is_valid_ksuid(decision_id)
 
         decision_id = decision_id_container['decision_id']
 
@@ -1678,7 +1659,7 @@ class TestDecisionTracker:
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success', additional_matcher=cache_headers)
 
-            resp = decision_tracker.post_improve_request(
+            decision_id = decision_tracker.post_improve_request(
                 body_values=mockup_body,
                 block=
                 lambda result, error: (
@@ -1686,12 +1667,9 @@ class TestDecisionTracker:
                     if error else 0, 0),
                 timestamp=self.dummy_timestamp)
 
-            if resp is None:
-                print('The input request body and expected request body mismatch')
-
-            assert resp is not None
-            assert resp.status_code == 200
-            assert resp.text == 'success'
+            print('### decision_id ###')
+            print(decision_id)
+            assert is_valid_ksuid(decision_id)
 
             for k, v in expected_headers.items():
                 assert k in headers_cache['headers']

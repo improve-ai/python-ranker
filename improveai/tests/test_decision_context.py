@@ -317,8 +317,6 @@ class TestDecisionContext(TestCase):
             assert best == expected_best
             assert is_valid_ksuid(decision_id)
 
-
-    # TODO test which
     def test_which_valid_list_variants_valid_givens(self):
         self._generic_test_which(
             os.getenv('DECISION_CONTEXT_VALID_VARIANTS_VALID_GIVENS_JSON'), variants_converter=list)

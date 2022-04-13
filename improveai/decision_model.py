@@ -1,11 +1,9 @@
-import asyncio
 import re
 import warnings
 
 import numpy as np
 
 from improveai.choosers.basic_choosers import BasicChooser
-# from improveai.choosers._mlmodel_chooser import MLModelChooser
 from improveai.choosers.xgb_chooser import NativeXGBChooser
 import improveai.decision as d
 import improveai.decision_context as dc
@@ -61,14 +59,6 @@ class DecisionModel:
     def track_url(self, value):
         self._track_url = value
 
-    @property
-    def id_(self):
-        return self._id_
-
-    @id_.setter
-    def id_(self, value):
-        self._id_ = value
-
     @constant
     def TIEBREAKER_MULTIPLIER() -> float:
         return 2**-23
@@ -83,7 +73,6 @@ class DecisionModel:
             self.__tracker = \
                 dt.DecisionTracker(track_url=self.track_url, track_api_key=track_api_key)
 
-        self.id_ = None
         self.chooser = None
         self.givens_provider = gp.GivensProvider()
 
@@ -170,9 +159,7 @@ class DecisionModel:
 
         """
 
-        # TODO make sure how givens should be created
-        # in iOS the call is almost identical (nil is passed to `givens` parameter of self.givens_provider.givens())
-        # TODO [CHECK] how does this correspond with DecisionContext's givens?
+        # get givens from provider
         givens = self.givens_provider.givens(for_model=self)
         # return equivalent of double scores
         return self._score(variants=variants, givens=givens)
@@ -197,8 +184,7 @@ class DecisionModel:
         # log givens for DEBUG == True
         if DEBUG is True:
             print(f'[DEBUG] givens: {givens}')
-        # TODO should chooser be settable from the outside ?
-        if self.chooser is None:  # add async support
+        if self.chooser is None:
             return DecisionModel._generate_descending_gaussians(count=len(variants))
 
         try:
@@ -266,7 +252,6 @@ class DecisionModel:
         """
 
         assert variants is not None and scores is not None
-        # null if no variants for get() implementation
         if not DecisionModel._validate_variants_and_scores(
                 variants=variants, scores=scores):
             warnings.warn('The variants of length 0 were provided. Returning None')
@@ -296,7 +281,6 @@ class DecisionModel:
         """
 
         assert variants is not None and scores is not None
-        # null if no variants for get() implementation
         if not DecisionModel._validate_variants_and_scores(
                 variants=variants, scores=scores):
             return None
@@ -364,8 +348,6 @@ class DecisionModel:
         """
 
         check_variants(variants=variants)
-        # TODO how about the givens? Should GivensProvider be used here?
-        #  in iOS here givens are set to nil
         return dc.DecisionContext(decision_model=self, givens=None).choose_from(variants=variants, scores=scores)
 
     def which(self, *variants: list or tuple or np.ndarray):
@@ -432,8 +414,6 @@ class DecisionModel:
 
         """
 
-        # TODO how should this requirement be handled in py
-        # Rewards can only be added via DecisionModel.addReward()
         decision = self.choose_first(variants=get_variants_from_args(variants=variants))
         best = decision.get()
         return best, decision.id_
@@ -480,19 +460,26 @@ class DecisionModel:
 
         """
 
-        # TODO how should this requirement be handled in py
-        # Rewards can only be added via DecisionModel.addReward()
         decision = self.choose_random(variants=get_variants_from_args(variants=variants))
         best = decision.get()
         return best, decision.id_
 
-    def add_reward(self, reward: float, decision_id: str = None):
-        # void addReward(double reward)
-        # Add rewards for the most recent Decision for this model name, even if
-        # that Decision occurred in a previous session. Sets model on the reward
-        # record to be equal to the current modelName.
-        # NaN, positive infinity, and negative infinity are not allowed and should throw exceptions
-        assert self.model_name is not None  #  and self.id_ is not None
+    def add_reward(self, reward: float, decision_id: str):
+        """
+        Adds provided reward for a  given decision id.
+
+        Parameters
+        ----------
+        reward: float or int
+            reward to be assigned to a given decision
+        decision_id: str
+            ksuid of rewarded decision
+
+        Returns
+        -------
+
+        """
+        assert self.model_name is not None
         assert isinstance(reward, float) or isinstance(reward, int)
         assert reward is not None
         assert not np.isnan(reward)
@@ -503,7 +490,7 @@ class DecisionModel:
 
         if self.__tracker is not None:
             return self.__tracker.add_reward(
-                reward=reward, model_name=self.model_name, decision_id=decision_id)  #  self.id_)
+                reward=reward, model_name=self.model_name, decision_id=decision_id)
         else:
             if self.__tracker is None:
                 warnings.warn(

@@ -28,7 +28,6 @@ def is_gz_bytes(chkd_bytes: bytes) -> bool:
             f.read(1)
             return True
         except Exception as exc:
-            # print(exc)
             return False
 
 
@@ -84,8 +83,6 @@ def check_and_get_unzpd_model(model_src: Union[str, bytes]) -> Union[str, bytes]
                 'This is not a proper path: {} and reading model from '
                 'string is not supported'.format(model_src))
 
-        # print('This is a path to a file!')
-
         try:
             with open(model_src, 'rb') as chkd_bytes:
                 read_chkd_bytes = chkd_bytes.read()
@@ -96,7 +93,6 @@ def check_and_get_unzpd_model(model_src: Union[str, bytes]) -> Union[str, bytes]
             print(
                 'When checking file: {} the following error occured'
                 .format(model_src, exc))
-        # print('Returning string')
         return model_src
     else:
         raise TypeError(

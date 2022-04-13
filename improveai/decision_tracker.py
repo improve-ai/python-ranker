@@ -7,7 +7,6 @@ import requests as rq
 from typing import Dict
 from warnings import warn
 
-# todo change when ready
 from ksuid import Ksuid
 
 from improveai.utils.general_purpose_tools import constant
@@ -18,10 +17,6 @@ class DecisionTracker:
     @constant
     def MODEL_KEY() -> str:
         return "model"
-
-    @constant
-    def HISTORY_ID_KEY() -> str:
-        return "history_id"
 
     @constant
     def TIMESTAMP_KEY() -> str:
@@ -48,28 +43,12 @@ class DecisionTracker:
         return "count"
 
     @constant
-    def VARIANTS_KEY() -> str:
-        return "variants"
-
-    @constant
-    def SAMPLE_VARIANT_KEY() -> str:
-        return "sample_variant"
-
-    @constant
     def REWARD_TYPE() -> str:
         return 'reward'
 
     @constant
     def REWARD_KEY():
         return 'reward'
-
-    @constant
-    def EVENT_KEY() -> str:
-        return "event"
-
-    @constant
-    def PROPERTIES_KEY() -> str:
-        return "properties"
 
     @constant
     def DECISION_TYPE() -> str:
@@ -80,16 +59,8 @@ class DecisionTracker:
         return "decision_id"
 
     @constant
-    def EVENT_TYPE() -> str:
-        return "event"
-
-    @constant
     def API_KEY_HEADER() -> str:
         return "x-api-key"
-
-    @constant
-    def HISTORY_ID_DEFAULTS_KEY() -> str:
-        return "ai.improve.history_id"
 
     @constant
     def PAYLOAD_FOR_ERROR_KEY():
@@ -144,9 +115,6 @@ class DecisionTracker:
 
         self.track_url = track_url
         self.api_key = track_api_key
-
-        # TODO determined whether it should be set once per tracker`s life or
-        #  with each track request (?)
         self.max_runners_up = max_runners_up
 
     def _should_track_runners_up(self, variants_count: int):
@@ -160,15 +128,7 @@ class DecisionTracker:
                 variants_count - 1, self.max_runners_up)
 
     def _top_runners_up(self, ranked_variants: list) -> Iterable or None:
-
-        # TODO ask if max_runners_up should indicate index or a count -
-        #  I would assume count
-
-        # TODO should this method return [] instead of None ?
-
-        # len(ranked_variants) - 1 -> this will not include last element of
-        # collection
-
+        # len(ranked_variants) - 1 -> this will not include last element of collection
         top_runners_up = ranked_variants[
              1:min(len(ranked_variants), self.max_runners_up + 1)]\
             if ranked_variants is not None else None
@@ -273,10 +233,6 @@ class DecisionTracker:
         if givens is not None:
             body[self.GIVENS_KEY] = givens
 
-        # TODO return decision ID
-
-        # TODO determine what sort of completion_block should be used
-        #  For now completion_block() set to 0
         return self.post_improve_request(
             body_values=body,
             block=lambda result, error: (
@@ -284,11 +240,22 @@ class DecisionTracker:
                 if error else 0, 0), timestamp=timestamp, message_id=message_id)
 
     def add_reward(self, reward: float or int, model_name: str, decision_id: str):
-        # void addReward(double reward)
-        # Add rewards for the most recent Decision for this model name, even if
-        # that Decision occurred in a previous session. Sets model on the reward
-        # record to be equal to the current modelName.
-        # NaN, positive infinity, and negative infinity are not allowed and should throw exceptions
+        """
+        Adds provided reward for a given decision id made by a given model.
+
+        Parameters
+        ----------
+        reward: float or int
+            reward to be assigned to a given decision
+        model_name: str
+            name of a model which made rewarded decision
+        decision_id: str
+            ksuid of rewarded decision
+
+        Returns
+        -------
+
+        """
 
         assert model_name is not None and decision_id is not None
         assert isinstance(reward, float) or isinstance(reward, int)
@@ -302,7 +269,7 @@ class DecisionTracker:
             self.REWARD_KEY: reward,
             self.DECISION_ID_KEY: decision_id}
 
-        return self.post_improve_request(
+        self.post_improve_request(
             body_values=body,
             block=lambda result, error: (
                 warn("Improve.track error: {}".format(error)) if error else 0, 0))
@@ -338,8 +305,8 @@ class DecisionTracker:
         if len(variants) == 2:
             assert self.max_runners_up == 0
 
-        # TODO If there are no runners up, then sample is a random sample
-        #  from variants with just best excluded.
+        # If there are no runners up, then sample is a random sample
+        # from variants with just best excluded.
         if not track_runners_up:
             variant_idx = variants.index(variant)
             while True:
@@ -350,13 +317,13 @@ class DecisionTracker:
             return variants[sample_idx]
 
         assert variant == variants[0]
-        # TODO If there are no remaining variants after best and runners up,
-        #  then there is no sample.
+        # If there are no remaining variants after best and runners up,
+        # then there is no sample.
         last_runner_up_idx = min(len(variants), self.max_runners_up + 1)
         assert last_runner_up_idx < len(variants)
 
-        # TODO If there are runners up, then sample is a random sample from
-        #  variants with best and runners up excluded.
+        # If there are runners up, then sample is a random sample from
+        # variants with best and runners up excluded.
         sample = \
             variants[np.random.randint(last_runner_up_idx, len(variants))]
         return sample
@@ -405,20 +372,16 @@ class DecisionTracker:
 
         headers = {'Content-Type': 'application/json'}
 
-        # TODO unittest this
         if self.api_key:
             headers[self.API_KEY_HEADER] = self.api_key
 
         assert self._is_valid_message_id(message_id=message_id)
 
         body = {
-            # was checked -> this convention seems to be accurate
             self.TIMESTAMP_KEY:
                 timestamp if timestamp else str(np.datetime_as_string(
                     np.datetime64(datetime.now()), unit='ms', timezone='UTC')),
-            # TODO check if this is the desired uuid
-            self.MESSAGE_ID_KEY: message_id if message_id is not None else str(Ksuid())
-        }
+            self.MESSAGE_ID_KEY: message_id if message_id is not None else str(Ksuid())}
 
         body.update(body_values)
 
@@ -456,13 +419,12 @@ class DecisionTracker:
 
                 error = str(error) if not isinstance(error, str) else error
                 error += \
-                    ' | when attempting to post to ai.improve got error with ' \
+                    ' | when attempting to post to improve.ai endpoint got an error with ' \
                     'code {} and user info: {}' \
                     .format(str(resp.status_code), json.dumps(user_info))
 
         json_object = None
         if not error:
-            # TODO body might contain objects which are not JSON-encodable
             json_object = json.dumps(body)
 
         if error:
@@ -476,7 +438,7 @@ class DecisionTracker:
                 'Both error and payload objects are None / empty - this should '
                 'not happen (?)')
 
-        return resp
+        return body[self.MESSAGE_ID_KEY]
 
 
 if __name__ == '__main__':
@@ -485,7 +447,7 @@ if __name__ == '__main__':
 
     def post_requests_batch():
 
-        track_url = 'https://trn1jywns6.execute-api.us-east-2.amazonaws.com/track'
+        track_url = 'https://x5fvx48stc.execute-api.us-east-2.amazonaws.com/track'
 
         dt = DecisionTracker(track_url=track_url)
 
@@ -519,7 +481,7 @@ if __name__ == '__main__':
 
         persistent_decision_id = None
 
-        for d_idx in tqdm(range(100)):
+        for d_idx in tqdm(range(25)):
             # time.sleep(np.random.randint(6,  18))
 
             givens = {}

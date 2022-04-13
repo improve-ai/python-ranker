@@ -29,7 +29,6 @@ class DecisionContext:
         assert isinstance(value, dict) or value is None
         self._givens = value
 
-    # TODO should givens be a part of constructor call (they are in iOS im implementation)
     def __init__(self, decision_model, givens: dict or None):
         self.decision_model = decision_model
         self.givens = givens
@@ -90,8 +89,7 @@ class DecisionContext:
 
         """
 
-        # TODO how givens should be provided here?
-        # I assumed that this should be done like in iOS SDK
+        # get givens from provider
         givens = gp.GivensProvider().givens(for_model=self.decision_model, givens=self.givens)
         return self.decision_model._score(variants=variants, givens=givens)
 

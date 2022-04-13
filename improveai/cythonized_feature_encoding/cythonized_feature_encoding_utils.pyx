@@ -66,7 +66,6 @@ cpdef encoded_variant_into_np_row(
              if hash_index_map.get(feature_name, None) is not None])
 
     # sum into with encoded variants treating nans in sums as zeros
-
     cdef np.ndarray subset_index = np.empty(len(filler))
 
     if len(filler) > 0:
@@ -76,8 +75,6 @@ cpdef encoded_variant_into_np_row(
         into[subset_index] = np.nansum(
             np.array([into[subset_index], filler[:, 1]]), axis=0)
 
-    # TODO wait until the conversion mechanism is determined
-    # np_1d_to_float32_array_inplace(into)
 
 @cython.boundscheck(False)
 cpdef np.ndarray encode_variants_single_givens(

@@ -1,9 +1,10 @@
 from ksuid import Ksuid
+from numbers import Number
 import numpy as np
 from warnings import warn
 
 import improveai.decision_model as dm
-from improveai.utils.general_purpose_tools import check_variants
+from improveai.utils.general_purpose_tools import check_variants, is_valid_ksuid
 
 
 class Decision:
@@ -27,7 +28,6 @@ class Decision:
 
     @givens.setter
     def givens(self, value: dict):
-        # TODO test givens setter behaviour
         if self.__givens_set is False:
             assert isinstance(value, dict) or value is None
             self.__givens = value
@@ -53,7 +53,6 @@ class Decision:
 
     @best.setter
     def best(self, value):
-        # TODO test best setter behaviour (previously memoized_variant)
         if self.__best_set is False:
             self.__best = value
             self.__best_set = True
@@ -67,11 +66,11 @@ class Decision:
     @scores.setter
     def scores(self, value):
 
-        # TODO test scores setter behaviour
         if self.__scores_set is False:
             assert value is not None
             assert (isinstance(value, list) or isinstance(value, np.ndarray))
             assert len(value) > 0
+            assert all([isinstance(s, Number) or s is None for s in value])
             assert self.variants is not None
             assert len(value) == len(self.variants)
 
@@ -120,17 +119,13 @@ class Decision:
         else:
             warn('`id_` has already been set for this Decision')
 
-    def _cache_message_id_to_decision_model(self):
-        assert self.__id_ is not None
-        self.decision_model.id_ = self.id_
-
     def add_reward(self, reward: float or int):
 
         if not self.chosen:
             warn('`add_reward()` called before `get()`')
 
-        assert self.decision_model.id_ == self.id_
-        assert self.decision_model.model_name is not None and self.decision_model.id_ is not None
+        assert is_valid_ksuid(self.id_)
+        assert self.decision_model.model_name is not None
         assert reward is not None
         assert isinstance(reward, float) or isinstance(reward, int)
         assert not np.isnan(reward)
@@ -142,14 +137,10 @@ class Decision:
     def get(self):
 
         if self.chosen:
-            warn('The best variant has already been chosen')
-            self._cache_message_id_to_decision_model()
             return self.best
 
         # set message_id / decision_id only once
         self._set_message_id()
-        # set message_id / deicsion_id to decision model
-        self._cache_message_id_to_decision_model()
 
         # calculate scores if it was not already set
         if self.scores is None:
@@ -194,7 +185,6 @@ class Decision:
         self.__chosen = True
         return self.best
 
-    # TODO check if None variants are allowed (currently [None] is used to initialize)
     def peek(self):
         """
         Calculates best (or returns) best variant without tracking it
@@ -207,12 +197,10 @@ class Decision:
         """
 
         if self.chosen:
-            self._cache_message_id_to_decision_model()
             return self.best
         # set message_id / decision_id only once
         self._set_message_id()
         # set message_id / deicsion_id to decision model
-        self._cache_message_id_to_decision_model()
         if not self.__scores:
             self.__scores = self.decision_model._score(variants=self.variants, givens=self.givens)
         # Memoizes the chosen variant so same value is returned on subsequent calls

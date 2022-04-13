@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from copy import deepcopy
 import numpy as np
 from typing import Dict
 
@@ -142,12 +141,8 @@ class BasicChooser(ABC):
         if is_path_http_addr(pth_to_model=model_src):
             raw_model_src = get_model_bytes_from_url(model_url=model_src)
 
-        unzpd_model_src = check_and_get_unzpd_model(model_src=raw_model_src)
-        return unzpd_model_src
-
-    def _get_features_count(self) -> int:
-        table = self.model_metadata.get(self.lookup_table_key, None)
-        return len(table[1])
+        unzipped_model_src = check_and_get_unzpd_model(model_src=raw_model_src)
+        return unzipped_model_src
 
     def _get_model_feature_names(self, model_metadata: dict):
         """
@@ -192,7 +187,6 @@ class BasicChooser(ABC):
 
         return model_name
 
-    # TODO sort and choose are deprecated (kept only for CLI compatibility)
     def sort(
             self, variants_w_scores: np.ndarray,
             scores_col_idx: int = 1, class_cols_idx: int = 2) -> np.ndarray:

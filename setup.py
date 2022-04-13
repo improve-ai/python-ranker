@@ -31,7 +31,7 @@ if __name__ == '__main__':
             sources=[cython_feature_encoder_path_str],
             include_dirs=[np.get_include(), os.sep.join(['.', IMPROVE_DIR, CYTHON_MODULE_DIR])])
 
-    # TODO some requirements may depend on gcc version, e.g. coremltools
+    # REMARK: some requirements may depend on gcc version, e.g. coremltools
     install_requires = [
         "setuptools", "wheel",
         "Cython>=0.29.14",

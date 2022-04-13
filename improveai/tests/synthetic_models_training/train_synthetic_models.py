@@ -71,7 +71,6 @@ def train_model(epoch: int, dataset_name: str, case_id):
     -------
 
     """
-    # TODO add hyperparams
     dc = docker.from_env()
     volumes = {
         '{}_{}'.format(DATA_DIR, case_id): {
@@ -121,7 +120,6 @@ def run_single_synthetic_training(
             data_generator.make_decision_for_epoch(
                 epoch_index=epoch_index, decision_model=dm)
 
-        # TODO uncomment after validation
         # dump currently generated data to decision_{epoch_index}
         # data: list, path: str, mode='w'
         current_epoch_data_path = \

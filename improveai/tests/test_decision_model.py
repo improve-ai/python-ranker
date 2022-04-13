@@ -245,30 +245,6 @@ class TestDecisionModel(TestCase):
                 'DECISION_MODEL_TEST_LOAD_MODEL_FS_NATIVE_JSON'),
             expected_predictor_type=xgb.Booster)
 
-    def test_load_mlmodel_raises(self):
-        path_to_test_json = \
-            ('{}' + os.sep + '{}').format(
-                self.test_cases_directory, os.getenv('DECISION_MODEL_TEST_LOAD_MODEL_FS_MLMODEL_JSON'))
-
-        test_data = get_test_data(path_to_test_json=path_to_test_json, method='read')
-
-        test_case = test_data.get('test_case', None)
-
-        if test_case is None:
-            raise ValueError('Test case can`t be None')
-
-        predictor_filename = test_case.get('model_filename', None)
-
-        if predictor_filename is None:
-            raise ValueError('Model filename can`t be None')
-
-        model_url = \
-            ('{}' + os.sep + '{}').format(
-                self.predictors_fs_directory, predictor_filename)
-        # loading model
-        with raises(pickle.UnpicklingError) as uperr:
-            dm.DecisionModel(model_name=None).load(model_url=model_url)
-
     def test_load_model_sync_native_fs_no_model(self):
 
         self._generic_test_loaded_fs_none_model(
@@ -1012,7 +988,6 @@ class TestDecisionModel(TestCase):
             with raises(ValueError) as verr:
                 decision_model.which(*[ivs])
 
-    # TODO test choose_first()
     def test_choose_first_valid_variants_list(self):
         self._generic_desired_decision_model_method_call_no_model(
             test_data_filename=os.getenv('DECISION_MODEL_TEST_CHOOSE_FIRST_VALID_VARIANTS_JSON'),
@@ -1054,7 +1029,6 @@ class TestDecisionModel(TestCase):
         with raises(AssertionError) as aerr:
             dm.DecisionModel('dummy-model').choose_first(variants=None)
 
-    # TODO test first()
     def test_first_valid_variants_list(self):
         self._generic_desired_decision_model_method_call_no_model(
             test_data_filename=os.getenv('DECISION_MODEL_TEST_FIRST_VALID_VARIANTS_JSON'),
@@ -1096,7 +1070,6 @@ class TestDecisionModel(TestCase):
         with raises(AssertionError) as aerr:
             dm.DecisionModel('dummy-model').first(None)
 
-    # TODO test choose_random()
     def test_choose_random_valid_variants_list(self):
         self._generic_desired_decision_model_method_call_no_model(
             test_data_filename=os.getenv('DECISION_MODEL_TEST_CHOOSE_RANDOM_VALID_VARIANTS_JSON'),
@@ -1138,7 +1111,6 @@ class TestDecisionModel(TestCase):
         with raises(AssertionError) as aerr:
             dm.DecisionModel('dummy-model').choose_random(variants=None)
 
-    # TODO random()
     def test_random_valid_variants_list(self):
         self._generic_desired_decision_model_method_call_no_model(
             test_data_filename=os.getenv('DECISION_MODEL_TEST_RANDOM_VALID_VARIANTS_JSON'),
@@ -1189,27 +1161,24 @@ class TestDecisionModel(TestCase):
             dm.DecisionModel(model_name=None, track_url=self.track_url)\
             .load(model_url=model_url)
 
-        assert decision_model.id_ is None
-
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
-            decision_model.choose_from(list(range(10))).get()
-
-        assert decision_model.id_ is not None
+            decision = decision_model.choose_from(list(range(10)))
+            decision.get()
 
         reward = math.inf
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
             with raises(AssertionError) as aerr:
-                decision_model.add_reward(reward=reward, decision_id=decision_model.id_)
+                decision_model.add_reward(reward=reward, decision_id=decision.id_)
 
         reward = -math.inf
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
             with raises(AssertionError) as aerr:
-                decision_model.add_reward(reward=reward, decision_id=decision_model.id_)
+                decision_model.add_reward(reward=reward, decision_id=decision.id_)
 
     def test_add_reward_none(self):
         # V6_DUMMY_MODEL_PATH
@@ -1220,27 +1189,24 @@ class TestDecisionModel(TestCase):
             dm.DecisionModel(model_name=None, track_url=self.track_url)\
             .load(model_url=model_url)
 
-        assert decision_model.id_ is None
-
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
-            decision_model.choose_from(list(range(10))).get()
-
-        assert decision_model.id_ is not None
+            decision = decision_model.choose_from(list(range(10)))
+            decision.get()
 
         reward = None
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
             with raises(AssertionError) as aerr:
-                decision_model.add_reward(reward=reward, decision_id=decision_model.id_)
+                decision_model.add_reward(reward=reward, decision_id=decision.id_)
 
         reward = np.nan
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
             with raises(AssertionError) as aerr:
-                decision_model.add_reward(reward=reward, decision_id=decision_model.id_)
+                decision_model.add_reward(reward=reward, decision_id=decision.id_)
 
     def test_add_reward(self):
         model_url = os.getenv('DUMMY_MODEL_PATH', None)
@@ -1249,9 +1215,6 @@ class TestDecisionModel(TestCase):
         decision_model = \
             dm.DecisionModel(model_name=None, track_url=self.track_url)\
             .load(model_url=model_url)
-
-        assert decision_model.id_ is None
-
         reward = 1.0
 
         expected_add_reward_body = {
@@ -1267,9 +1230,8 @@ class TestDecisionModel(TestCase):
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success', additional_matcher=grab_decision_id_matcher)
-            decision_model.choose_from(list(range(10))).get()
-
-        assert decision_model.id_ is not None
+            decision = decision_model.choose_from(list(range(10)))
+            decision.get()
 
         expected_request_json = json.dumps(expected_add_reward_body, sort_keys=False)
 
@@ -1291,9 +1253,4 @@ class TestDecisionModel(TestCase):
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success', additional_matcher=custom_matcher)
-            resp = decision_model.add_reward(reward=reward, decision_id=decision_model.id_)
-            if resp is None:
-                print('The input request body and expected request body mismatch')
-            assert resp is not None
-            assert resp.status_code == 200
-            assert resp.text == 'success'
+            decision_model.add_reward(reward=reward, decision_id=decision.id_)

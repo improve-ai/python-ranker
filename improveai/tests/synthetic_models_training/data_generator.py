@@ -104,7 +104,6 @@ class BasicSemiRandomDataGenerator:
         self.epochs_timespans = None
         self.track_url = track_url
 
-        # TODO make sure this can be set in trainer
         self.encoding_noise = None
         self.model_seed = None
 
@@ -189,11 +188,11 @@ class BasicSemiRandomDataGenerator:
 
     def _get_probabilities(self, collection: list, distribution_name: str):
 
-        # TODO to be used with np.random.choice([...], probabilities)
+        # to be used with np.random.choice([...], probabilities)
         if distribution_name == 'uniform':
             return np.full((len(collection), ), 1/len(collection))
 
-        # TODO support other distributions
+        # future -> support other distributions
 
     def _generate_epochs_timespans(self):
         np.random.seed(self.data_seed)
@@ -272,7 +271,7 @@ class BasicSemiRandomDataGenerator:
             self._get_probabilities(
                 collection=self.all_givens, distribution_name=givens_distribution_name)
 
-        # TODO code for givens dependent on variant
+        # future -> code for givens dependent on variant
 
     def _choose_givens_index(self):
 
