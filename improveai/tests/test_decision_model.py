@@ -1,5 +1,6 @@
 from copy import deepcopy
 import json
+from ksuid import Ksuid
 import numpy as np
 import math
 import os
@@ -19,7 +20,7 @@ sys.path.append(
 import improveai.decision as d
 import improveai.decision_context as dc
 import improveai.decision_model as dm
-from improveai.choosers.xgb_chooser import NativeXGBChooser
+from improveai.chooser import XGBChooser
 from improveai.tests.test_utils import convert_values_to_float32, get_test_data, \
     assert_valid_decision, is_valid_ksuid
 
@@ -776,7 +777,7 @@ class TestDecisionModel(TestCase):
             os.sep.join([self.predictors_fs_directory, test_data['test_case']['model_filename']])
 
         tested_model_name = test_data['test_case']['model_name']
-        chooser = NativeXGBChooser()
+        chooser = XGBChooser()
         chooser.load_model(model_url)
 
         with warnings.catch_warnings(record=True) as w:
@@ -1254,3 +1255,10 @@ class TestDecisionModel(TestCase):
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success', additional_matcher=custom_matcher)
             decision_model.add_reward(reward=reward, decision_id=decision.id_)
+
+    def test_add_rewards_raises_for_none_model_name(self):
+        model = dm.DecisionModel(model_name=None, track_url=self.track_url)
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+            with raises(AssertionError) as aerr:
+                model.add_reward(1.0, decision_id=str(Ksuid))

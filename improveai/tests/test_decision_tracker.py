@@ -1,5 +1,6 @@
 from copy import deepcopy
 import json
+from ksuid import Ksuid
 import math
 import numpy as np
 import requests
@@ -1638,6 +1639,12 @@ class TestDecisionTracker:
                 decision_tracker.add_reward(
                     reward=reward, model_name=self.dummy_model_name, decision_id=decision_id)
                 assert aerr
+
+    def test_add_reward_raises_for_none_model_name(self):
+        decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
+        # reward: float or int, model_name: str, decision_id: str
+        with raises(AssertionError) as aerr:
+            decision_tracker.add_reward(reward=1.0, model_name=None, decision_id=str(Ksuid()))
 
     def test_tracker_with_api_headers(self):
         # self, track_url: str, max_runners_up: int = 50, track_api_key: str = None

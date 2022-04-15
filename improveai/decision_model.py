@@ -3,8 +3,7 @@ import warnings
 
 import numpy as np
 
-from improveai.choosers.basic_choosers import BasicChooser
-from improveai.choosers.xgb_chooser import NativeXGBChooser
+from improveai.chooser import XGBChooser
 import improveai.decision as d
 import improveai.decision_context as dc
 import improveai.decision_tracker as dt
@@ -36,11 +35,11 @@ class DecisionModel:
         return self.__tracker
 
     @property
-    def chooser(self) -> BasicChooser:
+    def chooser(self) -> XGBChooser:
         return self._chooser
 
     @chooser.setter
-    def chooser(self, value: BasicChooser):
+    def chooser(self, value: XGBChooser):
         self._chooser = value
 
     @property
@@ -57,7 +56,10 @@ class DecisionModel:
 
     @track_url.setter
     def track_url(self, value):
-        self._track_url = value
+        if value is not None:
+            self._track_url = value
+            self.__tracker = \
+                dt.DecisionTracker(track_url=self._track_url, track_api_key=self.__track_api_key)
 
     @constant
     def TIEBREAKER_MULTIPLIER() -> float:
@@ -65,13 +67,11 @@ class DecisionModel:
 
     def __init__(
             self, model_name: str, track_url: str = None, track_api_key: str = None):
+        self.__tracker = None
+        self.__track_api_key = track_api_key
+
         self.model_name = model_name
         self.track_url = track_url
-
-        self.__tracker = None
-        if self.track_url:
-            self.__tracker = \
-                dt.DecisionTracker(track_url=self.track_url, track_api_key=track_api_key)
 
         self.chooser = None
         self.givens_provider = gp.GivensProvider()
@@ -117,7 +117,7 @@ class DecisionModel:
                 'overwritten by loaded model name: {}.'
                 .format(self.model_name, self.chooser.model_name))
 
-    def _get_chooser(self, model_url: str) -> BasicChooser:
+    def _get_chooser(self, model_url: str) -> XGBChooser:
         """
         Synchronously loads XGBoost model from provided path, creates instance
         of Chooser and returns it
@@ -135,11 +135,11 @@ class DecisionModel:
         """
 
         try:
-            model_src = BasicChooser.get_model_src(model_src=model_url)
+            model_src = XGBChooser.get_model_src(model_src=model_url)
         except Exception as exc:
             raise exc
 
-        chooser = NativeXGBChooser()
+        chooser = XGBChooser()
         chooser.load_model(input_model_src=model_src)
         return chooser
 

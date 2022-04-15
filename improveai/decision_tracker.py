@@ -1,3 +1,4 @@
+import warnings
 from collections.abc import Iterable
 from copy import deepcopy
 from datetime import datetime
@@ -190,6 +191,10 @@ class DecisionTracker:
         """
 
         if not self.track_url:
+            return None
+
+        if model_name is None:
+            warnings.warn('`model_name` must not be None in order to be tracked')
             return None
 
         if isinstance(variants, np.ndarray):
@@ -439,93 +444,3 @@ class DecisionTracker:
                 'not happen (?)')
 
         return body[self.MESSAGE_ID_KEY]
-
-
-if __name__ == '__main__':
-    import time
-    from tqdm import tqdm
-
-    def post_requests_batch():
-
-        track_url = 'https://x5fvx48stc.execute-api.us-east-2.amazonaws.com/track'
-
-        dt = DecisionTracker(track_url=track_url)
-
-        # resp = decision_tracker.track(
-        #     variant=variant,
-        #     variants=np.array(variants),
-        #     givens=givens, model_name=self.dummy_model_name,
-        #     variants_ranked_and_track_runners_up=True,
-        #     message_id=self.dummy_message_id,
-        #     history_id=self.dummy_history_id,
-        #     timestamp=self.dummy_timestamp)
-
-        variants = [el for el in range(200)]
-        # variants[0] = ''.join(['x' for _ in range(int(10110000/10))])
-
-        # with open('dummy.json', 'w') as dj:
-        #     q = json.dumps(variants[0])
-        #     dj.write(q)
-
-        # np.random.shuffle(variants)
-
-        import base64
-
-        def base64len(s):
-            encoded_str = base64.b64decode(s)
-            return len(encoded_str)
-        large_variant = ''.join(['x' for _ in range(1011100)])
-
-        # to make rewarding reproducible
-        np.random.seed(0)
-
-        persistent_decision_id = None
-
-        for d_idx in tqdm(range(25)):
-            # time.sleep(np.random.randint(6,  18))
-
-            givens = {}
-
-            if np.random.rand() > 0.8:
-                givens = {
-                    'g1': 0,
-                    'g2': 1}
-
-            decision_id = str(Ksuid())
-
-            # if not persistent_decision_id:
-            #     persistent_decision_id = decision_id
-
-            if d_idx % 15 == 0:
-                persistent_decision_id = decision_id
-
-            resp = dt.track(
-                variant=variants[0],
-                variants=variants[:1],
-                givens=givens, model_name='appconfig',
-                variants_ranked_and_track_runners_up=False,
-                timestamp=str(np.datetime_as_string(
-                            np.datetime64(datetime.now()), unit='ms', timezone='UTC')),
-                message_id=decision_id)
-
-            # if d_idx < 100:
-            # time.sleep(np.random.rand() * 0.2)
-            dt.add_reward(reward=100.0, model_name='appconfig', decision_id=decision_id)
-            # time.sleep(np.random.rand() * 0.2)
-            dt.add_reward(reward=75.0, model_name='appconfig', decision_id=decision_id)
-            # time.sleep(np.random.rand() * 0.2)
-            dt.add_reward(reward=50.0, model_name='appconfig', decision_id=decision_id)
-            # resp = dt.add_reward(reward=1.0, model_name='appconfig', decision_id=decision_id)
-            if np.random.rand() < 0.5:
-                dt.add_reward(reward=10.0, model_name='appconfig', decision_id=persistent_decision_id)
-
-            print(resp.status_code)
-            # time.sleep(np.random.rand() * 0.1)
-
-    from multiprocessing import Process
-
-    p1 = Process(target=post_requests_batch)
-    p2 = Process(target=post_requests_batch)
-    p1.start()
-    time.sleep(8)
-    p2.start()

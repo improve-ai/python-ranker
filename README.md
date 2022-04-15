@@ -40,9 +40,59 @@ To install from cloned repo:
 
 ## Initialization
 
+General initialization can be done with simple import:
+
 ```python
 import improveai
 ```
+
+[Gym](https://github.com/improve-ai/gym) needs new data (decisions and rewards) to train increasingly accurate models. 
+Initializing `DecisionModel()` with `track_url` allows DecisionModel() to send decisions and rewards directly to [gym's](https://github.com/improve-ai/gym)
+track endpoint. Easiest way to get started with deciding and rewarding is to import `DecisionModel` from `improveai`:
+
+```python
+from improveai import DecisionModel
+```
+
+Possible `DecisionModel` initializations:
+- `model_name != None` and `track_url != None` &#8594; decisions of `'grettings'` model are tracked and rewarded
+
+
+```python
+track_url = 'https://x5fvx48stc.execute-api.<region>.amazonaws.com/track'
+decision_model = DecisionModel(model_name='greetings', track_url=track_url)
+```
+
+- `model_name != None` and `track_url == None` &#8594; decisions are not tracked nor rewarded
+
+```python
+# by default track_url = None
+decision_model = DecisionModel(model_name='greetings')
+```
+
+- `model_name == None` and `track_url != None` &#8594; decisions are not tracked nor rewarded 
+(`model_name` must not be None for a valid decision / reward)
+
+```python
+track_url = 'https://x5fvx48stc.execute-api.<region>.amazonaws.com/track'
+# model_name is an obligatory parameter of DecisionModel's constructor
+decision_model = DecisionModel(model_name=None, track_url=track_url)
+```
+
+- `model_name == None` and `track_url == None` &#8594; decisions are not tracked and rewarded
+```python
+# model_name is an obligatory parameter of DecisionModel's constructor
+decision_model = DecisionModel(model_name=None)
+```
+
+Once model is initialized an existing XGBoost Improve AI model can be loaded. 
+If `DecisionModel` was initialized with `model_name = None` then the `model_name` cached 
+in the loaded booster will be set to `model_name` attribute of `DecisionModel`.
+
+```python
+decision_model.load(model_url='<URL or FS path to booster>')
+```
+
 
 ## Usage
 
@@ -55,24 +105,23 @@ The heart of Improve AI is the which statement. `which()` is like an AI if/then 
 ```python
 from improveai import DecisionModel
 
-greeting = DecisionModel(model_name='greetings').which('Hello', 'Howdy', 'Hola')
+
+# initialize model with model name  and track URL
+greetings_model = DecisionModel(model_name='greetings', track_url='<gym`s track url>')
+# load desired booster from URL or filesystem
+greetings_model.load('<greetings model URL or filesystem path>')
+# choose best variant
+greeting, decision_id = greetings_model.which('Hello', 'Howdy', 'Hola')
 ```
 
-`which()` makes decisions on-device using a decision model. 
-Decision models are easily trained by assigning rewards for positive outcomes.
+`which()` makes decisions using a decision model. Decision models are easily trained by assigning rewards for positive outcomes.
 
 ```python
-from improveai import DecisionModel
-
-# create an instance of Decision object
-decision_model = DecisionModel(model_name='greetings')
-best_greeting, decision_id = decision_model.which(*['Hello', 'Howdy', 'Hola'])
-
-# add reward to the Decision
-decision_model.add_reward(reward=1.0)
+# add reward to the Decision; without valid track_url rewards will not be added to Decision
+greetings_model.add_reward(reward=1.0, decision_id=decision_id)
 ```
 
-Rewards are credited to the decisions - you can add them to the existing decision with an `add_reward()` call. 
+Rewards are credited to the specific decisions - you can add rewards with `add_reward()` call specifying desired reward and `decision_id`.
 `DecisionModel().which(*variants)` will make the decision that provides the highest expected reward. 
 When the rewards are business metrics, such as revenue or user retention, 
 the decisions will optimize to automatically improve those metrics over time.
@@ -87,7 +136,10 @@ What discount should we offer?
 ```python
 from improveai import DecisionModel
 
-discount = DecisionModel(model_name='discounts').which(0.1, 0.2, 0.3)
+
+discounts_model = DecisionModel(model_name='discounts', track_url='<gym`s track url>')
+discounts_model.load(model_url='<discounts model URL>')
+discount, _ = discounts_model.which(0.1, 0.2, 0.3)
 ```
 
 ## Booleans
@@ -97,13 +149,17 @@ Dynamically enable feature flags for best performance...
 ```python
 from improveai import DecisionModel
 
+
 # example decision attributes
-givens = {'string attribute': 'string attribute value',
-          'float attribute': 123.132,  # float attribute value
-          'bool attribute': True}  # bool attribute value
+example_attributes = {'string attribute': 'string attribute value',
+                      'float attribute': 123.132,  # float attribute value
+                      'bool attribute': True}  # bool attribute value
+
+features_model = DecisionModel(model_name='feature_flags', track_url=track_url)
+features_model.load(model_url='<features model URL>')
 
 # choose best feature flag considering example attributes
-feature_flag = DecisionModel(model_name='feature_flags').given(givens=givens).which(True, False)
+feature_flag, _ = features_model.given(givens=example_attributes).which(True, False)
 ```
 
 
@@ -113,17 +169,19 @@ feature_flag = DecisionModel(model_name='feature_flags').given(givens=givens).wh
 ```python
 from improveai import DecisionModel
 
+
 theme_variants = [
     {"textColor": "#000000", "backgroundColor": "#ffffff" },
     { "textColor": "#F0F0F0", "backgroundColor": "#aaaaaa" }]
 
-# lists of variants should be passed to which() as pythonic *args
-theme = DecisionModel(model_name='themes').which(*theme_variants)
-```
+themes_model = DecisionModel(model_name='themes', track_url='<gym`s track url>')
+themes_model.load('<themes model URL>')
 
-Passing list of `variants` as pythonic `*args` will make `which()` interpret it as a list of variants
+# lists of variants should be passed to which() as pythonic *args
+theme, _ = themes_model.which(*theme_variants)
+```
 `DecisionModel.which()` accepts pythonic `*args`. 
-This means that `DecisionModel.which(*variants)` will interpret each element of `variants` list as a separate variant
+`DecisionModel.which(*variants)` will unpack each element of `varaints` as a separate variant  
 while `DecisionModel.which(variants)` will interpret `variants` as a single variant of a list type.
 
 Improve learns to use the attributes of each key and value in a complex variant to make the optimal decision.
@@ -169,16 +227,12 @@ from improveai import DecisionModel
 
 cowboy_givens = {"language": "cowboy"}
 
-# create model object
-greetings_model = DecisionModel(model_name='greetings')
-# load greetings model 
+greetings_model = DecisionModel(model_name='greetings', track_url=track_url)
 greetings_model.load('<trained greetings model url>')
-
 greeting, _ = greetings_model.given(givens=cowboy_givens).which("Hello", "Howdy", "Hola")
 ```
 
-Given the language is *cowboy* and `greetings_model` was successfully loaded, 
-the variant with the highest expected reward should be *"Howdy"* and the model would learn to make that choice.
+Given the language is *cowboy*, the variant with the highest expected reward should be *"Howdy"* and the model would learn to make that choice.
 
 ### Example: Optimizing an Upsell Offer
 
@@ -194,10 +248,10 @@ from improveai import DecisionModel
 
 
 # create DecisionModel object
-upsell_model = DecisionModel(model_name='upsell_model')
+upsell_model = DecisionModel(model_name='upsell_model', track_url=track_url)
 
 # load model from a path / url
-upsell_model_url = '<example upsell model url>'
+upsell_model_url = '<upsell model url>'
 upsell_model.load(model_url=upsell_model_url)
 
 product = {'name': 'red sword', 'price': 4.99}
@@ -243,19 +297,27 @@ config = {"bufferSize": 2048,
 This is the code I wish I could have written:
 
 ```python
-config = config_model.which({"bufferSize": [1024, 2048, 4096, 8192],
-                            "videoBitrate": [256000, 384000, 512000]})
+from itertools import product
+
+
+buffer_sizes = [1024, 2048, 4096, 8192]
+video_bit_rates = [256000, 384000, 512000]
+
+config, config_decision_id = \
+    config_model.which(*[{"bufferSize": bs, "videoBitrate": br} for bs, br in product(*[buffer_sizes, video_bit_rates])])
 ```
 
-This example decides multiple variables simultaneously. Notice that instead of a single list of variants, a dictionary mapping keys to lists of variants is provided to which. This multi-variate mode jointly optimizes both variables for the highest expected reward.
+This example decides multiple variables simultaneously.
+This multi-variate mode jointly optimizes both variables for the highest expected reward.
+
+[//]: # (Notice that instead of a single list of variants, a dictionary mapping keys to lists of variants is provided to which. )
 
 The rewards in this case might be negative to penalize any stalls during video playback.
 
 
 ```python
-stalled_video_decision_id = '<stalled video decision id>'
 if video_stalled:
-    config_model.add_reward(-0.001, decision_id=stalled_video_decision_id)
+    config_model.add_reward(-0.001, decision_id=config_decision_id)
 ```
 
 Improve AI frees us from having to overthink our configuration values during development. 

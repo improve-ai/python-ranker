@@ -9,7 +9,7 @@ sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
 
 from improveai import FeatureEncoder
-from improveai.choosers.xgb_chooser import NativeXGBChooser
+from improveai.chooser import XGBChooser
 from improveai.utils.choosers_feature_encoding_tools import \
     encoded_variants_to_np
 import improveai.settings as improve_settings
@@ -39,7 +39,7 @@ class TestChooserFeatureEncoding(TestCase):
             os.getenv("FEATURE_ENCODER_TEST_PYTHON_SPECIFIC_JSONS_DIR")
         # self.feature_encoder = FeatureEncoder(model_seed=self.encoder_seed)
 
-        self.xgb_chooser = NativeXGBChooser()
+        self.xgb_chooser = XGBChooser()
         xgb_path = os.getenv("DUMMY_MODEL_PATH")
         self.xgb_chooser.load_model(input_model_src=xgb_path)
         self.batch_encoding_seed = int(os.getenv('BATCH_ENCODING_SEED'))

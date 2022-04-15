@@ -56,7 +56,7 @@ def get_unzip_gz(to_be_unzpd_bytes: bytes) -> bytes:
     return res
 
 
-def check_and_get_unzpd_model(model_src: Union[str, bytes]) -> Union[str, bytes]:
+def check_and_get_unzipped_model(model_src: Union[str, bytes]) -> Union[str, bytes]:
     """
     Checks if provided model is a compressed one and unzips it if so.
 
