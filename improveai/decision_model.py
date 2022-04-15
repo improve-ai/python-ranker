@@ -16,7 +16,7 @@ from improveai.utils.general_purpose_tools import constant, check_variants, \
 class DecisionModel:
 
     SUPPORTED_CALLS = ['score', 'top_scoring_variant', 'rank', 'get']
-    MODEL_NAME_REGEXP = "^[a-zA-Z0-9][\w\-.]{0,63}$"
+    MODEL_NAME_REGEXP = XGBChooser.MODEL_NAME_REGEXP
 
     @property
     def model_name(self) -> str:
