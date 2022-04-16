@@ -384,19 +384,3 @@ cdef class FeatureEncoder:
          if single_extra_features is not None else encoded_variant
          for encoded_variant, single_extra_features in
          zip(encoded_variants, extra_features)]
-
-    cpdef _convert_values_to_float32(self, dict into):
-        """
-        Converts all values in the input dict to float32
-
-        Parameters
-        ----------
-        into: dict
-            converted dict
-
-        Returns
-        -------
-
-        """
-        for k in into.keys():
-            into[k] = np.float32(into[k])

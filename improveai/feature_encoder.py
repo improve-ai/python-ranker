@@ -226,23 +226,6 @@ class FeatureEncoder:
          for encoded_variant, single_extra_features in
          zip(encoded_variants, extra_features)]
 
-    def _convert_values_to_float32(self, into: dict):
-        """
-        Converts all values in the input dict to float32
-
-        Parameters
-        ----------
-        into: dict
-            converted dict
-
-        Returns
-        -------
-
-        """
-        for k in into.keys():
-            into[k] = np.float32(into[k])
-
-
 def _is_object_json_serializable(object_):
     """
     Checks if input value is JSON serializable
@@ -411,26 +394,3 @@ def reverse_sprinkle(sprinkled_x, small_noise):
 
     """
     return sprinkled_x / (1 + small_noise) - small_noise
-
-
-def np_to_float32_inplace(converted_array: np.ndarray):
-    """
-    Converts in-place numpy array to float32 dtype
-
-    Parameters
-    ----------
-    converted_array: np.ndarray
-        array to be converted to float32
-
-    Returns
-    -------
-
-    """
-    f32_input_copy = converted_array.copy().astype(np.float32)
-
-    # change dtype
-    converted_array.dtype = np.float32
-    # resize back to the original shape
-    converted_array.resize(f32_input_copy.shape, refcheck=False)
-    # fill with original values
-    converted_array[:] = f32_input_copy

@@ -8,32 +8,6 @@ import numpy as np
 cimport numpy as np
 
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-cpdef np_1d_to_float32_array_inplace(np.ndarray converted_array):
-    """
-    Converts in-place numpy array to float32 dtype
-
-    Parameters
-    ----------
-    converted_array: np.ndarray
-        array to be converted to float32
-
-    Returns
-    -------
-
-    """
-
-    cdef np.ndarray f32_input_copy = converted_array.copy().astype(np.float32)
-
-    # change dtype
-    converted_array.dtype = np.float32
-    # resize back to the original shape
-    converted_array.resize((len(f32_input_copy), ), refcheck=False)
-    # fill with original values
-    converted_array[:] = f32_input_copy
-
-
 cpdef encoded_variant_into_np_row(
         dict encoded_variant, list feature_names, np.ndarray into):
     """
