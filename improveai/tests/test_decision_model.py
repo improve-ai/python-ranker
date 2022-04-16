@@ -20,6 +20,7 @@ sys.path.append(
 import improveai.decision as d
 import improveai.decision_context as dc
 import improveai.decision_model as dm
+import improveai.decision_tracker as dt
 from improveai.chooser import XGBChooser
 from improveai.tests.test_utils import convert_values_to_float32, get_test_data, \
     assert_valid_decision, is_valid_ksuid
@@ -234,9 +235,22 @@ class TestDecisionModel(TestCase):
 
             assert str(verr.value)
 
-        # is returned object a decision model
-        # assert isinstance(decision_model, DecisionModel)
-        # assert decision_model.chooser is None
+    def test_constructor_valid_track_url(self):
+
+        test_model_name = 'dummy-model'
+        decision_model = \
+            dm.DecisionModel(model_name=test_model_name, track_url=self.track_url)
+        assert decision_model.model_name == test_model_name
+        assert decision_model.track_url == self.track_url
+        assert decision_model.tracker is not None and isinstance(decision_model.tracker, dt.DecisionTracker)
+        assert decision_model.tracker.track_url == self.track_url
+
+    def test_constructor_none_track_url(self):
+        decision_model = dm.DecisionModel(model_name='dummy-model')
+        assert decision_model.model_name == 'dummy-model'
+        assert decision_model.track_url is None
+        assert decision_model.tracker is not None and isinstance(decision_model.tracker, dt.DecisionTracker)
+        assert decision_model.tracker.track_url is None
 
     # test model loading
     def test_load_model_sync_native_fs(self):

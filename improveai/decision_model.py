@@ -60,6 +60,10 @@ class DecisionModel:
         if hasattr(self, '__tracker') and getattr(self, '__tracker') is not None:
             self.__tracker.track_url = value
 
+    @property
+    def tracker(self):
+        return self.__tracker
+
     @constant
     def TIEBREAKER_MULTIPLIER() -> float:
         return 2**-23
@@ -71,8 +75,7 @@ class DecisionModel:
         self.track_url = track_url
         self.__track_api_key = track_api_key
 
-        if self.track_url is not None:
-            self.__tracker = dt.DecisionTracker(track_url=track_url, track_api_key=self.__track_api_key)
+        self.__tracker = dt.DecisionTracker(track_url=track_url, track_api_key=self.__track_api_key)
 
         self.chooser = None
         self.givens_provider = gp.GivensProvider()
