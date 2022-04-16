@@ -20,11 +20,11 @@ from improveai.tests.test_utils import get_test_data
 class TestDecision(TestCase):
 
     @property
-    def decision_model_without_tracker(self) -> dm.DecisionModel:
+    def decision_model_no_track_url(self) -> dm.DecisionModel:
         return self._decision_model
 
-    @decision_model_without_tracker.setter
-    def decision_model_without_tracker(self, value: dm.DecisionModel):
+    @decision_model_no_track_url.setter
+    def decision_model_no_track_url(self, value: dm.DecisionModel):
         self._decision_model = value
 
     @property
@@ -52,11 +52,11 @@ class TestDecision(TestCase):
         self._test_jsons_data_directory = value
 
     @property
-    def decision_model_with_tracker(self) -> dm.DecisionModel:
+    def decision_model_valid_track_url(self) -> dm.DecisionModel:
         return self._decision_model_with_tracker
 
-    @decision_model_with_tracker.setter
-    def decision_model_with_tracker(self, value: dm.DecisionModel):
+    @decision_model_valid_track_url.setter
+    def decision_model_valid_track_url(self, value: dm.DecisionModel):
         self._decision_model_with_tracker = value
 
     @property
@@ -85,11 +85,11 @@ class TestDecision(TestCase):
 
         self.track_url = os.getenv('DECISION_TRACKER_TEST_URL')
 
-        self.decision_model_without_tracker = \
+        self.decision_model_no_track_url = \
             dm.DecisionModel(model_name=None)\
             .load(model_url=decision_tests_model_url)
 
-        self.decision_model_with_tracker = \
+        self.decision_model_valid_track_url = \
             dm.DecisionModel(model_name=None, track_url=self.track_url)\
             .load(model_url=decision_tests_model_url)
 
@@ -142,7 +142,7 @@ class TestDecision(TestCase):
             assert str(aerr.value) == "AttributeError: can't set attribute"
 
     def test_model_setter(self):
-        decision = d.Decision(decision_model=self.decision_model_without_tracker)
+        decision = d.Decision(decision_model=self.decision_model_no_track_url)
         assert decision.decision_model is not None
 
         assert decision.variants == [None]
@@ -160,12 +160,12 @@ class TestDecision(TestCase):
         assert decision.best is None
 
     def test_model_getter(self):
-        decision = d.Decision(decision_model=self.decision_model_without_tracker)
+        decision = d.Decision(decision_model=self.decision_model_no_track_url)
         assert decision.decision_model is not None
-        assert decision.decision_model == self.decision_model_without_tracker
+        assert decision.decision_model == self.decision_model_no_track_url
 
     def test_choose_from_variants_setter(self):
-        decision = d.Decision(decision_model=self.decision_model_without_tracker)
+        decision = d.Decision(decision_model=self.decision_model_no_track_url)
         decision.variants = self.mockup_variants
 
         assert decision.variants is not None
@@ -182,30 +182,30 @@ class TestDecision(TestCase):
     def test_choose_from_variants_setter_raises_type_error_for_string(self):
 
         with raises(AssertionError) as aerr:
-            decision_0 = d.Decision(decision_model=self.decision_model_without_tracker)
+            decision_0 = d.Decision(decision_model=self.decision_model_no_track_url)
             decision_0.variants = 'dummy string'
             assert str(aerr.value)
 
     def test_choose_from_variants_setter_raises_type_error_for_non_iterable(
             self):
         with raises(AssertionError) as aerr:
-            decision_1 = d.Decision(decision_model=self.decision_model_without_tracker)
+            decision_1 = d.Decision(decision_model=self.decision_model_no_track_url)
             decision_1.variants = {'dummy': 'string'}
 
             assert str(aerr.value)
 
         with raises(AssertionError) as aerr:
-            decision_2 = d.Decision(decision_model=self.decision_model_without_tracker)
+            decision_2 = d.Decision(decision_model=self.decision_model_no_track_url)
             decision_2.variants = 1234
             assert str(aerr.value)
 
         with raises(AssertionError) as aerr:
-            decision_3 = d.Decision(decision_model=self.decision_model_without_tracker)
+            decision_3 = d.Decision(decision_model=self.decision_model_no_track_url)
             decision_3.variants = 1234.1234
             assert str(aerr.value)
 
     def test_givens_setter(self):
-        decision = d.Decision(decision_model=self.decision_model_without_tracker)
+        decision = d.Decision(decision_model=self.decision_model_no_track_url)
         decision.givens = self.mockup_givens
 
         assert decision.givens is not None
@@ -223,22 +223,22 @@ class TestDecision(TestCase):
     def test_givens_setter_raises_type_error_for_non_dict(self):
 
         with raises(AssertionError) as terr:
-            decision = d.Decision(decision_model=self.decision_model_without_tracker)
+            decision = d.Decision(decision_model=self.decision_model_no_track_url)
             decision.givens = 'dummy string'
             assert str(terr.value)
 
         with raises(AssertionError) as terr:
-            decision = d.Decision(decision_model=self.decision_model_without_tracker)
+            decision = d.Decision(decision_model=self.decision_model_no_track_url)
             decision.givens = ['dummy', 'string']
             assert str(terr.value)
 
         with raises(AssertionError) as terr:
-            decision = d.Decision(decision_model=self.decision_model_without_tracker)
+            decision = d.Decision(decision_model=self.decision_model_no_track_url)
             decision.givens = 1234
             assert str(terr.value)
 
         with raises(AssertionError) as terr:
-            decision = d.Decision(decision_model=self.decision_model_without_tracker)
+            decision = d.Decision(decision_model=self.decision_model_no_track_url)
             decision.givens = 1234.1234
             assert str(terr.value)
 
@@ -259,7 +259,7 @@ class TestDecision(TestCase):
         test_given = test_case.get('givens', None)
         assert test_given is not None
 
-        decision = d.Decision(decision_model=self.decision_model_with_tracker)
+        decision = d.Decision(decision_model=self.decision_model_valid_track_url)
 
         assert decision.chosen is False
 
@@ -296,7 +296,7 @@ class TestDecision(TestCase):
         test_givens = test_case.get('givens', None)
         assert test_givens is not None
 
-        decision = d.Decision(decision_model=self.decision_model_with_tracker)
+        decision = d.Decision(decision_model=self.decision_model_valid_track_url)
 
         assert decision.chosen is False
 
@@ -318,7 +318,7 @@ class TestDecision(TestCase):
 
     def test_get_03(self):
 
-        decision = d.Decision(decision_model=self.decision_model_with_tracker)
+        decision = d.Decision(decision_model=self.decision_model_valid_track_url)
 
         assert decision.chosen is False
 
@@ -333,7 +333,7 @@ class TestDecision(TestCase):
 
     def test_get_04(self):
 
-        decision = d.Decision(decision_model=self.decision_model_with_tracker)
+        decision = d.Decision(decision_model=self.decision_model_valid_track_url)
 
         assert decision.chosen is False
 
@@ -346,14 +346,23 @@ class TestDecision(TestCase):
 
     def test_get_05(self):
 
-        decision = d.Decision(decision_model=self.decision_model_without_tracker)
+        decision = d.Decision(decision_model=self.decision_model_no_track_url)
 
         assert decision.chosen is False
 
-        with raises(ValueError) as verr:
+        # with raises(ValueError) as verr:
+        #     decision.variants = [None]
+        #     decision.givens = {}
+        #     decision.get()
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
             decision.variants = [None]
             decision.givens = {}
             decision.get()
+
+            # expect exactly 1 warning
+            assert len(w) == 1
 
     def test_get_06(self):
         # this is a test case which covers tracking runners up from within
@@ -370,7 +379,7 @@ class TestDecision(TestCase):
         def custom_matcher(request):
 
             request_dict = deepcopy(request.json())
-            del request_dict[self.decision_model_with_tracker._tracker.MESSAGE_ID_KEY]
+            del request_dict[self.decision_model_valid_track_url._tracker.MESSAGE_ID_KEY]
 
             if 'runners_up' in request_dict:
                 runners_up_tracked.append(True)
@@ -386,7 +395,7 @@ class TestDecision(TestCase):
                     warnings.simplefilter("always")
 
                     # np.random.seed(self.tracks_seed)
-                    decision = d.Decision(decision_model=self.decision_model_with_tracker)
+                    decision = d.Decision(decision_model=self.decision_model_valid_track_url)
                     assert decision.chosen is False
                     decision.variants = variants
                     decision.givens = {}
@@ -402,7 +411,7 @@ class TestDecision(TestCase):
         # this is a test case which covers NOT tracking runners up from within
         # get() call
 
-        decision = d.Decision(decision_model=self.decision_model_with_tracker)
+        decision = d.Decision(decision_model=self.decision_model_valid_track_url)
 
         assert decision.chosen is False
 
@@ -429,12 +438,12 @@ class TestDecision(TestCase):
         # this is a test case which covers tracking runners up from within
         # get() call
 
-        decision_tracker = self.decision_model_with_tracker._tracker
+        decision_tracker = self.decision_model_valid_track_url._tracker
 
         expected_track_body = {
             decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
-            decision_tracker.MODEL_KEY: self.decision_model_with_tracker.model_name,
+            decision_tracker.MODEL_KEY: self.decision_model_valid_track_url.model_name,
             decision_tracker.VARIANT_KEY: None,
             decision_tracker.VARIANTS_COUNT_KEY: 1,
         }
@@ -447,7 +456,7 @@ class TestDecision(TestCase):
         def custom_matcher(request):
 
             request_dict = deepcopy(request.json())
-            del request_dict[self.decision_model_with_tracker._tracker.MESSAGE_ID_KEY]
+            del request_dict[self.decision_model_valid_track_url._tracker.MESSAGE_ID_KEY]
 
             if json.dumps(request_dict, sort_keys=False) != \
                     expected_request_json:
@@ -461,7 +470,7 @@ class TestDecision(TestCase):
             with warnings.catch_warnings(record=True) as w:
                 warnings.simplefilter("always")
 
-                decision = d.Decision(decision_model=self.decision_model_with_tracker)
+                decision = d.Decision(decision_model=self.decision_model_valid_track_url)
                 assert decision.chosen is False
 
                 memoized_variant = decision.get()
@@ -489,7 +498,7 @@ class TestDecision(TestCase):
         if test_givens is None:
             raise ValueError('`givens` can`t be empty')
 
-        decision = d.Decision(decision_model=self.decision_model_with_tracker)
+        decision = d.Decision(decision_model=self.decision_model_valid_track_url)
 
         assert decision.chosen is False
 
@@ -515,7 +524,7 @@ class TestDecision(TestCase):
         assert best_variant == decision.best
 
     def test_choose_from_variants_already_set(self):
-        decision = d.Decision(decision_model=self.decision_model_without_tracker)
+        decision = d.Decision(decision_model=self.decision_model_no_track_url)
 
         assert decision.variants == [None]
         assert decision.givens is None
@@ -537,7 +546,7 @@ class TestDecision(TestCase):
         assert decision.best is None
 
     def test_given_givens_already_set(self):
-        decision = d.Decision(decision_model=self.decision_model_without_tracker)
+        decision = d.Decision(decision_model=self.decision_model_no_track_url)
 
         assert decision.variants == [None]
         assert decision.givens is None
@@ -605,7 +614,7 @@ class TestDecision(TestCase):
         if test_given is None:
             raise ValueError('`givens` can`t be empty')
 
-        decision = d.Decision(decision_model=self.decision_model_with_tracker)
+        decision = d.Decision(decision_model=self.decision_model_valid_track_url)
 
         assert decision.chosen is False
 
@@ -616,17 +625,22 @@ class TestDecision(TestCase):
                 decision.givens = test_given
                 decision.get()
 
-    def test_get_with_no_tracker(self):
+    def test_get_with_none_track_url(self):
         variants = [el for el in range(10)]
 
-        with raises(ValueError) as verr:
-            self.decision_model_without_tracker.choose_from(variants=variants).get()
-            assert str(verr.value)
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            np.random.seed(1)
+            decision = self.decision_model_no_track_url.choose_from(variants=variants)
+            best_variant = decision.get()
+            assert decision.id_ is None
+            assert best_variant == 0
+            assert len(w) == 1
 
     def test_consistent_encoding(self):
         # since it is impossible to access encoded features from get() call
         #  I'll simply test encoding method used by chooser
-        chooser = self.decision_model_with_tracker.chooser
+        chooser = self.decision_model_valid_track_url.chooser
 
         variants = [{'a': [], 'b': '{} as str'.format(el)} for el in range(5)]
         givens = {'g1': 1, 'g2': '2 as str', 'g3': [0, 1, 2]}
@@ -661,12 +675,12 @@ class TestDecision(TestCase):
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
 
-            decision_1 = d.Decision(decision_model=self.decision_model_with_tracker)
+            decision_1 = d.Decision(decision_model=self.decision_model_valid_track_url)
             decision_1.variants = variants
             np.random.seed(consistency_seed)
             decision_1.get()
 
-            decision_2 = d.Decision(decision_model=self.decision_model_with_tracker)
+            decision_2 = d.Decision(decision_model=self.decision_model_valid_track_url)
             decision_2.variants = variants
             np.random.seed(consistency_seed)
             decision_2.get()
@@ -676,11 +690,11 @@ class TestDecision(TestCase):
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
 
-            decision_3 = d.Decision(decision_model=self.decision_model_with_tracker)
+            decision_3 = d.Decision(decision_model=self.decision_model_valid_track_url)
             decision_3.variants = variants
             decision_3.get()
 
-            decision_4 = d.Decision(decision_model=self.decision_model_with_tracker)
+            decision_4 = d.Decision(decision_model=self.decision_model_valid_track_url)
             decision_4.variants = variants
             decision_4.get()
 
@@ -688,13 +702,13 @@ class TestDecision(TestCase):
                 np.testing.assert_array_equal(decision_3.scores, decision_4.scores)
 
     def test_add_reward(self):
-        decision = d.Decision(decision_model=self.decision_model_with_tracker)
+        decision = d.Decision(decision_model=self.decision_model_valid_track_url)
 
         reward = 1
 
         expected_add_reward_body = {
             decision.decision_model._tracker.TYPE_KEY: decision.decision_model._tracker.REWARD_TYPE,
-            decision.decision_model._tracker.MODEL_KEY: self.decision_model_with_tracker.model_name,
+            decision.decision_model._tracker.MODEL_KEY: self.decision_model_valid_track_url.model_name,
             decision.decision_model._tracker.REWARD_KEY: reward,
             decision.decision_model._tracker.DECISION_ID_KEY: None,
         }
@@ -735,7 +749,7 @@ class TestDecision(TestCase):
             decision.add_reward(reward=reward)
 
     def test_add_reward_string_reward(self):
-        decision = d.Decision(decision_model=self.decision_model_with_tracker)
+        decision = d.Decision(decision_model=self.decision_model_valid_track_url)
 
         variants = list(range(20))
 
@@ -753,7 +767,7 @@ class TestDecision(TestCase):
                 decision.add_reward(reward=reward)
 
     def test_add_reward_inf_reward(self):
-        decision = d.Decision(decision_model=self.decision_model_with_tracker)
+        decision = d.Decision(decision_model=self.decision_model_valid_track_url)
 
         variants = list(range(20))
 
@@ -777,7 +791,7 @@ class TestDecision(TestCase):
                 decision.add_reward(reward=reward)
 
     def test_add_reward_none_reward(self):
-        decision = d.Decision(decision_model=self.decision_model_with_tracker)
+        decision = d.Decision(decision_model=self.decision_model_valid_track_url)
 
         variants = list(range(20))
 
@@ -801,7 +815,7 @@ class TestDecision(TestCase):
                 decision.add_reward(reward=reward)
 
     def test__set_message_id_once(self):
-        decision = d.Decision(decision_model=self.decision_model_with_tracker)
+        decision = d.Decision(decision_model=self.decision_model_valid_track_url)
         decision._set_message_id()
 
         with warns(UserWarning) as uw:
@@ -810,7 +824,7 @@ class TestDecision(TestCase):
             assert uw.list[0].message
 
     def test__set_message_id_twice(self):
-        decision = d.Decision(decision_model=self.decision_model_with_tracker)
+        decision = d.Decision(decision_model=self.decision_model_valid_track_url)
         decision._set_message_id()
         assert decision.id_ is not None
 
@@ -829,9 +843,9 @@ class TestDecision(TestCase):
         test_givens = test_case.get('givens', None)
 
         if no_chooser:
-            self.decision_model_with_tracker.chooser = None
+            self.decision_model_valid_track_url.chooser = None
 
-        decision = d.Decision(decision_model=self.decision_model_with_tracker)
+        decision = d.Decision(decision_model=self.decision_model_valid_track_url)
 
         assert decision.chosen is False
 
@@ -885,12 +899,12 @@ class TestDecision(TestCase):
         self._generic_test_peek(test_case_filename=test_case_filename)
 
     def test_peek_raises_for_no_variants(self):
-        decision = d.Decision(decision_model=self.decision_model_with_tracker)
+        decision = d.Decision(decision_model=self.decision_model_valid_track_url)
         best = decision.peek()
         assert best is None
 
     def test_variants_setter_valid_int_variants(self):
-        decision = d.Decision(self.decision_model_with_tracker)
+        decision = d.Decision(self.decision_model_valid_track_url)
         expected_variants = [1, 2, 3, 4]
         decision.variants = expected_variants
 
@@ -902,7 +916,7 @@ class TestDecision(TestCase):
             assert uw.list[0].message
 
     def test_variants_setter_valid_str_variants(self):
-        decision = d.Decision(self.decision_model_with_tracker)
+        decision = d.Decision(self.decision_model_valid_track_url)
         expected_variants = ['1', '2', '3', '4']
         decision.variants = expected_variants
 
@@ -914,7 +928,7 @@ class TestDecision(TestCase):
             assert uw.list[0].message
 
     def test_variants_setter_valid_bool_variants(self):
-        decision = d.Decision(self.decision_model_with_tracker)
+        decision = d.Decision(self.decision_model_valid_track_url)
         expected_variants = [True, False]
         decision.variants = expected_variants
 
@@ -926,7 +940,7 @@ class TestDecision(TestCase):
             assert uw.list[0].message
 
     def test_variants_setter_valid_object_variants(self):
-        decision = d.Decision(self.decision_model_with_tracker)
+        decision = d.Decision(self.decision_model_valid_track_url)
         expected_variants = [1, {'2': 3, '4': [5, 6], '6': {7: 8}}, [9, 10, 11]]
         decision.variants = expected_variants
 
@@ -938,17 +952,17 @@ class TestDecision(TestCase):
             assert uw.list[0].message
 
     def test_variants_setter_raises_for_zero_length_variants(self):
-        decision = d.Decision(self.decision_model_with_tracker)
+        decision = d.Decision(self.decision_model_valid_track_url)
         with raises(ValueError) as verr:
             decision.variants = []
 
     def test_variants_setter_raises_for_none_variants(self):
-        decision = d.Decision(self.decision_model_with_tracker)
+        decision = d.Decision(self.decision_model_valid_track_url)
         with raises(AssertionError) as aerr:
             decision.variants = None
 
     def test_variants_setter_raises_for_bad_type_variants(self):
-        decision = d.Decision(self.decision_model_with_tracker)
+        decision = d.Decision(self.decision_model_valid_track_url)
         with raises(AssertionError) as aerr:
             decision.variants = 123
 
@@ -968,7 +982,7 @@ class TestDecision(TestCase):
             decision.variants = {'1': 2, '3': '4'}
 
     def test_givens_setter_valid_givens(self):
-        decision = d.Decision(self.decision_model_with_tracker)
+        decision = d.Decision(self.decision_model_valid_track_url)
         expected_givens = {'g0': 1, 'g1': 2, 'g3': {1: 2, '3': 4}}
         decision.givens = expected_givens
 
@@ -980,7 +994,7 @@ class TestDecision(TestCase):
             assert uw.list[0].message
 
     def test_givens_setter_valid_empty_givens(self):
-        decision = d.Decision(self.decision_model_with_tracker)
+        decision = d.Decision(self.decision_model_valid_track_url)
         expected_givens = {}
         decision.givens = expected_givens
 
@@ -992,7 +1006,7 @@ class TestDecision(TestCase):
             assert uw.list[0].message
 
     def test_givens_setter_raises_for_bad_type_givens(self):
-        decision = d.Decision(self.decision_model_with_tracker)
+        decision = d.Decision(self.decision_model_valid_track_url)
         with raises(AssertionError) as aerr:
             decision.givens = 123
 
@@ -1017,7 +1031,7 @@ class TestDecision(TestCase):
 ################################################################################
 
     def test_scores_setter_valid_scores(self):
-        decision = d.Decision(self.decision_model_with_tracker)
+        decision = d.Decision(self.decision_model_valid_track_url)
         expected_variants = [1, 2, 3, 4]
         expected_scores = [0.1, 0.2, 0.3, 0.4]
 
@@ -1033,7 +1047,7 @@ class TestDecision(TestCase):
             assert uw.list[0].message
 
     def test_scores_setter_raises_for_scores_shorter_than_variants(self):
-        decision = d.Decision(self.decision_model_with_tracker)
+        decision = d.Decision(self.decision_model_valid_track_url)
         expected_variants = [1, 2, 3]
         decision.variants = expected_variants
 
@@ -1043,7 +1057,7 @@ class TestDecision(TestCase):
             decision.scores = expected_scores
 
     def test_scores_setter_raises_for_empty_scores(self):
-        decision = d.Decision(self.decision_model_with_tracker)
+        decision = d.Decision(self.decision_model_valid_track_url)
         expected_variants = [1, 2, 3]
         decision.variants = expected_variants
         expected_scores = []
@@ -1052,7 +1066,7 @@ class TestDecision(TestCase):
             decision.scores = expected_scores
 
     def test_scores_setter_raises_for_none_scores(self):
-        decision = d.Decision(self.decision_model_with_tracker)
+        decision = d.Decision(self.decision_model_valid_track_url)
         expected_variants = [1, 2, 3]
         decision.variants = expected_variants
         expected_scores = None
@@ -1061,7 +1075,7 @@ class TestDecision(TestCase):
             decision.scores = expected_scores
 
     def test_scores_setter_for_bad_types(self):
-        decision = d.Decision(self.decision_model_with_tracker)
+        decision = d.Decision(self.decision_model_valid_track_url)
         expected_variants = [1, 2, 3]
         decision.variants = expected_variants
 

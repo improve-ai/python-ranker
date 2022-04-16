@@ -989,6 +989,12 @@ class TestDecisionModel(TestCase):
             with raises(ValueError) as verr:
                 decision_model.which(*[ivs])
 
+    def test_which_none_track_url(self):
+        best_variant, decision_id = \
+            dm.DecisionModel(model_name='dummy-model', track_url=None).which(1, 2, 3, 4, 5)
+        assert best_variant == 1
+        assert decision_id is None
+
     def test_choose_first_valid_variants_list(self):
         self._generic_desired_decision_model_method_call_no_model(
             test_data_filename=os.getenv('DECISION_MODEL_TEST_CHOOSE_FIRST_VALID_VARIANTS_JSON'),
@@ -1071,6 +1077,12 @@ class TestDecisionModel(TestCase):
         with raises(AssertionError) as aerr:
             dm.DecisionModel('dummy-model').first(None)
 
+    def test_first_none_track_url(self):
+        best_variant, decision_id = \
+            dm.DecisionModel(model_name='dummy-model', track_url=None).first(1, 2, 3, 4, 5)
+        assert best_variant == 1
+        assert decision_id is None
+
     def test_choose_random_valid_variants_list(self):
         self._generic_desired_decision_model_method_call_no_model(
             test_data_filename=os.getenv('DECISION_MODEL_TEST_CHOOSE_RANDOM_VALID_VARIANTS_JSON'),
@@ -1152,6 +1164,13 @@ class TestDecisionModel(TestCase):
     def test_random_raises_for_none_variants(self):
         with raises(AssertionError) as aerr:
             dm.DecisionModel('dummy-model').random(None)
+
+    def test_random_none_track_url(self):
+        best_variant, decision_id = \
+            dm.DecisionModel(model_name='dummy-model', track_url=None).random(1, 2, 3, 4, 5)
+        np.random.seed(1)
+        assert best_variant == 4
+        assert decision_id is None
 
     def test_add_reward_inf(self):
         # V6_DUMMY_MODEL_PATH
