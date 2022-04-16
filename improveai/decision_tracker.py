@@ -68,10 +68,6 @@ class DecisionTracker:
         return 'ERROR_WITH_PAYLOAD'
 
     @constant
-    def ERROR_CODE_KEY():
-        return 'PY_ERROR_MESSAGE'
-
-    @constant
     def REQUEST_ERROR_CODE_KEY():
         return 'REQUEST_ERROR_CODE'
 

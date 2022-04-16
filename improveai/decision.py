@@ -149,7 +149,6 @@ class Decision:
         if self.variants is not None and len(self.variants) != 0 and not self.__tracked:
             # there should be no difference between effect of those 2 conditions
             # since this  clause is reached only once
-            # if self.decision_model._tracker:
             if self.decision_model.track_url:
                 # set message_id / decision_id only once
                 self._set_message_id()
@@ -175,9 +174,7 @@ class Decision:
                         variants_ranked_and_track_runners_up=False, message_id=self.id_)
 
                 self.__tracked = True
-            # elif self.decision_model._tracker is None:
             elif self.decision_model.track_url is None:
-                # raise ValueError('`track_url` can`t be None for tracked decisions (get() calls). Ins')
                 warn('`track_url` can`t be None for tracked decisions (get() calls) -> this decision is not tracked')
             else:
                 self.__best = \

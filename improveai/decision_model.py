@@ -404,7 +404,7 @@ class DecisionModel:
     def first(self, *variants: list or np.ndarray):
         """
         Makes decision using first variant as best and tracks it.
-        Accepts variants as pythonic args
+        Accepts variants as pythonic *args
 
         Parameters
         ----------
@@ -450,7 +450,7 @@ class DecisionModel:
     def random(self, *variants: list or np.ndarray):
         """
         Makes decision using randomly selected variant as best and tracks it.
-        Accepts variants as pythonic args
+        Accepts variants as pythonic *args
 
         Parameters
         ----------

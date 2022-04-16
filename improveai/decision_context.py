@@ -68,7 +68,7 @@ class DecisionContext:
         decision = d.Decision(decision_model=self.decision_model)
         decision.variants = variants
         decision.givens = givens
-        decision.scores = scores_for_decision  # scores
+        decision.scores = scores_for_decision
         decision.best = best
 
         return decision

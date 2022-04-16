@@ -5,11 +5,9 @@ import numpy as np
 import math
 import os
 from pytest import fixture, raises
-import pickle
 import requests_mock as rqm
 import string
 import sys
-import time
 from unittest import TestCase
 import warnings
 import xgboost as xgb
@@ -197,13 +195,7 @@ class TestDecisionModel(TestCase):
                 raise RuntimeError(
                     'Allowed values for `load_mode` are sync and async')
 
-            # print(verr)
-            # assert False
             assert str(verr.value)
-
-        # is returned object a decision model
-        # assert isinstance(decision_model, DecisionModel)
-        # assert decision_model.chooser is None
 
     def _generic_test_loaded_url_none_model(
             self, test_data_filename: str, test_case_key: str = 'test_case',
