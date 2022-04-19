@@ -1,3 +1,4 @@
+import re
 import warnings
 from collections.abc import Iterable
 from copy import deepcopy
@@ -10,6 +11,7 @@ from warnings import warn
 
 from ksuid import Ksuid
 
+from improveai.chooser import XGBChooser
 from improveai.utils.general_purpose_tools import constant
 
 
@@ -193,6 +195,10 @@ class DecisionTracker:
             warnings.warn('`model_name` must not be None in order to be tracked')
             return None
 
+        if not re.search(XGBChooser.MODEL_NAME_REGEXP, model_name):
+            warnings.warn(f'`model_name` must comply with {XGBChooser.MODEL_NAME_REGEXP} regexp')
+            return None
+
         if isinstance(variants, np.ndarray):
             variants = variants.tolist()
 
@@ -259,6 +265,7 @@ class DecisionTracker:
         """
 
         assert model_name is not None and decision_id is not None
+        assert re.search(XGBChooser.MODEL_NAME_REGEXP, model_name) is not None
         assert isinstance(reward, float) or isinstance(reward, int)
         assert reward is not None
         assert not np.isnan(reward)
@@ -386,7 +393,7 @@ class DecisionTracker:
 
         body.update(body_values)
 
-        # serialization is a must have for this requests
+        # serialization is a must-have for this requests
         try:
             payload_json = json.dumps(body)
 
