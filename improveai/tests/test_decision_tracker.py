@@ -3,7 +3,6 @@ import json
 from ksuid import Ksuid
 import math
 import numpy as np
-import requests
 import requests_mock as rqm
 import os
 from pytest import fixture, raises
@@ -1348,6 +1347,38 @@ class TestDecisionTracker:
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
+
+    def test_track_invalid_model_name(self):
+
+        with catch_warnings(record=True) as w:
+            simplefilter("always")
+            model_name = ''
+            decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
+            result = decision_tracker.track(
+                variant=1, variants=[1, 2, 3], givens=None, model_name=model_name,
+                variants_ranked_and_track_runners_up=False)
+            assert len(w) > 0
+            assert result is None
+
+        with catch_warnings(record=True) as w:
+            simplefilter("always")
+            model_name = '!@#$%^&*()'
+            decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
+            result = decision_tracker.track(
+                variant=1, variants=[1, 2, 3], givens=None, model_name=model_name,
+                variants_ranked_and_track_runners_up=False)
+            assert len(w) > 0
+            assert result is None
+
+        with catch_warnings(record=True) as w:
+            simplefilter("always")
+            model_name = ''.join(['a' for _ in range(65)])
+            decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
+            result = decision_tracker.track(
+                variant=1, variants=[1, 2, 3], givens=None, model_name=model_name,
+                variants_ranked_and_track_runners_up=False)
+            assert len(w) > 0
+            assert result is None
 
     def test_add_float_reward(self):
 
