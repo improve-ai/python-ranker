@@ -108,6 +108,7 @@ class Decision:
         self.__scores_set = False
 
         self.__ranked_variants = [None]
+        self.__variants_already_ranked = False
         self.__id_ = None
 
     def _set_message_id(self):
@@ -136,11 +137,12 @@ class Decision:
 
     def get(self):
 
-        if self.chosen:
+        # if best already chosen and tracked simply return best
+        if self.chosen and self.__tracked:
             return self.best
 
         # calculate scores if it was not already set
-        if self.scores is None:
+        if self.scores is None or len(self.__scores) == 0:
             self.__scores = self.decision_model._score(variants=self.variants, givens=self.givens)
         else:
             # check if scores have proper length
@@ -154,9 +156,17 @@ class Decision:
                 self._set_message_id()
                 track_runners_up = self.decision_model._tracker._should_track_runners_up(len(self.variants))
                 if track_runners_up:
-                    self.__ranked_variants = \
-                        dm.DecisionModel.rank(variants=self.variants, scores=self.__scores)
-                    self.__best = self.ranked_variants[0]
+                    if not self.__variants_already_ranked:
+                        # if variants are not ranked yet rank them
+                        self.__ranked_variants = \
+                            dm.DecisionModel.rank(variants=self.variants, scores=self.__scores)
+                        self.__variants_already_ranked = True
+                    if not self.chosen:
+                        # if best is not set yet do it
+                        self.__best = self.ranked_variants[0]
+                    else:
+                        # check if best is equal to first ranked variant
+                        assert self.best == self.ranked_variants[0]
 
                     self.decision_model._tracker.track(
                         variant=self.best, variants=self.ranked_variants,
@@ -164,7 +174,7 @@ class Decision:
                         variants_ranked_and_track_runners_up=True, message_id=self.id_)
                 else:
                     # calculate best if it was not already set
-                    if self.best is None:
+                    if not self.chosen:
                         self.__best = \
                             dm.DecisionModel.top_scoring_variant(variants=self.variants, scores=self.__scores)
 
@@ -199,7 +209,8 @@ class Decision:
         # set message_id / decision_id only once
         self._set_message_id()
         # set message_id / deicsion_id to decision model
-        if not self.__scores:
+        # TODO cover this by tests
+        if self.__scores is None or len(self.__scores) == 0:
             self.__scores = self.decision_model._score(variants=self.variants, givens=self.givens)
         # Memoizes the chosen variant so same value is returned on subsequent calls
         self.__best = dm.DecisionModel.top_scoring_variant(variants=self.variants, scores=self.__scores)

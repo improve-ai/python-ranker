@@ -57,14 +57,10 @@ class DecisionContext:
         # calculate scores (with _score() method) -> givens are provided inside it
         # if scores are provided
         scores_for_decision = scores
-        print('### SCORES ###')
-        print(scores)
         if scores_for_decision is None:
             # calculate scores
             # scores will also be cached to decision object
             scores_for_decision = self.decision_model._score(variants=variants, givens=givens)
-            print('### SCORES FOR DECISION ###')
-            print(scores_for_decision)
 
         # calculate the best variant without tracking (calling get())
         best = self.decision_model.top_scoring_variant(variants=variants, scores=scores_for_decision)
@@ -73,10 +69,6 @@ class DecisionContext:
         decision.variants = variants
         decision.givens = givens
         decision.scores = scores_for_decision
-        print('### decision.scores FROM CHOOSE FROM ###')
-        print(decision.scores)
-        print('### BEST ###')
-        print(best)
         decision.best = best
 
         return decision
