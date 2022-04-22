@@ -3,8 +3,11 @@ import math
 import numpy as np
 import xxhash
 
-from improveai import settings as improve_settings
-from improveai.cythonized_feature_encoding import cfeu
+from improveai.settings import CYTHON_BACKEND_AVAILABLE
+
+import improveai.cythonized_feature_encoding as cythonized_feature_encoding
+if CYTHON_BACKEND_AVAILABLE:
+    cfeu = cythonized_feature_encoding.cfeu
 
 
 xxhash3 = xxhash.xxh3_64_intdigest
@@ -112,7 +115,7 @@ class FeatureEncoder:
             encoded_variant.update(extra_features)
 
         # n + nan = nan so you'll have to check for nan values on into
-        if improve_settings.USE_CYTHON_BACKEND:
+        if CYTHON_BACKEND_AVAILABLE:
             cfeu.encoded_variant_into_np_row(
                 encoded_variant=encoded_variant, feature_names=feature_names, into=into)
         else:
@@ -174,7 +177,7 @@ class FeatureEncoder:
         if not isinstance(feature_names, list):
             feature_names = list(feature_names)
 
-        if improve_settings.USE_CYTHON_BACKEND:
+        if CYTHON_BACKEND_AVAILABLE:
             encoded_variants = cfeu.encode_variants_multiple_givens(
                 variants=variants, multiple_givens=multiple_givens,
                 multiple_extra_features=multiple_extra_features, noise=noise,

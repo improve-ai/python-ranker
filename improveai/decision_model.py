@@ -261,6 +261,9 @@ class DecisionModel:
             warnings.warn('The variants of length 0 were provided. Returning None')
             return None
 
+        print('### SCORES AND VARIANTS | TOP SCORING VARIANT ###')
+        print(scores)
+        print(variants[np.argmax(scores)])
         return variants[np.argmax(scores)]
 
     @staticmethod

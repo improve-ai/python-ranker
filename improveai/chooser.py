@@ -6,18 +6,22 @@ import pickle
 import re
 from typing import Dict, List
 from traceback import print_exc
+from warnings import warn
 from xgboost import Booster, DMatrix
 from xgboost.core import XGBoostError
 
 from improveai.feature_encoder import FeatureEncoder
-from improveai.cythonized_feature_encoding import cfe, cfeu
-from improveai.settings import USE_CYTHON_BACKEND
+from improveai.settings import CYTHON_BACKEND_AVAILABLE
 from improveai.utils.choosers_feature_encoding_tools import encoded_variants_to_np
 from improveai.utils.gzip_tools import check_and_get_unzipped_model
 from improveai.utils.url_tools import is_path_http_addr, get_model_bytes_from_url
 
 
-FastFeatureEncoder = cfe.FeatureEncoder
+if CYTHON_BACKEND_AVAILABLE:
+    from improveai.cythonized_feature_encoding import cfe, cfeu
+    FastFeatureEncoder = cfe.FeatureEncoder
+else:
+    FastFeatureEncoder = FeatureEncoder
 
 
 class XGBChooser:
@@ -213,7 +217,7 @@ class XGBChooser:
         self.model_feature_names = \
             self._get_model_feature_names(model_metadata=model_metadata)
 
-        if USE_CYTHON_BACKEND:
+        if CYTHON_BACKEND_AVAILABLE:
             self.feature_encoder = FastFeatureEncoder(model_seed=self.model_seed)
         else:
             self.feature_encoder = FeatureEncoder(model_seed=self.model_seed)
@@ -264,7 +268,7 @@ class XGBChooser:
             self._encode_variants_single_givens(variants=variants, givens=givens)
 
         encoded_variants_to_np_method = \
-            cfeu.encoded_variants_to_np if USE_CYTHON_BACKEND \
+            cfeu.encoded_variants_to_np if CYTHON_BACKEND_AVAILABLE \
             else encoded_variants_to_np
 
         missings_filled_v = \
@@ -272,7 +276,7 @@ class XGBChooser:
                 encoded_variants=encoded_variants,
                 feature_names=self.model_feature_names)
 
-        if USE_CYTHON_BACKEND:
+        if CYTHON_BACKEND_AVAILABLE:
             missings_filled_v = np.asarray(missings_filled_v)
 
         scores = \
@@ -311,7 +315,7 @@ class XGBChooser:
         else:
             noise = self.imposed_noise
 
-        if USE_CYTHON_BACKEND:
+        if CYTHON_BACKEND_AVAILABLE:
             if isinstance(variants, list):
                 used_variants = variants
             elif isinstance(variants, tuple) or isinstance(variants, np.ndarray):

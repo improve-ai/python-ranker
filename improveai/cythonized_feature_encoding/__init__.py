@@ -2,9 +2,13 @@ import numpy as np
 import os
 import pyximport
 
-CYTHON_ENCODING_DIR_PATH = os.sep.join(__file__.split(os.sep)[:-1])
+from improveai.settings import CYTHON_BACKEND_AVAILABLE
 
-pyximport.install(setup_args={'include_dirs': [np.get_include(), CYTHON_ENCODING_DIR_PATH]})
+if CYTHON_BACKEND_AVAILABLE:
 
-import improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils as cfeu
-import improveai.cythonized_feature_encoding.cythonized_feature_encoder as cfe
+    CYTHON_ENCODING_DIR_PATH = os.sep.join(__file__.split(os.sep)[:-1])
+
+    pyximport.install(setup_args={'include_dirs': [np.get_include(), CYTHON_ENCODING_DIR_PATH]})
+
+    import improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils as cfeu
+    import improveai.cythonized_feature_encoding.cythonized_feature_encoder as cfe

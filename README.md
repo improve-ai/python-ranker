@@ -10,16 +10,25 @@ Improve AI provides quick on-device AI decisions that get smarter over time. It'
 
 ### Installation prerequisites
  - python 3.7+
- - `gcc` and python headers: `python3-dev` or `python3-devel` (`sudo apt install gcc python3-dev` for apt and `sudo yum install gcc python3-devel` for yum or dnf)
- - for macOS you might also need to [build xgboost from sources](https://xgboost.readthedocs.io/en/stable/build.html) (otherwise `pip3 install xgboost` might fail)
+ - in order to take advantage of fast feature encoding please install `gcc` and python headers: `python3-dev` or `python3-devel` (`sudo apt install gcc python3-dev` for apt and `sudo yum install gcc python3-devel` for yum or dnf)
+ - for macOS it might be necessary to [build xgboost from sources](https://xgboost.readthedocs.io/en/stable/build.html) (otherwise `pip3 install xgboost` might fail)
  - if possible virtual environment (e.g. venv) usage is strongly encouraged
+ - upgrading pip, wheel and packages is also a good idea:
+
+    `pip3 install --upgrade pip wheel build`
+
 
 
 ### Install with pip
 
-To install from pypi sources simply use pip:
+To install from pip simply use:
 
 `pip3 install improveai`
+
+For some operating systems you might see 'Killed' information on xgboost installation attempt. 
+To get rid of it please purge pip's cache:
+
+`pip3 cache purge`
 
 
 ### Build and install from cloned git repo
@@ -28,14 +37,26 @@ To install from cloned repo:
  1. clone repo: git clone https://github.com/improve-ai/python-sdk    
  2. make sure you are in the cloned folder (python-sdk)    
  3. activate your virtualenv (if you are using one, if not you can skip this step; using venv is advised)    
- 4. install wheel and cmake:    
+ 4. purge pip's cache:
+    
+    `pip3 cache purge`
+
+ 5. install wheel and cmake:    
+    
     `pip3 install --upgrade pip build wheel cmake --no-cache-dir`
- 5. install requirements:    
+
+ 6. install requirements:
+
     `pip3 install -r requirements.txt --no-cache-dir`
- 6. to build package wheel call:
+
+ 7. to build package wheel call:
+
     `python3 -m build`
- 7. install built wheel with pip: 
+
+ 8. install built wheel with pip:
+
     `pip3 install dist/improveai-7.0.1*.whl`
+
     where `*` represents system specific part of wheel name
 
 ## Initialization

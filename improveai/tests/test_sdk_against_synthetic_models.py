@@ -137,6 +137,7 @@ def test_model_predicts_identical_for_nullish_variants():
         # calling to calc scores
         decision.get()
         scores = decision.scores
+        print('### SCORES FROM OUTER SCOPE ###')
 
         for bsc_index, bsc in enumerate(scores):
             for osc_index, osc in enumerate(scores):
