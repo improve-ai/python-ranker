@@ -1118,6 +1118,55 @@ class TestDecisionModel(TestCase):
         with raises(AssertionError) as aerr:
             dm.DecisionModel('dummy-model').choose_random(variants=None)
 
+    def test_choose_random_orders_runners_up_randomly(self):
+        variants = [1, 2, 3, 4, 5]
+        decision_model = dm.DecisionModel('dummy-model', track_url=self.track_url)
+        np.random.seed(1)
+        decision = decision_model.choose_random(variants=variants)
+        expected_random_scores = [1.6243453636632417, -0.6117564136500754, -0.5281717522634557, -1.0729686221561705, 0.8654076293246785]
+
+        np.testing.assert_array_equal(
+            convert_values_to_float32(expected_random_scores),
+            convert_values_to_float32(decision.scores))
+
+        request_validity = {'request_body_ok': False}
+
+        decision_tracker = decision_model._tracker
+
+        expected_track_body = {
+            decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
+            decision_tracker.MODEL_KEY: decision_model.model_name,
+            decision_tracker.VARIANT_KEY: 1,
+            decision_tracker.VARIANTS_COUNT_KEY: 5,
+            # runners up are shuffled
+            decision_tracker.RUNNERS_UP_KEY: [5, 3, 2, 4]
+        }
+
+        expected_request_json = json.dumps(expected_track_body, sort_keys=False)
+
+        def custom_matcher(request):
+            request_dict = deepcopy(request.json())
+            assert decision_tracker.TIMESTAMP_KEY in request_dict
+            del request_dict[decision_tracker.MESSAGE_ID_KEY]
+            del request_dict[decision_tracker.TIMESTAMP_KEY]
+
+            if json.dumps(request_dict, sort_keys=False) == expected_request_json:
+                request_validity['request_body_ok'] = True
+
+            return True
+
+        tracks_runners_up_seed = os.getenv('DECISION_TRACKER_TRACKS_SEED', None)
+        assert tracks_runners_up_seed is not None
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success', additional_matcher=custom_matcher)
+
+            np.random.seed(int(tracks_runners_up_seed))
+            best = decision.get()
+            assert decision.chosen is True
+            assert decision.tracked is True
+            assert best == 1
+
     def test_random_valid_variants_list(self):
         self._generic_desired_decision_model_method_call_no_model(
             test_data_filename=os.getenv('DECISION_MODEL_TEST_RANDOM_VALID_VARIANTS_JSON'),

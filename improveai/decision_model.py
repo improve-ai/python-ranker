@@ -434,7 +434,7 @@ class DecisionModel:
         Returns
         -------
         d.Decision
-            Decision with random ly chosen best variant
+            Decision with randomly chosen best variant
 
         """
 
