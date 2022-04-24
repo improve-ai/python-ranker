@@ -210,8 +210,9 @@ class Decision:
         self._set_message_id()
         # set message_id / deicsion_id to decision model
         # TODO cover this by tests
-        if self.__scores is None or len(self.__scores) == 0:
-            self.__scores = self.decision_model._score(variants=self.variants, givens=self.givens)
+        if self.scores is None or len(self.__scores) == 0:
+            self.scores = self.decision_model._score(variants=self.variants, givens=self.givens)
+
         # Memoizes the chosen variant so same value is returned on subsequent calls
         self.__best = dm.DecisionModel.top_scoring_variant(variants=self.variants, scores=self.__scores)
         # The chosen variant is not tracked

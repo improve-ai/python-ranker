@@ -270,6 +270,7 @@ class TestDecision(TestCase):
             best_variant = decision.get()
 
         assert decision.chosen is True
+        assert decision.tracked is True
 
         expected_output = test_data.get('test_output', None)
         assert expected_output is not None
@@ -307,6 +308,7 @@ class TestDecision(TestCase):
             best_variant = decision.get()
 
         assert decision.chosen is True
+        assert decision.tracked is True
 
         expected_output = test_data.get('test_output', None)
         assert expected_output is not None
@@ -329,6 +331,7 @@ class TestDecision(TestCase):
             best_variant = decision.get()
 
         assert decision.chosen is True
+        assert decision.tracked is True
         assert best_variant is None
 
     def test_get_04(self):
@@ -350,16 +353,12 @@ class TestDecision(TestCase):
 
         assert decision.chosen is False
 
-        # with raises(ValueError) as verr:
-        #     decision.variants = [None]
-        #     decision.givens = {}
-        #     decision.get()
-
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
             decision.variants = [None]
             decision.givens = {}
             decision.get()
+            assert decision.chosen is True
 
             # expect exactly 1 warning
             assert len(w) == 1
@@ -400,6 +399,8 @@ class TestDecision(TestCase):
                     decision.variants = variants
                     decision.givens = {}
                     best_variant = decision.get()
+                    assert decision.chosen is True
+                    assert decision.tracked is True
                     print('Got following warnings count')
                     print(len(w))
 
@@ -432,6 +433,7 @@ class TestDecision(TestCase):
                 assert len(w) == 0
 
         assert decision.chosen is True
+        assert decision.tracked is True
         assert best_variant == variants[9]
 
     def test_get_08(self):
@@ -475,11 +477,12 @@ class TestDecision(TestCase):
 
                 memoized_variant = decision.get()
                 assert decision.chosen is True
+                assert decision.tracked is True
                 assert memoized_variant is None
                 assert len(w) == 0
                 assert request_validity['request_body_ok']
 
-    def _get_complete_decision(self):
+    def _get_complete_tracked_decision(self):
         test_case_filename = os.getenv('DECISION_TEST_GET_02_JSON')
         path_to_test_case_file = \
             os.sep.join([self.test_jsons_data_directory, test_case_filename])
@@ -509,10 +512,11 @@ class TestDecision(TestCase):
             best_variant = decision.get()
 
         assert decision.chosen is True
+        assert decision.tracked is True
         return decision, best_variant
 
     def test_choose_from_already_chosen(self):
-        decision, best_variant = self._get_complete_decision()
+        decision, best_variant = self._get_complete_tracked_decision()
 
         assert decision.chosen is True
 
@@ -571,7 +575,7 @@ class TestDecision(TestCase):
         assert decision.best is None
 
     def test_given_already_chosen(self):
-        decision, best_variant = self._get_complete_decision()
+        decision, best_variant = self._get_complete_tracked_decision()
 
         assert decision.chosen is True
 
@@ -584,7 +588,7 @@ class TestDecision(TestCase):
         assert best_variant == decision.best
 
     def test_get_already_chosen(self):
-        decision, memoized_variant = self._get_complete_decision()
+        decision, memoized_variant = self._get_complete_tracked_decision()
 
         assert decision.chosen is True
 
@@ -867,6 +871,7 @@ class TestDecision(TestCase):
 
         assert expected_best == calculated_best
         assert decision.id_ is not None
+        assert not decision.tracked
 
     def test_peek_valid_variants_no_givens(self):
         test_case_filename = \
@@ -898,10 +903,64 @@ class TestDecision(TestCase):
         assert test_case_filename is not None
         self._generic_test_peek(test_case_filename=test_case_filename)
 
-    def test_peek_raises_for_no_variants(self):
+    def test_peek_raises_for_single_none_variant(self):
         decision = d.Decision(decision_model=self.decision_model_valid_track_url)
         best = decision.peek()
         assert best is None
+
+    def test_peek_sets_chosen_and_returns_best_on_second_call(self):
+        decision = d.Decision(decision_model=self.decision_model_valid_track_url)
+        decision.variants = [1, 2, 3, 4, 5]
+        best_1 = deepcopy(decision.peek())
+        assert decision.chosen is True
+        best_2 = decision.peek()
+        assert best_1 == best_2
+
+    def test_get_after_peek_tracks(self):
+        decision = d.Decision(decision_model=self.decision_model_valid_track_url)
+        decision.variants = [1, 2, 3, 4, 5]
+        # call peek()
+        best_1 = deepcopy(decision.peek())
+        best_1_id_ = deepcopy(decision.id_)
+        # make sure peek() chooses best but does not track
+        assert decision.chosen is True
+        assert not decision.tracked
+
+        request_validity = {'request_body_ok': False}
+
+        decision_tracker = self.decision_model_valid_track_url._tracker
+
+        expected_track_body = {
+            decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
+            decision_tracker.MODEL_KEY: self.decision_model_valid_track_url.model_name,
+            decision_tracker.VARIANT_KEY: 3,
+            decision_tracker.VARIANTS_COUNT_KEY: 5,
+            decision_tracker.RUNNERS_UP_KEY: [4, 5, 1, 2]
+        }
+
+        expected_request_json = json.dumps(expected_track_body, sort_keys=False)
+
+        def custom_matcher(request):
+            request_dict = deepcopy(request.json())
+            assert self.decision_model_valid_track_url._tracker.TIMESTAMP_KEY in request_dict
+            del request_dict[self.decision_model_valid_track_url._tracker.MESSAGE_ID_KEY]
+            del request_dict[self.decision_model_valid_track_url._tracker.TIMESTAMP_KEY]
+            if json.dumps(request_dict, sort_keys=False) == expected_request_json:
+                request_validity['request_body_ok'] = True
+
+            return True
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success', additional_matcher=custom_matcher)
+            np.random.seed(self.tracks_seed)
+            # assert that variant is already chosen
+            assert decision.chosen is True
+            best_2 = decision.get()
+            assert decision.id_ == best_1_id_
+            # assert that best tracks
+            assert decision.tracked is True
+            assert best_2 == best_1
+            assert request_validity['request_body_ok']
 
     def test_variants_setter_valid_int_variants(self):
         decision = d.Decision(self.decision_model_valid_track_url)
