@@ -443,7 +443,6 @@ class DecisionModel:
         # use random gaussian scores for variants
         count = len(variants)
         return self.choose_from(variants=variants, scores=np.random.normal(size=count))
-        # return self.choose_first(variants=variants_copy)
 
     def random(self, *variants: list or np.ndarray):
         """
