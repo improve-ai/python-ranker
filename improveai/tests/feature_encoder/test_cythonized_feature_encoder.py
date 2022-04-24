@@ -533,8 +533,8 @@ class TestEncoder(TestCase):
         tested_into_float64 = np.full(len(test_feature_names), np.nan)
 
         if force_numpy:
-            orig_use_cython_backend = improve_settings.USE_CYTHON_BACKEND
-            improve_settings.USE_CYTHON_BACKEND = False
+            orig_use_cython_backend = improve_settings.CYTHON_BACKEND_AVAILABLE
+            improve_settings.CYTHON_BACKEND_AVAILABLE = False
 
         self.feature_encoder.encode_feature_vector(
             variant=test_variant, givens=test_givens,
@@ -543,7 +543,7 @@ class TestEncoder(TestCase):
             into=tested_into_float64)
 
         if force_numpy:
-            improve_settings.USE_CYTHON_BACKEND = orig_use_cython_backend
+            improve_settings.CYTHON_BACKEND_AVAILABLE = orig_use_cython_backend
 
         print('tested_into')
 

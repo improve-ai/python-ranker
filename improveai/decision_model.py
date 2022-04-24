@@ -440,12 +440,10 @@ class DecisionModel:
 
         # check variants
         check_variants(variants=variants)
-        # copy and shuffle
-        variants_copy = \
-            np.array(variants) if not isinstance(variants, np.ndarray) else variants.copy()
-        np.random.shuffle(variants_copy)
-        # choose first to generate gaussian scores
-        return self.choose_first(variants=variants_copy)
+        # use random gaussian scores for variants
+        count = len(variants)
+        return self.choose_from(variants=variants, scores=np.random.normal(size=count))
+        # return self.choose_first(variants=variants_copy)
 
     def random(self, *variants: list or np.ndarray):
         """

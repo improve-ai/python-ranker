@@ -55,7 +55,7 @@
         "givens": null
     },
     "test_output": {
-        "best": {"text": "uptight wine cow of kindness", "chars": 28, "words": 4}
+        "best": {"text": "caped olive crocodile of diversity", "chars": 34, "words": 4}
     },
     "model_seed": 1,
     "scores_seed": 1

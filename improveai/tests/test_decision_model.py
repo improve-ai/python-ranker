@@ -519,22 +519,17 @@ class TestDecisionModel(TestCase):
         elif evaluated_method_name == 'choose_random':
             np.random.seed(score_seed)
             decision = decision_model.choose_random(variants=variants)
+            print('### SCORES ###')
+            print([float(el) for el in decision.scores])
 
             expected_scores = expected_output.get('scores', None)
             assert expected_scores is not None
             expected_best = expected_output.get('best', None)
             assert expected_best is not None
 
-            if variants_input_type == 'tuple':
-                expected_variants = list(variants)
-            else:
-                expected_variants = variants.copy()
-
-            np.random.seed(score_seed)
-            np.random.shuffle(expected_variants)
             # assert that returned decision is correct
             assert_valid_decision(
-                decision=decision, expected_variants=expected_variants, expected_givens=givens,
+                decision=decision, expected_variants=variants, expected_givens=givens,
                 expected_scores=expected_scores, expected_best=expected_best)
         elif evaluated_method_name == 'random':
             # assert that returned variant is correct
@@ -544,13 +539,6 @@ class TestDecisionModel(TestCase):
                 np.random.seed(score_seed)
                 best_variant, decision_id = decision_model.random(*variants)
 
-            if variants_input_type == 'tuple':
-                expected_variants = list(variants)
-            else:
-                expected_variants = variants.copy()
-
-            np.random.seed(score_seed)
-            np.random.shuffle(expected_variants)
             # assert that best variant is equal to expected output
             expected_best = expected_output.get('best', None)
             assert expected_best is not None
@@ -1175,7 +1163,7 @@ class TestDecisionModel(TestCase):
         best_variant, decision_id = \
             dm.DecisionModel(model_name='dummy-model', track_url=None).random(1, 2, 3, 4, 5)
         np.random.seed(1)
-        assert best_variant == 4
+        assert best_variant == 3
         assert decision_id is None
 
     def test_add_reward_inf(self):

@@ -125,8 +125,8 @@ class TestChooserFeatureEncoding(TestCase):
 
     def test_batch_variants_encoding_with_single_given_and_numpy(self):
         # done for 100% coverage
-        orig_use_cython_backend = improve_settings.USE_CYTHON_BACKEND
-        improve_settings.USE_CYTHON_BACKEND = False
+        orig_use_cython_backend = improve_settings.CYTHON_BACKEND_AVAILABLE
+        improve_settings.CYTHON_BACKEND_AVAILABLE = False
 
         self._generic_test_batch_input_encoding(
             test_case_filename=os.getenv(
@@ -134,7 +134,7 @@ class TestChooserFeatureEncoding(TestCase):
             expected_output_data_key="single_givens_test_output",
             single_given_encoding=True, data_read_method='read')
 
-        improve_settings.USE_CYTHON_BACKEND = orig_use_cython_backend
+        improve_settings.CYTHON_BACKEND_AVAILABLE = orig_use_cython_backend
 
     def test_missing_features_filler_method_01(self):
         test_case_path = os.sep.join(
@@ -241,14 +241,14 @@ class TestChooserFeatureEncoding(TestCase):
                 variants=test_variants, givens=test_givens)
 
         # done for 100% coverage
-        orig_use_cython_backend = improve_settings.USE_CYTHON_BACKEND
-        improve_settings.USE_CYTHON_BACKEND = False
+        orig_use_cython_backend = improve_settings.CYTHON_BACKEND_AVAILABLE
+        improve_settings.CYTHON_BACKEND_AVAILABLE = False
 
         missings_filled_array_float64 = encoded_variants_to_np(
             encoded_variants=encoded_variants,
             feature_names=self.xgb_chooser.model_feature_names)
 
-        improve_settings.USE_CYTHON_BACKEND = orig_use_cython_backend
+        improve_settings.CYTHON_BACKEND_AVAILABLE = orig_use_cython_backend
 
         # pprint(missings_filled_array.tolist())
 
