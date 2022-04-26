@@ -56,6 +56,7 @@ class Decision:
         if self.__best_set is False:
             self.__best = value
             self.__best_set = True
+            self.__chosen = True
         else:
             warn('`best` has already been calculated / set for this Decision')
 

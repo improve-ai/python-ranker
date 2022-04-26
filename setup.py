@@ -17,7 +17,6 @@ if __name__ == '__main__':
 
     # REMARK: some requirements may depend on gcc version, e.g. coremltools
     install_requires = [
-        # "setuptools", "wheel",
         "Cython>=0.29.14",
         "xxhash==2.0.0",
         'coremltools==4.1',
@@ -29,12 +28,8 @@ if __name__ == '__main__':
         "svix-ksuid"]
 
     setup_kwargs = {
-        # 'packages': find_packages(exclude=['*.tox*', '*tests*']),
-        # TODO delete when ready
-        'packages': find_packages(exclude=['*.tox*', '*tests*', '*experiments*', '*old_files*']),
+        'packages': find_packages(exclude=['*.tox*', '*tests*']),
         'install_requires': install_requires,
-        # 'ext_modules': cythonize([cython_feature_encoding_utils_ext, cython_feature_encoder_ext], language_level="3"),
-        # 'include_dirs': [np.get_include(), '.'],
         'include_package_data': True}
 
     if gcc_and_py3_dev_installed():
@@ -69,10 +64,3 @@ if __name__ == '__main__':
              })
 
     setup(**setup_kwargs)
-
-    # setup(
-    #     packages=find_packages(exclude=['*.tox*', '*tests*']),
-    #     install_requires=install_requires,
-    #     ext_modules=cythonize([cython_feature_encoding_utils_ext, cython_feature_encoder_ext], language_level="3"),
-    #     include_dirs=[np.get_include(), '.'],
-    #     include_package_data=True)

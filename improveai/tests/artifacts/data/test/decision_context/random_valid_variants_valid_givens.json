@@ -1,0 +1,67 @@
+{
+    "test_case": {
+      "model_filename": "dummy_v6.xgb",
+      "variants": [
+            {
+                "text": "lovely corgi",
+                "chars": 12,
+                "words": 2
+            },
+            {
+                "text": "lively swan",
+                "chars": 11,
+                "words": 2
+            },
+            {
+                "text": "uptight wine cow of kindness",
+                "chars": 28,
+                "words": 4
+            },
+            {
+                "text": "mindful jerboa of infinite kindness",
+                "chars": 35,
+                "words": 4
+            },
+            {
+                "text": "lively monkey of artistry",
+                "chars": 25,
+                "words": 3
+            },
+            {
+                "text": "great kind manatee",
+                "chars": 18,
+                "words": 3
+            },
+            {
+                "text": "caped olive crocodile of diversity",
+                "chars": 34,
+                "words": 4
+            },
+            {
+                "text": "knowing optimal jerboa",
+                "chars": 22,
+                "words": 3
+            },
+            {
+                "text": "olive pronghorn",
+                "chars": 15,
+                "words": 2
+            },
+            {
+                "text": "knowing fennec",
+                "chars": 14,
+                "words": 2
+            }
+        ],
+      "givens": {"a": [1, 2, 3], "b": {"c": 1, "d": "e"}}
+    },
+    "test_output": {
+      "scores": [1.764052345967664, 0.4001572083672233, 0.9787379841057392, 2.240893199201458, 1.8675579901499675, -0.977277879876411, 0.9500884175255894, -0.1513572082976979, -0.10321885179355784, 0.41059850193837233],
+      "best": {
+            "text": "mindful jerboa of infinite kindness",
+            "chars": 35,
+            "words": 4
+        }
+    },
+  "scores_seed": 0
+}

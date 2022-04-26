@@ -630,7 +630,7 @@ class TestDecisionModel(TestCase):
 
         np.random.seed(score_seed)
         calculated_gaussians = \
-            dm.DecisionModel._generate_descending_gaussians(count=variants_count)
+            dm.DecisionModel.generate_descending_gaussians(count=variants_count)
 
         np.testing.assert_array_equal(calculated_gaussians, expected_scores)
 
@@ -1123,7 +1123,8 @@ class TestDecisionModel(TestCase):
         decision_model = dm.DecisionModel('dummy-model', track_url=self.track_url)
         np.random.seed(1)
         decision = decision_model.choose_random(variants=variants)
-        expected_random_scores = [1.6243453636632417, -0.6117564136500754, -0.5281717522634557, -1.0729686221561705, 0.8654076293246785]
+        expected_random_scores = \
+            [1.6243453636632417, -0.6117564136500754, -0.5281717522634557, -1.0729686221561705, 0.8654076293246785]
 
         np.testing.assert_array_equal(
             convert_values_to_float32(expected_random_scores),

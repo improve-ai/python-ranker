@@ -117,3 +117,84 @@ class DecisionContext:
         decision = self.choose_from(variants=get_variants_from_args(variants=variants))
         best = decision.get()
         return best, decision.id_
+
+    def choose_first(self, variants: list or tuple or np.ndarray):
+        """
+        Chooses first from provided variants using gaussian scores (_generate_descending_gaussians())
+
+        Parameters
+        ----------
+        variants: list or tuple or np.ndarray
+            collection of variants passed as positional parameters
+
+        Returns
+        -------
+        d.Decision
+            A decision with first variants as the best one and gaussian scores
+
+        """
+        check_variants(variants=variants)
+        return self.choose_from(
+            variants, scores=self.decision_model.generate_descending_gaussians(count=len(variants)))
+
+    def first(self, *variants):
+        """
+        Makes decision using first variant as best and tracks it.
+        Accepts variants as pythonic *args
+
+        Parameters
+        ----------
+        variants: list or tuple or np.ndarray
+            collection of variants of which first will be chosen
+
+        Returns
+        -------
+        object
+            chosen and tracked variant
+
+        """
+        check_variants(variants=variants)
+        decision = self.choose_first(variants=get_variants_from_args(variants))
+        best = decision.get()
+        return best, decision.id_
+
+    def choose_random(self, variants: list or tuple or np.ndarray):
+        """
+        Shuffles variants to return Decision with gaussian scores and random best variant
+
+        Parameters
+        ----------
+        variants: list or tuple or np.ndarray
+            collection of variants of which random will be chosen
+
+        Returns
+        -------
+        d.Decision
+            Decision with randomly chosen best variant
+
+        """
+        check_variants(variants=variants)
+        count = len(variants)
+        return self.choose_from(variants, scores=np.random.normal(size=count))
+
+    def random(self, *variants):
+        """
+        Makes decision using randomly selected variant as best and tracks it.
+        Accepts variants as pythonic *args
+
+        Parameters
+        ----------
+        variants: list or np.ndarray
+            collection of variants of which first will be chosen
+
+        Returns
+        -------
+        object
+            randomly selected and tracked best variant
+
+        """
+        used_variants = get_variants_from_args(variants)
+        count = len(used_variants)
+        decision = self.choose_from(used_variants, scores=np.random.normal(size=count))
+        best = decision.get()
+        return best, decision.id_

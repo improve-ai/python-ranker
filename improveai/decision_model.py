@@ -189,7 +189,7 @@ class DecisionModel:
         if DEBUG is True:
             print(f'[DEBUG] givens: {givens}')
         if self.chooser is None:
-            return DecisionModel._generate_descending_gaussians(count=len(variants))
+            return DecisionModel.generate_descending_gaussians(count=len(variants))
 
         try:
             scores = \
@@ -201,7 +201,7 @@ class DecisionModel:
             warnings.warn(
                 'Error when calculating predictions: {}. Returning Gaussian scores'
                 .format(exc))
-            scores = DecisionModel._generate_descending_gaussians(count=len(variants))
+            scores = DecisionModel.generate_descending_gaussians(count=len(variants))
         return scores.astype(np.float64)
 
     @staticmethod
@@ -296,7 +296,7 @@ class DecisionModel:
         return sorted_variants_w_scores[:, 0]
 
     @staticmethod
-    def _generate_descending_gaussians(count: int) -> list or np.ndarray:
+    def generate_descending_gaussians(count: int) -> list or np.ndarray:
         """
         Generates random floats and sorts in a descending fashion
 
@@ -351,7 +351,6 @@ class DecisionModel:
 
         """
 
-        check_variants(variants=variants)
         return dc.DecisionContext(decision_model=self, givens=None).choose_from(variants=variants, scores=scores)
 
     def which(self, *variants: list or tuple or np.ndarray):
@@ -394,12 +393,7 @@ class DecisionModel:
             A decision with first variants as the best one and gaussian scores
 
         """
-
-        check_variants(variants=variants)
-        return dc.DecisionContext(decision_model=self, givens=None) \
-            .choose_from(
-                variants=variants,
-                scores=self._generate_descending_gaussians(len(variants)))
+        return dc.DecisionContext(decision_model=self, givens=None).choose_first(variants=variants)
 
     def first(self, *variants: list or np.ndarray):
         """
@@ -417,10 +411,7 @@ class DecisionModel:
             chosen and tracked variant
 
         """
-
-        decision = self.choose_first(variants=get_variants_from_args(variants=variants))
-        best = decision.get()
-        return best, decision.id_
+        return dc.DecisionContext(decision_model=self, givens=None).first(*variants)
 
     def choose_random(self, variants: list or tuple or np.ndarray):
         """
@@ -437,12 +428,7 @@ class DecisionModel:
             Decision with randomly chosen best variant
 
         """
-
-        # check variants
-        check_variants(variants=variants)
-        # use random gaussian scores for variants
-        count = len(variants)
-        return self.choose_from(variants=variants, scores=np.random.normal(size=count))
+        return dc.DecisionContext(decision_model=self, givens=None).choose_random(variants=variants)
 
     def random(self, *variants: list or np.ndarray):
         """
@@ -460,10 +446,7 @@ class DecisionModel:
             randomly selected and tracked best variant
 
         """
-
-        decision = self.choose_random(variants=get_variants_from_args(variants=variants))
-        best = decision.get()
-        return best, decision.id_
+        return dc.DecisionContext(decision_model=self, givens=None).random(*variants)
 
     def add_reward(self, reward: float, decision_id: str):
         """
