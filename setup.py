@@ -21,14 +21,14 @@ if __name__ == '__main__':
         "xxhash==2.0.0",
         'coremltools==4.1',
         "requests>=2.24.0",
-        "numpy>=1.19.2",
+        "numpy<1.20,>=1.19.2",
         "xgboost==1.4.2",
         "simplejson==3.17.2",
         "orjson",
         "svix-ksuid"]
 
     setup_kwargs = {
-        'packages': find_packages(exclude=['*.tox*', '*tests*']),
+        'packages': find_packages(exclude=['*.tox*', '*tests*', '*experiments*', '*old_files*']),
         'install_requires': install_requires,
         'include_package_data': True}
 
