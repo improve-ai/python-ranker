@@ -7,12 +7,14 @@ import cython
 from libc.math cimport isnan
 import numpy as np
 cimport numpy as np
+import warnings
 import xxhash
 
 cdef object xxhash3 = xxhash.xxh3_64_intdigest
 cdef list JSON_SERIALIZABLE_TYPES = [int, float, str, bool, list, tuple, dict]
 
 import improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils as cfeu
+import improveai.feature_encoder as fe
 
 
 @cython.boundscheck(False)
@@ -58,9 +60,33 @@ cpdef _has_top_level_string_keys(checked_dict):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
+cpdef warn_about_array_encoding(object object_):
+    """
+    If object is an array warning will be printed (only once so the encoding speed does not suffer)
+
+    Parameters
+    ----------
+    object_: object
+        encoded object
+
+    Returns
+    -------
+    None
+        None
+
+    """
+    # check if variant is a list, tuple or array
+    if not fe.WARNED_ABOUT_ARRAY_ENCODING and \
+            (isinstance(object_, list) or isinstance(object_, tuple) or isinstance(object_, np.ndarray)):
+        warnings.warn('Array encoding may change in the near future')
+        fe.WARNED_ABOUT_ARRAY_ENCODING = True
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
 cpdef encode(object object_, unsigned long long seed, double small_noise, dict features):
 
     assert _is_object_json_serializable(object_=object_)
+    warn_about_array_encoding(object_=object_)
 
     cdef str feature_name = None
     cdef double previous_object_

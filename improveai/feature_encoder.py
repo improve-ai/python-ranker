@@ -1,3 +1,4 @@
+import warnings
 from collections.abc import Iterable
 import math
 import numpy as np
@@ -12,6 +13,7 @@ if CYTHON_BACKEND_AVAILABLE:
 
 xxhash3 = xxhash.xxh3_64_intdigest
 JSON_SERIALIZABLE_TYPES = [int, float, str, bool, list, tuple, dict]
+WARNED_ABOUT_ARRAY_ENCODING = False
 
 
 class FeatureEncoder:
@@ -53,6 +55,7 @@ class FeatureEncoder:
         self.variant_seed = xxhash3("variant", seed=model_seed)
         self.value_seed = xxhash3("$value", seed=self.variant_seed)
         self.givens_seed = xxhash3("givens", seed=model_seed)
+        self.__user_warned_about_array_encoding = False
 
     def _check_noise_value(self, noise: float):
         if noise > 1.0 or noise < 0.0:
@@ -120,8 +123,7 @@ class FeatureEncoder:
                 encoded_variant=encoded_variant, feature_names=feature_names, into=into)
         else:
             hash_index_map = \
-                {feature_hash: index for index, feature_hash
-                 in enumerate(feature_names)}
+                {feature_hash: index for index, feature_hash in enumerate(feature_names)}
 
             filler = \
                 np.array(
@@ -229,6 +231,7 @@ class FeatureEncoder:
          for encoded_variant, single_extra_features in
          zip(encoded_variants, extra_features)]
 
+
 def _is_object_json_serializable(object_):
     """
     Checks if input value is JSON serializable
@@ -266,16 +269,40 @@ def _has_top_level_string_keys(checked_dict):
     return all([isinstance(k, str) for k in checked_dict.keys()])
 
 
+def warn_about_array_encoding(object_):
+    """
+    If object is an array warning will be printed (only once so the encoding speed does not suffer)
+
+    Parameters
+    ----------
+    object_: object
+        encoded object
+
+    Returns
+    -------
+    None
+        None
+
+    """
+    global WARNED_ABOUT_ARRAY_ENCODING
+    # check if variant is a list, tuple or array
+    if not WARNED_ABOUT_ARRAY_ENCODING and \
+            (isinstance(object_, list) or isinstance(object_, tuple) or isinstance(object_, np.ndarray)):
+        warnings.warn('Array encoding may change in the near future')
+        WARNED_ABOUT_ARRAY_ENCODING = True
+
+
 # - None, json null, {}, [], nan, are treated as missing feature_names and ignored.
 # NaN is technically not allowed in JSON but check anyway.
 # - boolean true and false are encoded as 1.0 and 0.0 respectively.
 # - strings are encoded into an additional one-hot feature.
 # - numbers are encoded as-is with up to about 5 decimal places of precision
 # - a small amount of noise is incorporated to avoid overfitting
-# - feature names are 8 hexidecimal characters
+# - feature names are 8 hexadecimal characters
 def encode(object_, seed, small_noise, features):
 
     assert _is_object_json_serializable(object_)
+    warn_about_array_encoding(object_=object_)
 
     if isinstance(object_, (int, float)):  # bool is an instanceof int
         if math.isnan(object_):  # nan is treated as missing feature, return
