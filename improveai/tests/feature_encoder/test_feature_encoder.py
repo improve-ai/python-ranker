@@ -811,7 +811,6 @@ class TestEncoder(TestCase):
         self._test_encode_feature_vector(
             test_case_envvar='FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_VARIANT_NAN_JSON')
 
-
     def test_encode_feature_vector_variant_nan_givens_none_extra_features(self):
         self._test_encode_feature_vector(
             test_case_envvar='FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_VARIANT_NAN_GIVENS_NONE_EXTRA_FEATURES_JSON')
@@ -819,7 +818,6 @@ class TestEncoder(TestCase):
     def test_encode_feature_vector_variant_none(self):
         self._test_encode_feature_vector(
             test_case_envvar='FEATURE_ENCODER_TEST_ENCODE_FEATURE_VECTOR_VARIANT_NONE_JSON')
-
 
     def test_encode_feature_vector_variant_none_givens_none_extra_features(self):
         self._test_encode_feature_vector(

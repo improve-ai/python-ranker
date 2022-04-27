@@ -4,12 +4,6 @@ import math
 import numpy as np
 import xxhash
 
-from improveai.settings import CYTHON_BACKEND_AVAILABLE
-
-import improveai.cythonized_feature_encoding as cythonized_feature_encoding
-if CYTHON_BACKEND_AVAILABLE:
-    cfeu = cythonized_feature_encoding.cfeu
-
 
 xxhash3 = xxhash.xxh3_64_intdigest
 JSON_SERIALIZABLE_TYPES = [int, float, str, bool, list, tuple, dict]
@@ -118,25 +112,21 @@ class FeatureEncoder:
             encoded_variant.update(extra_features)
 
         # n + nan = nan so you'll have to check for nan values on into
-        if CYTHON_BACKEND_AVAILABLE:
-            cfeu.encoded_variant_into_np_row(
-                encoded_variant=encoded_variant, feature_names=feature_names, into=into)
-        else:
-            hash_index_map = \
-                {feature_hash: index for index, feature_hash in enumerate(feature_names)}
+        hash_index_map = \
+            {feature_hash: index for index, feature_hash in enumerate(feature_names)}
 
-            filler = \
-                np.array(
-                    [(hash_index_map.get(feature_name, None), value)
-                     for feature_name, value in encoded_variant.items()
-                     if hash_index_map.get(feature_name, None) is not None])
+        filler = \
+            np.array(
+                [(hash_index_map.get(feature_name, None), value)
+                 for feature_name, value in encoded_variant.items()
+                 if hash_index_map.get(feature_name, None) is not None])
 
-            # sum into with encoded variants treating nans in sums as zeros
-            if len(filler) > 0:
-                subset_index = filler[:, 0].astype(int)
+        # sum into with encoded variants treating nans in sums as zeros
+        if len(filler) > 0:
+            subset_index = filler[:, 0].astype(int)
 
-                into[subset_index] = np.nansum(
-                    np.array([into[subset_index], filler[:, 1]]), axis=0)
+            into[subset_index] = np.nansum(
+                np.array([into[subset_index], filler[:, 1]]), axis=0)
 
     def encode_to_np_matrix(
             self, variants: Iterable, multiple_givens: Iterable,
@@ -179,23 +169,14 @@ class FeatureEncoder:
         if not isinstance(feature_names, list):
             feature_names = list(feature_names)
 
-        if CYTHON_BACKEND_AVAILABLE:
-            encoded_variants = cfeu.encode_variants_multiple_givens(
-                variants=variants, multiple_givens=multiple_givens,
-                multiple_extra_features=multiple_extra_features, noise=noise,
-                feature_encoder=self.encode_variant,
-                givens_encoder=self.encode_givens)
-            encoded_variants_array = cfeu.encoded_variants_to_np(
-                encoded_variants=encoded_variants, feature_names=feature_names)
-        else:
-            encoded_variants_array = np.full((len(variants), len(feature_names)), np.nan)
+        encoded_variants_array = np.full((len(variants), len(feature_names)), np.nan)
 
-            [self.encode_feature_vector(
-                variant=variant, givens=givens, extra_features=extra_features,
-                feature_names=feature_names, noise=noise, into=into)
-             for variant, givens, extra_features, into
-             in zip(variants, multiple_givens, multiple_extra_features,
-                    encoded_variants_array)]
+        [self.encode_feature_vector(
+            variant=variant, givens=givens, extra_features=extra_features,
+            feature_names=feature_names, noise=noise, into=into)
+         for variant, givens, extra_features, into
+         in zip(variants, multiple_givens, multiple_extra_features,
+                encoded_variants_array)]
         return encoded_variants_array
 
     def add_extra_features(self, encoded_variants: list, extra_features: list):
