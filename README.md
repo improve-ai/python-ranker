@@ -25,10 +25,16 @@ To install from pip simply use:
 
 `pip3 install improveai`
 
-For some operating systems you might see 'Killed' information on xgboost installation attempt. 
-To get rid of it please purge pip's cache:
+#### pip's cache
+Fog big packages and small amount of RAM (e.g., 1 GB) pip's caching mechanism might cause Out Of Memory error resulting in 
+"Killed" error message on e.g. xgboost installation attempt. 
+To avoid this either purge pip's cache:
 
 `pip3 cache purge`
+
+or use `--no-cache-dir` flag:
+
+
 
 
 ### Build and install from cloned git repo
