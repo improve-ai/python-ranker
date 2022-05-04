@@ -78,7 +78,7 @@ if __name__ == '__main__':
                 import requests_mock as rqm
             except ImportError as ierr:
                 raise ImportError(
-                    'Please install requests_mock package to mock track endpoint: pip3 install requests_mock')
+                    'Please install `requests_mock` package to mock track endpoint: pip3 install requests_mock')
 
             with rqm.Mocker() as m:
                 m.post(pa.track_url, text='success')
@@ -109,6 +109,11 @@ if __name__ == '__main__':
     string_result = json.dumps(result_payload)
 
     if pa.prettify_json:
+        try:
+            import simplejson
+        except ImportError as ierr:
+            raise ImportError(
+                'Please install `simplejson` package to mock track endpoint: pip3 install simplejson')
         string_result = simplejson.dumps(json.loads(string_result), indent=4)
 
     if pa.debug_print:

@@ -1,9 +1,9 @@
 Cython>=0.29.14
-xxhash==2.0.0
+xxhash
 requests>=2.24.0
 numpy>=1.19.2
-# highest xgboost version currently supported by coremltools in a trainer
+# highest xgboost version currently supported by coremltools in the trainer
 xgboost==1.4.2
-simplejson==3.17.2
+# orjson properly encodes nan / np.nan value to null as opposed to json package which encodes nan / np.nan to NaN
 orjson
 svix-ksuid

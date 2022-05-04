@@ -133,6 +133,7 @@ class DecisionContext:
             A decision with first variants as the best one and gaussian scores
 
         """
+
         check_variants(variants=variants)
         return self.choose_from(
             variants, scores=self.decision_model.generate_descending_gaussians(count=len(variants)))
@@ -153,6 +154,7 @@ class DecisionContext:
             chosen and tracked variant
 
         """
+
         check_variants(variants=variants)
         decision = self.choose_first(variants=get_variants_from_args(variants))
         best = decision.get()

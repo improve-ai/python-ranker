@@ -3,8 +3,8 @@ import warnings
 from collections.abc import Iterable
 from copy import deepcopy
 from datetime import datetime
-import json
 import numpy as np
+import orjson
 import requests as rq
 from typing import Dict
 from warnings import warn
@@ -117,6 +117,22 @@ class DecisionTracker:
         self.max_runners_up = max_runners_up
 
     def _should_track_runners_up(self, variants_count: int):
+        """
+        Returns bool that indicates whether runners up should be tracked
+
+
+        Parameters
+        ----------
+        variants_count: int
+            number of variants
+
+
+        Returns
+        -------
+        bool
+            flag indicating if runners up will be tracked
+
+        """
 
         if variants_count == 1 or self.max_runners_up == 0:
             return False
@@ -127,6 +143,23 @@ class DecisionTracker:
                 variants_count - 1, self.max_runners_up)
 
     def _top_runners_up(self, ranked_variants: list) -> Iterable or None:
+        """
+        Select top N runners up from `ranked_variants`
+
+
+        Parameters
+        ----------
+        ranked_variants: list
+            variants ordered descending by scores
+
+
+        Returns
+        -------
+        Iterable or None
+            None if there are no runners up to track otherwise list of tracked runners up
+
+        """
+
         # len(ranked_variants) - 1 -> this will not include last element of collection
         top_runners_up = ranked_variants[
              1:min(len(ranked_variants), self.max_runners_up + 1)]\
@@ -151,6 +184,24 @@ class DecisionTracker:
         return returned_top_runners_up
 
     def _is_sample_available(self, variants: list or None, runners_up: list):
+        """
+        Returns True / False flag indicating whether sample is available
+
+
+        Parameters
+        ----------
+        variants: list or None
+            collection of evaluated variants
+        runners_up: list
+            list of tracked runners up
+
+
+        Returns
+        -------
+        bool
+            True if sample is available False otherwise
+
+        """
 
         variants_count = len(variants)
         runners_up_count = len(runners_up) if runners_up else 0
@@ -166,6 +217,7 @@ class DecisionTracker:
             timestamp: object = None, message_id: str = None):
         """
         Track that variant is causal in the system
+
 
         Parameters
         ----------
@@ -183,8 +235,11 @@ class DecisionTracker:
         timestamp: object
             when was decision tracked
 
+
         Returns
         -------
+        str
+            message id of sent improve request
 
         """
 
@@ -250,6 +305,7 @@ class DecisionTracker:
         """
         Adds provided reward for a given decision id made by a given model.
 
+
         Parameters
         ----------
         reward: float or int
@@ -259,8 +315,11 @@ class DecisionTracker:
         decision_id: str
             ksuid of rewarded decision
 
+
         Returns
         -------
+        None
+            None
 
         """
 
@@ -286,6 +345,7 @@ class DecisionTracker:
         """
         Gets sample from ranked_variants. Takes runenrs up into account
 
+
         Parameters
         ----------
         variant: object
@@ -294,6 +354,7 @@ class DecisionTracker:
             list of ranked variants
         track_runners_up: bool
             should runners up be tracked ?
+
 
         Returns
         -------
@@ -340,10 +401,12 @@ class DecisionTracker:
         """
         Check if message_id is  valid
 
+
         Parameters
         ----------
         message_id: str
             checked message_id
+
 
         Returns
         -------
@@ -364,6 +427,7 @@ class DecisionTracker:
         """
         Posts request to tracker endpoint
 
+
         Parameters
         ----------
         body_values: dict
@@ -373,8 +437,11 @@ class DecisionTracker:
         timestamp: object
             timestamp of request
 
+
         Returns
         -------
+        str
+            message id of sent improve request
 
         """
 
@@ -395,7 +462,7 @@ class DecisionTracker:
 
         # serialization is a must-have for this requests
         try:
-            payload_json = json.dumps(body)
+            payload_json = orjson.dumps(body).decode('utf-8')
 
         except Exception as exc:
             warn("Data serialization error: {}\nbody: {}".format(exc, body))
@@ -419,7 +486,7 @@ class DecisionTracker:
             if resp.status_code >= 400:
                 user_info = dict(deepcopy(resp.headers))
                 user_info[self.REQUEST_ERROR_CODE_KEY] = str(resp.status_code)
-                content = json.dumps(body)
+                content = orjson.dumps(body).decode('utf-8')
 
                 if content:
                     user_info[self.PAYLOAD_FOR_ERROR_KEY] = content \
@@ -429,11 +496,11 @@ class DecisionTracker:
                 error += \
                     ' | when attempting to post to improve.ai endpoint got an error with ' \
                     'code {} and user info: {}' \
-                    .format(str(resp.status_code), json.dumps(user_info))
+                    .format(str(resp.status_code), orjson.dumps(user_info).decode('utf-8'))
 
         json_object = None
         if not error:
-            json_object = json.dumps(body)
+            json_object = orjson.dumps(body).decode('utf-8')
 
         if error:
             print('error')

@@ -15,14 +15,12 @@ IMPROVE_DIR = 'improveai'
 
 if __name__ == '__main__':
 
-    # REMARK: some requirements may depend on gcc version, e.g. coremltools
     install_requires = [
         "Cython>=0.29.14",
         "xxhash==2.0.0",
         "requests>=2.24.0",
         "numpy>=1.19.2",
         "xgboost==1.4.2",
-        "simplejson==3.17.2",
         "orjson",
         "svix-ksuid"]
 
