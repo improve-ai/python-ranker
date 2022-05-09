@@ -17,9 +17,9 @@ if __name__ == '__main__':
 
     install_requires = [
         "Cython>=0.29.14",
-        "xxhash==2.0.0",
+        "xxhash",
         "requests>=2.24.0",
-        "numpy>=1.19.2",
+        "numpy",
         "xgboost==1.4.2",
         "orjson",
         "svix-ksuid"]
