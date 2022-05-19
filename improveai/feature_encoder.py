@@ -40,6 +40,15 @@ class FeatureEncoder:
     VARIANT_METADATA_PARAMETER_NAME = 'givens'
 
     def __init__(self, model_seed):
+        """
+        Init with params
+
+        Parameters
+        ----------
+        model_seed: int
+            model seed to be used during feature encoding
+        """
+
         if (model_seed < 0):
             raise TypeError(
                 "xxhash3_64 takes an unsigned 64-bit integer as seed. "
@@ -52,11 +61,45 @@ class FeatureEncoder:
         self.__user_warned_about_array_encoding = False
 
     def _check_noise_value(self, noise: float):
+        """
+        Check whether noise value is valid; Raises if `noise` is invalid
+
+        Parameters
+        ----------
+        noise: float
+            checked value of no ise
+
+        Returns
+        -------
+        None
+            None
+        """
+
         if noise > 1.0 or noise < 0.0:
             raise ValueError(
                 'Provided `noise` is out of allowed bounds <0.0, 1.0>')
 
-    def encode_givens(self, givens, noise=0.0, into=None):
+    def encode_givens(
+            self, givens: dict or None, noise: float = 0.0, into: dict = None) -> dict:
+        """
+        Encodes provided givens of arbitrary complexity to a flat feature dict;
+        Givens must be JSON encodable
+
+        Parameters
+        ----------
+        givens: dict or None
+            givens to be encoded
+        noise: float
+            value within 0 - 1 range which will be 'shrunk' and added to feature value
+        into: dict
+            a dict into which new features will be inserted; Can be None
+
+        Returns
+        -------
+        dict
+            A dict with results of givens encoding
+
+        """
 
         self._check_noise_value(noise=noise)
 
@@ -71,7 +114,27 @@ class FeatureEncoder:
         encode(givens, self.givens_seed, shrink(noise), into)
         return into
 
-    def encode_variant(self, variant, noise=0.0, into=None):
+    def encode_variant(
+            self, variant: object, noise: float = 0.0, into: dict = None) -> dict:
+        """
+        Encodes provided variant of arbitrary complexity to a flat feature dict;
+        Variant must be JSON encodable
+
+        Parameters
+        ----------
+        variant: object
+            variant to be encoded
+        noise: float
+            value within 0 - 1 range which will be 'shrunk' and added to feature value
+        into: dict
+            a dict into which new features will be inserted; Can be None
+
+        Returns
+        -------
+        dict
+            A dict with results of variant encoding
+
+        """
 
         self._check_noise_value(noise=noise)
 
@@ -88,9 +151,34 @@ class FeatureEncoder:
         return into
 
     def encode_feature_vector(
-            self, variant: dict = None, givens: dict = None,
+            self, variant: object = None, givens: dict = None,
             extra_features: dict = None, feature_names: list or np.ndarray = None,
             noise: float = 0.0, into: np.ndarray = None):
+        """
+        Fully encodes provided variant and givens into a np.ndarray provided as `into` parameter.
+        `into` must not be None
+
+        Parameters
+        ----------
+        variant: object
+            a JSON encodable object to be encoded to flat features' dict
+        givens: dict
+            a dict with givens to be enncoded to flat features' dict (all entries must be JSON encodable)
+        extra_features: dict
+            features to be added to encoded variant with givens
+        feature_names: list or np.ndarray
+            list of model's feature names (only overlapping features will be selected for resulting vector)
+        noise: float
+            value within 0 - 1 range which will be 'shrunk' and added to feature value
+        into: np.ndarray
+            an array into which feature values will be added / inserted
+
+        Returns
+        -------
+        None
+            None
+
+        """
 
         if into is None:
             raise ValueError('`into` can`t be None')
@@ -115,6 +203,7 @@ class FeatureEncoder:
         hash_index_map = \
             {feature_hash: index for index, feature_hash in enumerate(feature_names)}
 
+        #
         filler = \
             np.array(
                 [(hash_index_map.get(feature_name, None), value)
@@ -213,7 +302,7 @@ class FeatureEncoder:
          zip(encoded_variants, extra_features)]
 
 
-def _is_object_json_serializable(object_):
+def _is_object_json_serializable(object_) -> bool:
     """
     Checks if input value is JSON serializable
 
@@ -230,7 +319,7 @@ def _is_object_json_serializable(object_):
     return any([isinstance(object_, type_) for type_ in JSON_SERIALIZABLE_TYPES]) or object_ is None
 
 
-def _has_top_level_string_keys(checked_dict):
+def _has_top_level_string_keys(checked_dict) -> bool:
     """
     Check if all top level keys are of a string type. This is a helper function
     for encode() and since encode recurs in case of nested dicts only top level
@@ -273,14 +362,42 @@ def warn_about_array_encoding(object_):
         WARNED_ABOUT_ARRAY_ENCODING = True
 
 
-# - None, json null, {}, [], nan, are treated as missing feature_names and ignored.
-# NaN is technically not allowed in JSON but check anyway.
-# - boolean true and false are encoded as 1.0 and 0.0 respectively.
-# - strings are encoded into an additional one-hot feature.
-# - numbers are encoded as-is with up to about 5 decimal places of precision
-# - a small amount of noise is incorporated to avoid overfitting
-# - feature names are 8 hexadecimal characters
 def encode(object_, seed, small_noise, features):
+    """
+    Encodes a JSON serializable object to  a flat key - value pair(s) structure / dict
+    (sometimes a single `object_` will result in 2 features, e.g. strings, lists, etc...).
+    Rules of encoding go as follows:
+
+    - None, json null, {}, [], nan, are treated as missing feature_names and ignored. NaN is technically not allowed in JSON but check anyway.
+
+    - boolean true and false are encoded as 1.0 and 0.0 respectively.
+
+    - strings are encoded into an additional one-hot feature.
+
+    - numbers are encoded as-is with up to about 5 decimal places of precision
+
+    - a small amount of noise is incorporated to avoid overfitting
+
+    - feature names are 8 hexadecimal characters
+
+
+    Parameters
+    ----------
+    object_: object
+        a JSON serializable object to be encoded to a flat key-value structure
+    seed: int
+        seed for xxhash3 to generate feature name
+    small_noise: float
+        a shrunk noise to be added to value of encoded feature
+    features: dict
+        a flat dict of {<feature name>: <feature value>, ...} pairs
+
+    Returns
+    -------
+    None
+        None
+
+    """
 
     assert _is_object_json_serializable(object_)
     warn_about_array_encoding(object_=object_)
@@ -375,15 +492,60 @@ def _get_previous_value(
         return reverse_sprinkle(previous_sprinkled_object_, small_noise)
 
 
-def hash_to_feature_name(hash_):
+def hash_to_feature_name(hash_: int):
+    """
+    Converts a hash to string which will become a feature name
+
+    Parameters
+    ----------
+    hash_: int
+        an integer output from xxhash3
+
+    Returns
+    -------
+    str
+        a string representation of a hex feature name created from int
+
+    """
     return '%0*x' % (8, (hash_ >> 32))
 
 
 def shrink(noise):
+    """
+    Shrinks noise value by a hardcoded factor 2 ** -17
+
+    Parameters
+    ----------
+    noise: float
+        value within 0 - 1 range which will be 'shrunk' and added to feature value
+
+
+    Returns
+    -------
+    float
+        a shrunk noise
+
+    """
     return noise * 2 ** -17
 
 
 def sprinkle(x, small_noise):
+    """
+    Slightly modified input valuse using `small_noise`: (x + small_noise) * (1 + small_noise)
+
+    Parameters
+    ----------
+    x: float
+        a number to be 'modified'
+    small_noise: float
+        a small number with which `x` will be modified
+
+    Returns
+    -------
+    float
+        x modified with `small_noise`
+
+    """
     return (x + small_noise) * (1 + small_noise)
 
 

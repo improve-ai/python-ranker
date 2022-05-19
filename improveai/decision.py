@@ -11,6 +11,15 @@ class Decision:
 
     @property
     def variants(self) -> list or np.ndarray or tuple:
+        """
+        Collection of variants used to make Decision; Can't be None
+
+        Returns
+        -------
+        list or np.ndarray or tuple
+            Collection of variants used to make Decision
+
+        """
         return self.__variants
 
     @variants.setter
@@ -24,6 +33,15 @@ class Decision:
 
     @property
     def givens(self) -> dict or None:
+        """
+        Givens used to make Decision; Can be None and {}
+
+        Returns
+        -------
+        dict or None
+            Givens used to make Decision
+
+        """
         return self.__givens
 
     @givens.setter
@@ -36,20 +54,56 @@ class Decision:
             warn('`givens` have already been set for this Decision')
 
     @property
-    def decision_model(self) -> object:
+    def decision_model(self):
+        """
+        DecisionModel used to make Decision
+
+        Returns
+        -------
+        DecisionModel
+            DecisionModel used to make Decision
+
+        """
         return self.__decision_model
 
     @property
-    def chosen(self):
+    def chosen(self) -> bool:
+        """
+        A flag indicating if the best variant has already been chosen
+
+        Returns
+        -------
+        bool
+            A flag indicating if the best variant has already been chosen
+
+        """
         return self.__chosen
 
     @property
-    def best(self):
-        return self.__best
+    def tracked(self) -> bool:
+        """
+        A flag indicating if the Decision has already been tracked
+
+        Returns
+        -------
+        bool
+            A flag indicating if the Decision has already been tracked
+
+        """
+        return self.__tracked
 
     @property
-    def tracked(self):
-        return self.__tracked
+    def best(self) -> object:
+        """
+       Best variant for this Decision
+
+        Returns
+        -------
+        object
+            Best variant for this Decision
+
+        """
+        return self.__best
 
     @best.setter
     def best(self, value):
@@ -61,7 +115,16 @@ class Decision:
             warn('`best` has already been calculated / set for this Decision')
 
     @property
-    def scores(self):
+    def scores(self) -> np.ndarray:
+        """
+        Scores calculated for this Decision
+
+        Returns
+        -------
+        np.ndarray
+            Scores calculated for this Decision
+
+        """
         return self.__scores
 
     @scores.setter
@@ -81,14 +144,40 @@ class Decision:
             warn('`scores` have already been calculated / set for this Decision')
 
     @property
-    def ranked_variants(self):
+    def ranked_variants(self) -> list or tuple or np.ndarray:
+        """
+        Variants ranked from best to worst (using scores)
+
+        Returns
+        -------
+        list or tuple or np.ndarray
+            Variants ranked from best to worst (using scores)
+
+        """
         return self.__ranked_variants
 
     @property
     def id_(self):
+        """
+        ID (ksuid) if this decision
+
+        Returns
+        -------
+        str
+            ID of this Decision
+
+        """
         return self.__id_
 
     def __init__(self, decision_model: object):
+        """
+        Init with params
+
+        Parameters
+        ----------
+        decision_model: DecisionModel
+            DecisionModel for this Decision
+        """
 
         assert isinstance(decision_model, dm.DecisionModel)
 
@@ -113,6 +202,15 @@ class Decision:
         self.__id_ = None
 
     def _set_message_id(self):
+        """
+        Sets Decision's message ID (once per lifetime)
+
+        Returns
+        -------
+        None
+            None
+
+        """
         if self.__id_ is None:
             id_ = str(Ksuid())
             assert isinstance(id_, str)
@@ -122,6 +220,20 @@ class Decision:
             warn('`id_` has already been set for this Decision')
 
     def add_reward(self, reward: float or int):
+        """
+        Adds provided reward to this Decision. Reward must be a number, must not be None, nan or +- inf
+
+        Parameters
+        ----------
+        reward: float
+            reward to be added
+
+        Returns
+        -------
+        str
+            reward request message ID
+
+        """
 
         if not self.chosen:
             warn('`add_reward()` called before `get()`')
@@ -133,10 +245,19 @@ class Decision:
         assert not np.isnan(reward)
         assert not np.isinf(reward)
 
-        return self.decision_model._tracker.add_reward(
+        return self.decision_model.tracker.add_reward(
             reward=reward, model_name=self.decision_model.model_name, decision_id=self.id_)
 
     def get(self):
+        """
+        Gets best variant for this Decision and tracks this Decision.
+
+        Returns
+        -------
+        object
+            best variant
+
+        """
 
         # if best already chosen and tracked simply return best
         if self.chosen and self.__tracked:
@@ -155,7 +276,7 @@ class Decision:
             if self.decision_model.track_url:
                 # set message_id / decision_id only once
                 self._set_message_id()
-                track_runners_up = self.decision_model._tracker._should_track_runners_up(len(self.variants))
+                track_runners_up = self.decision_model.tracker._should_track_runners_up(len(self.variants))
                 if track_runners_up:
                     if not self.__variants_already_ranked:
                         # if variants are not ranked yet rank them
@@ -169,7 +290,7 @@ class Decision:
                         # check if best is equal to first ranked variant
                         assert self.best == self.ranked_variants[0]
 
-                    self.decision_model._tracker.track(
+                    self.decision_model.tracker.track(
                         variant=self.best, variants=self.ranked_variants,
                         givens=self.givens, model_name=self.decision_model.model_name,
                         variants_ranked_and_track_runners_up=True, message_id=self.id_)
@@ -179,7 +300,7 @@ class Decision:
                         self.__best = \
                             dm.DecisionModel.top_scoring_variant(variants=self.variants, scores=self.__scores)
 
-                    self.decision_model._tracker.track(
+                    self.decision_model.tracker.track(
                         variant=self.best, variants=self.variants,
                         givens=self.givens, model_name=self.decision_model.model_name,
                         variants_ranked_and_track_runners_up=False, message_id=self.id_)
@@ -196,7 +317,7 @@ class Decision:
 
     def peek(self):
         """
-        Calculates best (or returns) best variant without tracking it
+        Calculates (or returns) best variant without tracking it
 
         Returns
         -------

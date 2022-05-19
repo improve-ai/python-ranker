@@ -1132,7 +1132,7 @@ class TestDecisionModel(TestCase):
 
         request_validity = {'request_body_ok': False}
 
-        decision_tracker = decision_model._tracker
+        decision_tracker = decision_model.tracker
 
         expected_track_body = {
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
@@ -1282,15 +1282,15 @@ class TestDecisionModel(TestCase):
         reward = 1.0
 
         expected_add_reward_body = {
-            decision_model._tracker.TYPE_KEY: decision_model._tracker.REWARD_TYPE,
-            decision_model._tracker.MODEL_KEY: decision_model.model_name,
-            decision_model._tracker.REWARD_KEY: reward,
-            decision_model._tracker.DECISION_ID_KEY: None}
+            decision_model.tracker.TYPE_KEY: decision_model.tracker.REWARD_TYPE,
+            decision_model.tracker.MODEL_KEY: decision_model.model_name,
+            decision_model.tracker.REWARD_KEY: reward,
+            decision_model.tracker.DECISION_ID_KEY: None}
 
         def grab_decision_id_matcher(request):
             request_dict = deepcopy(request.json())
-            expected_add_reward_body[decision_model._tracker.DECISION_ID_KEY] = \
-                request_dict[decision_model._tracker.MESSAGE_ID_KEY]
+            expected_add_reward_body[decision_model.tracker.DECISION_ID_KEY] = \
+                request_dict[decision_model.tracker.MESSAGE_ID_KEY]
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success', additional_matcher=grab_decision_id_matcher)
@@ -1301,8 +1301,8 @@ class TestDecisionModel(TestCase):
 
         def custom_matcher(request):
             request_dict = deepcopy(request.json())
-            del request_dict[decision_model._tracker.MESSAGE_ID_KEY]
-            del request_dict[decision_model._tracker.TIMESTAMP_KEY]
+            del request_dict[decision_model.tracker.MESSAGE_ID_KEY]
+            del request_dict[decision_model.tracker.TIMESTAMP_KEY]
 
             if json.dumps(request_dict, sort_keys=False) != expected_request_json:
 
