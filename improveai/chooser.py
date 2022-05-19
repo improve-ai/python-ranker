@@ -6,7 +6,6 @@ import pickle
 import re
 from typing import Dict, List
 from traceback import print_exc
-from warnings import warn
 from xgboost import Booster, DMatrix
 from xgboost.core import XGBoostError
 

@@ -5,7 +5,8 @@ class GivensProvider:
 
     def givens(self, for_model, givens: dict or None = {}) -> dict:
         """
-        Passthrough method
+        Provides givens for input `for_model`. Input `givens` are included in
+        returned value
 
         Parameters
         ----------

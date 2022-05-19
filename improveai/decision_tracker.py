@@ -1,6 +1,5 @@
 import re
 import warnings
-from collections.abc import Iterable
 from copy import deepcopy
 from datetime import datetime
 import numpy as np
@@ -19,74 +18,239 @@ class DecisionTracker:
 
     @constant
     def MODEL_KEY() -> str:
+        """
+        Track request body key storing model name
+
+        Returns
+        -------
+        str
+            Track request body key storing model name
+
+        """
         return "model"
 
     @constant
     def TIMESTAMP_KEY() -> str:
+        """
+        Track request body key storing timestamp
+
+        Returns
+        -------
+        str
+            Track request body key storing timestamp
+
+        """
         return "timestamp"
 
     @constant
     def MESSAGE_ID_KEY() -> str:
+        """
+        Track request body key storing message ID
+
+        Returns
+        -------
+        str
+            Track request body key storing message ID
+
+        """
         return "message_id"
 
     @constant
     def TYPE_KEY() -> str:
+        """
+        Track request body key storing request type (e.g. decision is a request type as well as reward)
+
+        Returns
+        -------
+        str
+            Track request body key storing request type
+
+        """
         return "type"
 
     @constant
     def VARIANT_KEY() -> str:
+        """
+        Track request body key storing best variant
+
+        Returns
+        -------
+        str
+            Track request body key storing best variant
+
+        """
         return "variant"
 
     @constant
     def GIVENS_KEY() -> str:
+        """
+        Track request body key storing givens
+
+        Returns
+        -------
+        str
+            Track request body key storing givens
+
+        """
         return "givens"
 
     @constant
     def VARIANTS_COUNT_KEY() -> str:
+        """
+        Track request body key storing variants count (from how many variants best was chosen)
+
+        Returns
+        -------
+        str
+            Track request body key storing variants count
+
+        """
         return "count"
 
     @constant
     def REWARD_TYPE() -> str:
+        """
+        If request is a reward this should be provided as `<request body>[<TYPE_KEY>]`
+
+        Returns
+        -------
+        str
+            type to be appended to request body in case of reward request
+
+        """
         return 'reward'
 
     @constant
     def REWARD_KEY():
+        """
+        Track request body key storing reward value
+
+        Returns
+        -------
+        str
+            Track request body key storing reward value
+
+        """
         return 'reward'
 
     @constant
     def DECISION_TYPE() -> str:
+        """
+        If a request is a decision this should be provided as `<request body>[<TYPE_KEY>]`
+
+        Returns
+        -------
+        str
+            type to be appended to request body in case of decision request
+
+        """
+
         return "decision"
 
     @constant
     def DECISION_ID_KEY() -> str:
+        """
+        Track request body key storing decision ID
+
+        Returns
+        -------
+        str
+            Track request body key storing decision ID
+
+        """
         return "decision_id"
 
     @constant
     def API_KEY_HEADER() -> str:
+        """
+        Track request headers key storing `API key`
+
+        Returns
+        -------
+        str
+            Track request headers key storing `API key`
+
+        """
+
         return "x-api-key"
 
     @constant
-    def PAYLOAD_FOR_ERROR_KEY():
+    def PAYLOAD_FOR_ERROR_KEY() -> str:
+        """
+        user info dict key storing track request body which caused an error
+
+        Returns
+        -------
+        str
+            user info dict key storing track request body which caused an error
+
+        """
         return 'ERROR_WITH_PAYLOAD'
 
     @constant
-    def REQUEST_ERROR_CODE_KEY():
+    def REQUEST_ERROR_CODE_KEY() -> str:
+        """
+        user info dict key storing track request error code
+
+        Returns
+        -------
+        str
+            user info dict key storing track request error code
+
+        """
         return 'REQUEST_ERROR_CODE'
 
     @constant
     def RUNNERS_UP_KEY() -> str:
+        """
+        Track request headers key storing runners up
+
+        Returns
+        -------
+        str
+            Track request headers key storing runners up
+
+        """
         return 'runners_up'
 
     @constant
     def VARIANTS_COUNT_KEY() -> str:
+        """
+        Track request headers key storing variants count
+
+        Returns
+        -------
+        str
+            Track request headers key storing variants count
+
+        """
         return 'count'
 
     @constant
     def SAMPLE_KEY() -> str:
+        """
+        Track request headers key storing sample
+
+        Returns
+        -------
+        str
+            Track request headers key storing sample
+
+        """
         return 'sample'
 
     @property
     def track_url(self) -> str:
+        """
+        Improve AI track endpoint URL
+
+        Returns
+        -------
+        str
+            Improve AI track endpoint URL
+
+
+        """
         return self._track_url
 
     @track_url.setter
@@ -95,6 +259,15 @@ class DecisionTracker:
 
     @property
     def api_key(self) -> str:
+        """
+        track endpoint API key (if applicatble); Can be None
+
+        Returns
+        -------
+        str
+            track endpoint API key
+
+        """
         return self._api_key
 
     @api_key.setter
@@ -103,20 +276,40 @@ class DecisionTracker:
 
     @property
     def max_runners_up(self):
+        """
+        maximum number of runners up to be included in the Improve AI request
+
+        Returns
+        -------
+        int
+            maximum number of runners up to be included in the Improve AI request
+
+        """
         return self._max_runners_up
 
     @max_runners_up.setter
     def max_runners_up(self, new_val):
         self._max_runners_up = new_val
 
-    def __init__(
-            self, track_url: str, max_runners_up: int = 50, track_api_key: str = None):
+    def __init__(self, track_url: str, max_runners_up: int = 50, track_api_key: str = None):
+        """
+        Init with params
+
+        Parameters
+        ----------
+        track_url: str
+            Improve AI track endpoint URL
+        max_runners_up: int
+            maximum number of runners up to be included in the Improve AI request
+        track_api_key: str
+            Improve AI track endpoint API key (nullable)
+        """
 
         self.track_url = track_url
         self.api_key = track_api_key
         self.max_runners_up = max_runners_up
 
-    def _should_track_runners_up(self, variants_count: int):
+    def _should_track_runners_up(self, variants_count: int) -> bool:
         """
         Returns bool that indicates whether runners up should be tracked
 
@@ -142,7 +335,8 @@ class DecisionTracker:
             return np.random.rand() < 1 / min(
                 variants_count - 1, self.max_runners_up)
 
-    def _top_runners_up(self, ranked_variants: list) -> Iterable or None:
+    def _top_runners_up(
+            self, ranked_variants: list or tuple or np.ndarray) -> list or tuple or np.ndarray or None:
         """
         Select top N runners up from `ranked_variants`
 
@@ -183,7 +377,7 @@ class DecisionTracker:
 
         return returned_top_runners_up
 
-    def _is_sample_available(self, variants: list or None, runners_up: list):
+    def _is_sample_available(self, variants: list or None, runners_up: list) -> bool:
         """
         Returns True / False flag indicating whether sample is available
 
@@ -214,7 +408,7 @@ class DecisionTracker:
     def track(
             self, variant: object, variants: list or np.ndarray, givens: dict,
             model_name: str, variants_ranked_and_track_runners_up: bool,
-            timestamp: object = None, message_id: str = None):
+            timestamp: object = None, message_id: str = None) -> str:
         """
         Track that variant is causal in the system
 
@@ -301,7 +495,7 @@ class DecisionTracker:
                 warn("Improve.track error: {}".format(error))
                 if error else 0, 0), timestamp=timestamp, message_id=message_id)
 
-    def add_reward(self, reward: float or int, model_name: str, decision_id: str):
+    def add_reward(self, reward: float or int, model_name: str, decision_id: str) -> str:
         """
         Adds provided reward for a given decision id made by a given model.
 
@@ -318,8 +512,8 @@ class DecisionTracker:
 
         Returns
         -------
-        None
-            None
+        str
+            message ID
 
         """
 
@@ -341,7 +535,7 @@ class DecisionTracker:
             block=lambda result, error: (
                 warn("Improve.track error: {}".format(error)) if error else 0, 0))
 
-    def get_sample(self, variant: object, variants: list, track_runners_up: bool):
+    def get_sample(self, variant: object, variants: list, track_runners_up: bool) -> object:
         """
         Gets sample from ranked_variants. Takes runenrs up into account
 
@@ -423,7 +617,7 @@ class DecisionTracker:
 
     def post_improve_request(
             self, body_values: Dict[str, object], block: callable,
-            message_id: str = None, timestamp: object = None):
+            message_id: str = None, timestamp: object = None) -> str:
         """
         Posts request to tracker endpoint
 

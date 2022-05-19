@@ -947,7 +947,7 @@ class TestDecisionContext(TestCase):
 
         request_validity = {'request_body_ok': False}
 
-        decision_tracker = decision_model._tracker
+        decision_tracker = decision_model.tracker
 
         expected_track_body = {
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,

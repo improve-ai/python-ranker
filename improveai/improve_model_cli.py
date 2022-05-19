@@ -5,7 +5,7 @@ import os
 import simplejson
 
 from improveai import DecisionModel, DecisionContext
-from utils.general_purpose_tools import read_jsonstring_from_file
+from improveai.utils.general_purpose_tools import read_jsonstring_from_file
 
 
 if __name__ == '__main__':

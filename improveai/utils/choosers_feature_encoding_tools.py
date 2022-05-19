@@ -2,22 +2,23 @@ import numpy as np
 
 
 def encoded_variant_to_np(
-        encoded_variant: dict, feature_names: np.ndarray or list) -> np.ndarray:
+        encoded_variant: dict, feature_names: list or np.ndarray) -> np.ndarray:
     """
-    Fills missing features in a single variant
+    Puts values from `encoded_variant` into numpy array. Only those features in `encoded_variant`
+    which overlap with `feature_names`. Resulting array must contain all values stored in `feature_names`.
+    Features missing in `encoded_variants` are filled with np.nan.
 
     Parameters
     ----------
     encoded_variant: dict
         fully encoded single variant
-    feature_names: np.ndarray
+    feature_names: list or np.ndarray
         array of feature names from model which will be used for predictions
 
     Returns
     -------
     np.ndarray
-        single row of a shape (1, num. features) which contains fully
-        encoded variant
+        single row of a shape (1, num. features) which contains fully encoded variant
 
     """
 
@@ -41,13 +42,15 @@ def encoded_variant_to_np(
 def encoded_variants_to_np(
         encoded_variants: np.ndarray, feature_names: np.ndarray) -> np.ndarray:
     """
-    Fills missing features in provided encoded variants. Needs model feature
-    names. Missing features are filled with np.nan
+    Converts an array of variants into 2D numpy array (<N variants>, <M features>).
+    Only those features in a single encoded variants which overlap with `feature_names`
+    will be present in the resulting matrix. Resulting array must contain all values
+    stored in `feature_names`. Features missing in `encoded_variants` are filled with np.nan.
 
     Parameters
     ----------
     encoded_variants: np.ndarray
-        array of encoded vairants
+        array of encoded variants
     feature_names: np.ndarray
         array of feature names from model which will be used for predictions
 

@@ -4,7 +4,6 @@ import warnings
 import numpy as np
 
 from improveai.chooser import XGBChooser
-import improveai.decision as d
 import improveai.decision_context as dc
 import improveai.decision_tracker as dt
 import improveai.givens_provider as gp
@@ -19,31 +18,55 @@ class DecisionModel:
     MODEL_NAME_REGEXP = XGBChooser.MODEL_NAME_REGEXP
 
     @property
-    def model_name(self) -> str:
+    def model_name(self) -> str or None:
+        """
+        Name of DecisionModel. None value is allowed but otherwise value must be a string and pass `MODEL_NAME_REGEXP` check
+
+        Returns
+        -------
+        str of None
+            `model_name` of this DecisionModel
+
+        """
+
         return self.__model_name
 
     @model_name.setter
-    def model_name(self, value: str):
-
+    def model_name(self, value: str or None):
         if value is not None:
             assert isinstance(value, str)
             assert re.search(DecisionModel.MODEL_NAME_REGEXP, value) is not None
         self.__model_name = value
 
     @property
-    def _tracker(self):
-        return self.__tracker
-
-    @property
     def chooser(self) -> XGBChooser:
+        """
+        Chooser used by current DecisionModel. Currently only XGBChooser is supported.
+        If not set will return None
+
+        Returns
+        -------
+        XGBChooser or None
+            DecisionModel's chooser
+
+        """
         return self._chooser
 
     @chooser.setter
-    def chooser(self, value: XGBChooser):
+    def chooser(self, value: XGBChooser or None):
         self._chooser = value
 
     @property
-    def givens_provider(self):
+    def givens_provider(self) -> gp.GivensProvider:
+        """
+        GivensProvider used by this DecisionModel
+
+        Returns
+        -------
+        GivensProvider
+            GivensProvider used by this DecisionModel
+
+        """
         return self._givens_provider
 
     @givens_provider.setter
@@ -51,25 +74,65 @@ class DecisionModel:
         self._givens_provider = value
 
     @property
-    def track_url(self):
+    def track_url(self) -> str or None:
+        """
+        Track endpoint URL used by this model. Also updates `track_url` of a DecisionTracker
+
+        Returns
+        -------
+        str or None
+            track endpoint URL string
+
+        """
         return self._track_url
 
     @track_url.setter
-    def track_url(self, value):
+    def track_url(self, value: str or None):
         self._track_url = value
         if hasattr(self, '__tracker') and getattr(self, '__tracker') is not None:
             self.__tracker.track_url = value
 
     @property
-    def tracker(self):
+    def tracker(self) -> dt.DecisionTracker:
+        """
+        DecisionTracker of this DecisionModel
+
+        Returns
+        -------
+        DecisionTracker or None
+            `tracker` of current DecisionModel or None if `tracker` was not set
+
+        """
         return self.__tracker
 
     @constant
     def TIEBREAKER_MULTIPLIER() -> float:
+        """
+        Small value randomized and added to model's scores
+
+        Returns
+        -------
+        float
+            Small value randomized and added to model's scores
+
+        """
         return 2**-23
 
     def __init__(
             self, model_name: str, track_url: str = None, track_api_key: str = None):
+        """
+        Init with params
+
+        Parameters
+        ----------
+        model_name: str
+            model name for this DecisionModel; can be None
+        track_url: str
+            a valid URL leading to improve gym track endpoint
+        track_api_key: str
+            track endpoint API key (if available); can be None
+        """
+
         self.model_name = model_name
 
         self.track_url = track_url
@@ -119,7 +182,7 @@ class DecisionModel:
             warnings.warn(
                 'Model name passed to the constructor: {} will not be '
                 'overwritten by loaded model name: {}.'
-                .format(self.model_name, self.chooser.model_name))
+                    .format(self.model_name, self.chooser.model_name))
 
     def _get_chooser(self, model_url: str) -> XGBChooser:
         """
@@ -133,8 +196,8 @@ class DecisionModel:
 
         Returns
         -------
-        DecisionModel
-            new instance of decision model
+        XGBChooser
+            loaded chooser
 
         """
 
@@ -168,7 +231,7 @@ class DecisionModel:
         # return equivalent of double scores
         return self._score(variants=variants, givens=givens)
 
-    def _score(self, variants: list or np.ndarray, givens: dict) -> list or np.ndarray:
+    def _score(self, variants: list or np.ndarray, givens: dict) -> np.ndarray:
         """
         Call predict and calculate scores for provided variants
 
@@ -200,13 +263,12 @@ class DecisionModel:
         except Exception as exc:
             warnings.warn(
                 'Error when calculating predictions: {}. Returning Gaussian scores'
-                .format(exc))
+                    .format(exc))
             scores = DecisionModel.generate_descending_gaussians(count=len(variants))
         return scores.astype(np.float64)
 
     @staticmethod
-    def _validate_variants_and_scores(
-            variants: list or np.ndarray, scores: list or np.ndarray) -> bool:
+    def _validate_variants_and_scores(variants: list or np.ndarray, scores: list or np.ndarray) -> bool:
         """
         Check if variants and scores are not malformed
 
@@ -225,7 +287,7 @@ class DecisionModel:
         """
 
         if variants is None or scores is None:
-            raise ValueError('`variants` and `scores` can`t be None')
+            raise ValueError('`variants` and `scores` can\'t be None')
 
         if len(variants) != len(scores):
             raise ValueError('Lengths of `variants` and `scores` mismatch!')
@@ -236,8 +298,7 @@ class DecisionModel:
         return True
 
     @staticmethod
-    def top_scoring_variant(
-            variants: list or np.ndarray, scores: list or np.ndarray) -> dict:
+    def top_scoring_variant(variants: list or np.ndarray, scores: list or np.ndarray) -> object:
         """
         Gets best variant considering provided scores
 
@@ -250,8 +311,8 @@ class DecisionModel:
 
         Returns
         -------
-        dict
-            Returns best variant
+        object
+            best variant
 
         """
 
@@ -264,8 +325,7 @@ class DecisionModel:
         return variants[np.argmax(scores)]
 
     @staticmethod
-    def rank(
-            variants: list or np.ndarray, scores: list or np.ndarray) -> list or np.ndarray:
+    def rank(variants: list or np.ndarray, scores: list or np.ndarray) -> np.ndarray:
         """
         Return a list of the variants ranked from best to worst.
         DO NOT USE THIS METHOD - WILL LIKELY CHANGE SOON
@@ -296,7 +356,7 @@ class DecisionModel:
         return sorted_variants_w_scores[:, 0]
 
     @staticmethod
-    def generate_descending_gaussians(count: int) -> list or np.ndarray:
+    def generate_descending_gaussians(count: int) -> np.ndarray:
         """
         Generates random floats and sorts in a descending fashion
 
@@ -327,13 +387,14 @@ class DecisionModel:
 
         Returns
         -------
+        DecisionContext
+            decision context for a given model
 
         """
 
         return dc.DecisionContext(decision_model=self, givens=givens)
 
-    def choose_from(
-            self, variants: np.ndarray or list or tuple, scores: list or np.ndarray = None):
+    def choose_from(self, variants: np.ndarray or list or tuple, scores: list or np.ndarray = None):
         """
         Wrapper for chaining
 
@@ -353,7 +414,7 @@ class DecisionModel:
 
         return dc.DecisionContext(decision_model=self, givens=None).choose_from(variants=variants, scores=scores)
 
-    def which(self, *variants: list or tuple or np.ndarray):
+    def which(self, *variants) -> tuple:
         """
         A short hand version of chooseFrom that returns the chosen result directly,
         automatically tracking the decision in the process. This would be a varargs
@@ -364,13 +425,13 @@ class DecisionModel:
 
         Parameters
         ----------
-        *variants: list or tuple or np.ndarray
+        variants: list or tuple or np.ndarray
             array of variants passed as positional parameters
 
         Returns
         -------
-        d.Decision
-            snapshot of the Decision made with provided variants and available givens
+        object, str
+            tuple with (<best variant>, <decision id>)
 
         """
 
@@ -389,7 +450,7 @@ class DecisionModel:
 
         Returns
         -------
-        d.Decision
+        Decision
             A decision with first variants as the best one and gaussian scores
 
         """
@@ -398,19 +459,20 @@ class DecisionModel:
     def first(self, *variants: list or np.ndarray):
         """
         Makes decision using first variant as best and tracks it.
-        Accepts variants as pythonic *args
+        Accepts variants as pythonic args
 
         Parameters
         ----------
-        variants: list or tuple or np.ndarray
+        *variants: list or tuple or np.ndarray
             collection of variants of which first will be chosen
 
         Returns
         -------
-        object
-            chosen and tracked variant
+        object, str
+            tuple with (<first variant>, <decision id>)
 
         """
+
         return dc.DecisionContext(decision_model=self, givens=None).first(*variants)
 
     def choose_random(self, variants: list or tuple or np.ndarray):
@@ -419,12 +481,12 @@ class DecisionModel:
 
         Parameters
         ----------
-        variants: list or tuple or np.ndarray
+        *variants: list or tuple or np.ndarray
             collection of variants of which random will be chosen
 
         Returns
         -------
-        d.Decision
+        Decision
             Decision with randomly chosen best variant
 
         """
@@ -433,7 +495,7 @@ class DecisionModel:
     def random(self, *variants: list or np.ndarray):
         """
         Makes decision using randomly selected variant as best and tracks it.
-        Accepts variants as pythonic *args
+        Accepts variants as pythonic args
 
         Parameters
         ----------
@@ -442,8 +504,8 @@ class DecisionModel:
 
         Returns
         -------
-        object
-            randomly selected and tracked best variant
+        object, str
+            tuple with (<random variant>, <decision id>)
 
         """
         return dc.DecisionContext(decision_model=self, givens=None).random(*variants)

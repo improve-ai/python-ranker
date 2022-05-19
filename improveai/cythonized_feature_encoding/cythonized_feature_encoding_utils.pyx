@@ -8,6 +8,8 @@ import numpy as np
 cimport numpy as np
 
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
 cpdef encoded_variant_into_np_row(
         dict encoded_variant, list feature_names, np.ndarray into):
     """
@@ -51,9 +53,32 @@ cpdef encoded_variant_into_np_row(
 
 
 @cython.boundscheck(False)
+@cython.wraparound(False)
 cpdef np.ndarray encode_variants_single_givens(
         list variants, dict givens, double noise,
         object variants_encoder, object givens_encoder):
+    """
+    Encodes provided variants to a 2D array with single givens
+    
+    Parameters
+    ----------
+    variants: list
+        list of encoded variants
+    givens: dict
+        givens to be encoded with each variant
+    noise: float
+        value within 0 - 1 range which will be 'shrunk' and added to feature value
+    variants_encoder: callable
+        a callable to be used as a variants encoder
+    givens_encoder: callable
+        a callable to be used as a givens encoder 
+    
+    Returns
+    -------
+    np.ndarray
+        2D array with encoded variants; missing values are filled with np.nan
+
+    """
 
     cdef dict into = {}
 
@@ -76,9 +101,34 @@ cpdef np.ndarray encode_variants_single_givens(
     return res
 
 @cython.boundscheck(False)
+@cython.wraparound(False)
 cpdef np.ndarray encode_variants_multiple_givens(
         list variants, list multiple_givens, list multiple_extra_features,
-        double noise, object feature_encoder, object givens_encoder):
+        double noise, object variants_encoder, object givens_encoder):
+    """
+    Encode each variant with corresponding givens
+    
+    Parameters
+    ----------
+    variants: list
+        list of variants to be encoded
+    multiple_givens: list
+        list of givens - each element corresponds to a single variant which 
+    multiple_extra_features: list
+        list of extra features  - each element is a set of extra features for a single variant - givens pair
+    noise: float
+        value within 0 - 1 range which will be 'shrunk' and added to feature value
+    variants_encoder: callable
+        a callable to be used as a variants encoder
+    givens_encoder: callable
+        a callable to be used as a givens encoder
+
+    Returns
+    -------
+    np.ndarray
+        2D array with encoded variants; missing values are filled with np.nan
+
+    """
 
     assert len(variants) == len(multiple_givens)
     cdef int records_count = len(variants)
@@ -100,7 +150,7 @@ cpdef np.ndarray encode_variants_multiple_givens(
                 givens_encoder(givens, noise, into=dict(empty_into))
 
         res[variant_idx] = \
-            feature_encoder(variants[variant_idx], noise, into=encoded_givens)
+            variants_encoder(variants[variant_idx], noise, into=encoded_givens)
 
         extra_features = multiple_extra_features[variant_idx]
         if extra_features:
@@ -110,8 +160,26 @@ cpdef np.ndarray encode_variants_multiple_givens(
 
 
 @cython.boundscheck(False)
+@cython.wraparound(False)
 cpdef double[:, :] encoded_variants_to_np(
         np.ndarray encoded_variants, list feature_names):
+    """
+    For each of `encoded_variants` selects features overlapping with `feature_names`, 
+    fill missing features with np.nan and returns 2D array with all variants      
+    
+    Parameters
+    ----------
+    encoded_variants: np.ndarray
+        as array with all variants to be encoded
+    feature_names: list
+        list of desires feature names
+
+    Returns
+    -------
+    np.ndarray
+        a 2D array with all encoded variants
+
+    """
 
     cdef np.ndarray encoded_variants_array = \
         np.empty(shape=(len(encoded_variants), len(feature_names)), dtype=float)

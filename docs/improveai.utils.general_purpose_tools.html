@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>general_purpose_tools.py module &mdash; improveai 7.0.3 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="choosers_feature_encoding_tools.py module" href="improveai.utils.choosers_feature_encoding_tools.html" />
+    <link rel="prev" title="settings.py module" href="improveai.settings.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> improveai
+          </a>
+              <div class="version">
+                7.0.3
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Readme:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="readme.html">About Improve AI python SDK</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Classes:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="improveai.decision_model.html">DecisionModel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.decision_context.html">DecisionContext</a></li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.decision.html">Decision</a></li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.decision_tracker.html">DecisionTracker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.feature_encoder.html">FeatureEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html">CythonizedFeatureEncoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.givens_provider.html">GivensProvider</a></li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.chooser.html">Chooser</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utils:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="improveai.settings.html">SDK settings</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">general purpose tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.utils.choosers_feature_encoding_tools.html">feature encoding tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.html">cythonized feature encoding tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.utils.gzip_tools.html">gzip tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.utils.url_tools.html">URL tools</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">improveai</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>general_purpose_tools.py module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/improveai.utils.general_purpose_tools.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-improveai.utils.general_purpose_tools">
+<span id="general-purpose-tools-py-module"></span><h1>general_purpose_tools.py module<a class="headerlink" href="#module-improveai.utils.general_purpose_tools" title="Permalink to this headline"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="improveai.utils.general_purpose_tools.append_prefix_to_dict_keys">
+<span class="sig-name descname"><span class="pre">append_prefix_to_dict_keys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prfx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.utils.general_purpose_tools.append_prefix_to_dict_keys" title="Permalink to this definition"></a></dt>
+<dd><p>Appends prefix to the input dict keys</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_dict</strong> (<em>dict</em>) – dict which keys will be appended</p></li>
+<li><p><strong>prfx</strong> (<em>str</em>) – prf to append to input dict keys</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>dict with keys appended</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="improveai.utils.general_purpose_tools.check_variants">
+<span class="sig-name descname"><span class="pre">check_variants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variants</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.utils.general_purpose_tools.check_variants" title="Permalink to this definition"></a></dt>
+<dd><p>Check if variants are of desired type and if they are not an empty collection</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>variants</strong> (<em>list</em><em> or </em><em>tuple</em><em> or </em><em>np.ndarray</em>) – checked variants</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="improveai.utils.general_purpose_tools.constant">
+<span class="sig-name descname"><span class="pre">constant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.utils.general_purpose_tools.constant" title="Permalink to this definition"></a></dt>
+<dd><p>Constant decorator raising error on attempt to set decorated value</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>f</strong> (<em>callable</em>) – decorated object</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>constant property</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>property</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="improveai.utils.general_purpose_tools.get_variants_from_args">
+<span class="sig-name descname"><span class="pre">get_variants_from_args</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variants</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.utils.general_purpose_tools.get_variants_from_args" title="Permalink to this definition"></a></dt>
+<dd><p>Extract variants from pythonic args</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>variants</strong> (<em>list</em><em> or </em><em>tuple</em><em> or </em><em>np.ndarray</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="improveai.utils.general_purpose_tools.impute_missing_dict_keys">
+<span class="sig-name descname"><span class="pre">impute_missing_dict_keys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_des_keys</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imputed_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imputer_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">nan</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.utils.general_purpose_tools.impute_missing_dict_keys" title="Permalink to this definition"></a></dt>
+<dd><p>Imputes provided value into missing keys of input dict</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>all_des_keys</strong> (<em>list</em>) – list of all necessary keys in returned dict</p></li>
+<li><p><strong>imputed_dict</strong> (<em>dict</em>) – input dict</p></li>
+<li><p><strong>imputer_value</strong> (<em>object</em>) – value to be imputed for missing values</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>dict with all missing keys imputed</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="improveai.utils.general_purpose_tools.is_valid_ksuid">
+<span class="sig-name descname"><span class="pre">is_valid_ksuid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id_</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.utils.general_purpose_tools.is_valid_ksuid" title="Permalink to this definition"></a></dt>
+<dd><p>Checks if input value is a valid Ksuid string</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>str</em>) – checked string</p></li>
+<li><p><strong>id_</strong> (<em>str</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if string is a valid ksuid otherwise False</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="improveai.utils.general_purpose_tools.read_jsonstring_from_file">
+<span class="sig-name descname"><span class="pre">read_jsonstring_from_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'readlines'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decode_escape_char</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.utils.general_purpose_tools.read_jsonstring_from_file" title="Permalink to this definition"></a></dt>
+<dd><p>Safely reads desired file with json wrapper</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path_to_file</strong> (<em>str</em>) – pth to loaded file</p></li>
+<li><p><strong>mode</strong> (<em>str</em>) – read mode</p></li>
+<li><p><strong>decode_escape_char</strong> (<em>bool</em>) – should double escape be repalced by single ?</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>read json string</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="improveai.utils.general_purpose_tools.sigmoid">
+<span class="sig-name descname"><span class="pre">sigmoid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logit_const</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.utils.general_purpose_tools.sigmoid" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate sigmoid value</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>float</em>) – arg passed to sigmoid function</p></li>
+<li><p><strong>logit_const</strong> (<em>float</em>) – constant added to sigmoid argument</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>value of sigmoid function</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="improveai.settings.html" class="btn btn-neutral float-left" title="settings.py module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="improveai.utils.choosers_feature_encoding_tools.html" class="btn btn-neutral float-right" title="choosers_feature_encoding_tools.py module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Improve AI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

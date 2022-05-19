@@ -8,7 +8,7 @@ Improve AI provides quick on-device AI decisions that get smarter over time. It'
 ## Installation
 
 
-### Installation prerequisites
+#### Installation prerequisites
  - python 3.7+
  - in order to take advantage of fast feature encoding please install `gcc` and python headers: `python3-dev` or `python3-devel` (`sudo apt install gcc python3-dev` for apt and `sudo yum install gcc python3-devel` for yum or dnf)
  - for macOS it might be necessary to [build xgboost from sources](https://xgboost.readthedocs.io/en/stable/build.html) (otherwise `pip3 install xgboost` might fail)
@@ -19,7 +19,7 @@ Improve AI provides quick on-device AI decisions that get smarter over time. It'
 
 
 
-### Install with pip
+#### Install with pip
 
 To install from pip simply use:
 
@@ -35,9 +35,7 @@ To avoid this either purge pip's cache:
 or use `--no-cache-dir` flag
 
 
-
-
-### Build and install from cloned git repo
+#### Build and install from cloned git repo
 
 To install from cloned repo:     
  1. clone repo: git clone https://github.com/improve-ai/python-sdk    
@@ -169,7 +167,7 @@ discounts_model.load(model_url='<discounts model URL>')
 discount, _ = discounts_model.which(0.1, 0.2, 0.3)
 ```
 
-## Booleans
+### Booleans
 
 Dynamically enable feature flags for best performance...
 

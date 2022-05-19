@@ -5,7 +5,7 @@ from ksuid import Ksuid
 import numpy as np
 
 
-def constant(f):
+def constant(f) -> property:
     """
     Constant decorator raising error on attempt to set decorated value
 
@@ -29,7 +29,7 @@ def constant(f):
     return property(fget, fset)
 
 
-def append_prfx_to_dict_keys(input_dict: dict, prfx: str) -> dict:
+def append_prefix_to_dict_keys(input_dict: dict, prfx: str) -> dict:
     """
     Appends prefix to the input dict keys
 
@@ -52,7 +52,7 @@ def append_prfx_to_dict_keys(input_dict: dict, prfx: str) -> dict:
 
 
 def impute_missing_dict_keys(
-        all_des_keys: list, imputed_dict, imputer_value: float = np.nan):
+        all_des_keys: list, imputed_dict, imputer_value: float = np.nan) -> dict:
     """
     Imputes provided value into missing keys of input dict
 
@@ -72,13 +72,13 @@ def impute_missing_dict_keys(
 
     """
 
-    prcsd_encoded_features = deepcopy(imputed_dict)
+    processed_encoded_features = deepcopy(imputed_dict)
 
     for feat_n in all_des_keys:
         if feat_n not in imputed_dict.keys():
-            prcsd_encoded_features[feat_n] = imputer_value
+            processed_encoded_features[feat_n] = imputer_value
 
-    return prcsd_encoded_features
+    return processed_encoded_features
 
 
 def read_jsonstring_from_file(
@@ -142,7 +142,7 @@ def sigmoid(x: float, logit_const: float) -> float:
     return 1 / (1 + np.exp(exp_arg))
 
 
-def check_variants(variants: list or tuple or np.ndarray):
+def check_variants(variants: list or tuple or np.ndarray) -> list or tuple or np.ndarray:
     """
     Check if variants are of desired type and if they are not an empty collection
 
@@ -159,7 +159,20 @@ def check_variants(variants: list or tuple or np.ndarray):
         raise ValueError('`variants` must not be an empty collection')
 
 
-def get_variants_from_args(variants: list or tuple or np.ndarray):
+def get_variants_from_args(variants: list or tuple or np.ndarray) -> list or tuple or np.ndarray:
+    """
+    Extract variants from pythonic args
+
+    Parameters
+    ----------
+    variants: list or tuple or np.ndarray
+
+
+    Returns
+    -------
+
+    """
+
     if len(variants) == 1:
         # if the first element is a list -> it is ok to use such list as variants
         # if the first element is not a list / tuple / np.ndarray raise
@@ -169,7 +182,21 @@ def get_variants_from_args(variants: list or tuple or np.ndarray):
     return variants
 
 
-def is_valid_ksuid(id_):
+def is_valid_ksuid(id_: str) -> bool:
+    """
+    Checks if input value is a valid Ksuid string
+
+    Parameters
+    ----------
+    id_: str
+        checked string
+
+    Returns
+    -------
+    bool
+        True if string is a valid ksuid otherwise False
+
+    """
     if not isinstance(id_, str):
         return False
 

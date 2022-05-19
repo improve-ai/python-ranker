@@ -10,6 +10,15 @@ class DecisionContext:
 
     @property
     def decision_model(self):
+        """
+        DecisionModel of this DecisionContext
+
+        Returns
+        -------
+        DecisionModel
+            DecisionModel of this DecisionContext
+
+        """
         return self._decision_model
 
     @decision_model.setter
@@ -20,7 +29,16 @@ class DecisionContext:
         self._decision_model = value
 
     @property
-    def givens(self):
+    def givens(self) -> dict:
+        """
+        Givens for this DecisionContext
+
+        Returns
+        -------
+        dict
+            Givens for this DecisionContext
+
+        """
         return self._givens
 
     @givens.setter
@@ -30,6 +48,16 @@ class DecisionContext:
         self._givens = value
 
     def __init__(self, decision_model, givens: dict or None):
+        """
+        Init with params
+
+        Parameters
+        ----------
+        decision_model: DecisionModel
+            decision model for this DecisionContext
+        givens: dict
+            givens for this DecisionContext
+        """
         self.decision_model = decision_model
         self.givens = givens
 
@@ -109,8 +137,8 @@ class DecisionContext:
 
         Returns
         -------
-        Decision
-            snapshot of the Decision made with provided variants and available givens
+        object, str
+            a tuple of (<best variant>, <decision id>)
 
         """
 
@@ -129,7 +157,7 @@ class DecisionContext:
 
         Returns
         -------
-        d.Decision
+        Decision
             A decision with first variants as the best one and gaussian scores
 
         """
@@ -150,8 +178,8 @@ class DecisionContext:
 
         Returns
         -------
-        object
-            chosen and tracked variant
+        object, str
+            a tuple of (<first variant>, <decision id>)
 
         """
 
@@ -171,7 +199,7 @@ class DecisionContext:
 
         Returns
         -------
-        d.Decision
+        Decision
             Decision with randomly chosen best variant
 
         """
@@ -191,8 +219,8 @@ class DecisionContext:
 
         Returns
         -------
-        object
-            randomly selected and tracked best variant
+        object, str
+            a tuple of (<random variant>, <decision id>)
 
         """
         used_variants = get_variants_from_args(variants)
