@@ -28,6 +28,15 @@ class XGBChooser:
 
     @property
     def model(self) -> Booster:
+        """
+        xgboost's booster used by this chooser
+
+        Returns
+        -------
+        Booster
+            xgboost's booster used by this chooser
+
+        """
         return self._model
 
     @model.setter
@@ -36,6 +45,15 @@ class XGBChooser:
 
     @property
     def model_metadata(self) -> Dict[str, object]:
+        """
+        Improve AI model metadata dict
+
+        Returns
+        -------
+        dict
+            Improve AI model metadata dict
+
+        """
         return self._model_metadata
 
     @model_metadata.setter
@@ -44,6 +62,15 @@ class XGBChooser:
 
     @property
     def feature_encoder(self) -> FeatureEncoder or FastFeatureEncoder:
+        """
+        FeatureEncoder of this chooser
+
+        Returns
+        -------
+        FeatureEncoder
+            FeatureEncoder of this chooser
+
+        """
         return self._feature_encoder
 
     @feature_encoder.setter
@@ -52,6 +79,16 @@ class XGBChooser:
 
     @property
     def model_metadata_key(self):
+        """
+        'User defined' metadata is stored inside Improve AI Booster. Inside a
+        'user defined' metadata 'model metadata' is stored under `model_metadata_key`
+
+        Returns
+        -------
+        str
+            `model_metadata` key inside `user_defined_metadata`
+
+        """
         return self._mlmodel_metadata_key
 
     @model_metadata_key.setter
@@ -60,6 +97,15 @@ class XGBChooser:
 
     @property
     def model_seed_key(self) -> str:
+        """
+        `model_seed` key  in `model_metadata` dict
+
+        Returns
+        -------
+        str
+            `model_seed` key  in `model_metadata` dict
+
+        """
         return self._model_seed_key
 
     @model_seed_key.setter
@@ -68,6 +114,15 @@ class XGBChooser:
 
     @property
     def model_seed(self):
+        """
+        Model seed needed for FeatureEncoder constructor
+
+        Returns
+        -------
+        int
+            Model seed needed for FeatureEncoder constructor
+
+        """
         return self._model_seed
 
     @model_seed.setter
@@ -76,6 +131,15 @@ class XGBChooser:
 
     @property
     def model_name_key(self):
+        """
+        `model_name` key  in `model_metadata` dict
+
+        Returns
+        -------
+        str
+            `model_name` key  in `model_metadata` dict
+
+        """
         return self._model_name_key
 
     @model_name_key.setter
@@ -84,6 +148,15 @@ class XGBChooser:
 
     @property
     def model_name(self):
+        """
+        Model name of this Improve AI model
+
+        Returns
+        -------
+        str
+            Model name of this Improve AI model
+
+        """
         return self._model_name
 
     @model_name.setter
@@ -96,6 +169,15 @@ class XGBChooser:
 
     @property
     def model_feature_names_key(self) -> str:
+        """
+        `model_feature_names` key  in `model_metadata` dict
+
+        Returns
+        -------
+        str
+            `model_feature_names` key  in `model_metadata` dict
+
+        """
         return self._model_feature_names_key
 
     @model_feature_names_key.setter
@@ -103,23 +185,33 @@ class XGBChooser:
         self._model_feature_names_key = new_val
 
     @property
-    def model_feature_names(self) -> np.ndarray:
+    def model_feature_names(self) -> list:
+        """
+        Feature names of this Improve AI model
+
+        Returns
+        -------
+        list
+            Feature names of this Improve AI model
+
+        """
         return self._model_feature_names
 
     @model_feature_names.setter
-    def model_feature_names(self, new_val: np.ndarray):
+    def model_feature_names(self, new_val: list):
         self._model_feature_names = new_val
 
     @property
-    def feature_encoder_extras(self):
-        return self._feature_encoder_extras
-
-    @feature_encoder_extras.setter
-    def feature_encoder_extras(self, value):
-        self._feature_encoder_extras = value
-
-    @property
     def current_noise(self):
+        """
+        Currently used noise value. Needed for SDK + synthetic model validation
+
+        Returns
+        -------
+        float
+            Currently used noise
+
+        """
         return self._current_noise
 
     @current_noise.setter
@@ -128,6 +220,15 @@ class XGBChooser:
 
     @property
     def imposed_noise(self):
+        """
+        Forced noise value. Needed for SDK + synthetic model validation
+
+        Returns
+        -------
+        float
+            Forced noise value
+
+        """
         return self._imposed_noise
 
     @imposed_noise.setter
@@ -139,13 +240,27 @@ class XGBChooser:
         self._imposed_noise = value
 
     def __init__(
-            self, mlmodel_metadata_key: str = 'json',
+            self, model_metadata_key: str = 'json',
             model_feature_names_key: str = 'feature_names',
             model_seed_key: str = 'model_seed',
             model_name_key: str = 'model_name'):
+        """
+        Init with params
+
+        Parameters
+        ----------
+        model_metadata_key: str
+            key storing 'model metadata' inside 'user defined metadata'
+        model_feature_names_key: str
+            key storing 'feature names' inside 'model metadata'
+        model_seed_key: str
+            key storing 'seed' inside 'model metadata'
+        model_name_key: str
+            key storing 'model name' inside 'model metadata'
+        """
 
         self.model = None
-        self.model_metadata_key = mlmodel_metadata_key
+        self.model_metadata_key = model_metadata_key
         self.model_metadata = None
 
         self.feature_encoder = None
@@ -168,9 +283,9 @@ class XGBChooser:
         Parameters
         ----------
         input_model_src: str
-            path to desired model
+            URL / path to desired model
         verbose: bool
-            should I print msgs
+            should I print debug messages
         Returns
         -------
         None
@@ -223,11 +338,11 @@ class XGBChooser:
 
     def _get_model_metadata(self) -> dict:
         """
-        Model metadata (hash table, etc. getter)
+        gets 'model metadata' from 'user defined metadata' of Improve AI model
 
         Returns
         -------
-        Dict[str, object]
+        dict
             dict with model metadata
         """
 
@@ -238,24 +353,18 @@ class XGBChooser:
 
         return user_defined_metadata[self.model_metadata_key]
 
-    def score(
-            self, variants: List[Dict[str, object]],
-            givens: Dict[str, object], imputer_value: float = np.nan,
-            **kwargs) -> np.ndarray:
-
+    def score(self, variants: list or tuple or np.ndarray, givens: dict or None, **kwargs) -> np.ndarray:
         """
         Scores all provided variants
 
         Parameters
         ----------
-        variants: list
+        variants: list or tuple or np.ndarray
             list of variants to scores
-        givens: dict
+        givens: dict or None
             context dict needed for encoding
-                mlmodel_score_res_key
-        imputer_value: float
-            value with which missing valuse will be imputed
-        kwargs
+        kwargs: dict
+            kwargs
 
         Returns
         -------
@@ -287,14 +396,15 @@ class XGBChooser:
         return scores
 
     def _encode_variants_single_givens(
-            self, variants: Iterable, givens: dict or None) -> Iterable:
+            self, variants: list or tuple or np.ndarray, givens: dict or None) -> Iterable:
         """
         Implemented as a XGBChooser helper method
         Cythonized loop over provided variants and a single givens dict.
         Returns array of encoded dicts.
+
         Parameters
         ----------
-        variants: Iterable
+        variants: list or tuple or np.ndarray
             collection of input variants to be encoded
         givens: dict or None
             context to be encoded with variants
@@ -362,14 +472,19 @@ class XGBChooser:
         unzipped_model_src = check_and_get_unzipped_model(model_src=raw_model_src)
         return unzipped_model_src
 
-    def _get_model_feature_names(self, model_metadata: dict):
+    def _get_model_feature_names(self, model_metadata: dict) -> list:
         """
-        Getter for model features
+        Gets model feature names from model metadata
+
+        Parameters
+        ----------
+        model_metadata: dict
+            a dict containing model metadata
 
         Returns
         -------
-        dict
-            dict with feature names extracted from model metadata
+        list
+            list of feature names
 
         """
 
@@ -383,7 +498,22 @@ class XGBChooser:
 
         return feature_names
 
-    def _get_model_seed(self, model_metadata: dict):
+    def _get_model_seed(self, model_metadata: dict) -> int:
+        """
+        Gets model seed from model metadata
+
+        Parameters
+        ----------
+        model_metadata: dict
+            a dict containing model metadata
+
+
+        Returns
+        -------
+        int
+            model seed
+
+        """
         if not model_metadata:
             raise ValueError('Model metadata empty or None!')
 
@@ -394,7 +524,21 @@ class XGBChooser:
 
         return model_seed
 
-    def _get_model_name(self, model_metadata: dict):
+    def _get_model_name(self, model_metadata: dict) -> str:
+        """
+        Gets model name from model metadata
+
+        Parameters
+        ----------
+        model_metadata: dict
+            a dict containing model metadata
+
+        Returns
+        -------
+        str
+            Improve AI model name
+
+        """
         if not model_metadata:
             raise ValueError('Model metadata empty or None!')
 
@@ -420,7 +564,6 @@ class XGBChooser:
         class_cols_idx: int
             index of the class label in a single row
 
-
         Returns
         -------
         np.ndarray
@@ -437,45 +580,3 @@ class XGBChooser:
             variants_w_scores[ind]
 
         return srtd_variants_w_scores
-
-    def choose(
-            self, variants_w_scores: np.ndarray,
-            scores_col_idx: int = 1, class_col_idx: int = 2) -> np.ndarray:
-        """
-        Chooses the variant with the highest score. Randomly breaks ties
-
-        Parameters
-        ----------
-        variants_w_scores: np.ndarray
-            2D array of (variant, score) rows
-        scores_col_idx: int
-            int indicating column with scores
-        class_col_idx: int
-            index of the class label in a single row
-
-        Returns
-        -------
-        np.ndarray
-            1D array with <best variant, best_score>
-
-        """
-        # must break ties
-
-        choices = []
-
-        for curr_class_id in np.unique(variants_w_scores[:, class_col_idx]):
-            curr_class_variants_w_scores = \
-                variants_w_scores[
-                    variants_w_scores[:, class_col_idx] == curr_class_id, :]
-
-            scores = curr_class_variants_w_scores[:, scores_col_idx]
-
-            top_variants_w_scores = \
-                curr_class_variants_w_scores[scores == scores.max()]
-
-            chosen_top_variant_idx = \
-                np.random.randint(top_variants_w_scores.shape[0])
-
-            choices.append(top_variants_w_scores[chosen_top_variant_idx])
-
-        return np.array(choices)

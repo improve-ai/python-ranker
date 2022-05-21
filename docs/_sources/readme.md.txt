@@ -32,7 +32,7 @@ To avoid this either purge pip's cache:
 
 `pip3 cache purge`
 
-or use `--no-cache-dir` flag:
+or use `--no-cache-dir` flag
 
 
 #### Build and install from cloned git repo

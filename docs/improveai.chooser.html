@@ -103,14 +103,15 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="improveai.chooser.XGBChooser.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mlmodel_metadata_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'json'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_feature_names_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'feature_names'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_seed_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'model_seed'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'model_name'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.chooser.XGBChooser.__init__" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_metadata_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'json'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_feature_names_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'feature_names'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_seed_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'model_seed'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'model_name'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.chooser.XGBChooser.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Init with params</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>mlmodel_metadata_key</strong> (<em>str</em>) – </p></li>
-<li><p><strong>model_feature_names_key</strong> (<em>str</em>) – </p></li>
-<li><p><strong>model_seed_key</strong> (<em>str</em>) – </p></li>
-<li><p><strong>model_name_key</strong> (<em>str</em>) – </p></li>
+<li><p><strong>model_metadata_key</strong> (<em>str</em>) – key storing ‘model metadata’ inside ‘user defined metadata’</p></li>
+<li><p><strong>model_feature_names_key</strong> (<em>str</em>) – key storing ‘feature names’ inside ‘model metadata’</p></li>
+<li><p><strong>model_seed_key</strong> (<em>str</em>) – key storing ‘seed’ inside ‘model metadata’</p></li>
+<li><p><strong>model_name_key</strong> (<em>str</em>) – key storing ‘model name’ inside ‘model metadata’</p></li>
 </ul>
 </dd>
 </dl>
@@ -140,22 +141,30 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="improveai.chooser.XGBChooser.current_noise">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">current_noise</span></span><a class="headerlink" href="#improveai.chooser.XGBChooser.current_noise" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="improveai.chooser.XGBChooser.feature_encoder">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">feature_encoder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="improveai.feature_encoder.html#improveai.feature_encoder.FeatureEncoder" title="improveai.feature_encoder.FeatureEncoder"><span class="pre">improveai.feature_encoder.FeatureEncoder</span></a></em><a class="headerlink" href="#improveai.chooser.XGBChooser.feature_encoder" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="improveai.feature_encoder.html#improveai.feature_encoder.FeatureEncoder" title="improveai.feature_encoder.FeatureEncoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">FeatureEncoder</span></code></a></p>
+<dd><p>Currently used noise value; Needed for SDK model validation test suite</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Currently used noise</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="improveai.chooser.XGBChooser.feature_encoder_extras">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">feature_encoder_extras</span></span><a class="headerlink" href="#improveai.chooser.XGBChooser.feature_encoder_extras" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dt class="sig sig-object py" id="improveai.chooser.XGBChooser.feature_encoder">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">feature_encoder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="improveai.feature_encoder.html#improveai.feature_encoder.FeatureEncoder" title="improveai.feature_encoder.FeatureEncoder"><span class="pre">improveai.feature_encoder.FeatureEncoder</span></a></em><a class="headerlink" href="#improveai.chooser.XGBChooser.feature_encoder" title="Permalink to this definition"></a></dt>
+<dd><p>FeatureEncoder of this chooser</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>FeatureEncoder of this chooser</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder" title="improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder">FeatureEncoder</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="improveai.chooser.XGBChooser.get_model_src">
@@ -177,7 +186,16 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="improveai.chooser.XGBChooser.imposed_noise">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">imposed_noise</span></span><a class="headerlink" href="#improveai.chooser.XGBChooser.imposed_noise" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Forced noise value; Needed for SDK model validation test suite</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Forced noise value</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="improveai.chooser.XGBChooser.load_model">
@@ -202,19 +220,27 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="improveai.chooser.XGBChooser.model">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">xgboost.core.Booster</span></em><a class="headerlink" href="#improveai.chooser.XGBChooser.model" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Booster</span></code></p>
+<dd><p>xgboost’s booster used by this chooser</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>xgboost’s booster used by this chooser</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Booster</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="improveai.chooser.XGBChooser.model_feature_names">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_feature_names</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span></em><a class="headerlink" href="#improveai.chooser.XGBChooser.model_feature_names" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_feature_names</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></em><a class="headerlink" href="#improveai.chooser.XGBChooser.model_feature_names" title="Permalink to this definition"></a></dt>
+<dd><p>Feature names of this Improve AI model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Feature names of this Improve AI model</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
 </dd>
 </dl>
 </dd></dl>
@@ -222,9 +248,13 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="improveai.chooser.XGBChooser.model_feature_names_key">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_feature_names_key</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#improveai.chooser.XGBChooser.model_feature_names_key" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></p>
+<dd><p><cite>model_feature_names</cite> key  in <cite>model_metadata</cite> dict</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><cite>model_feature_names</cite> key  in <cite>model_metadata</cite> dict</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
 </dd>
 </dl>
 </dd></dl>
@@ -232,9 +262,13 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="improveai.chooser.XGBChooser.model_metadata">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_metadata</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">object</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#improveai.chooser.XGBChooser.model_metadata" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code>]</p>
+<dd><p>Improve AI model metadata dict</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Improve AI model metadata dict</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -242,36 +276,77 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="improveai.chooser.XGBChooser.model_metadata_key">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_metadata_key</span></span><a class="headerlink" href="#improveai.chooser.XGBChooser.model_metadata_key" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>‘User defined’ metadata is stored inside Improve AI Booster. Inside a
+‘user defined’ metadata ‘model metadata’ is stored under <cite>model_metadata_key</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><cite>model_metadata</cite> key inside <cite>user_defined_metadata</cite></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="improveai.chooser.XGBChooser.model_name">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_name</span></span><a class="headerlink" href="#improveai.chooser.XGBChooser.model_name" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Model name of this Improve AI model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Model name of this Improve AI model</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="improveai.chooser.XGBChooser.model_name_key">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_name_key</span></span><a class="headerlink" href="#improveai.chooser.XGBChooser.model_name_key" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p><cite>model_name</cite> key  in <cite>model_metadata</cite> dict</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><cite>model_name</cite> key  in <cite>model_metadata</cite> dict</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="improveai.chooser.XGBChooser.model_seed">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_seed</span></span><a class="headerlink" href="#improveai.chooser.XGBChooser.model_seed" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Model seed needed for FeatureEncoder constructor</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Model seed needed for FeatureEncoder constructor</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="improveai.chooser.XGBChooser.model_seed_key">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_seed_key</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#improveai.chooser.XGBChooser.model_seed_key" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></p>
+<dd><p><cite>model_seed</cite> key  in <cite>model_metadata</cite> dict</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><cite>model_seed</cite> key  in <cite>model_metadata</cite> dict</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="improveai.chooser.XGBChooser.score">
-<span class="sig-name descname"><span class="pre">score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variants</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">givens</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imputer_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">nan</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.chooser.XGBChooser.score" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variants</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">givens</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.chooser.XGBChooser.score" title="Permalink to this definition"></a></dt>
 <dd><p>Scores all provided variants</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -282,7 +357,6 @@
 </dd>
 </dl>
 </p></li>
-<li><p><strong>imputer_value</strong> (<em>float</em>) – value with which missing valuse will be imputed</p></li>
 <li><p><strong>kwargs</strong> – </p></li>
 </ul>
 </dd>
