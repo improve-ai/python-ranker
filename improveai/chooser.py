@@ -4,7 +4,6 @@ import json
 import numpy as np
 import pickle
 import re
-from typing import Dict, List
 from traceback import print_exc
 from xgboost import Booster, DMatrix
 from xgboost.core import XGBoostError
@@ -44,7 +43,7 @@ class XGBChooser:
         self._model = new_val
 
     @property
-    def model_metadata(self) -> Dict[str, object]:
+    def model_metadata(self) -> dict:
         """
         Improve AI model metadata dict
 
@@ -57,7 +56,7 @@ class XGBChooser:
         return self._model_metadata
 
     @model_metadata.setter
-    def model_metadata(self, new_val: Dict[str, object]):
+    def model_metadata(self, new_val: dict):
         self._model_metadata = new_val
 
     @property

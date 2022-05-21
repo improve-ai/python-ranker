@@ -117,31 +117,10 @@
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="improveai.chooser.XGBChooser.choose">
-<span class="sig-name descname"><span class="pre">choose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variants_w_scores</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scores_col_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">class_col_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.chooser.XGBChooser.choose" title="Permalink to this definition"></a></dt>
-<dd><p>Chooses the variant with the highest score. Randomly breaks ties</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>variants_w_scores</strong> (<em>np.ndarray</em>) – 2D array of (variant, score) rows</p></li>
-<li><p><strong>scores_col_idx</strong> (<em>int</em>) – int indicating column with scores</p></li>
-<li><p><strong>class_col_idx</strong> (<em>int</em>) – index of the class label in a single row</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>1D array with &lt;best variant, best_score&gt;</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>np.ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py property">
 <dt class="sig sig-object py" id="improveai.chooser.XGBChooser.current_noise">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">current_noise</span></span><a class="headerlink" href="#improveai.chooser.XGBChooser.current_noise" title="Permalink to this definition"></a></dt>
-<dd><p>Currently used noise value; Needed for SDK model validation test suite</p>
+<dd><p>Currently used noise value. Needed for SDK + synthetic model validation</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>Currently used noise</p>
@@ -186,7 +165,7 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="improveai.chooser.XGBChooser.imposed_noise">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">imposed_noise</span></span><a class="headerlink" href="#improveai.chooser.XGBChooser.imposed_noise" title="Permalink to this definition"></a></dt>
-<dd><p>Forced noise value; Needed for SDK model validation test suite</p>
+<dd><p>Forced noise value. Needed for SDK + synthetic model validation</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>Forced noise value</p>
@@ -204,8 +183,8 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>input_model_src</strong> (<em>str</em>) – path to desired model</p></li>
-<li><p><strong>verbose</strong> (<em>bool</em>) – should I print msgs</p></li>
+<li><p><strong>input_model_src</strong> (<em>str</em>) – URL / path to desired model</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – should I print debug messages</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -261,7 +240,7 @@
 
 <dl class="py property">
 <dt class="sig sig-object py" id="improveai.chooser.XGBChooser.model_metadata">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_metadata</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">object</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#improveai.chooser.XGBChooser.model_metadata" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_metadata</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></em><a class="headerlink" href="#improveai.chooser.XGBChooser.model_metadata" title="Permalink to this definition"></a></dt>
 <dd><p>Improve AI model metadata dict</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -351,13 +330,9 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>variants</strong> (<em>list</em>) – list of variants to scores</p></li>
-<li><p><strong>givens</strong> (<em>dict</em>) – <dl class="simple">
-<dt>context dict needed for encoding</dt><dd><p>mlmodel_score_res_key</p>
-</dd>
-</dl>
-</p></li>
-<li><p><strong>kwargs</strong> – </p></li>
+<li><p><strong>variants</strong> (<em>list</em><em> or </em><em>tuple</em><em> or </em><em>np.ndarray</em>) – list of variants to scores</p></li>
+<li><p><strong>givens</strong> (<em>dict</em><em> or </em><em>None</em>) – context dict needed for encoding</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – kwargs</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
