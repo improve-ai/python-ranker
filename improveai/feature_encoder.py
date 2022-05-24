@@ -6,7 +6,7 @@ import xxhash
 
 
 xxhash3 = xxhash.xxh3_64_intdigest
-JSON_SERIALIZABLE_TYPES = [int, float, str, bool, list, tuple, dict]
+JSON_SERIALIZABLE_TYPES = {int, float, str, bool, list, tuple, dict}
 WARNED_ABOUT_ARRAY_ENCODING = False
 
 
@@ -316,7 +316,8 @@ def _is_object_json_serializable(object_) -> bool:
     bool
         True if input is JSON serializable False otherwise
     """
-    return any([isinstance(object_, type_) for type_ in JSON_SERIALIZABLE_TYPES]) or object_ is None
+
+    return type(object_) in JSON_SERIALIZABLE_TYPES or object_ is None
 
 
 def _has_top_level_string_keys(checked_dict) -> bool:
@@ -336,7 +337,8 @@ def _has_top_level_string_keys(checked_dict) -> bool:
         True if all keys are strings otherwise False
 
     """
-    return all([isinstance(k, str) for k in checked_dict.keys()])
+
+    return all(isinstance(k, str) for k in checked_dict.keys())
 
 
 def warn_about_array_encoding(object_):
@@ -409,9 +411,7 @@ def encode(object_, seed, small_noise, features):
         feature_name = hash_to_feature_name(seed)
 
         previous_object_ = \
-            _get_previous_value(
-                feature_name=feature_name, into=features,
-                small_noise=small_noise)
+            _get_previous_value(feature_name=feature_name, into=features, small_noise=small_noise)
 
         features[feature_name] = sprinkle(object_ + previous_object_, small_noise)
 
@@ -423,41 +423,30 @@ def encode(object_, seed, small_noise, features):
         feature_name = hash_to_feature_name(seed)
 
         previous_hashed = \
-            _get_previous_value(
-                feature_name=feature_name, into=features,
-                small_noise=small_noise)
+            _get_previous_value(feature_name=feature_name, into=features, small_noise=small_noise)
 
         features[feature_name] = \
-            sprinkle(
-                (((hashed & 0xffff0000) >> 16) - 0x8000) + previous_hashed,
-                small_noise)
+            sprinkle((((hashed & 0xffff0000) >> 16) - 0x8000) + previous_hashed, small_noise)
 
         hashed_feature_name = hash_to_feature_name(hashed)
 
         previous_hashed_for_feature_name = \
-            _get_previous_value(
-                feature_name=hashed_feature_name, into=features,
-                small_noise=small_noise)
+            _get_previous_value(feature_name=hashed_feature_name, into=features, small_noise=small_noise)
 
         features[hashed_feature_name] = \
-            sprinkle(
-                ((hashed & 0xffff) - 0x8000) + previous_hashed_for_feature_name,
-                small_noise)
+            sprinkle(((hashed & 0xffff) - 0x8000) + previous_hashed_for_feature_name, small_noise)
 
         return
 
     if isinstance(object_, dict):
         assert _has_top_level_string_keys(object_)
         for key, value in object_.items():
-            encode(
-                value, xxhash3(key, seed=seed), small_noise, features)
+            encode(value, xxhash3(key, seed=seed), small_noise, features)
         return
 
     if isinstance(object_, (list, tuple)):
         for index, item in enumerate(object_):
-            encode(
-                item, xxhash3(index.to_bytes(8, byteorder='big'), seed=seed),
-                small_noise, features)
+            encode(item, xxhash3(index.to_bytes(8, byteorder='big'), seed=seed), small_noise, features)
         return
     # None, json null, or unsupported type. Treat as missing feature, return
 

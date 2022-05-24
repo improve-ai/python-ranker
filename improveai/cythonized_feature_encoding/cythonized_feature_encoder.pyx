@@ -10,11 +10,17 @@ cimport numpy as np
 import warnings
 import xxhash
 
+
 cdef object xxhash3 = xxhash.xxh3_64_intdigest
-cdef list JSON_SERIALIZABLE_TYPES = [int, float, str, bool, list, tuple, dict]
+cdef set JSON_SERIALIZABLE_TYPES = {int, float, str, bool, list, tuple, dict}
 
 import improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils as cfeu
 import improveai.feature_encoder as fe
+
+
+encoded_variant_into_np_row = cfeu.encoded_variant_into_np_row
+encode_variants_multiple_givens = cfeu.encode_variants_multiple_givens
+encoded_variants_to_np = cfeu.encoded_variants_to_np
 
 
 @cython.boundscheck(False)
@@ -33,7 +39,7 @@ cpdef _is_object_json_serializable(object object_):
     bool
         True if input is JSON serializable False otherwise
     """
-    return any([isinstance(object_, type_) for type_ in JSON_SERIALIZABLE_TYPES]) or object_ is None
+    return type(object_) in JSON_SERIALIZABLE_TYPES or object_ is None
 
 
 @cython.boundscheck(False)
@@ -133,12 +139,9 @@ cpdef encode(object object_, unsigned long long seed, double small_noise, dict f
         feature_name = hash_to_feature_name(seed)
 
         previous_object_ = \
-            _get_previous_value(
-                feature_name=feature_name, into=features,
-                small_noise=small_noise)
+            _get_previous_value(feature_name=feature_name, into=features, small_noise=small_noise)
 
-        features[feature_name] = \
-            sprinkle(object_ + previous_object_, small_noise)
+        features[feature_name] = sprinkle(object_ + previous_object_, small_noise)
 
         return
 
@@ -153,41 +156,30 @@ cpdef encode(object object_, unsigned long long seed, double small_noise, dict f
         feature_name = hash_to_feature_name(seed)
 
         previous_hashed = \
-            _get_previous_value(
-                feature_name=feature_name, into=features,
-                small_noise=small_noise)
+            _get_previous_value(feature_name=feature_name, into=features, small_noise=small_noise)
 
         features[feature_name] = \
-            sprinkle(
-                <double>(<long long>(((hashed & 0xffff0000) >> 16) - 0x8000)) + previous_hashed,
-                small_noise)
+            sprinkle(<double>(<long long>(((hashed & 0xffff0000) >> 16) - 0x8000)) + previous_hashed, small_noise)
 
         hashed_feature_name = hash_to_feature_name(hashed)
 
         previous_hashed_for_feature_name = \
-            _get_previous_value(
-                feature_name=hashed_feature_name, into=features,
-                small_noise=small_noise)
+            _get_previous_value(feature_name=hashed_feature_name, into=features, small_noise=small_noise)
 
         features[hashed_feature_name] = \
-            sprinkle(
-                <double>(<long long>((hashed & 0xffff) - 0x8000)) + previous_hashed_for_feature_name,
-                small_noise)
+            sprinkle(<double>(<long long>((hashed & 0xffff) - 0x8000)) + previous_hashed_for_feature_name, small_noise)
 
         return
 
     if isinstance(object_, dict):
         assert _has_top_level_string_keys(object_)
         for key, value in object_.items():
-            encode(
-                value, xxhash3(key, seed=seed), small_noise, features)
+            encode(value, xxhash3(key, seed=seed), small_noise, features)
         return
 
     if isinstance(object_, (list, tuple)):
         for index, item in enumerate(object_):
-            encode(
-                item, xxhash3(index.to_bytes(8, byteorder='big'), seed=seed),
-                small_noise, features)
+            encode(item, xxhash3(index.to_bytes(8, byteorder='big'), seed=seed), small_noise, features)
 
         return
 
@@ -501,7 +493,7 @@ cdef class FeatureEncoder:
             encoded_variant.update(extra_features)
 
         # n + nan = nan so you'll have to check for nan values on into
-        cfeu.encoded_variant_into_np_row(
+        encoded_variant_into_np_row(
             encoded_variant=encoded_variant, feature_names=feature_names,
             into=into)
 
@@ -533,12 +525,12 @@ cdef class FeatureEncoder:
 
         """
 
-        encoded_variants = cfeu.encode_variants_multiple_givens(
+        encoded_variants = encode_variants_multiple_givens(
             variants=variants, multiple_givens=multiple_givens,
             multiple_extra_features=multiple_extra_features, noise=noise,
             variants_encoder=self.encode_variant,
             givens_encoder=self.encode_givens)
-        encoded_variants_array = cfeu.encoded_variants_to_np(
+        encoded_variants_array = encoded_variants_to_np(
             encoded_variants=encoded_variants, feature_names=feature_names)
 
         return encoded_variants_array

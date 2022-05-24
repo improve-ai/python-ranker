@@ -18,6 +18,8 @@ from improveai.utils.url_tools import is_path_http_addr, get_model_bytes_from_ur
 if CYTHON_BACKEND_AVAILABLE:
     from improveai.cythonized_feature_encoding import cfe, cfeu
     FastFeatureEncoder = cfe.FeatureEncoder
+    fast_encoded_variants_to_np = cfeu.encoded_variants_to_np
+    fast_encode_variants_single_givens = cfeu.encode_variants_single_givens
 else:
     FastFeatureEncoder = FeatureEncoder
 
@@ -375,7 +377,7 @@ class XGBChooser:
             self._encode_variants_single_givens(variants=variants, givens=givens)
 
         encoded_variants_to_np_method = \
-            cfeu.encoded_variants_to_np if CYTHON_BACKEND_AVAILABLE \
+            fast_encoded_variants_to_np if CYTHON_BACKEND_AVAILABLE \
             else encoded_variants_to_np
 
         missings_filled_v = \
@@ -432,7 +434,7 @@ class XGBChooser:
                 raise TypeError(
                     'Variants are of a wrong type: {}'.format(type(variants)))
 
-            return cfeu.encode_variants_single_givens(
+            return fast_encode_variants_single_givens(
                 variants=used_variants, givens=givens, noise=noise,
                 variants_encoder=self.feature_encoder.encode_variant,
                 givens_encoder=self.feature_encoder.encode_givens)
