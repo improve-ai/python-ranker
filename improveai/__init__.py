@@ -1,3 +1,4 @@
+from pkg_resources import get_distribution, DistributionNotFound
 from warnings import warn
 
 from improveai.decision import Decision
@@ -15,3 +16,9 @@ if CYTHON_BACKEND_AVAILABLE:
 else:
     # no cythonized FeatureEncoder
     warn('No build tools detected (gcc, python3-dev) -> FastFeatureEncoder falls back to normal FeatureEncoder')
+
+# set __version__ package attribute; If package is not installed with pip set INFO string to __version__
+try:
+    __version__ = get_distribution('improveai').version
+except DistributionNotFound as enferr:
+    __version__ = 'Distribution not found - please install `improveai` wit pip'
