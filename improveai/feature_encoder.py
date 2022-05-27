@@ -473,12 +473,10 @@ def _get_previous_value(
 
     """
 
-    previous_sprinkled_object_ = into.get(feature_name, None)
-
-    if previous_sprinkled_object_ is None:
+    if feature_name not in into:
         return 0.0
     else:
-        return reverse_sprinkle(previous_sprinkled_object_, small_noise)
+        return reverse_sprinkle(into[feature_name], small_noise)
 
 
 def hash_to_feature_name(hash_: int):
