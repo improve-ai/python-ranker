@@ -54,7 +54,7 @@ enabled, decision_id = features_model.given(givens=example_attributes).which(Tru
 
 ```python
 theme_variants = [
-    {"textColor": "#000000", "backgroundColor": "#ffffff" },
+    { "textColor": "#000000", "backgroundColor": "#ffffff" },
     { "textColor": "#F0F0F0", "backgroundColor": "#aaaaaa" }]
 
 theme, decision_id = themes_model.which(theme_variants)
