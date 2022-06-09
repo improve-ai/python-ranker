@@ -215,12 +215,6 @@ To install from cloned repo:
 
 ## Initialization
 
-General initialization can be done with simple import:
-
-```python
-import improveai
-```
-
 [Gym](https://github.com/improve-ai/gym) needs new data (decisions and rewards) to train increasingly accurate models. 
 Initializing `DecisionModel()` with `track_url` allows DecisionModel() to send decisions and rewards directly to [gym's](https://github.com/improve-ai/gym)
 track endpoint. Easiest way to get started with deciding and rewarding is to import `DecisionModel` from `improveai`:
