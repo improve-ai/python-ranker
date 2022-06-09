@@ -4,13 +4,13 @@
 
 Easily add *Reinforcement Learning* ML capabilities to your app via a simple API. Directly optimize your app's variables, content, and configuration to lift revenue, user retention, or any other metric automatically.
 
-The heart of Improve AI is the which statement. `which()` is like an AI if/then statement.
+The heart of Improve AI is the *which()* statement. *which()* is like an AI if/then statement.
 
 ```python
 greeting, decision_id = greetings_model.which('Hello', 'Howdy', 'Hola')
 ```
 
-`which()` makes decisions using a decision model. Decision models are easily trained by assigning rewards for positive outcomes.
+*which()* makes decisions using a decision model. Decision models are easily trained by assigning rewards for positive outcomes.
 
 ```python
 greetings_model.add_reward(reward=1.0, decision_id=decision_id)
@@ -18,8 +18,7 @@ greetings_model.add_reward(reward=1.0, decision_id=decision_id)
 
 The process of directly optimizing the decisions a machine learning model makes by assigning rewards is referred to as *Reinforcement Learning*.
 
-Rewards are credited to the specific decisions - you can add rewards with `add_reward()` call specifying desired reward and `decision_id`.
-`DecisionModel().which(*variants)` will make the decision that provides the highest expected reward. 
+Over time *which()* will learn to make the decision that provides the highest expected reward. 
 When the rewards are business metrics, such as revenue or user retention, 
 the decisions will optimize to automatically improve those metrics over time.
 
