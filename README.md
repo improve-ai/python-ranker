@@ -1,8 +1,6 @@
-# Improve AI
+# Improve AI - Easily Optimize Your App with Reinforcement Learning
 
-## Low Code Reinforcement Learning with XGBoost
-
-*Reinforcement Learning* is a type of machine learning that directly optimizes decisions to improve a target metric over time. Improve AI makes it simple to directly optimize your app's variables, content, and configuration to lift revenue, user retention, or any other metric automatically.
+Optimize and personalize your apps with fast AI decisions that get smarter over time. Improve AI makes it simple to apply *Reinforcement Learning* to directly optimize revenue, user retention, or any other metric.
 
 The heart of Improve AI is the *which()* statement. *which()* is like an AI if/then statement.
 
@@ -10,30 +8,28 @@ The heart of Improve AI is the *which()* statement. *which()* is like an AI if/t
 greeting, decision_id = greetings_model.which('Hello', 'Howdy', 'Hola')
 ```
 
-*which()* makes decisions using a decision model. Decision models are easily trained by assigning rewards for positive outcomes.
+*which()* uses logic stored in a machine learning model, a decision model, to make the best choice.
+
+Decision models are easily trained by assigning rewards for positive outcomes. *which()* chooses the option that provides the highest expected reward given the current conditions.
 
 ```python
-greetings_model.add_reward(reward=1.0, decision_id=decision_id)
+if success:
+   greetings_model.add_reward(reward=1.0, decision_id=decision_id)
 ```
 
-The process of directly optimizing the decisions a machine learning model makes by assigning rewards is referred to as *Reinforcement Learning*.
+When rewards are business metrics, such as revenue or user retention, the decisions will optimize to automatically improve those metrics over time.
 
-Over time *which()* will learn to make the decision that provides the highest expected reward. 
-When the rewards are business metrics, such as revenue or user retention, 
-the decisions will optimize to automatically improve those metrics over time.
+*That's like A/B testing on steroids.*
 
-That's like A/B testing on steroids.
+However, unlike A/B testing, Improve AI may optionally use context to make the best decision.
 
-## Decisions can be Contextual
-
-
-Custom context can be provided via given():
+Custom context can be provided via *given()*:
 
 
 ```python
 
-greeting, _ = greetings_model.given({"language": "cowboy"}) \
-                             .which("Hello", "Howdy", "Hola")
+greeting, decision_id = greetings_model.given({"language": "cowboy"}) \
+                                       .which("Hello", "Howdy", "Hola")
 ```
 
 Given the language is *cowboy*, the variant with the highest expected reward should be *"Howdy"* and the model would learn to make that choice.
