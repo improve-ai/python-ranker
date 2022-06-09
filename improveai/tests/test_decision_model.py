@@ -387,6 +387,17 @@ class TestDecisionModel(TestCase):
 
             assert best_variant == expected_best
             assert is_valid_ksuid(decision_id)
+
+            # assert that returned variant is correct
+            best_variant, decision_id = decision_model.first(variants)
+            # assert that best variant is equal to expected output
+
+            expected_best = expected_output.get('best', None)
+            assert expected_best is not None
+
+            assert best_variant == expected_best
+            assert is_valid_ksuid(decision_id)
+
         elif evaluated_method_name == 'choose_random':
             decision = decision_model.choose_random(variants=variants)
 
@@ -403,6 +414,14 @@ class TestDecisionModel(TestCase):
             # assert that returned variant is correct
             best_variant, decision_id = decision_model.random(*variants)
             # assert that best variant is equal to expected output
+
+            expected_best = expected_output.get('best', None)
+            assert expected_best is not None
+
+            assert best_variant == expected_best
+            assert is_valid_ksuid(decision_id)
+
+            best_variant, decision_id = decision_model.random(*variants)
 
             expected_best = expected_output.get('best', None)
             assert expected_best is not None
@@ -508,19 +527,26 @@ class TestDecisionModel(TestCase):
             with rqm.Mocker() as m:
                 m.post(self.track_url, text='success')
                 decision_model = dm.DecisionModel(model_name='dummy-model', track_url=self.track_url)
+
                 np.random.seed(score_seed)
                 best_variant, decision_id = decision_model.first(*variants)
-            # assert that best variant is equal to expected output
-            expected_best = expected_output.get('best', None)
+                # assert that best variant is equal to expected output
+                expected_best = expected_output.get('best', None)
 
-            assert best_variant == expected_best
-            assert is_valid_ksuid(decision_id)
+                assert best_variant == expected_best
+                assert is_valid_ksuid(decision_id)
+
+                np.random.seed(score_seed)
+                best_variant, decision_id = decision_model.first(variants)
+                # assert that best variant is equal to expected output
+                expected_best = expected_output.get('best', None)
+
+                assert best_variant == expected_best
+                assert is_valid_ksuid(decision_id)
 
         elif evaluated_method_name == 'choose_random':
             np.random.seed(score_seed)
             decision = decision_model.choose_random(variants=variants)
-            print('### SCORES ###')
-            print([float(el) for el in decision.scores])
 
             expected_scores = expected_output.get('scores', None)
             assert expected_scores is not None
@@ -536,15 +562,27 @@ class TestDecisionModel(TestCase):
             with rqm.Mocker() as m:
                 m.post(self.track_url, text='success')
                 decision_model = dm.DecisionModel(model_name='dummy-model', track_url=self.track_url)
+
                 np.random.seed(score_seed)
                 best_variant, decision_id = decision_model.random(*variants)
 
-            # assert that best variant is equal to expected output
-            expected_best = expected_output.get('best', None)
-            assert expected_best is not None
+                # assert that best variant is equal to expected output
+                expected_best = expected_output.get('best', None)
+                assert expected_best is not None
 
-            assert best_variant == expected_best
-            assert is_valid_ksuid(decision_id)
+                assert best_variant == expected_best
+                assert is_valid_ksuid(decision_id)
+
+                np.random.seed(score_seed)
+                best_variant, decision_id = decision_model.random(*variants)
+
+                # assert that best variant is equal to expected output
+                expected_best = expected_output.get('best', None)
+                assert expected_best is not None
+
+                assert best_variant == expected_best
+                assert is_valid_ksuid(decision_id)
+
         else:
             raise ValueError('Unsupported method: {}'.format(evaluated_method_name))
 
@@ -821,6 +859,10 @@ class TestDecisionModel(TestCase):
             best, decision_id = decision_model.which(*variants)
             assert is_valid_ksuid(decision_id)
 
+            np.random.seed(scores_seed)
+            best, decision_id = decision_model.which(variants)
+            assert is_valid_ksuid(decision_id)
+
         assert best == expected_best
 
     def test_which_valid_list_variants_no_model(self):
@@ -849,6 +891,10 @@ class TestDecisionModel(TestCase):
             m.post(self.track_url, text='success')
             np.random.seed(scores_seed)
             best, decision_id = decision_model.which(*variants)
+            assert is_valid_ksuid(decision_id)
+
+            np.random.seed(scores_seed)
+            best, decision_id = decision_model.which(variants)
             assert is_valid_ksuid(decision_id)
 
         assert best == expected_best
@@ -890,8 +936,12 @@ class TestDecisionModel(TestCase):
             np.random.seed(scores_seed)
             best, decision_id = decision_model.which(*variants)
             assert is_valid_ksuid(decision_id)
+            assert best == expected_best
 
-        assert best == expected_best
+            np.random.seed(scores_seed)
+            best, decision_id = decision_model.which(variants)
+            assert is_valid_ksuid(decision_id)
+            assert best == expected_best
 
     def test_which_valid_ndarray_variants(self):
         path_to_test_json = \
@@ -930,8 +980,12 @@ class TestDecisionModel(TestCase):
             np.random.seed(scores_seed)
             best, decision_id = decision_model.which(*variants)
             assert is_valid_ksuid(decision_id)
+            assert best == expected_best
 
-        assert best == expected_best
+            np.random.seed(scores_seed)
+            best, decision_id = decision_model.which(variants)
+            assert is_valid_ksuid(decision_id)
+            assert best == expected_best
 
     def test_which_invalid_variants(self):
         path_to_test_json = \

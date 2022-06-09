@@ -301,6 +301,9 @@ class TestDecisionContext(TestCase):
             assert test_output is not None
             expected_scores = test_output.get('scores', None)
             assert expected_scores is not None
+            print('### SCORES VS EXPECTED SCORES ###')
+            print(scores)
+            print(np.float32(expected_scores))
             np.testing.assert_array_equal(
                 convert_values_to_float32(scores), convert_values_to_float32(expected_scores))
 
@@ -325,6 +328,15 @@ class TestDecisionContext(TestCase):
         elif tested_method_name == 'which':
             with rqm.Mocker() as m:
                 m.post(self.test_track_url, text='success')
+
+                np.random.seed(scores_seed)
+                best, decision_id = decision_context.which(variants)
+                # print('### BEST ###')
+                # print(best)
+                # assert False
+                assert best == expected_best
+                assert is_valid_ksuid(decision_id)
+
                 np.random.seed(scores_seed)
                 best, decision_id = decision_context.which(*variants)
                 assert best == expected_best
@@ -345,8 +357,14 @@ class TestDecisionContext(TestCase):
         elif tested_method_name == 'first':
             with rqm.Mocker() as m:
                 m.post(self.test_track_url, text='success')
+
                 np.random.seed(scores_seed)
                 best, decision_id = decision_context.first(*variants)
+                assert best == expected_best
+                assert is_valid_ksuid(decision_id)
+
+                np.random.seed(scores_seed)
+                best, decision_id = decision_context.first(variants)
                 assert best == expected_best
                 assert is_valid_ksuid(decision_id)
 
@@ -365,8 +383,14 @@ class TestDecisionContext(TestCase):
         elif tested_method_name == 'random':
             with rqm.Mocker() as m:
                 m.post(self.test_track_url, text='success')
+
                 np.random.seed(scores_seed)
                 best, decision_id = decision_context.random(*variants)
+                assert best == expected_best
+                assert is_valid_ksuid(decision_id)
+
+                np.random.seed(scores_seed)
+                best, decision_id = decision_context.random(variants)
                 assert best == expected_best
                 assert is_valid_ksuid(decision_id)
         else:
