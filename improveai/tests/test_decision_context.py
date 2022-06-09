@@ -301,9 +301,6 @@ class TestDecisionContext(TestCase):
             assert test_output is not None
             expected_scores = test_output.get('scores', None)
             assert expected_scores is not None
-            print('### SCORES VS EXPECTED SCORES ###')
-            print(scores)
-            print(np.float32(expected_scores))
             np.testing.assert_array_equal(
                 convert_values_to_float32(scores), convert_values_to_float32(expected_scores))
 
