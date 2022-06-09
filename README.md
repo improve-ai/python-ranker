@@ -34,13 +34,12 @@ greeting, decision_id = greetings_model.given({"language": "cowboy"}) \
 
 Given the language is *cowboy*, the variant with the highest expected reward should be *"Howdy"* and the model would learn to make that choice.
 
-
 ### Numbers Too
 
 What discount should we offer?
 
 ```python
-discount, _ = discounts_model.which(0.1, 0.2, 0.3)
+discount, decision_id = discounts_model.which(0.1, 0.2, 0.3)
 ```
 
 ### Booleans
@@ -48,7 +47,7 @@ discount, _ = discounts_model.which(0.1, 0.2, 0.3)
 Dynamically enable feature flags for best performance...
 
 ```python
-enabled, _ = features_model.given(givens=example_attributes).which(True, False)
+enabled, decision_id = features_model.given(givens=example_attributes).which(True, False)
 ```
 
 ### Complex Objects
@@ -61,7 +60,8 @@ theme_variants = [
     {"textColor": "#000000", "backgroundColor": "#ffffff" },
     { "textColor": "#F0F0F0", "backgroundColor": "#aaaaaa" }]
 
-theme, _ = themes_model.which(theme_variants)
+theme, decision_id = themes_model.which(theme_variants)
+```
 
 Variants can be any JSON encodeable data structure of arbitrary complexity, including nested dictionaries, arrays, strings, numbers, nulls, and booleans.
 
