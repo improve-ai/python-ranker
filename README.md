@@ -14,7 +14,7 @@ Decision models are easily trained by assigning rewards for positive outcomes. *
 
 ```python
 if success:
-   greetings_model.add_reward(reward=1.0, decision_id=decision_id)
+   greetings_model.add_reward(1.0, decision_id)
 ```
 
 When rewards are business metrics, such as revenue or user retention, the decisions will optimize to automatically improve those metrics over time.
