@@ -1,8 +1,8 @@
 # Improve AI
 
-## Low Code Reinforcement Learning for Quick App Optimization and Personalization
+## Low Code Reinforcement Learning with XGBoost
 
-Easily add *Reinforcement Learning* ML capabilities to your app via a simple API. Directly optimize your app's variables, content, and configuration to lift revenue, user retention, or any other metric automatically.
+*Reinforcement Learning* is a type of machine learning that directly optimizes decisions to improve a target metric over time. Improve AI makes it simple to directly optimize your app's variables, content, and configuration to lift revenue, user retention, or any other metric automatically.
 
 The heart of Improve AI is the *which()* statement. *which()* is like an AI if/then statement.
 
