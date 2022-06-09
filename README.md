@@ -53,9 +53,6 @@ enabled, decision_id = features_model.given(givens=example_attributes).which(Tru
 ### Complex Objects
 
 ```python
-from improveai import DecisionModel
-
-
 theme_variants = [
     {"textColor": "#000000", "backgroundColor": "#ffffff" },
     { "textColor": "#F0F0F0", "backgroundColor": "#aaaaaa" }]
