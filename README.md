@@ -1,6 +1,6 @@
 # Improve AI - Easily Optimize Apps with Reinforcement Learning
 
-Optimize and personalize your apps with fast AI decisions that get smarter over time. Improve AI makes it simple to apply *Reinforcement Learning* to directly optimize revenue, user retention, or any other metric.
+Optimize and personalize your apps with fast AI decisions that get smarter over time. Improve AI makes it simple to apply *reinforcement learning* to directly optimize revenue, user retention, or any other metric.
 
 The heart of Improve AI is the *which()* statement. *which()* is like an AI if/then statement.
 
@@ -10,7 +10,7 @@ greeting, decision_id = greetings_model.which('Hello', 'Howdy', 'Hola')
 
 *which()* uses logic stored in a machine learning model, a decision model, to make the best choice.
 
-Decision models are easily trained by assigning rewards for positive outcomes. *which()* chooses the option that provides the highest expected reward given the current conditions.
+Decision models are easily trained by *reinforcement learning* or assigning rewards for positive outcomes. *which()* chooses the option that provides the highest expected reward given the current conditions.
 
 ```python
 if success:
