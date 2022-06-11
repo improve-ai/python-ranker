@@ -73,23 +73,12 @@ We can use Improve AI to choose an additional product to display as an upsell of
 With a few lines of code, we can train a model that will learn to optimize the upsell offer given the original product being purchased.
 
 ```python
-from improveai import DecisionModel
-
-
-# create DecisionModel object
-upsell_model = DecisionModel(model_name='upsell_model', track_url=track_url)
-
-# load model from a path / url
-upsell_model_url = '<upsell model url>'
-upsell_model.load(model_url=upsell_model_url)
-
 product = {'name': 'red sword', 'price': 4.99}
-# create upsell Decision object
-upsell, upsell_decision_id = \
-    upsell_model.given(givens=product).\
-        which(*[{ "name": "gold", "quantity": 100, "price": 1.99 },
-                { "name": "diamonds", "quantity": 10, "price": 2.99 },
-                { "name": "red scabbard", "price": 0.99 }])
+
+upsell, decision_id = upsell_model.given(product) \
+                                  .which([{ "name": "gold", "quantity": 100, "price": 1.99 },
+                                          { "name": "diamonds", "quantity": 10, "price": 2.99 },
+                                          { "name": "red scabbard", "price": 0.99 }])
 ```
 
 The product to be purchased is the red sword. Notice that the variants are dictionaries with a mix of string and numeric values.
