@@ -1,4 +1,4 @@
-# Improve AI - Easily Optimize Your App with Reinforcement Learning
+# Improve AI - Simple, Low Code Reinforcement Learning Designed for Production Use
 
 Optimize and personalize your apps with fast AI decisions that get smarter over time. Improve AI makes it simple to apply *reinforcement learning* to directly optimize revenue, user retention, or any other metric.
 
