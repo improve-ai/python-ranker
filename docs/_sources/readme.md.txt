@@ -1,6 +1,6 @@
 Readme
 ======
-Optimize and personalize your apps with fast AI decisions that get smarter over time. Improve AI makes it simple to apply *Reinforcement Learning* to directly optimize revenue, user retention, or any other metric.
+Optimize and personalize your apps with fast AI decisions that get smarter over time. Improve AI makes it simple to apply *reinforcement learning* to directly optimize revenue, user retention, or any other metric.
 
 The heart of Improve AI is the *which()* statement. *which()* is like an AI if/then statement.
 
@@ -10,7 +10,7 @@ greeting, decision_id = greetings_model.which('Hello', 'Howdy', 'Hola')
 
 *which()* uses logic stored in a machine learning model, a decision model, to make the best choice.
 
-Decision models are easily trained by assigning rewards for positive outcomes. *which()* chooses the option that provides the highest expected reward given the current conditions.
+Decision models are easily trained by *reinforcement learning* or assigning rewards for positive outcomes. *which()* chooses the option that provides the highest expected reward given the current conditions.
 
 ```python
 if success:
@@ -73,20 +73,12 @@ We can use Improve AI to choose an additional product to display as an upsell of
 With a few lines of code, we can train a model that will learn to optimize the upsell offer given the original product being purchased.
 
 ```python
-from improveai import DecisionModel
-
-
-upsell_model = DecisionModel(model_name='upsell_model', track_url=track_url)
-
-upsell_model_url = '<upsell model url>'
-upsell_model.load(model_url=upsell_model_url)
-
 product = {'name': 'red sword', 'price': 4.99}
-upsell, upsell_decision_id = \
-    upsell_model.given(givens=product).\
-        which(*[{ "name": "gold", "quantity": 100, "price": 1.99 },
-                { "name": "diamonds", "quantity": 10, "price": 2.99 },
-                { "name": "red scabbard", "price": 0.99 }])
+
+upsell, decision_id = upsell_model.given(product) \
+                                  .which([{ "name": "gold", "quantity": 100, "price": 1.99 },
+                                          { "name": "diamonds", "quantity": 10, "price": 2.99 },
+                                          { "name": "red scabbard", "price": 0.99 }])
 ```
 
 The product to be purchased is the red sword. Notice that the variants are dictionaries with a mix of string and numeric values.

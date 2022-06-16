@@ -109,13 +109,13 @@
              
   <section id="readme">
 <h1>Readme<a class="headerlink" href="#readme" title="Permalink to this headline"></a></h1>
-<p>Optimize and personalize your apps with fast AI decisions that get smarter over time. Improve AI makes it simple to apply <em>Reinforcement Learning</em> to directly optimize revenue, user retention, or any other metric.</p>
+<p>Optimize and personalize your apps with fast AI decisions that get smarter over time. Improve AI makes it simple to apply <em>reinforcement learning</em> to directly optimize revenue, user retention, or any other metric.</p>
 <p>The heart of Improve AI is the <em>which()</em> statement. <em>which()</em> is like an AI if/then statement.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">greeting</span><span class="p">,</span> <span class="n">decision_id</span> <span class="o">=</span> <span class="n">greetings_model</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;Hello&#39;</span><span class="p">,</span> <span class="s1">&#39;Howdy&#39;</span><span class="p">,</span> <span class="s1">&#39;Hola&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><em>which()</em> uses logic stored in a machine learning model, a decision model, to make the best choice.</p>
-<p>Decision models are easily trained by assigning rewards for positive outcomes. <em>which()</em> chooses the option that provides the highest expected reward given the current conditions.</p>
+<p>Decision models are easily trained by <em>reinforcement learning</em> or assigning rewards for positive outcomes. <em>which()</em> chooses the option that provides the highest expected reward given the current conditions.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">success</span><span class="p">:</span>
    <span class="n">greetings_model</span><span class="o">.</span><span class="n">add_reward</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">decision_id</span><span class="p">)</span>
 </pre></div>
@@ -162,20 +162,12 @@
 <p>For a dungeon crawler game, say the user was purchasing an item using an In App Purchase.
 We can use Improve AI to choose an additional product to display as an upsell offer during checkout.
 With a few lines of code, we can train a model that will learn to optimize the upsell offer given the original product being purchased.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">improveai</span> <span class="kn">import</span> <span class="n">DecisionModel</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">product</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;red sword&#39;</span><span class="p">,</span> <span class="s1">&#39;price&#39;</span><span class="p">:</span> <span class="mf">4.99</span><span class="p">}</span>
 
-
-<span class="n">upsell_model</span> <span class="o">=</span> <span class="n">DecisionModel</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s1">&#39;upsell_model&#39;</span><span class="p">,</span> <span class="n">track_url</span><span class="o">=</span><span class="n">track_url</span><span class="p">)</span>
-
-<span class="n">upsell_model_url</span> <span class="o">=</span> <span class="s1">&#39;&lt;upsell model url&gt;&#39;</span>
-<span class="n">upsell_model</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_url</span><span class="o">=</span><span class="n">upsell_model_url</span><span class="p">)</span>
-
-<span class="n">product</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;red sword&#39;</span><span class="p">,</span> <span class="s1">&#39;price&#39;</span><span class="p">:</span> <span class="mf">4.99</span><span class="p">}</span>
-<span class="n">upsell</span><span class="p">,</span> <span class="n">upsell_decision_id</span> <span class="o">=</span> \
-    <span class="n">upsell_model</span><span class="o">.</span><span class="n">given</span><span class="p">(</span><span class="n">givens</span><span class="o">=</span><span class="n">product</span><span class="p">)</span><span class="o">.</span>\
-        <span class="n">which</span><span class="p">(</span><span class="o">*</span><span class="p">[{</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;gold&quot;</span><span class="p">,</span> <span class="s2">&quot;quantity&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;price&quot;</span><span class="p">:</span> <span class="mf">1.99</span> <span class="p">},</span>
-                <span class="p">{</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;diamonds&quot;</span><span class="p">,</span> <span class="s2">&quot;quantity&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;price&quot;</span><span class="p">:</span> <span class="mf">2.99</span> <span class="p">},</span>
-                <span class="p">{</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;red scabbard&quot;</span><span class="p">,</span> <span class="s2">&quot;price&quot;</span><span class="p">:</span> <span class="mf">0.99</span> <span class="p">}])</span>
+<span class="n">upsell</span><span class="p">,</span> <span class="n">decision_id</span> <span class="o">=</span> <span class="n">upsell_model</span><span class="o">.</span><span class="n">given</span><span class="p">(</span><span class="n">product</span><span class="p">)</span> \
+                                  <span class="o">.</span><span class="n">which</span><span class="p">([{</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;gold&quot;</span><span class="p">,</span> <span class="s2">&quot;quantity&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;price&quot;</span><span class="p">:</span> <span class="mf">1.99</span> <span class="p">},</span>
+                                          <span class="p">{</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;diamonds&quot;</span><span class="p">,</span> <span class="s2">&quot;quantity&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;price&quot;</span><span class="p">:</span> <span class="mf">2.99</span> <span class="p">},</span>
+                                          <span class="p">{</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;red scabbard&quot;</span><span class="p">,</span> <span class="s2">&quot;price&quot;</span><span class="p">:</span> <span class="mf">0.99</span> <span class="p">}])</span>
 </pre></div>
 </div>
 <p>The product to be purchased is the red sword. Notice that the variants are dictionaries with a mix of string and numeric values.</p>
