@@ -114,7 +114,6 @@ class TestDecisionTracker:
 
         self.dummy_model_name = 'dummy-model'
         self.dummy_message_id = 'dummy_message'
-        self.dummy_timestamp = '2021-05-11T02:32:27.007Z'
 
     def test_should_track_runners_up_single_variant(self):
 
@@ -571,7 +570,6 @@ class TestDecisionTracker:
             dtr.DecisionTracker(track_url=self.track_url,  max_runners_up=self.max_runners_up)
 
         expected_track_body = {
-            decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: None,
@@ -605,8 +603,7 @@ class TestDecisionTracker:
                     variant=None,
                     variants=[None],
                     givens=None, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=False,
-                    timestamp=self.dummy_timestamp)
+                    variants_ranked_and_track_runners_up=False)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -621,7 +618,6 @@ class TestDecisionTracker:
         expected_sample = 2
 
         expected_track_body = {
-            decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variant,
@@ -655,8 +651,7 @@ class TestDecisionTracker:
                     variant=variant,
                     variants=variants,
                     givens=None, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=False,
-                    timestamp=self.dummy_timestamp)
+                    variants_ranked_and_track_runners_up=False)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -672,7 +667,6 @@ class TestDecisionTracker:
         expected_sample = 12
 
         expected_track_body = {
-            decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variants[0],
@@ -707,8 +701,7 @@ class TestDecisionTracker:
                     variant=variant,
                     variants=variants,
                     givens=None, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=True,
-                    timestamp=self.dummy_timestamp)
+                    variants_ranked_and_track_runners_up=True)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -723,7 +716,6 @@ class TestDecisionTracker:
         variant = variants[0]
 
         expected_track_body = {
-            decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variant,
@@ -758,8 +750,7 @@ class TestDecisionTracker:
                     variant=variant,
                     variants=variants,
                     givens=None, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=True,
-                    timestamp=self.dummy_timestamp)
+                    variants_ranked_and_track_runners_up=True)
 
                 assert len(w) == 0
 
@@ -775,7 +766,6 @@ class TestDecisionTracker:
         variant = variants[1]
 
         expected_track_body = {
-            decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variant,
@@ -810,8 +800,7 @@ class TestDecisionTracker:
                     variant=variant,
                     variants=variants,
                     givens=None, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=True,
-                    timestamp=self.dummy_timestamp)
+                    variants_ranked_and_track_runners_up=True)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -827,7 +816,6 @@ class TestDecisionTracker:
         variants_ranked_and_track_runners_up = True
 
         expected_track_body = {
-            decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variant,
@@ -862,8 +850,7 @@ class TestDecisionTracker:
                     variant=variant,
                     variants=variants,
                     givens=None, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=variants_ranked_and_track_runners_up,
-                    timestamp=self.dummy_timestamp)
+                    variants_ranked_and_track_runners_up=variants_ranked_and_track_runners_up)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -881,7 +868,6 @@ class TestDecisionTracker:
         variants_ranked_and_track_runners_up = True
 
         expected_track_body = {
-            decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variant,
@@ -916,8 +902,7 @@ class TestDecisionTracker:
                     variant=variant,
                     variants=variants,
                     givens=None, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=variants_ranked_and_track_runners_up,
-                    timestamp=self.dummy_timestamp)
+                    variants_ranked_and_track_runners_up=variants_ranked_and_track_runners_up)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -935,8 +920,7 @@ class TestDecisionTracker:
                 variant=variant,
                 variants=variants,
                 givens=None, model_name=self.dummy_model_name,
-                variants_ranked_and_track_runners_up=variants_ranked_and_track_runners_up,
-                timestamp=self.dummy_timestamp)
+                variants_ranked_and_track_runners_up=variants_ranked_and_track_runners_up)
 
     def test_track_2_variants_raises_for_positive_max_runners_up(self):
 
@@ -949,7 +933,6 @@ class TestDecisionTracker:
         variants_ranked_and_track_runners_up = True
 
         expected_track_body = {
-            decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variant,
@@ -984,8 +967,7 @@ class TestDecisionTracker:
                     variant=variant,
                     variants=variants,
                     givens=None, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=variants_ranked_and_track_runners_up,
-                    timestamp=self.dummy_timestamp)
+                    variants_ranked_and_track_runners_up=variants_ranked_and_track_runners_up)
                 assert len(w) == 0
 
     def test_track_2_variants_zero_max_runners_up(self):
@@ -1001,7 +983,6 @@ class TestDecisionTracker:
         expected_sample = variants[0]
 
         expected_track_body = {
-            decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variant,
@@ -1037,8 +1018,7 @@ class TestDecisionTracker:
                     variant=variant,
                     variants=variants,
                     givens=None, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=variants_ranked_and_track_runners_up,
-                    timestamp=self.dummy_timestamp)
+                    variants_ranked_and_track_runners_up=variants_ranked_and_track_runners_up)
                 assert len(w) == 0
 
     def test_track(self):
@@ -1053,7 +1033,6 @@ class TestDecisionTracker:
         expected_sample = 12
 
         expected_track_body = {
-            decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variants[0],
@@ -1090,8 +1069,7 @@ class TestDecisionTracker:
                     variant=variant,
                     variants=variants,
                     givens=givens, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=True,
-                    timestamp=self.dummy_timestamp)
+                    variants_ranked_and_track_runners_up=True)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1113,8 +1091,7 @@ class TestDecisionTracker:
                     variant=variant,
                     variants=variants,
                     givens=givens, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=True,
-                    timestamp=self.dummy_timestamp)
+                    variants_ranked_and_track_runners_up=True)
 
     def test_track_ndarray_variants(self):
 
@@ -1128,7 +1105,6 @@ class TestDecisionTracker:
         expected_sample = 12
 
         expected_track_body = {
-            decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variants[0],
@@ -1164,8 +1140,7 @@ class TestDecisionTracker:
                     variant=variant,
                     variants=np.array(variants),
                     givens=givens, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=True,
-                    timestamp=self.dummy_timestamp)
+                    variants_ranked_and_track_runners_up=True)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1181,7 +1156,6 @@ class TestDecisionTracker:
         expected_sample = None
 
         expected_track_body = {
-            decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variants[0],
@@ -1217,8 +1191,7 @@ class TestDecisionTracker:
                     variant=variant,
                     variants=variants,
                     givens=None, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=True,
-                    timestamp=self.dummy_timestamp)
+                    variants_ranked_and_track_runners_up=True)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1235,7 +1208,6 @@ class TestDecisionTracker:
         expected_sample = variants[1]
 
         expected_track_body = {
-            decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variants[0],
@@ -1270,8 +1242,7 @@ class TestDecisionTracker:
                     variant=variant,
                     variants=variants,
                     givens=None, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=True,
-                    timestamp=self.dummy_timestamp)
+                    variants_ranked_and_track_runners_up=True)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1307,7 +1278,6 @@ class TestDecisionTracker:
         variant = variants[0]
 
         expected_track_body = {
-            decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variants[0],
@@ -1342,8 +1312,7 @@ class TestDecisionTracker:
                     variants=variants,
                     givens=None, model_name=self.dummy_model_name,
                     variants_ranked_and_track_runners_up=
-                    decision_tracker._should_track_runners_up(len(variants)),
-                    timestamp=self.dummy_timestamp)
+                    decision_tracker._should_track_runners_up(len(variants)))
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1407,8 +1376,7 @@ class TestDecisionTracker:
                     variants=variants,
                     givens=None, model_name=self.dummy_model_name,
                     variants_ranked_and_track_runners_up=
-                    decision_tracker._should_track_runners_up(len(variants)),
-                    timestamp=self.dummy_timestamp)
+                    decision_tracker._should_track_runners_up(len(variants)))
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1428,7 +1396,6 @@ class TestDecisionTracker:
         def custom_matcher(request):
             request_dict = deepcopy(request.json())
             del request_dict[decision_tracker.MESSAGE_ID_KEY]
-            del request_dict[decision_tracker.TIMESTAMP_KEY]
 
             if json.dumps(request_dict, sort_keys=False) != \
                     expected_request_json:
@@ -1479,8 +1446,7 @@ class TestDecisionTracker:
                     variants=variants,
                     givens=None, model_name=self.dummy_model_name,
                     variants_ranked_and_track_runners_up=
-                    decision_tracker._should_track_runners_up(len(variants)),
-                    timestamp=self.dummy_timestamp)
+                    decision_tracker._should_track_runners_up(len(variants)))
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1500,7 +1466,6 @@ class TestDecisionTracker:
         def custom_matcher(request):
             request_dict = deepcopy(request.json())
             del request_dict[decision_tracker.MESSAGE_ID_KEY]
-            del request_dict[decision_tracker.TIMESTAMP_KEY]
 
             if json.dumps(request_dict, sort_keys=False) != \
                     expected_request_json:
@@ -1550,8 +1515,7 @@ class TestDecisionTracker:
                     variants=variants,
                     givens=None, model_name=self.dummy_model_name,
                     variants_ranked_and_track_runners_up=
-                    decision_tracker._should_track_runners_up(len(variants)),
-                    timestamp=self.dummy_timestamp)
+                    decision_tracker._should_track_runners_up(len(variants)))
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1592,8 +1556,7 @@ class TestDecisionTracker:
                     variants=variants,
                     givens=None, model_name=self.dummy_model_name,
                     variants_ranked_and_track_runners_up=
-                    decision_tracker._should_track_runners_up(len(variants)),
-                    timestamp=self.dummy_timestamp)
+                    decision_tracker._should_track_runners_up(len(variants)))
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1644,8 +1607,7 @@ class TestDecisionTracker:
                     variants=variants,
                     givens=None, model_name=self.dummy_model_name,
                     variants_ranked_and_track_runners_up=
-                    decision_tracker._should_track_runners_up(len(variants)),
-                    timestamp=self.dummy_timestamp)
+                    decision_tracker._should_track_runners_up(len(variants)))
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1715,8 +1677,7 @@ class TestDecisionTracker:
                 block=
                 lambda result, error: (
                     warn("Improve.track error: {}".format(error))
-                    if error else 0, 0),
-                timestamp=self.dummy_timestamp)
+                    if error else 0, 0))
 
             print('### decision_id ###')
             print(decision_id)

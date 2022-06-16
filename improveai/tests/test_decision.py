@@ -111,7 +111,6 @@ class TestDecision(TestCase):
             int(os.getenv('DECISION_TRACKER_NOT_TRACKS_SEED'))
 
         self.dummy_history_id = 'dummy-history-id'
-        self.dummy_timestamp = '2021-05-11T02:32:27.007Z'
 
     def test_raises_value_error_when_model_none(self):
         with raises(AssertionError) as aerr:
@@ -443,7 +442,6 @@ class TestDecision(TestCase):
         decision_tracker = self.decision_model_valid_track_url.tracker
 
         expected_track_body = {
-            decision_tracker.TIMESTAMP_KEY: self.dummy_timestamp,
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.decision_model_valid_track_url.model_name,
             decision_tracker.VARIANT_KEY: None,
@@ -735,7 +733,6 @@ class TestDecision(TestCase):
         def custom_matcher(request):
             request_dict = deepcopy(request.json())
             del request_dict[decision.decision_model.tracker.MESSAGE_ID_KEY]
-            del request_dict[decision.decision_model.tracker.TIMESTAMP_KEY]
 
             if json.dumps(request_dict, sort_keys=False) != expected_request_json:
 
@@ -942,9 +939,7 @@ class TestDecision(TestCase):
 
         def custom_matcher(request):
             request_dict = deepcopy(request.json())
-            assert self.decision_model_valid_track_url.tracker.TIMESTAMP_KEY in request_dict
             del request_dict[self.decision_model_valid_track_url.tracker.MESSAGE_ID_KEY]
-            del request_dict[self.decision_model_valid_track_url.tracker.TIMESTAMP_KEY]
             if json.dumps(request_dict, sort_keys=False) == expected_request_json:
                 request_validity['request_body_ok'] = True
 

@@ -157,11 +157,6 @@
 <dd></dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="improveai.decision_tracker.DecisionTracker.TIMESTAMP_KEY">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TIMESTAMP_KEY</span></span><a class="headerlink" href="#improveai.decision_tracker.DecisionTracker.TIMESTAMP_KEY" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
 <dt class="sig sig-object py" id="improveai.decision_tracker.DecisionTracker.TYPE_KEY">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TYPE_KEY</span></span><a class="headerlink" href="#improveai.decision_tracker.DecisionTracker.TYPE_KEY" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
@@ -263,15 +258,14 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="improveai.decision_tracker.DecisionTracker.post_improve_request">
-<span class="sig-name descname"><span class="pre">post_improve_request</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">body_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.decision_tracker.DecisionTracker.post_improve_request" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">post_improve_request</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">body_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.decision_tracker.DecisionTracker.post_improve_request" title="Permalink to this definition"></a></dt>
 <dd><p>Posts request to tracker endpoint</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>body_values</strong> (<em>dict</em>) – dict to be posted</p></li>
 <li><p><strong>block</strong> (<em>callable</em>) – callable to execute on error</p></li>
-<li><p><strong>timestamp</strong> (<em>object</em>) – timestamp of request</p></li>
-<li><p><strong>message_id</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – </p></li>
+<li><p><strong>message_id</strong> (<em>str</em><em> or </em><em>None</em>) – ksuid of a given request</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -285,7 +279,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="improveai.decision_tracker.DecisionTracker.track">
-<span class="sig-name descname"><span class="pre">track</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variant</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variants</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">givens</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variants_ranked_and_track_runners_up</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.decision_tracker.DecisionTracker.track" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">track</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variant</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variants</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">givens</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variants_ranked_and_track_runners_up</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.decision_tracker.DecisionTracker.track" title="Permalink to this definition"></a></dt>
 <dd><p>Track that variant is causal in the system</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -296,15 +290,14 @@
 <li><p><strong>model_name</strong> (<em>str</em>) – name of model which made the decision (?) / to which observations
 will be assigned</p></li>
 <li><p><strong>variants_ranked_and_track_runners_up</strong> (<em>bool</em>) – are the variants ranked and runners up should be tracked</p></li>
-<li><p><strong>timestamp</strong> (<em>object</em>) – when was decision tracked</p></li>
-<li><p><strong>message_id</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – </p></li>
+<li><p><strong>message_id</strong> (<em>str</em><em> or </em><em>None</em>) – ksuid of a given decision</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>message id of sent improve request</p>
+<dd class="field-even"><p>message id of sent improve request or None if an error happened</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>str</p>
+<dd class="field-odd"><p>str or None</p>
 </dd>
 </dl>
 </dd></dl>

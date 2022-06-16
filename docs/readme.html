@@ -44,7 +44,11 @@
               <p class="caption" role="heading"><span class="caption-text">Readme:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">About Improve AI python SDK</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#fast-ai-decisions-for-python">Fast AI Decisions for Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#numbers-too">Numbers Too</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#booleans">Booleans</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#complex-objects">Complex Objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#example-optimizing-an-upsell-offer">Example: Optimizing an Upsell Offer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#example-performance-tuning">Example: Performance Tuning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#installation-prerequisites">Installation prerequisites</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#install-with-pip">Install with pip</a></li>
@@ -53,16 +57,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#initialization">Initialization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#greeting">Greeting</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#numbers-too">Numbers Too</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#booleans">Booleans</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#complex-objects">Complex Objects</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#decisions-are-contextual">Decisions are Contextual</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#example-optimizing-an-upsell-offer">Example: Optimizing an Upsell Offer</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#example-performance-tuning">Example: Performance Tuning</a></li>
-</ul>
-</li>
 <li class="toctree-l2"><a class="reference internal" href="#privacy">Privacy</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#help-improve-our-world">Help Improve Our World</a></li>
 </ul>
@@ -115,9 +109,120 @@
              
   <section id="readme">
 <h1>Readme<a class="headerlink" href="#readme" title="Permalink to this headline"></a></h1>
-<section id="fast-ai-decisions-for-python">
-<h2>Fast AI Decisions for Python<a class="headerlink" href="#fast-ai-decisions-for-python" title="Permalink to this headline"></a></h2>
-<p>Improve AI provides quick on-device AI decisions that get smarter over time. It’s like an AI <em>if/then</em> statement. Replace guesses in your app’s configuration with AI decisions to increase your app’s revenue, user retention, or any other metric automatically.</p>
+<p>Optimize and personalize your apps with fast AI decisions that get smarter over time. Improve AI makes it simple to apply <em>Reinforcement Learning</em> to directly optimize revenue, user retention, or any other metric.</p>
+<p>The heart of Improve AI is the <em>which()</em> statement. <em>which()</em> is like an AI if/then statement.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">greeting</span><span class="p">,</span> <span class="n">decision_id</span> <span class="o">=</span> <span class="n">greetings_model</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;Hello&#39;</span><span class="p">,</span> <span class="s1">&#39;Howdy&#39;</span><span class="p">,</span> <span class="s1">&#39;Hola&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><em>which()</em> uses logic stored in a machine learning model, a decision model, to make the best choice.</p>
+<p>Decision models are easily trained by assigning rewards for positive outcomes. <em>which()</em> chooses the option that provides the highest expected reward given the current conditions.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">success</span><span class="p">:</span>
+   <span class="n">greetings_model</span><span class="o">.</span><span class="n">add_reward</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">decision_id</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>When rewards are business metrics, such as revenue or user retention, the decisions will optimize to automatically improve those metrics over time.</p>
+<p><em>That’s like A/B testing on steroids.</em></p>
+<p>However, unlike A/B testing, Improve AI may optionally use context to make the best decision.</p>
+<p>Custom context can be provided via <em>given()</em>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+<span class="n">greeting</span><span class="p">,</span> <span class="n">decision_id</span> <span class="o">=</span> <span class="n">greetings_model</span><span class="o">.</span><span class="n">given</span><span class="p">({</span><span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;cowboy&quot;</span><span class="p">})</span> \
+                                       <span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s2">&quot;Hello&quot;</span><span class="p">,</span> <span class="s2">&quot;Howdy&quot;</span><span class="p">,</span> <span class="s2">&quot;Hola&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Given the language is <em>cowboy</em>, the variant with the highest expected reward should be <em>“Howdy”</em> and the model would learn to make that choice.</p>
+<section id="numbers-too">
+<h2>Numbers Too<a class="headerlink" href="#numbers-too" title="Permalink to this headline"></a></h2>
+<p>What discount should we offer?</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">discount</span><span class="p">,</span> <span class="n">decision_id</span> <span class="o">=</span> <span class="n">discounts_model</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="booleans">
+<h2>Booleans<a class="headerlink" href="#booleans" title="Permalink to this headline"></a></h2>
+<p>Dynamically enable feature flags for best performance…</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">enabled</span><span class="p">,</span> <span class="n">decision_id</span> <span class="o">=</span> <span class="n">features_model</span><span class="o">.</span><span class="n">given</span><span class="p">(</span><span class="n">givens</span><span class="o">=</span><span class="n">example_attributes</span><span class="p">)</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="complex-objects">
+<h2>Complex Objects<a class="headerlink" href="#complex-objects" title="Permalink to this headline"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">theme_variants</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span> <span class="s2">&quot;textColor&quot;</span><span class="p">:</span> <span class="s2">&quot;#000000&quot;</span><span class="p">,</span> <span class="s2">&quot;backgroundColor&quot;</span><span class="p">:</span> <span class="s2">&quot;#ffffff&quot;</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="s2">&quot;textColor&quot;</span><span class="p">:</span> <span class="s2">&quot;#F0F0F0&quot;</span><span class="p">,</span> <span class="s2">&quot;backgroundColor&quot;</span><span class="p">:</span> <span class="s2">&quot;#aaaaaa&quot;</span> <span class="p">}]</span>
+
+<span class="n">theme</span><span class="p">,</span> <span class="n">decision_id</span> <span class="o">=</span> <span class="n">themes_model</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">theme_variants</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Variants can be any JSON encodeable data structure of arbitrary complexity, including nested dictionaries, arrays, strings, numbers, nulls, and booleans.</p>
+</section>
+<section id="example-optimizing-an-upsell-offer">
+<h2>Example: Optimizing an Upsell Offer<a class="headerlink" href="#example-optimizing-an-upsell-offer" title="Permalink to this headline"></a></h2>
+<p>Improve AI is powerful and flexible. Variants can be any JSON encodeable data structure including <strong>strings</strong>,
+<strong>numbers</strong>, <strong>booleans</strong>, <strong>lists</strong>, and <strong>dictionaries</strong>.</p>
+<p>For a dungeon crawler game, say the user was purchasing an item using an In App Purchase.
+We can use Improve AI to choose an additional product to display as an upsell offer during checkout.
+With a few lines of code, we can train a model that will learn to optimize the upsell offer given the original product being purchased.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">improveai</span> <span class="kn">import</span> <span class="n">DecisionModel</span>
+
+
+<span class="n">upsell_model</span> <span class="o">=</span> <span class="n">DecisionModel</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s1">&#39;upsell_model&#39;</span><span class="p">,</span> <span class="n">track_url</span><span class="o">=</span><span class="n">track_url</span><span class="p">)</span>
+
+<span class="n">upsell_model_url</span> <span class="o">=</span> <span class="s1">&#39;&lt;upsell model url&gt;&#39;</span>
+<span class="n">upsell_model</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_url</span><span class="o">=</span><span class="n">upsell_model_url</span><span class="p">)</span>
+
+<span class="n">product</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;red sword&#39;</span><span class="p">,</span> <span class="s1">&#39;price&#39;</span><span class="p">:</span> <span class="mf">4.99</span><span class="p">}</span>
+<span class="n">upsell</span><span class="p">,</span> <span class="n">upsell_decision_id</span> <span class="o">=</span> \
+    <span class="n">upsell_model</span><span class="o">.</span><span class="n">given</span><span class="p">(</span><span class="n">givens</span><span class="o">=</span><span class="n">product</span><span class="p">)</span><span class="o">.</span>\
+        <span class="n">which</span><span class="p">(</span><span class="o">*</span><span class="p">[{</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;gold&quot;</span><span class="p">,</span> <span class="s2">&quot;quantity&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;price&quot;</span><span class="p">:</span> <span class="mf">1.99</span> <span class="p">},</span>
+                <span class="p">{</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;diamonds&quot;</span><span class="p">,</span> <span class="s2">&quot;quantity&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;price&quot;</span><span class="p">:</span> <span class="mf">2.99</span> <span class="p">},</span>
+                <span class="p">{</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;red scabbard&quot;</span><span class="p">,</span> <span class="s2">&quot;price&quot;</span><span class="p">:</span> <span class="mf">0.99</span> <span class="p">}])</span>
+</pre></div>
+</div>
+<p>The product to be purchased is the red sword. Notice that the variants are dictionaries with a mix of string and numeric values.</p>
+<p>The rewards in this case might be any additional revenue from the upsell.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">upsell_purchased</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># flag indicating if decision was correct</span>
+
+<span class="k">if</span> <span class="n">upsell_purchased</span><span class="p">:</span>
+    <span class="c1"># assign reward</span>
+    <span class="n">upsell_model</span><span class="o">.</span><span class="n">add_reward</span><span class="p">(</span><span class="n">upsell</span><span class="p">[</span><span class="s1">&#39;price&#39;</span><span class="p">],</span> <span class="n">decision_id</span><span class="o">=</span><span class="n">upsell_decision_id</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>While it is reasonable to hypothesize that the red scabbard might be the best upsell offer to pair with the red sword, it is still a guess. Any time a guess is made on the value of a variable, instead use Improve AI to decide.</p>
+<p><em>Replace guesses with AI decisions.</em></p>
+</section>
+<section id="example-performance-tuning">
+<h2>Example: Performance Tuning<a class="headerlink" href="#example-performance-tuning" title="Permalink to this headline"></a></h2>
+<p>In the 2000s I was writing a lot of video streaming code.
+The initial motivation for Improve AI came out of my frustrations with attempting to
+tune video streaming clients across heterogeneous networks.</p>
+<p>I was forced to make guesses on performance sensitive configuration defaults through
+slow trial and error. My client configuration code maybe looked something like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;bufferSize&quot;</span><span class="p">:</span> <span class="mi">2048</span><span class="p">,</span>
+          <span class="s2">&quot;videoBitrate&quot;</span><span class="p">:</span> <span class="mi">384000</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>This is the code I wish I could have written:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">product</span>
+
+
+<span class="n">buffer_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">2048</span><span class="p">,</span> <span class="mi">4096</span><span class="p">,</span> <span class="mi">8192</span><span class="p">]</span>
+<span class="n">video_bit_rates</span> <span class="o">=</span> <span class="p">[</span><span class="mi">256000</span><span class="p">,</span> <span class="mi">384000</span><span class="p">,</span> <span class="mi">512000</span><span class="p">]</span>
+
+<span class="n">config</span><span class="p">,</span> <span class="n">config_decision_id</span> <span class="o">=</span> \
+    <span class="n">config_model</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="o">*</span><span class="p">[{</span><span class="s2">&quot;bufferSize&quot;</span><span class="p">:</span> <span class="n">bs</span><span class="p">,</span> <span class="s2">&quot;videoBitrate&quot;</span><span class="p">:</span> <span class="n">br</span><span class="p">}</span> <span class="k">for</span> <span class="n">bs</span><span class="p">,</span> <span class="n">br</span> <span class="ow">in</span> <span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">buffer_sizes</span><span class="p">,</span> <span class="n">video_bit_rates</span><span class="p">])])</span>
+</pre></div>
+</div>
+<p>This example decides multiple variables simultaneously.
+This multi-variate mode jointly optimizes both variables for the highest expected reward.</p>
+<p>The rewards in this case might be negative to penalize any stalls during video playback.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">video_stalled</span><span class="p">:</span>
+    <span class="n">config_model</span><span class="o">.</span><span class="n">add_reward</span><span class="p">(</span><span class="o">-</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">decision_id</span><span class="o">=</span><span class="n">config_decision_id</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Improve AI frees us from having to overthink our configuration values during development.
+We simply give it some reasonable variants and let it learn from real world usage.</p>
+<p>Look for places where you’re relying on guesses or an executive decision and consider
+instead directly optimizing for the outcomes you desire.</p>
 </section>
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline"></a></h2>
@@ -174,10 +279,6 @@ To avoid this either purge pip’s cache:</p>
 </section>
 <section id="initialization">
 <h2>Initialization<a class="headerlink" href="#initialization" title="Permalink to this headline"></a></h2>
-<p>General initialization can be done with simple import:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">improveai</span>
-</pre></div>
-</div>
 <p><a class="reference external" href="https://github.com/improve-ai/gym">Gym</a> needs new data (decisions and rewards) to train increasingly accurate models.
 Initializing <code class="docutils literal notranslate"><span class="pre">DecisionModel()</span></code> with <code class="docutils literal notranslate"><span class="pre">track_url</span></code> allows DecisionModel() to send decisions and rewards directly to <a class="reference external" href="https://github.com/improve-ai/gym">gym’s</a>
 track endpoint. Easiest way to get started with deciding and rewarding is to import <code class="docutils literal notranslate"><span class="pre">DecisionModel</span></code> from <code class="docutils literal notranslate"><span class="pre">improveai</span></code>:</p>
@@ -218,188 +319,6 @@ in the loaded booster will be set to <code class="docutils literal notranslate">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">decision_model</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_url</span><span class="o">=</span><span class="s1">&#39;&lt;URL or FS path to booster&gt;&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-</section>
-<section id="usage">
-<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline"></a></h2>
-<section id="greeting">
-<h3>Greeting<a class="headerlink" href="#greeting" title="Permalink to this headline"></a></h3>
-<p>Improve AI makes quick on-device AI decisions that get smarter over time.</p>
-<p>The heart of Improve AI is the which statement. <code class="docutils literal notranslate"><span class="pre">which()</span></code> is like an AI if/then statement.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">improveai</span> <span class="kn">import</span> <span class="n">DecisionModel</span>
-
-
-<span class="n">greetings_model</span> <span class="o">=</span> <span class="n">DecisionModel</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s1">&#39;greetings&#39;</span><span class="p">,</span> <span class="n">track_url</span><span class="o">=</span><span class="s1">&#39;&lt;gym`s track url&gt;&#39;</span><span class="p">)</span>
-<span class="n">greetings_model</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;&lt;greetings model URL or filesystem path&gt;&#39;</span><span class="p">)</span>
-<span class="n">greeting</span><span class="p">,</span> <span class="n">decision_id</span> <span class="o">=</span> <span class="n">greetings_model</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;Hello&#39;</span><span class="p">,</span> <span class="s1">&#39;Howdy&#39;</span><span class="p">,</span> <span class="s1">&#39;Hola&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p><code class="docutils literal notranslate"><span class="pre">which()</span></code> makes decisions using a decision model. Decision models are easily trained by assigning rewards for positive outcomes.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">greetings_model</span><span class="o">.</span><span class="n">add_reward</span><span class="p">(</span><span class="n">reward</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">decision_id</span><span class="o">=</span><span class="n">decision_id</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Rewards are credited to the specific decisions - you can add rewards with <code class="docutils literal notranslate"><span class="pre">add_reward()</span></code> call specifying desired reward and <code class="docutils literal notranslate"><span class="pre">decision_id</span></code>.
-<code class="docutils literal notranslate"><span class="pre">DecisionModel().which(*variants)</span></code> will make the decision that provides the highest expected reward.
-When the rewards are business metrics, such as revenue or user retention,
-the decisions will optimize to automatically improve those metrics over time.</p>
-<p>That’s like A/B testing on steroids.</p>
-</section>
-<section id="numbers-too">
-<h3>Numbers Too<a class="headerlink" href="#numbers-too" title="Permalink to this headline"></a></h3>
-<p>What discount should we offer?</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">improveai</span> <span class="kn">import</span> <span class="n">DecisionModel</span>
-
-
-<span class="n">discounts_model</span> <span class="o">=</span> <span class="n">DecisionModel</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s1">&#39;discounts&#39;</span><span class="p">,</span> <span class="n">track_url</span><span class="o">=</span><span class="s1">&#39;&lt;gym`s track url&gt;&#39;</span><span class="p">)</span>
-<span class="n">discounts_model</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_url</span><span class="o">=</span><span class="s1">&#39;&lt;discounts model URL&gt;&#39;</span><span class="p">)</span>
-<span class="n">discount</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">discounts_model</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-<section id="booleans">
-<h3>Booleans<a class="headerlink" href="#booleans" title="Permalink to this headline"></a></h3>
-<p>Dynamically enable feature flags for best performance…</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">improveai</span> <span class="kn">import</span> <span class="n">DecisionModel</span>
-
-
-<span class="n">example_attributes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;string attribute&#39;</span><span class="p">:</span> <span class="s1">&#39;string attribute value&#39;</span><span class="p">,</span>
-                      <span class="s1">&#39;float attribute&#39;</span><span class="p">:</span> <span class="mf">123.132</span><span class="p">,</span>  <span class="c1"># float attribute value</span>
-                      <span class="s1">&#39;bool attribute&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>  <span class="c1"># bool attribute value</span>
-
-<span class="n">features_model</span> <span class="o">=</span> <span class="n">DecisionModel</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s1">&#39;feature_flags&#39;</span><span class="p">,</span> <span class="n">track_url</span><span class="o">=</span><span class="n">track_url</span><span class="p">)</span>
-<span class="n">features_model</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_url</span><span class="o">=</span><span class="s1">&#39;&lt;features model URL&gt;&#39;</span><span class="p">)</span>
-
-<span class="n">feature_flag</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">features_model</span><span class="o">.</span><span class="n">given</span><span class="p">(</span><span class="n">givens</span><span class="o">=</span><span class="n">example_attributes</span><span class="p">)</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-<section id="complex-objects">
-<h3>Complex Objects<a class="headerlink" href="#complex-objects" title="Permalink to this headline"></a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">improveai</span> <span class="kn">import</span> <span class="n">DecisionModel</span>
-
-
-<span class="n">theme_variants</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="p">{</span><span class="s2">&quot;textColor&quot;</span><span class="p">:</span> <span class="s2">&quot;#000000&quot;</span><span class="p">,</span> <span class="s2">&quot;backgroundColor&quot;</span><span class="p">:</span> <span class="s2">&quot;#ffffff&quot;</span> <span class="p">},</span>
-    <span class="p">{</span> <span class="s2">&quot;textColor&quot;</span><span class="p">:</span> <span class="s2">&quot;#F0F0F0&quot;</span><span class="p">,</span> <span class="s2">&quot;backgroundColor&quot;</span><span class="p">:</span> <span class="s2">&quot;#aaaaaa&quot;</span> <span class="p">}]</span>
-
-<span class="n">themes_model</span> <span class="o">=</span> <span class="n">DecisionModel</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s1">&#39;themes&#39;</span><span class="p">,</span> <span class="n">track_url</span><span class="o">=</span><span class="s1">&#39;&lt;gym`s track url&gt;&#39;</span><span class="p">)</span>
-<span class="n">themes_model</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;&lt;themes model URL&gt;&#39;</span><span class="p">)</span>
-
-<span class="n">theme</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">themes_model</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="o">*</span><span class="n">theme_variants</span><span class="p">)</span>
-</pre></div>
-</div>
-<p><code class="docutils literal notranslate"><span class="pre">DecisionModel.which()</span></code> accepts pythonic <code class="docutils literal notranslate"><span class="pre">*args</span></code>.
-<code class="docutils literal notranslate"><span class="pre">DecisionModel.which(*variants)</span></code> will unpack each element of <code class="docutils literal notranslate"><span class="pre">varaints</span></code> as a separate variant<br />while <code class="docutils literal notranslate"><span class="pre">DecisionModel.which(variants)</span></code> will interpret <code class="docutils literal notranslate"><span class="pre">variants</span></code> as a single variant of a list type.</p>
-<p>Improve learns to use the attributes of each key and value in a complex variant to make the optimal decision.</p>
-<p>Variants can be any JSON encodeable data structure of arbitrary complexity, including nested dictionaries, arrays, strings, numbers, nulls, and booleans.</p>
-</section>
-<section id="decisions-are-contextual">
-<h3>Decisions are Contextual<a class="headerlink" href="#decisions-are-contextual" title="Permalink to this headline"></a></h3>
-<p>Unlike A/B testing or feature flags, Improve AI uses <em>context</em> to make the best decision for each user.
-On iOS, the following <em>context</em> is automatically included:</p>
-<ul class="simple">
-<li><p>$country - two letter country code</p></li>
-<li><p>$lang - two letter language code</p></li>
-<li><p>$tz - numeric GMT offset</p></li>
-<li><p>$carrier - cellular network</p></li>
-<li><p>$device - string portion of device model</p></li>
-<li><p>$devicev - device version</p></li>
-<li><p>$os - string portion of OS name</p></li>
-<li><p>$osv - OS version</p></li>
-<li><p>$pixels - screen width x screen height</p></li>
-<li><p>$app - app name</p></li>
-<li><p>$appv - app version</p></li>
-<li><p>$sdkv - Improve AI SDK version</p></li>
-<li><p>$weekday - (ISO 8601, monday==1.0, sunday==7.0) plus fractional part of day</p></li>
-<li><p>$time - fractional day since midnight</p></li>
-<li><p>$runtime - fractional days since session start</p></li>
-<li><p>$day - fractional days since born</p></li>
-<li><p>$d - the number of decisions for this model</p></li>
-<li><p>$r - total rewards for this model</p></li>
-<li><p>$r/d - total rewards/decisions</p></li>
-<li><p>$d/day - decisions/$day</p></li>
-</ul>
-<p>Using the context, on a Spanish speaker’s device we expect our greetings model to learn to choose <em>“Hola”</em>.</p>
-<p>Custom context can be provided via given():</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">improveai</span> <span class="kn">import</span> <span class="n">DecisionModel</span>
-
-<span class="n">cowboy_givens</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;cowboy&quot;</span><span class="p">}</span>
-
-<span class="n">greetings_model</span> <span class="o">=</span> <span class="n">DecisionModel</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s1">&#39;greetings&#39;</span><span class="p">,</span> <span class="n">track_url</span><span class="o">=</span><span class="n">track_url</span><span class="p">)</span>
-<span class="n">greetings_model</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;&lt;trained greetings model url&gt;&#39;</span><span class="p">)</span>
-<span class="n">greeting</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">greetings_model</span><span class="o">.</span><span class="n">given</span><span class="p">(</span><span class="n">givens</span><span class="o">=</span><span class="n">cowboy_givens</span><span class="p">)</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s2">&quot;Hello&quot;</span><span class="p">,</span> <span class="s2">&quot;Howdy&quot;</span><span class="p">,</span> <span class="s2">&quot;Hola&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Given the language is <em>cowboy</em>, the variant with the highest expected reward should be <em>“Howdy”</em> and the model would learn to make that choice.</p>
-</section>
-<section id="example-optimizing-an-upsell-offer">
-<h3>Example: Optimizing an Upsell Offer<a class="headerlink" href="#example-optimizing-an-upsell-offer" title="Permalink to this headline"></a></h3>
-<p>Improve AI is powerful and flexible. Variants can be any JSON encodeable data structure including <strong>strings</strong>,
-<strong>numbers</strong>, <strong>booleans</strong>, <strong>lists</strong>, and <strong>dictionaries</strong>.</p>
-<p>For a dungeon crawler game, say the user was purchasing an item using an In App Purchase.
-We can use Improve AI to choose an additional product to display as an upsell offer during checkout.
-With a few lines of code, we can train a model that will learn to optimize the upsell offer given the original product being purchased.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">improveai</span> <span class="kn">import</span> <span class="n">DecisionModel</span>
-
-
-<span class="n">upsell_model</span> <span class="o">=</span> <span class="n">DecisionModel</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s1">&#39;upsell_model&#39;</span><span class="p">,</span> <span class="n">track_url</span><span class="o">=</span><span class="n">track_url</span><span class="p">)</span>
-
-<span class="n">upsell_model_url</span> <span class="o">=</span> <span class="s1">&#39;&lt;upsell model url&gt;&#39;</span>
-<span class="n">upsell_model</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_url</span><span class="o">=</span><span class="n">upsell_model_url</span><span class="p">)</span>
-
-<span class="n">product</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;red sword&#39;</span><span class="p">,</span> <span class="s1">&#39;price&#39;</span><span class="p">:</span> <span class="mf">4.99</span><span class="p">}</span>
-<span class="n">upsell</span><span class="p">,</span> <span class="n">upsell_decision_id</span> <span class="o">=</span> \
-    <span class="n">upsell_model</span><span class="o">.</span><span class="n">given</span><span class="p">(</span><span class="n">givens</span><span class="o">=</span><span class="n">product</span><span class="p">)</span><span class="o">.</span>\
-        <span class="n">which</span><span class="p">(</span><span class="o">*</span><span class="p">[{</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;gold&quot;</span><span class="p">,</span> <span class="s2">&quot;quantity&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;price&quot;</span><span class="p">:</span> <span class="mf">1.99</span> <span class="p">},</span>
-                <span class="p">{</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;diamonds&quot;</span><span class="p">,</span> <span class="s2">&quot;quantity&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;price&quot;</span><span class="p">:</span> <span class="mf">2.99</span> <span class="p">},</span>
-                <span class="p">{</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;red scabbard&quot;</span><span class="p">,</span> <span class="s2">&quot;price&quot;</span><span class="p">:</span> <span class="mf">0.99</span> <span class="p">}])</span>
-</pre></div>
-</div>
-<p>The product to be purchased is the red sword. Notice that the variants are dictionaries with a mix of string and numeric values.</p>
-<p>The rewards in this case might be any additional revenue from the upsell.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">upsell_purchased</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># flag indicating if decision was correct</span>
-
-<span class="k">if</span> <span class="n">upsell_purchased</span><span class="p">:</span>
-    <span class="c1"># assign reward</span>
-    <span class="n">upsell_model</span><span class="o">.</span><span class="n">add_reward</span><span class="p">(</span><span class="n">upsell</span><span class="p">[</span><span class="s1">&#39;price&#39;</span><span class="p">],</span> <span class="n">decision_id</span><span class="o">=</span><span class="n">upsell_decision_id</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>While it is reasonable to hypothesize that the red scabbard might be the best upsell offer to pair with the red sword, it is still a guess. Any time a guess is made on the value of a variable, instead use Improve AI to decide.</p>
-<p><em>Replace guesses with AI decisions.</em></p>
-</section>
-<section id="example-performance-tuning">
-<h3>Example: Performance Tuning<a class="headerlink" href="#example-performance-tuning" title="Permalink to this headline"></a></h3>
-<p>In the 2000s I was writing a lot of video streaming code.
-The initial motivation for Improve AI came out of my frustrations with attempting to
-tune video streaming clients across heterogeneous networks.</p>
-<p>I was forced to make guesses on performance sensitive configuration defaults through
-slow trial and error. My client configuration code maybe looked something like this:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;bufferSize&quot;</span><span class="p">:</span> <span class="mi">2048</span><span class="p">,</span>
-          <span class="s2">&quot;videoBitrate&quot;</span><span class="p">:</span> <span class="mi">384000</span><span class="p">}</span>
-</pre></div>
-</div>
-<p>This is the code I wish I could have written:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">product</span>
-
-
-<span class="n">buffer_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">2048</span><span class="p">,</span> <span class="mi">4096</span><span class="p">,</span> <span class="mi">8192</span><span class="p">]</span>
-<span class="n">video_bit_rates</span> <span class="o">=</span> <span class="p">[</span><span class="mi">256000</span><span class="p">,</span> <span class="mi">384000</span><span class="p">,</span> <span class="mi">512000</span><span class="p">]</span>
-
-<span class="n">config</span><span class="p">,</span> <span class="n">config_decision_id</span> <span class="o">=</span> \
-    <span class="n">config_model</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="o">*</span><span class="p">[{</span><span class="s2">&quot;bufferSize&quot;</span><span class="p">:</span> <span class="n">bs</span><span class="p">,</span> <span class="s2">&quot;videoBitrate&quot;</span><span class="p">:</span> <span class="n">br</span><span class="p">}</span> <span class="k">for</span> <span class="n">bs</span><span class="p">,</span> <span class="n">br</span> <span class="ow">in</span> <span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">buffer_sizes</span><span class="p">,</span> <span class="n">video_bit_rates</span><span class="p">])])</span>
-</pre></div>
-</div>
-<p>This example decides multiple variables simultaneously.
-This multi-variate mode jointly optimizes both variables for the highest expected reward.</p>
-<p>The rewards in this case might be negative to penalize any stalls during video playback.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">video_stalled</span><span class="p">:</span>
-    <span class="n">config_model</span><span class="o">.</span><span class="n">add_reward</span><span class="p">(</span><span class="o">-</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">decision_id</span><span class="o">=</span><span class="n">config_decision_id</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Improve AI frees us from having to overthink our configuration values during development.
-We simply give it some reasonable variants and let it learn from real world usage.</p>
-<p>Look for places where you’re relying on guesses or an executive decision and consider
-instead directly optimizing for the outcomes you desire.</p>
-</section>
 </section>
 <section id="privacy">
 <h2>Privacy<a class="headerlink" href="#privacy" title="Permalink to this headline"></a></h2>

@@ -30,19 +30,6 @@ class DecisionTracker:
         return "model"
 
     @constant
-    def TIMESTAMP_KEY() -> str:
-        """
-        Track request body key storing timestamp
-
-        Returns
-        -------
-        str
-            Track request body key storing timestamp
-
-        """
-        return "timestamp"
-
-    @constant
     def MESSAGE_ID_KEY() -> str:
         """
         Track request body key storing message ID
@@ -408,7 +395,7 @@ class DecisionTracker:
     def track(
             self, variant: object, variants: list or np.ndarray, givens: dict,
             model_name: str, variants_ranked_and_track_runners_up: bool,
-            timestamp: object = None, message_id: str = None) -> str:
+            message_id: str or None = None) -> str or None:
         """
         Track that variant is causal in the system
 
@@ -426,14 +413,14 @@ class DecisionTracker:
             will be assigned
         variants_ranked_and_track_runners_up: bool
             are the variants ranked and runners up should be tracked
-        timestamp: object
-            when was decision tracked
+        message_id: str or None
+            ksuid of a given decision
 
 
         Returns
         -------
-        str
-            message id of sent improve request
+        str or None
+            message id of sent improve request or None if an error happened
 
         """
 
@@ -493,7 +480,7 @@ class DecisionTracker:
             body_values=body,
             block=lambda result, error: (
                 warn("Improve.track error: {}".format(error))
-                if error else 0, 0), timestamp=timestamp, message_id=message_id)
+                if error else 0, 0), message_id=message_id)
 
     def add_reward(self, reward: float or int, model_name: str, decision_id: str) -> str:
         """
@@ -616,8 +603,7 @@ class DecisionTracker:
             return False
 
     def post_improve_request(
-            self, body_values: Dict[str, object], block: callable,
-            message_id: str = None, timestamp: object = None) -> str:
+            self, body_values: Dict[str, object], block: callable, message_id: str = None) -> str:
         """
         Posts request to tracker endpoint
 
@@ -628,8 +614,8 @@ class DecisionTracker:
             dict to be posted
         block: callable
             callable to execute on error
-        timestamp: object
-            timestamp of request
+        message_id: str or None
+            ksuid of a given request
 
 
         Returns
@@ -646,11 +632,7 @@ class DecisionTracker:
 
         assert self._is_valid_message_id(message_id=message_id)
 
-        body = {
-            self.TIMESTAMP_KEY:
-                timestamp if timestamp else str(np.datetime_as_string(
-                    np.datetime64(datetime.now()), unit='ms', timezone='UTC')),
-            self.MESSAGE_ID_KEY: message_id if message_id is not None else str(Ksuid())}
+        body = {self.MESSAGE_ID_KEY: message_id if message_id is not None else str(Ksuid())}
 
         body.update(body_values)
 

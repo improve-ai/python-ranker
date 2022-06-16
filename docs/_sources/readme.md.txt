@@ -1,163 +1,45 @@
 Readme
 ======
+Optimize and personalize your apps with fast AI decisions that get smarter over time. Improve AI makes it simple to apply *Reinforcement Learning* to directly optimize revenue, user retention, or any other metric.
 
-## Fast AI Decisions for Python
-
-Improve AI provides quick on-device AI decisions that get smarter over time. It's like an AI *if/then* statement. Replace guesses in your app's configuration with AI decisions to increase your app's revenue, user retention, or any other metric automatically.
-
-## Installation
-
-
-#### Installation prerequisites
- - python 3.7+
- - in order to take advantage of fast feature encoding please install `gcc` and python headers: `python3-dev` or `python3-devel` (`sudo apt install gcc python3-dev` for apt and `sudo yum install gcc python3-devel` for yum or dnf)
- - for macOS it might be necessary to [build xgboost from sources](https://xgboost.readthedocs.io/en/stable/build.html) (otherwise `pip3 install xgboost` might fail)
- - if possible virtual environment (e.g. venv) usage is strongly encouraged
- - upgrading pip, wheel and packages is also a good idea:
-
-    `pip3 install --upgrade pip wheel build`
-
-
-
-#### Install with pip
-
-To install from pip simply use:
-
-`pip3 install improveai`
-
-#### pip's cache
-Fog big packages and small amount of RAM (e.g., 1 GB) pip's caching mechanism might cause Out Of Memory error resulting in 
-"Killed" error message on e.g. xgboost installation attempt. 
-To avoid this either purge pip's cache:
-
-`pip3 cache purge`
-
-or use `--no-cache-dir` flag
-
-
-#### Build and install from cloned git repo
-
-To install from cloned repo:     
- 1. clone repo: git clone https://github.com/improve-ai/python-sdk    
- 2. make sure you are in the cloned folder (python-sdk)    
- 3. activate your virtualenv (if you are using one, if not you can skip this step; using venv is advised)    
- 4. purge pip's cache:
-    
-    `pip3 cache purge`
-
- 5. install wheel and cmake:    
-    
-    `pip3 install --upgrade pip build wheel cmake --no-cache-dir`
-
- 6. install requirements:
-
-    `pip3 install -r requirements.txt --no-cache-dir`
-
- 7. to build package wheel call:
-
-    `python3 -m build`
-
- 8. install built wheel with pip:
-
-    `pip3 install dist/improveai-7.0.1*.whl`
-
-    where `*` represents system specific part of wheel name
-
-## Initialization
-
-General initialization can be done with simple import:
+The heart of Improve AI is the *which()* statement. *which()* is like an AI if/then statement.
 
 ```python
-import improveai
-```
-
-[Gym](https://github.com/improve-ai/gym) needs new data (decisions and rewards) to train increasingly accurate models. 
-Initializing `DecisionModel()` with `track_url` allows DecisionModel() to send decisions and rewards directly to [gym's](https://github.com/improve-ai/gym)
-track endpoint. Easiest way to get started with deciding and rewarding is to import `DecisionModel` from `improveai`:
-
-```python
-from improveai import DecisionModel
-```
-
-Possible `DecisionModel` initializations:
-- `model_name != None` and `track_url != None` &#8594; decisions of `'grettings'` model are tracked and rewarded
-
-
-```python
-track_url = 'https://x5fvx48stc.execute-api.<region>.amazonaws.com/track'
-decision_model = DecisionModel(model_name='greetings', track_url=track_url)
-```
-
-- `model_name != None` and `track_url == None` &#8594; decisions are not tracked nor rewarded
-
-```python
-decision_model = DecisionModel(model_name='greetings')
-```
-
-- `model_name == None` and `track_url != None` &#8594; decisions are not tracked nor rewarded 
-(`model_name` must not be None for a valid decision / reward)
-
-```python
-track_url = 'https://x5fvx48stc.execute-api.<region>.amazonaws.com/track'
-decision_model = DecisionModel(model_name=None, track_url=track_url)
-```
-
-- `model_name == None` and `track_url == None` &#8594; decisions are not tracked and rewarded
-```python
-decision_model = DecisionModel(model_name=None)
-```
-
-Once model is initialized an existing XGBoost Improve AI model can be loaded. 
-If `DecisionModel` was initialized with `model_name = None` then the `model_name` cached 
-in the loaded booster will be set to `model_name` attribute of `DecisionModel`.
-
-```python
-decision_model.load(model_url='<URL or FS path to booster>')
-```
-
-
-## Usage
-
-### Greeting
-
-Improve AI makes quick on-device AI decisions that get smarter over time.
-
-The heart of Improve AI is the which statement. `which()` is like an AI if/then statement.
-
-```python
-from improveai import DecisionModel
-
-
-greetings_model = DecisionModel(model_name='greetings', track_url='<gym`s track url>')
-greetings_model.load('<greetings model URL or filesystem path>')
 greeting, decision_id = greetings_model.which('Hello', 'Howdy', 'Hola')
 ```
 
-`which()` makes decisions using a decision model. Decision models are easily trained by assigning rewards for positive outcomes.
+*which()* uses logic stored in a machine learning model, a decision model, to make the best choice.
+
+Decision models are easily trained by assigning rewards for positive outcomes. *which()* chooses the option that provides the highest expected reward given the current conditions.
 
 ```python
-greetings_model.add_reward(reward=1.0, decision_id=decision_id)
+if success:
+   greetings_model.add_reward(1.0, decision_id)
 ```
 
-Rewards are credited to the specific decisions - you can add rewards with `add_reward()` call specifying desired reward and `decision_id`.
-`DecisionModel().which(*variants)` will make the decision that provides the highest expected reward. 
-When the rewards are business metrics, such as revenue or user retention, 
-the decisions will optimize to automatically improve those metrics over time.
+When rewards are business metrics, such as revenue or user retention, the decisions will optimize to automatically improve those metrics over time.
 
-That's like A/B testing on steroids.
+*That's like A/B testing on steroids.*
 
+However, unlike A/B testing, Improve AI may optionally use context to make the best decision.
+
+Custom context can be provided via *given()*:
+
+
+```python
+
+greeting, decision_id = greetings_model.given({"language": "cowboy"}) \
+                                       .which("Hello", "Howdy", "Hola")
+```
+
+Given the language is *cowboy*, the variant with the highest expected reward should be *"Howdy"* and the model would learn to make that choice.
 
 ### Numbers Too
 
 What discount should we offer?
 
 ```python
-from improveai import DecisionModel
-
-
-discounts_model = DecisionModel(model_name='discounts', track_url='<gym`s track url>')
-discounts_model.load(model_url='<discounts model URL>')
-discount, _ = discounts_model.which(0.1, 0.2, 0.3)
+discount, decision_id = discounts_model.which(0.1, 0.2, 0.3)
 ```
 
 ### Booleans
@@ -165,89 +47,21 @@ discount, _ = discounts_model.which(0.1, 0.2, 0.3)
 Dynamically enable feature flags for best performance...
 
 ```python
-from improveai import DecisionModel
-
-
-example_attributes = {'string attribute': 'string attribute value',
-                      'float attribute': 123.132,  # float attribute value
-                      'bool attribute': True}  # bool attribute value
-
-features_model = DecisionModel(model_name='feature_flags', track_url=track_url)
-features_model.load(model_url='<features model URL>')
-
-feature_flag, _ = features_model.given(givens=example_attributes).which(True, False)
+enabled, decision_id = features_model.given(givens=example_attributes).which(True, False)
 ```
-
 
 ### Complex Objects
 
-
 ```python
-from improveai import DecisionModel
-
-
 theme_variants = [
-    {"textColor": "#000000", "backgroundColor": "#ffffff" },
+    { "textColor": "#000000", "backgroundColor": "#ffffff" },
     { "textColor": "#F0F0F0", "backgroundColor": "#aaaaaa" }]
 
-themes_model = DecisionModel(model_name='themes', track_url='<gym`s track url>')
-themes_model.load('<themes model URL>')
-
-theme, _ = themes_model.which(*theme_variants)
+theme, decision_id = themes_model.which(theme_variants)
 ```
-`DecisionModel.which()` accepts pythonic `*args`. 
-`DecisionModel.which(*variants)` will unpack each element of `varaints` as a separate variant  
-while `DecisionModel.which(variants)` will interpret `variants` as a single variant of a list type.
-
-Improve learns to use the attributes of each key and value in a complex variant to make the optimal decision.
 
 Variants can be any JSON encodeable data structure of arbitrary complexity, including nested dictionaries, arrays, strings, numbers, nulls, and booleans.
 
-### Decisions are Contextual
-
-Unlike A/B testing or feature flags, Improve AI uses *context* to make the best decision for each user.
-On iOS, the following *context* is automatically included:
-
-- $country - two letter country code
-- $lang - two letter language code
-- $tz - numeric GMT offset
-- $carrier - cellular network
-- $device - string portion of device model
-- $devicev - device version
-- $os - string portion of OS name
-- $osv - OS version
-- $pixels - screen width x screen height
-- $app - app name
-- $appv - app version
-- $sdkv - Improve AI SDK version
-- $weekday - (ISO 8601, monday==1.0, sunday==7.0) plus fractional part of day
-- $time - fractional day since midnight
-- $runtime - fractional days since session start
-- $day - fractional days since born
-- $d - the number of decisions for this model
-- $r - total rewards for this model
-- $r/d - total rewards/decisions
-- $d/day - decisions/$day
-
-
-
-Using the context, on a Spanish speaker's device we expect our greetings model to learn to choose *"Hola"*.
-
-
-Custom context can be provided via given():
-
-
-```python
-from improveai import DecisionModel
-
-cowboy_givens = {"language": "cowboy"}
-
-greetings_model = DecisionModel(model_name='greetings', track_url=track_url)
-greetings_model.load('<trained greetings model url>')
-greeting, _ = greetings_model.given(givens=cowboy_givens).which("Hello", "Howdy", "Hola")
-```
-
-Given the language is *cowboy*, the variant with the highest expected reward should be *"Howdy"* and the model would learn to make that choice.
 
 ### Example: Optimizing an Upsell Offer
 
@@ -337,6 +151,111 @@ We simply give it some reasonable variants and let it learn from real world usag
 
 Look for places where you're relying on guesses or an executive decision and consider 
 instead directly optimizing for the outcomes you desire.
+
+## Installation
+
+
+#### Installation prerequisites
+ - python 3.7+
+ - in order to take advantage of fast feature encoding please install `gcc` and python headers: `python3-dev` or `python3-devel` (`sudo apt install gcc python3-dev` for apt and `sudo yum install gcc python3-devel` for yum or dnf)
+ - for macOS it might be necessary to [build xgboost from sources](https://xgboost.readthedocs.io/en/stable/build.html) (otherwise `pip3 install xgboost` might fail)
+ - if possible virtual environment (e.g. venv) usage is strongly encouraged
+ - upgrading pip, wheel and packages is also a good idea:
+
+    `pip3 install --upgrade pip wheel build`
+
+
+
+#### Install with pip
+
+To install from pip simply use:
+
+`pip3 install improveai`
+
+#### pip's cache
+Fog big packages and small amount of RAM (e.g., 1 GB) pip's caching mechanism might cause Out Of Memory error resulting in 
+"Killed" error message on e.g. xgboost installation attempt. 
+To avoid this either purge pip's cache:
+
+`pip3 cache purge`
+
+or use `--no-cache-dir` flag
+
+
+#### Build and install from cloned git repo
+
+To install from cloned repo:     
+ 1. clone repo: git clone https://github.com/improve-ai/python-sdk    
+ 2. make sure you are in the cloned folder (python-sdk)    
+ 3. activate your virtualenv (if you are using one, if not you can skip this step; using venv is advised)    
+ 4. purge pip's cache:
+    
+    `pip3 cache purge`
+
+ 5. install wheel and cmake:    
+    
+    `pip3 install --upgrade pip build wheel cmake --no-cache-dir`
+
+ 6. install requirements:
+
+    `pip3 install -r requirements.txt --no-cache-dir`
+
+ 7. to build package wheel call:
+
+    `python3 -m build`
+
+ 8. install built wheel with pip:
+
+    `pip3 install dist/improveai-7.0.1*.whl`
+
+    where `*` represents system specific part of wheel name
+
+## Initialization
+
+[Gym](https://github.com/improve-ai/gym) needs new data (decisions and rewards) to train increasingly accurate models. 
+Initializing `DecisionModel()` with `track_url` allows DecisionModel() to send decisions and rewards directly to [gym's](https://github.com/improve-ai/gym)
+track endpoint. Easiest way to get started with deciding and rewarding is to import `DecisionModel` from `improveai`:
+
+```python
+from improveai import DecisionModel
+```
+
+Possible `DecisionModel` initializations:
+- `model_name != None` and `track_url != None` &#8594; decisions of `'grettings'` model are tracked and rewarded
+
+
+```python
+track_url = 'https://x5fvx48stc.execute-api.<region>.amazonaws.com/track'
+decision_model = DecisionModel(model_name='greetings', track_url=track_url)
+```
+
+- `model_name != None` and `track_url == None` &#8594; decisions are not tracked nor rewarded
+
+```python
+decision_model = DecisionModel(model_name='greetings')
+```
+
+- `model_name == None` and `track_url != None` &#8594; decisions are not tracked nor rewarded 
+(`model_name` must not be None for a valid decision / reward)
+
+```python
+track_url = 'https://x5fvx48stc.execute-api.<region>.amazonaws.com/track'
+decision_model = DecisionModel(model_name=None, track_url=track_url)
+```
+
+- `model_name == None` and `track_url == None` &#8594; decisions are not tracked and rewarded
+```python
+decision_model = DecisionModel(model_name=None)
+```
+
+Once model is initialized an existing XGBoost Improve AI model can be loaded. 
+If `DecisionModel` was initialized with `model_name = None` then the `model_name` cached 
+in the loaded booster will be set to `model_name` attribute of `DecisionModel`.
+
+```python
+decision_model.load(model_url='<URL or FS path to booster>')
+```
+
 
 ## Privacy
   

@@ -983,9 +983,7 @@ class TestDecisionContext(TestCase):
 
         def custom_matcher(request):
             request_dict = deepcopy(request.json())
-            assert decision_tracker.TIMESTAMP_KEY in request_dict
             del request_dict[decision_tracker.MESSAGE_ID_KEY]
-            del request_dict[decision_tracker.TIMESTAMP_KEY]
 
             if json.dumps(request_dict, sort_keys=False) == expected_request_json:
                 request_validity['request_body_ok'] = True
