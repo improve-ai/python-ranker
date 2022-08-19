@@ -4,6 +4,8 @@ import datetime
 from ksuid import Ksuid
 import numpy as np
 
+ALLOWED_VARIANT_TYPES = [list, tuple, np.ndarray]
+
 
 def constant(f) -> property:
     """
@@ -153,7 +155,7 @@ def check_variants(variants: list or tuple or np.ndarray) -> list or tuple or np
 
     """
     assert variants is not None
-    assert (isinstance(variants, list) or isinstance(variants, tuple) or isinstance(variants, np.ndarray))
+    assert type(variants) in ALLOWED_VARIANT_TYPES
     # raise if variants are an empty list
     if len(variants) == 0:
         raise ValueError('`variants` must not be an empty collection')

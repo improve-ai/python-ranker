@@ -87,11 +87,11 @@ def check_and_get_unzipped_model(model_src: Union[str, bytes]) -> Union[str, byt
             with open(model_src, 'rb') as chkd_bytes:
                 read_chkd_bytes = chkd_bytes.read()
                 if is_gz_bytes(chkd_bytes=read_chkd_bytes):
-                    print('Returning unzipped file')
+                    # print('Returning unzipped file')
                     return gzip.decompress(read_chkd_bytes)
         except Exception as exc:
             print(
-                'When checking file: {} the following error occured'
+                'When checking file: {} the following error occurred'
                 .format(model_src, exc))
         return model_src
     else:

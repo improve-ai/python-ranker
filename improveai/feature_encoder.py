@@ -6,7 +6,7 @@ import xxhash
 
 
 xxhash3 = xxhash.xxh3_64_intdigest
-JSON_SERIALIZABLE_TYPES = {int, float, str, bool, list, tuple, dict}
+JSON_SERIALIZABLE_TYPES = {int, float, str, bool, list, tuple, dict, type(None)}
 WARNED_ABOUT_ARRAY_ENCODING = False
 
 
@@ -203,7 +203,6 @@ class FeatureEncoder:
         hash_index_map = \
             {feature_hash: index for index, feature_hash in enumerate(feature_names)}
 
-        #
         filler = \
             np.array(
                 [(hash_index_map.get(feature_name, None), value)
@@ -316,8 +315,8 @@ def _is_object_json_serializable(object_) -> bool:
     bool
         True if input is JSON serializable False otherwise
     """
-
-    return type(object_) in JSON_SERIALIZABLE_TYPES or object_ is None
+    # try - except was slower
+    return type(object_) in JSON_SERIALIZABLE_TYPES
 
 
 def _has_top_level_string_keys(checked_dict) -> bool:
@@ -357,7 +356,7 @@ def warn_about_array_encoding(object_):
 
     """
     global WARNED_ABOUT_ARRAY_ENCODING
-    # check if variant is a list, tuple or array
+
     if not WARNED_ABOUT_ARRAY_ENCODING and \
             (isinstance(object_, list) or isinstance(object_, tuple) or isinstance(object_, np.ndarray)):
         warnings.warn('Array encoding may change in the near future')

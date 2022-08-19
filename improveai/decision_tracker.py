@@ -1,7 +1,6 @@
 import re
 import warnings
 from copy import deepcopy
-from datetime import datetime
 import numpy as np
 import orjson
 import requests as rq
@@ -278,7 +277,7 @@ class DecisionTracker:
     def max_runners_up(self, new_val):
         self._max_runners_up = new_val
 
-    def __init__(self, track_url: str, max_runners_up: int = 50, track_api_key: str = None):
+    def __init__(self, track_url: str, track_api_key: str = None):
         """
         Init with params
 
@@ -286,15 +285,14 @@ class DecisionTracker:
         ----------
         track_url: str
             Improve AI track endpoint URL
-        max_runners_up: int
-            maximum number of runners up to be included in the Improve AI request
         track_api_key: str
             Improve AI track endpoint API key (nullable)
         """
 
         self.track_url = track_url
         self.api_key = track_api_key
-        self.max_runners_up = max_runners_up
+        # defaults to 50
+        self.max_runners_up = 50
 
     def _should_track_runners_up(self, variants_count: int) -> bool:
         """
