@@ -245,6 +245,10 @@ class DecisionContext:
         # rank variants if they are not ordered
         ranked_variants = variants
         if not ordered:
+
+            if scores is None:
+                scores = self.decision_model._score(variants=variants, givens=givens)
+
             assert scores is not None
             ranked_variants = self.decision_model._rank(variants=variants, scores=scores)
 

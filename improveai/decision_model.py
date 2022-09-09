@@ -602,8 +602,30 @@ class DecisionModel:
 
     def decide(self, variants: list or np.ndarray, scores: list or np.ndarray = None,
                ordered: bool = False, track: bool = False):
-        # TODO implement using DecisionContext
-        pass
+        """
+        Get decision for provided inputs. If scores are provided use them to rank variants.
+        If `ordered` is true it means variants are ordered from best to worst and there is
+        no need for scoring
+
+        Parameters
+        ----------
+        variants: list or np.ndarray
+            variants used to make decision
+        scores: list or np.ndarray
+            scores for variants
+        ordered: bool
+            are variants ordered from best to worst
+        track: bool
+            should decision be tracked
+
+        Returns
+        -------
+        d.Decision
+            decision object with provided input
+
+        """
+        return dc.DecisionContext(decision_model=self, givens=None)\
+            .decide(variants=variants, scores=scores, ordered=ordered, track=track)
 
     def optimize(self):
         # TODO implement using DecisionContext
