@@ -169,7 +169,7 @@ class Decision:
         """
         return self.__id_
 
-    def __init__(self, decision_model: object):
+    def __init__(self, decision_model: object, ranked_variants: list, givens: dict or None):
         """
         Init with params
 
@@ -185,11 +185,13 @@ class Decision:
         self.__chosen = False
         self.__tracked = False
 
-        self.__variants = [None]
-        self.__variants_set = False
+        # self.__variants = [None]
+        # self.__variants_set = False
 
-        self.__givens = None
-        self.__givens_set = False
+        # self.__givens = None
+        # self.__givens_set = False
+        self.__givens = givens
+        self.__givens_set = True
 
         self.__best = None
         self.__best_set = False
@@ -197,7 +199,8 @@ class Decision:
         self.__scores = None
         self.__scores_set = False
 
-        self.__ranked_variants = [None]
+        # self.__ranked_variants = [None]
+        self.__ranked_variants = ranked_variants
         self.__variants_already_ranked = False
         self.__id_ = None
 
@@ -248,7 +251,7 @@ class Decision:
         return self.decision_model.tracker.add_reward(
             reward=reward, model_name=self.decision_model.model_name, decision_id=self.id_)
 
-    def get(self):
+    def get(self, track_once: bool = True):
         """
         Gets best variant for this Decision and tracks this Decision.
 
@@ -281,7 +284,7 @@ class Decision:
                     if not self.__variants_already_ranked:
                         # if variants are not ranked yet rank them
                         self.__ranked_variants = \
-                            dm.DecisionModel.rank(variants=self.variants, scores=self.__scores)
+                            dm.DecisionModel._rank(variants=self.variants, scores=self.__scores)
                         self.__variants_already_ranked = True
                     if not self.chosen:
                         # if best is not set yet do it
@@ -316,6 +319,7 @@ class Decision:
         return self.best
 
     def peek(self):
+        # TODO Deprecated; Remove in 8.0
         """
         Calculates (or returns) best variant without tracking it
 
@@ -340,3 +344,36 @@ class Decision:
         # The chosen variant is not tracked
         self.__chosen = True
         return self.best
+
+    def ranked(self):
+        # return .rankedVariants
+        # If self.model.tracker && trackOnce == true, call self.model.tracker.track(self) one time ever,
+        # no matter how many times get() or ranked() is called.
+        if self.decision_model.tracker and self.tracked is False:
+            self._track()
+
+        return self.__ranked_variants
+
+    def _track(self):
+        # TODO this is new syntax - verify that this is desired
+        #  also verify method name track() or trackOnce()
+        # If trackOnce = true, the decision is tracked once and only once, no matter how many times get() is called.
+        # If trackOnce = false, the decision is not tracked.
+        assert self.chosen is True
+        assert self.ranked_variants is not None
+
+        if not self.tracked:
+            track_runners_up = self.decision_model.tracker._should_track_runners_up(len(self.variants))
+            decision_id = self.decision_model.tracker.track(
+                variant=self.best, ranked_variants=self.variants,
+                givens=self.givens, model_name=self.decision_model.model_name,
+                variants_ranked_and_track_runners_up=track_runners_up, message_id=self.id_)
+            # TODO What should happen on tracker.track() error? Warning will be returned
+            #  but self.__tracked flag will still be set to True
+            assert self.id_ == decision_id
+            self.__tracked = True
+        else:
+            raise ValueError('Decision has already been tracked')
+
+        assert decision_id is not None
+        return decision_id

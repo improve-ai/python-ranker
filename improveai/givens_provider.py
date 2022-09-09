@@ -3,7 +3,7 @@ import improveai.decision_model as dm
 
 class GivensProvider:
 
-    def givens(self, for_model, givens: dict or None = {}) -> dict:
+    def givens(self, for_model, givens: dict or None = None) -> dict:
         """
         Provides givens for input `for_model`. Input `givens` are included in
         returned value

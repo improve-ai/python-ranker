@@ -391,7 +391,7 @@ class DecisionTracker:
         return False
 
     def track(
-            self, variant: object, variants: list or np.ndarray, givens: dict,
+            self, variant: object, ranked_variants: list or np.ndarray, givens: dict,
             model_name: str, variants_ranked_and_track_runners_up: bool,
             message_id: str or None = None) -> str or None:
         """
@@ -402,7 +402,7 @@ class DecisionTracker:
         ----------
         variant: object
             chosen variant
-        variants: list or np.ndarray
+        ranked_variants: list or np.ndarray
             collection of tracked variants
         givens: dict:
             givens for variants
@@ -433,41 +433,41 @@ class DecisionTracker:
             warnings.warn(f'`model_name` must comply with {XGBChooser.MODEL_NAME_REGEXP} regexp')
             return None
 
-        if isinstance(variants, np.ndarray):
-            variants = variants.tolist()
+        if isinstance(ranked_variants, np.ndarray):
+            ranked_variants = ranked_variants.tolist()
 
         body = {
             self.TYPE_KEY: self.DECISION_TYPE,
             self.MODEL_KEY: model_name,
             self.VARIANT_KEY: variant,
             self.VARIANTS_COUNT_KEY:
-                len(variants) if variants is not None else 1,
+                len(ranked_variants) if ranked_variants is not None else 1,
             }
 
-        if len(variants) == 2:
+        if len(ranked_variants) == 2:
             # for 2 variants variants_ranked_and_track_runners_up should be True
             assert variants_ranked_and_track_runners_up
-            if variant != variants[0]:
-                variants = list(reversed(variants))
+            if variant != ranked_variants[0]:
+                ranked_variants = list(reversed(ranked_variants))
 
         # for variants_ranked_and_track_runners_up == false (max_runners_up == 0)
         # we skip this clause and runners_up == None
         runners_up = None
-        if variants is not None and variants != [None] \
+        if ranked_variants is not None and ranked_variants != [None] \
                 and variants_ranked_and_track_runners_up:
-            assert variant == variants[0]
+            assert variant == ranked_variants[0]
 
-            runners_up = self._top_runners_up(ranked_variants=variants)
+            runners_up = self._top_runners_up(ranked_variants=ranked_variants)
 
             if runners_up is not None:
                 body[self.RUNNERS_UP_KEY] = \
-                    self._top_runners_up(ranked_variants=variants)
+                    self._top_runners_up(ranked_variants=ranked_variants)
 
         # If runners_up == None and len(variants) == 2 -> sample should be extracted
-        if self._is_sample_available(variants=variants, runners_up=runners_up):
+        if self._is_sample_available(variants=ranked_variants, runners_up=runners_up):
             sample = \
                 self.get_sample(
-                    variant=variant, variants=variants,
+                    variant=variant, variants=ranked_variants,
                     track_runners_up=variants_ranked_and_track_runners_up)
             body[self.SAMPLE_KEY] = sample
 

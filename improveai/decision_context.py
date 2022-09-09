@@ -62,6 +62,7 @@ class DecisionContext:
         self.givens = givens
 
     def choose_from(self, variants, scores: np.ndarray or list or None = None):
+        # TODO Deprecated; Remove in 8.0
         """
         Makes a Decision without tracking it
 
@@ -147,6 +148,7 @@ class DecisionContext:
         return best, decision.id_
 
     def choose_first(self, variants: list or tuple or np.ndarray):
+        # TODO Deprecated; Remove in 8.0
         """
         Chooses first from provided variants using gaussian scores (_generate_descending_gaussians())
 
@@ -164,9 +166,10 @@ class DecisionContext:
 
         check_variants(variants=variants)
         return self.choose_from(
-            variants, scores=self.decision_model.generate_descending_gaussians(count=len(variants)))
+            variants, scores=self.decision_model.__generate_descending_gaussians(count=len(variants)))
 
     def first(self, *variants):
+        # TODO Deprecated; Remove in 8.0
         """
         Makes decision using first variant as best and tracks it.
         Accepts variants as pythonic *args
@@ -189,6 +192,7 @@ class DecisionContext:
         return best, decision.id_
 
     def choose_random(self, variants: list or tuple or np.ndarray):
+        # TODO Deprecated; Remove in 8.0
         """
         Shuffles variants to return Decision with gaussian scores and random best variant
 
@@ -208,6 +212,7 @@ class DecisionContext:
         return self.choose_from(variants, scores=np.random.normal(size=count))
 
     def random(self, *variants):
+        # TODO Deprecated; Remove in 8.0
         """
         Makes decision using randomly selected variant as best and tracks it.
         Accepts variants as pythonic *args
@@ -228,3 +233,35 @@ class DecisionContext:
         decision = self.choose_from(used_variants, scores=np.random.normal(size=count))
         best = decision.get()
         return best, decision.id_
+
+    def decide(self, variants: list or np.ndarray, scores: list or np.ndarray = None,
+               ordered: bool = False, track: bool = True):
+
+        # check variants
+        check_variants(variants)
+        # get givens via GivensProvider
+        givens = gp.GivensProvider().givens(for_model=self.decision_model, givens=self.givens)
+
+        # rank variants if they are not ordered
+        ranked_variants = variants
+        if not ordered:
+            assert scores is not None
+            ranked_variants = self.decision_model._rank(variants=variants, scores=scores)
+
+        decision = d.Decision(decision_model=self.decision_model, ranked_variants=ranked_variants, givens=givens)
+        if track:
+            decision._track()
+
+        return decision
+
+    def rank(self, variants: list):
+        # Tracks the decision
+        # Rewards can only be added via DecisionModel.addReward()
+        # Return decide(variants).ranked()
+        # Python SDK returns (result, decision_id) tuple
+        decision = self.decide(variants=variants)
+        return decision.ranked(), decision.id_
+
+    def optimize(self):
+        # TODO implement
+        pass

@@ -4,6 +4,7 @@ import warnings
 import numpy as np
 
 from improveai.chooser import XGBChooser
+import improveai.decision as d
 import improveai.decision_context as dc
 import improveai.decision_tracker as dt
 import improveai.givens_provider as gp
@@ -93,6 +94,32 @@ class DecisionModel:
             self.__tracker.track_url = value
 
     @property
+    def track_api_key(self):
+        """
+        track API key to be sent as the x-api-key HTTP header on track requests. Omit header if null
+
+        Returns
+        -------
+        str
+            current track API key
+
+        """
+        return self.__track_api_key
+
+    @track_api_key.setter
+    def track_api_key(self, value):
+        """
+        sets track API key to be sent as the x-api-key HTTP header on track requests. Omit header if null
+
+        Parameters
+        ----------
+        value: str
+            track API key for this instance
+
+        """
+        self.__track_api_key = value
+
+    @property
     def tracker(self) -> dt.DecisionTracker:
         """
         DecisionTracker of this DecisionModel
@@ -136,9 +163,9 @@ class DecisionModel:
         self.model_name = model_name
 
         self.track_url = track_url
-        self.__track_api_key = track_api_key
+        self.track_api_key = track_api_key
 
-        self.__tracker = dt.DecisionTracker(track_url=track_url, track_api_key=self.__track_api_key)
+        self.__tracker = dt.DecisionTracker(track_url=track_url, track_api_key=self.track_api_key)
 
         self.chooser = None
         self.givens_provider = gp.GivensProvider()
@@ -164,6 +191,18 @@ class DecisionModel:
         self._resolve_model_name()
 
         return self
+
+    def is_loaded(self):
+        """
+        Checks if a valid decision model was loaded
+
+        Returns
+        -------
+        bool
+            was model loaded or not
+
+        """
+        return self.chooser is None and isinstance(self.chooser, XGBChooser)
 
     def _resolve_model_name(self):
         """
@@ -226,7 +265,7 @@ class DecisionModel:
 
         """
 
-        # get givens from provider
+        # use GivensProvider for givens (this will result in empty givens for now)
         givens = self.givens_provider.givens(for_model=self)
         # return equivalent of double scores
         return self._score(variants=variants, givens=givens)
@@ -252,19 +291,17 @@ class DecisionModel:
         if DEBUG is True:
             print(f'[DEBUG] givens: {givens}')
         if self.chooser is None:
-            return DecisionModel.generate_descending_gaussians(count=len(variants))
+            return DecisionModel.__generate_descending_gaussians(count=len(variants))
 
         try:
-            scores = \
-                self.chooser.score(
-                    variants=variants, givens=givens) + \
-                np.array(np.random.rand(len(variants)), dtype='float64') * \
-                self.TIEBREAKER_MULTIPLIER
+            scores = self.chooser.score(variants=variants, givens=givens) + \
+                     np.array(np.random.rand(len(variants)), dtype='float64') * \
+                     self.TIEBREAKER_MULTIPLIER
         except Exception as exc:
             warnings.warn(
                 'Error when calculating predictions: {}. Returning Gaussian scores'
                     .format(exc))
-            scores = DecisionModel.generate_descending_gaussians(count=len(variants))
+            scores = DecisionModel.__generate_descending_gaussians(count=len(variants))
         return scores.astype(np.float64)
 
     @staticmethod
@@ -324,18 +361,16 @@ class DecisionModel:
 
         return variants[np.argmax(scores)]
 
-    @staticmethod
-    def rank(variants: list or np.ndarray, scores: list or np.ndarray) -> np.ndarray:
+    def _rank(self, variants: list or np.ndarray, scores: list or np.ndarray) -> np.ndarray:
         """
-        Return a list of the variants ranked from best to worst.
-        DO NOT USE THIS METHOD - WILL LIKELY CHANGE SOON
+        Helper method to rank variants. Returns a numpy array with variants ranked from best to worst
 
         Parameters
         ----------
         variants: np.ndarray
             collection of variants to be ranked
-        scores: np.ndarray
-            collection of scores used for ranking
+        scores: list or np.ndarray
+            scores for provided variants
 
         Returns
         -------
@@ -344,19 +379,39 @@ class DecisionModel:
 
         """
 
-        assert variants is not None and scores is not None
-        if not DecisionModel._validate_variants_and_scores(
-                variants=variants, scores=scores):
-            return None
+        # score variants
+        # use GivensProvider for givens (this will result in empty givens for now)
 
-        variants_w_scores = np.array([variants, scores], dtype=object).T
+        # assure provided variants are not empty
+        assert len(variants) > 0
+        # make sure score have the same length that ranked variants
+        assert len(variants) == len(scores)
 
-        sorted_variants_w_scores = \
-            variants_w_scores[(variants_w_scores[:, 1] * -1).argsort()]
-        return sorted_variants_w_scores[:, 0]
+        # convert variants to numpy array for faster sorting
+        variants_np = variants if isinstance(variants, np.ndarray) else np.array(variants)
+        # return descending sorted variants
+        return variants_np[np.argsort(scores * -1)]
+
+    def rank(self, variants: list or np.ndarray):
+        # Tracks the decision
+        # Rewards can only be added via DecisionModel.addReward()
+        # Return decide(variants).ranked()
+        # Python SDK returns (result, decision_id) tuple
+
+        # get givens via GivensProvider
+        givens = self.givens_provider.givens(for_model=self)
+        return dc.DecisionContext(decision_model=self, givens=givens).decide(variants=variants).ranked()
+        # # check variants
+        # check_variants(variants)
+
+        # scores_for_variants = self._score(variants=variants, givens=givens)
+        # ranked_variants = self._rank(variants=variants, scores=scores_for_variants)
+        #
+        # decision = d.Decision(decision_model: object, ranked_variants: list, givens: dict or None)
+        # pass
 
     @staticmethod
-    def generate_descending_gaussians(count: int) -> np.ndarray:
+    def __generate_descending_gaussians(count: int) -> np.ndarray:
         """
         Generates random floats and sorts in a descending fashion
 
@@ -376,7 +431,7 @@ class DecisionModel:
         random_scores[::-1].sort()
         return random_scores
 
-    def given(self, givens: dict or None) -> dc.DecisionContext:
+    def given(self, givens: dict) -> dc.DecisionContext:
         """
         Wrapper for chaining.
 
@@ -392,6 +447,7 @@ class DecisionModel:
 
         """
 
+        assert givens is not None
         return dc.DecisionContext(decision_model=self, givens=givens)
 
     def choose_from(self, variants: np.ndarray or list or tuple, scores: list or np.ndarray = None):
@@ -543,3 +599,18 @@ class DecisionModel:
                     '`tracker` is not set (`tracker`is None) - reward not added')
             if self.track_url is None:
                 warnings.warn('`track_url` is None - reward not added')
+
+    def decide(self, variants: list or np.ndarray, scores: list or np.ndarray = None,
+               ordered: bool = False, track: bool = False):
+        # TODO implement using DecisionContext
+        pass
+
+    def optimize(self):
+        # TODO implement using DecisionContext
+        pass
+
+    def full_factorial_variants(self):
+        # TODO implement using DecisionContext
+        pass
+
+
