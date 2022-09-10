@@ -391,7 +391,7 @@ class DecisionTracker:
         return False
 
     def track(
-            self, variant: object, ranked_variants: list or np.ndarray, givens: dict,
+            self, ranked_variants: list or np.ndarray, givens: dict,
             model_name: str, variants_ranked_and_track_runners_up: bool,
             message_id: str or None = None) -> str or None:
         """
@@ -400,8 +400,6 @@ class DecisionTracker:
 
         Parameters
         ----------
-        variant: object
-            chosen variant
         ranked_variants: list or np.ndarray
             collection of tracked variants
         givens: dict:
@@ -439,7 +437,7 @@ class DecisionTracker:
         body = {
             self.TYPE_KEY: self.DECISION_TYPE,
             self.MODEL_KEY: model_name,
-            self.VARIANT_KEY: variant,
+            self.VARIANT_KEY: ranked_variants[0],
             self.VARIANTS_COUNT_KEY:
                 len(ranked_variants) if ranked_variants is not None else 1,
             }
@@ -447,15 +445,11 @@ class DecisionTracker:
         if len(ranked_variants) == 2:
             # for 2 variants variants_ranked_and_track_runners_up should be True
             assert variants_ranked_and_track_runners_up
-            if variant != ranked_variants[0]:
-                ranked_variants = list(reversed(ranked_variants))
 
         # for variants_ranked_and_track_runners_up == false (max_runners_up == 0)
         # we skip this clause and runners_up == None
         runners_up = None
-        if ranked_variants is not None and ranked_variants != [None] \
-                and variants_ranked_and_track_runners_up:
-            assert variant == ranked_variants[0]
+        if ranked_variants is not None and ranked_variants != [None] and variants_ranked_and_track_runners_up:
 
             runners_up = self._top_runners_up(ranked_variants=ranked_variants)
 
@@ -467,7 +461,7 @@ class DecisionTracker:
         if self._is_sample_available(variants=ranked_variants, runners_up=runners_up):
             sample = \
                 self.get_sample(
-                    variant=variant, variants=ranked_variants,
+                    variant=ranked_variants[0], ranked_variants=ranked_variants,
                     track_runners_up=variants_ranked_and_track_runners_up)
             body[self.SAMPLE_KEY] = sample
 
@@ -520,16 +514,14 @@ class DecisionTracker:
             block=lambda result, error: (
                 warn("Improve.track error: {}".format(error)) if error else 0, 0))
 
-    def get_sample(self, variant: object, variants: list, track_runners_up: bool) -> object:
+    def get_sample(self, ranked_variants: list, track_runners_up: bool) -> object:
         """
         Gets sample from ranked_variants. Takes runenrs up into account
 
 
         Parameters
         ----------
-        variant: object
-            selected variant (first of ranked variants)
-        variants: list or np.ndarray
+        ranked_variants: list or np.ndarray
             list of ranked variants
         track_runners_up: bool
             should runners up be tracked ?
@@ -544,37 +536,31 @@ class DecisionTracker:
 
         assert isinstance(track_runners_up, bool)
 
-        if not (isinstance(variants, list) or isinstance(variants, tuple) or isinstance(variants, np.ndarray)):
+        if not (isinstance(ranked_variants, list) or isinstance(ranked_variants, tuple) or isinstance(ranked_variants, np.ndarray)):
             raise TypeError(
                 'Provided variants are of a wrong type: {}. Only list type is '
-                'allowed'.format(type(variants)))
+                'allowed'.format(type(ranked_variants)))
 
-        assert len(variants) > 1
-        if len(variants) == 2:
+        assert len(ranked_variants) > 1
+        if len(ranked_variants) == 2:
             assert self.max_runners_up == 0
 
         # If there are no runners up, then sample is a random sample
         # from variants with just best excluded.
+
+        # randomly select variants from all minus best
         if not track_runners_up:
-            variant_idx = variants.index(variant)
-            while True:
-                sample_idx = np.random.randint(0, len(variants))
-                if variant_idx != sample_idx:
-                    break
+            return ranked_variants[np.random.randint(1, len(ranked_variants))]
 
-            return variants[sample_idx]
-
-        assert variant == variants[0]
         # If there are no remaining variants after best and runners up,
         # then there is no sample.
-        last_runner_up_idx = min(len(variants), self.max_runners_up + 1)
-        assert last_runner_up_idx < len(variants)
+        # below is just a check
+        last_runner_up_idx = min(len(ranked_variants), self.max_runners_up + 1)
+        assert last_runner_up_idx < len(ranked_variants)
 
         # If there are runners up, then sample is a random sample from
         # variants with best and runners up excluded.
-        sample = \
-            variants[np.random.randint(last_runner_up_idx, len(variants))]
-        return sample
+        return ranked_variants[np.random.randint(last_runner_up_idx, len(ranked_variants))]
 
     def _is_valid_message_id(self, message_id: str or None) -> bool:
         """
