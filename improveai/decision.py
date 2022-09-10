@@ -119,9 +119,6 @@ class Decision:
 
         """
 
-        if not self.chosen:
-            warn('`add_reward()` called before `get()`')
-
         assert is_valid_ksuid(self.id_)
         assert self.decision_model.model_name is not None
         assert reward is not None
