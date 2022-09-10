@@ -141,11 +141,12 @@ class Decision:
 
         """
 
-        # if decision is already tracked simply return best variant
-        if self.tracked:
-            return self.ranked_variants[0]
-        # if decision is not yet tracked -> track decision and return best variant
-        return self.ranked()[0]
+        return self.ranked_variants[0]
+        # # if decision is already tracked simply return best variant
+        # if self.tracked:
+        #     return self.ranked_variants[0]
+        # # if decision is not yet tracked -> track decision and return best variant
+        # return self.ranked()[0]
 
     def ranked(self):
         """
@@ -158,11 +159,11 @@ class Decision:
             ranked variants of this decision
 
         """
-        # return .rankedVariants
-        # If self.model.tracker && trackOnce == true, call self.model.tracker.track(self) one time ever,
-        # no matter how many times get() or ranked() is called.
-        if self.decision_model.tracker and self.tracked is False:
-            self._track()
+        # # return .rankedVariants
+        # # If self.model.tracker && trackOnce == true, call self.model.tracker.track(self) one time ever,
+        # # no matter how many times get() or ranked() is called.
+        # if self.decision_model.tracker and self.tracked is False:
+        #     self._track()
 
         return self.ranked_variants
 
