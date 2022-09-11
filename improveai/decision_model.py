@@ -32,12 +32,12 @@ class DecisionModel:
 
         return self.__model_name
 
-    @model_name.setter
-    def model_name(self, value: str or None):
-        if value is not None:
-            assert isinstance(value, str)
-            assert re.search(DecisionModel.MODEL_NAME_REGEXP, value) is not None
-        self.__model_name = value
+    # @model_name.setter
+    # def model_name(self, value: str or None):
+    #     if value is not None:
+    #         assert isinstance(value, str)
+    #         assert re.search(DecisionModel.MODEL_NAME_REGEXP, value) is not None
+    #     self.__model_name = value
 
     @property
     def chooser(self) -> XGBChooser:
@@ -178,7 +178,8 @@ class DecisionModel:
             track endpoint API key (if available); can be None
         """
 
-        self.model_name = model_name
+        self.__check_model_name(model_name=model_name)
+        self.__model_name = model_name
 
         self.track_url = track_url
         self.track_api_key = track_api_key
@@ -190,6 +191,22 @@ class DecisionModel:
 
         # init `self._last_decision_id` to None
         self._last_decision_id = None
+
+    def __check_model_name(self, model_name: str):
+        """
+        Check if provided model name is a valid model name
+
+        Parameters
+        ----------
+        model_name: str
+            checked model name
+
+        """
+        if model_name is not None:
+            assert isinstance(model_name, str), \
+                f'Invalid model name type - expected string got {type(model_name)}'
+            assert re.search(DecisionModel.MODEL_NAME_REGEXP, model_name) is not None, \
+                f'Valid model name must pass regexpr: {DecisionModel.MODEL_NAME_REGEXP}'
 
     def load(self, model_url: str):
         """
@@ -213,7 +230,7 @@ class DecisionModel:
 
         return self
 
-    def is_loaded(self):
+    def _is_loaded(self):
         """
         Checks if a valid decision model was loaded
 
@@ -236,7 +253,8 @@ class DecisionModel:
         """
 
         if self.model_name is None:
-            self.model_name = self.chooser.model_name
+            self.__check_model_name(model_name=self.chooser.model_name)
+            self.__model_name = self.chooser.model_name
         else:
             self.chooser.model_name = self.model_name
             warnings.warn(
@@ -287,9 +305,8 @@ class DecisionModel:
         """
 
         # use GivensProvider for givens (this will result in empty givens for now)
-        givens = self.givens_provider.givens(for_model=self)
         # return equivalent of double scores
-        return self._score(variants=variants, givens=givens)
+        return self._score(variants=variants, givens=self.givens_provider.givens(for_model=self))
 
     def _score(self, variants: list or np.ndarray, givens: dict or None) -> np.ndarray:
         """
@@ -375,32 +392,33 @@ class DecisionModel:
 
         return True
 
-    @staticmethod
-    def top_scoring_variant(variants: list or np.ndarray, scores: list or np.ndarray) -> object:
-        """
-        Gets best variant considering provided scores
-
-        Parameters
-        ----------
-        variants: np.ndarray
-            collection of variants to be ranked
-        scores: np.ndarray
-            collection of scores used for ranking
-
-        Returns
-        -------
-        object
-            best variant
-
-        """
-
-        assert variants is not None and scores is not None
-        if not DecisionModel._validate_variants_and_scores(
-                variants=variants, scores=scores):
-            warnings.warn('The variants of length 0 were provided. Returning None')
-            return None
-
-        return variants[np.argmax(scores)]
+    # TODO make sure this should also be removed
+    # @staticmethod
+    # def top_scoring_variant(variants: list or np.ndarray, scores: list or np.ndarray) -> object:
+    #     """
+    #     Gets best variant considering provided scores
+    #
+    #     Parameters
+    #     ----------
+    #     variants: np.ndarray
+    #         collection of variants to be ranked
+    #     scores: np.ndarray
+    #         collection of scores used for ranking
+    #
+    #     Returns
+    #     -------
+    #     object
+    #         best variant
+    #
+    #     """
+    #
+    #     assert variants is not None and scores is not None
+    #     if not DecisionModel._validate_variants_and_scores(
+    #             variants=variants, scores=scores):
+    #         warnings.warn('The variants of length 0 were provided. Returning None')
+    #         return None
+    #
+    #     return variants[np.argmax(scores)]
 
     def _rank(self, variants: list or np.ndarray, scores: list or np.ndarray) -> np.ndarray:
         """
@@ -434,22 +452,22 @@ class DecisionModel:
         return variants_np[np.argsort(scores * -1)]
 
     def rank(self, variants: list or np.ndarray):
-        # Tracks the decision
-        # Rewards can only be added via DecisionModel.addReward()
-        # Return decide(variants).ranked()
-        # Python SDK returns (result, decision_id) tuple
+        """
+        Ranks provided variants from best to worst
 
-        # get givens via GivensProvider
-        givens = self.givens_provider.givens(for_model=self)
-        return dc.DecisionContext(decision_model=self, givens=givens).decide(variants=variants).ranked()
-        # # check variants
-        # check_variants(variants)
+        Parameters
+        ----------
+        variants: list or np.ndarray
+            variants to be ranked
 
-        # scores_for_variants = self._score(variants=variants, givens=givens)
-        # ranked_variants = self._rank(variants=variants, scores=scores_for_variants)
-        #
-        # decision = d.Decision(decision_model: object, ranked_variants: list, givens: dict or None)
-        # pass
+        Returns
+        -------
+        list or np.ndarray, str
+            best to worst ranked variants and decision ID
+
+        """
+        decision = self.decide(variants=variants)
+        return decision.ranked(), decision.id_
 
     @staticmethod
     def _generate_descending_gaussians(count: int) -> np.ndarray:
@@ -491,26 +509,6 @@ class DecisionModel:
         assert givens is not None
         return dc.DecisionContext(decision_model=self, givens=givens)
 
-    def choose_from(self, variants: np.ndarray or list or tuple, scores: list or np.ndarray = None):
-        """
-        Wrapper for chaining
-
-        Parameters
-        ----------
-        variants: np.ndarray or list or tuple
-            variants to be set
-        scores: list or np.ndarray
-            list of already calculated scores
-
-        Returns
-        -------
-        Decision
-            decision object with provided with already scored variants and best selected
-
-        """
-
-        return dc.DecisionContext(decision_model=self, givens=None).choose_from(variants=variants, scores=scores)
-
     def which(self, *variants) -> tuple:
         """
         A short hand version of chooseFrom that returns the chosen result directly,
@@ -532,80 +530,25 @@ class DecisionModel:
 
         """
 
-        decision = self.choose_from(variants=get_variants_from_args(variants=variants))
-        best = decision.get()
-        return best, decision.id_
+        return self.which_from(variants=get_variants_from_args(variants))
 
-    def choose_first(self, variants: list or tuple or np.ndarray):
+    def which_from(self, variants: list or np.ndarray) -> tuple:
         """
-        Chooses first from provided variants using gaussian scores (_generate_descending_gaussians())
-
-        Parameters
-        ----------
-        variants: list or tuple or np.ndarray
-            collection of variants passed as positional parameters
-
-        Returns
-        -------
-        Decision
-            A decision with first variants as the best one and gaussian scores
-
-        """
-        return dc.DecisionContext(decision_model=self, givens=None).choose_first(variants=variants)
-
-    def first(self, *variants: list or np.ndarray):
-        """
-        Makes decision using first variant as best and tracks it.
-        Accepts variants as pythonic args
-
-        Parameters
-        ----------
-        *variants: list or tuple or np.ndarray
-            collection of variants of which first will be chosen
-
-        Returns
-        -------
-        object, str
-            tuple with (<first variant>, <decision id>)
-
-        """
-
-        return dc.DecisionContext(decision_model=self, givens=None).first(*variants)
-
-    def choose_random(self, variants: list or tuple or np.ndarray):
-        """
-        Shuffles variants to return Decision with gaussian scores and random best variant
-
-        Parameters
-        ----------
-        *variants: list or tuple or np.ndarray
-            collection of variants of which random will be chosen
-
-        Returns
-        -------
-        Decision
-            Decision with randomly chosen best variant
-
-        """
-        return dc.DecisionContext(decision_model=self, givens=None).choose_random(variants=variants)
-
-    def random(self, *variants: list or np.ndarray):
-        """
-        Makes decision using randomly selected variant as best and tracks it.
-        Accepts variants as pythonic args
+        Makes a decision for provided variants and DecisionContext givens.
 
         Parameters
         ----------
         variants: list or np.ndarray
-            collection of variants of which first will be chosen
 
         Returns
         -------
         object, str
-            tuple with (<random variant>, <decision id>)
+            a tuple of (<best variant>, <decision id>)
 
         """
-        return dc.DecisionContext(decision_model=self, givens=None).random(*variants)
+
+        decision = self.decide(variants)
+        return decision.get(), decision.id_
 
     def add_reward(self, reward: float, decision_id: str):
         """
@@ -623,10 +566,12 @@ class DecisionModel:
 
         """
         assert self.model_name is not None
-        assert isinstance(reward, float) or isinstance(reward, int)
-        assert reward is not None
-        assert not np.isnan(reward)
-        assert not np.isinf(reward)
+        assert re.search(XGBChooser.MODEL_NAME_REGEXP, self.model_name) is not None
+        # TODO this is checked on the lower level - no need to check multiple times
+        # assert isinstance(reward, float) or isinstance(reward, int)
+        # assert reward is not None
+        # assert not np.isnan(reward)
+        # assert not np.isinf(reward)
 
         # make sure provided decision id is valid
         assert decision_id is not None and is_valid_ksuid(decision_id)
@@ -665,7 +610,8 @@ class DecisionModel:
             decision object with provided input
 
         """
-        return dc.DecisionContext(decision_model=self, givens=None)\
+        return dc.DecisionContext(
+            decision_model=self, givens=self.givens_provider.givens(for_model=self))\
             .decide(variants=variants, scores=scores, ordered=ordered, track=track)
 
     def optimize(self):

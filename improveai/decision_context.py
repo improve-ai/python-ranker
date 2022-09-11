@@ -101,9 +101,7 @@ class DecisionContext:
 
         """
 
-        check_variants(variants=variants)
-        decision = self.decide(variants=get_variants_from_args(variants))
-        return decision.get(), decision.id_
+        return self.which_from(variants=get_variants_from_args(variants))
 
     def which_from(self, variants: list or np.ndarray) -> tuple:
         """
@@ -119,7 +117,8 @@ class DecisionContext:
             a tuple of (<best variant>, <decision id>)
 
         """
-        return self.which(*variants)
+        decision = self.decide(variants=variants)
+        return decision.get(), decision.id_
 
     def decide(self, variants: list or np.ndarray, scores: list or np.ndarray = None,
                ordered: bool = False, track: bool = True) -> d.Decision:
@@ -162,8 +161,11 @@ class DecisionContext:
             assert scores is not None
             ranked_variants = self.decision_model._rank(variants=variants, scores=scores)
 
+        assert len(scores) == len(variants)
+
         decision = d.Decision(
             decision_model=self.decision_model, ranked_variants=ranked_variants, givens=givens)
+
         if track:
             decision._track()
 

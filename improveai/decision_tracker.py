@@ -10,7 +10,7 @@ from warnings import warn
 from ksuid import Ksuid
 
 from improveai.chooser import XGBChooser
-from improveai.utils.general_purpose_tools import constant, check_variants
+from improveai.utils.general_purpose_tools import constant, is_valid_ksuid
 
 
 class DecisionTracker:
@@ -480,6 +480,7 @@ class DecisionTracker:
 
         assert self.track_url is not None, '`track_url` is None - please provide valid `track_url`'
         assert model_name is not None and decision_id is not None
+        assert is_valid_ksuid(decision_id)
         assert re.search(XGBChooser.MODEL_NAME_REGEXP, model_name) is not None
         assert isinstance(reward, float) or isinstance(reward, int)
         assert reward is not None
