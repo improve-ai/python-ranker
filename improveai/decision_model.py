@@ -392,34 +392,6 @@ class DecisionModel:
 
         return True
 
-    # TODO make sure this should also be removed
-    # @staticmethod
-    # def top_scoring_variant(variants: list or np.ndarray, scores: list or np.ndarray) -> object:
-    #     """
-    #     Gets best variant considering provided scores
-    #
-    #     Parameters
-    #     ----------
-    #     variants: np.ndarray
-    #         collection of variants to be ranked
-    #     scores: np.ndarray
-    #         collection of scores used for ranking
-    #
-    #     Returns
-    #     -------
-    #     object
-    #         best variant
-    #
-    #     """
-    #
-    #     assert variants is not None and scores is not None
-    #     if not DecisionModel._validate_variants_and_scores(
-    #             variants=variants, scores=scores):
-    #         warnings.warn('The variants of length 0 were provided. Returning None')
-    #         return None
-    #
-    #     return variants[np.argmax(scores)]
-
     def _rank(self, variants: list or np.ndarray, scores: list or np.ndarray) -> np.ndarray:
         """
         Helper method to rank variants. Returns a numpy array with variants ranked from best to worst
