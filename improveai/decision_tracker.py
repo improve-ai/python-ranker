@@ -10,7 +10,7 @@ from warnings import warn
 from ksuid import Ksuid
 
 from improveai.chooser import XGBChooser
-from improveai.utils.general_purpose_tools import constant
+from improveai.utils.general_purpose_tools import constant, check_variants
 
 
 class DecisionTracker:
@@ -246,7 +246,7 @@ class DecisionTracker:
     @property
     def api_key(self) -> str:
         """
-        track endpoint API key (if applicatble); Can be None
+        track endpoint API key (if applicable); Can be None
 
         Returns
         -------
@@ -317,8 +317,7 @@ class DecisionTracker:
         elif variants_count == 2:
             return True
         else:
-            return np.random.rand() < 1 / min(
-                variants_count - 1, self.max_runners_up)
+            return np.random.rand() < 1 / min(variants_count - 1, self.max_runners_up)
 
     def _top_runners_up(
             self, ranked_variants: list or tuple or np.ndarray) -> list or tuple or np.ndarray or None:
@@ -340,8 +339,7 @@ class DecisionTracker:
         """
 
         # len(ranked_variants) - 1 -> this will not include last element of collection
-        top_runners_up = ranked_variants[
-             1:min(len(ranked_variants), self.max_runners_up + 1)]\
+        top_runners_up = ranked_variants[1:min(len(ranked_variants), self.max_runners_up + 1)]\
             if ranked_variants is not None else None
 
         # if there is a positive max_runners_up and more than 1 variant there must be at least 1 runner up
@@ -362,17 +360,17 @@ class DecisionTracker:
 
         return returned_top_runners_up
 
-    def _is_sample_available(self, variants: list or None, runners_up: list) -> bool:
+    def _is_sample_available(self, ranked_variants: list or None, runners_up: list or None) -> bool:
         """
         Returns True / False flag indicating whether sample is available
 
 
         Parameters
         ----------
-        variants: list or None
+        ranked_variants: list or None
             collection of evaluated variants
-        runners_up: list
-            list of tracked runners up
+        runners_up: list or None
+            tracked runners up
 
 
         Returns
@@ -382,7 +380,7 @@ class DecisionTracker:
 
         """
 
-        variants_count = len(variants)
+        variants_count = len(ranked_variants)
         runners_up_count = len(runners_up) if runners_up else 0
 
         if variants_count - runners_up_count - 1 > 0:
@@ -390,10 +388,7 @@ class DecisionTracker:
 
         return False
 
-    def track(
-            self, ranked_variants: list or np.ndarray, givens: dict,
-            model_name: str, variants_ranked_and_track_runners_up: bool,
-            message_id: str or None = None) -> str or None:
+    def track(self, ranked_variants: list or np.ndarray, givens: dict, model_name: str) -> str or None:
         """
         Track that variant is causal in the system
 
@@ -407,11 +402,6 @@ class DecisionTracker:
         model_name: str
             name of model which made the decision (?) / to which observations
             will be assigned
-        variants_ranked_and_track_runners_up: bool
-            are the variants ranked and runners up should be tracked
-        message_id: str or None
-            ksuid of a given decision
-
 
         Returns
         -------
@@ -438,43 +428,35 @@ class DecisionTracker:
             self.TYPE_KEY: self.DECISION_TYPE,
             self.MODEL_KEY: model_name,
             self.VARIANT_KEY: ranked_variants[0],
-            self.VARIANTS_COUNT_KEY:
-                len(ranked_variants) if ranked_variants is not None else 1,
-            }
+            self.VARIANTS_COUNT_KEY: len(ranked_variants) if ranked_variants is not None else 1
+        }
+
+        track_runners_up = self._should_track_runners_up(variants_count=body[self.VARIANTS_COUNT_KEY])
 
         if len(ranked_variants) == 2:
-            # for 2 variants variants_ranked_and_track_runners_up should be True
-            assert variants_ranked_and_track_runners_up
+            # for 2 variants runners_up should be True
+            assert track_runners_up
 
-        # for variants_ranked_and_track_runners_up == false (max_runners_up == 0)
+        # for track_runners_up == false (max_runners_up == 0)
         # we skip this clause and runners_up == None
         runners_up = None
-        if ranked_variants is not None and ranked_variants != [None] and variants_ranked_and_track_runners_up:
-
+        if track_runners_up:
             runners_up = self._top_runners_up(ranked_variants=ranked_variants)
-
             if runners_up is not None:
-                body[self.RUNNERS_UP_KEY] = \
-                    self._top_runners_up(ranked_variants=ranked_variants)
+                body[self.RUNNERS_UP_KEY] = runners_up
 
         # If runners_up == None and len(variants) == 2 -> sample should be extracted
-        if self._is_sample_available(variants=ranked_variants, runners_up=runners_up):
-            sample = \
-                self.get_sample(
-                    variant=ranked_variants[0], ranked_variants=ranked_variants,
-                    track_runners_up=variants_ranked_and_track_runners_up)
-            body[self.SAMPLE_KEY] = sample
+        if self._is_sample_available(ranked_variants=ranked_variants, runners_up=runners_up):
+            body[self.SAMPLE_KEY] = self.get_sample(ranked_variants=ranked_variants, track_runners_up=track_runners_up)
 
         if givens is not None:
             body[self.GIVENS_KEY] = givens
 
         return self.post_improve_request(
             body_values=body,
-            block=lambda result, error: (
-                warn("Improve.track error: {}".format(error))
-                if error else 0, 0), message_id=message_id)
+            block=lambda result, error: (warn("Improve.track error: {}".format(error)) if error else 0, 0))
 
-    def add_reward(self, reward: float or int, model_name: str, decision_id: str) -> str:
+    def add_reward(self, reward: float or int, model_name: str, decision_id: str):
         """
         Adds provided reward for a given decision id made by a given model.
 
@@ -496,6 +478,7 @@ class DecisionTracker:
 
         """
 
+        assert self.track_url is not None, '`track_url` is None - please provide valid `track_url`'
         assert model_name is not None and decision_id is not None
         assert re.search(XGBChooser.MODEL_NAME_REGEXP, model_name) is not None
         assert isinstance(reward, float) or isinstance(reward, int)
@@ -535,11 +518,8 @@ class DecisionTracker:
         """
 
         assert isinstance(track_runners_up, bool)
-
-        if not (isinstance(ranked_variants, list) or isinstance(ranked_variants, tuple) or isinstance(ranked_variants, np.ndarray)):
-            raise TypeError(
-                'Provided variants are of a wrong type: {}. Only list type is '
-                'allowed'.format(type(ranked_variants)))
+        # TODO maybe this check is pointless
+        # check_variants(ranked_variants)
 
         assert len(ranked_variants) > 1
         if len(ranked_variants) == 2:
@@ -586,8 +566,7 @@ class DecisionTracker:
         except:
             return False
 
-    def post_improve_request(
-            self, body_values: Dict[str, object], block: callable, message_id: str = None) -> str:
+    def post_improve_request(self, body_values: Dict[str, object], block: callable) -> str:
         """
         Posts request to tracker endpoint
 
@@ -598,8 +577,6 @@ class DecisionTracker:
             dict to be posted
         block: callable
             callable to execute on error
-        message_id: str or None
-            ksuid of a given request
 
 
         Returns
@@ -614,9 +591,9 @@ class DecisionTracker:
         if self.api_key:
             headers[self.API_KEY_HEADER] = self.api_key
 
-        assert self._is_valid_message_id(message_id=message_id)
-
-        body = {self.MESSAGE_ID_KEY: message_id if message_id is not None else str(Ksuid())}
+        # body = {self.MESSAGE_ID_KEY: message_id if message_id is not None else str(Ksuid())}
+        body = {self.MESSAGE_ID_KEY: str(Ksuid())}
+        assert self._is_valid_message_id(message_id=body[self.MESSAGE_ID_KEY])
 
         body.update(body_values)
 
@@ -632,8 +609,7 @@ class DecisionTracker:
         resp = None
 
         try:
-            resp = \
-                rq.post(url=self.track_url, data=payload_json, headers=headers)
+            resp = rq.post(url=self.track_url, data=payload_json, headers=headers)
 
         except Exception as exc:
             error = exc

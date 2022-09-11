@@ -20,15 +20,6 @@ class Decision:
         """
         return self.__givens
 
-    @givens.setter
-    def givens(self, value: dict):
-        if self.__givens_set is False:
-            assert isinstance(value, dict) or value is None
-            self.__givens = value
-            self.__givens_set = True
-        else:
-            warn('`givens` have already been set for this Decision')
-
     @property
     def decision_model(self):
         """
@@ -94,12 +85,10 @@ class Decision:
         assert isinstance(decision_model, dm.DecisionModel)
         self.__decision_model = decision_model
 
-        self.__chosen = False
-        self.__tracked = False
-
+        assert isinstance(givens, dict) or givens is None
         self.__givens = givens
-        self.__givens_set = True
 
+        check_variants(ranked_variants)
         self.__ranked_variants = ranked_variants
         self.__id_ = None
 
@@ -126,7 +115,7 @@ class Decision:
         assert not np.isnan(reward)
         assert not np.isinf(reward)
 
-        return self.decision_model.tracker.add_reward(
+        self.decision_model.tracker.add_reward(
             reward=reward, model_name=self.decision_model.model_name, decision_id=self.id_)
 
     def get(self):
@@ -142,11 +131,6 @@ class Decision:
         """
 
         return self.ranked_variants[0]
-        # # if decision is already tracked simply return best variant
-        # if self.tracked:
-        #     return self.ranked_variants[0]
-        # # if decision is not yet tracked -> track decision and return best variant
-        # return self.ranked()[0]
 
     def ranked(self):
         """
@@ -159,12 +143,6 @@ class Decision:
             ranked variants of this decision
 
         """
-        # # return .rankedVariants
-        # # If self.model.tracker && trackOnce == true, call self.model.tracker.track(self) one time ever,
-        # # no matter how many times get() or ranked() is called.
-        # if self.decision_model.tracker and self.tracked is False:
-        #     self._track()
-
         return self.ranked_variants
 
     def _track(self):
@@ -177,24 +155,15 @@ class Decision:
             decision ID (ksuid) obtained during tracking
 
         """
-        # TODO this is new syntax - verify that this is desired
-        #  also verify method name track() or trackOnce()
-        # If trackOnce = true, the decision is tracked once and only once, no matter how many times get() is called.
-        # If trackOnce = false, the decision is not tracked.
         assert self.ranked_variants is not None
-
-        if not self.tracked:
-            # make sure that self.__id_ is set for the first time
-            assert self.__id_ is None
-            # track() message ID for current decision -> decision ID
-            self.__id_ = self.decision_model.tracker.track(
-                ranked_variants=self.ranked_variants, givens=self.givens, model_name=self.decision_model.model_name)
-            # if self.id_ is not None at this point it means that track() was called successfully
-            assert self.id_ is not None, 'decision tracking failed -> please check console for tracking error.'
-            # persist most recent decision ID to `tracked` decision model
-            self.decision_model.last_decision_id = self.id_
-            self.__tracked = True
-        else:
-            raise ValueError('Decision has already been tracked')
+        # make sure that self.__id_ is set for the first time
+        assert self.id_ is None
+        # track() message ID for current decision -> decision ID
+        self.__id_ = self.decision_model.tracker.track(
+            ranked_variants=self.ranked_variants, givens=self.givens, model_name=self.decision_model.model_name)
+        # if self.id_ is not None at this point it means that track() was called successfully
+        assert self.id_ is not None, 'decision tracking failed -> please check console for tracking error.'
+        # persist most recent decision ID to `tracked` decision model
+        self.decision_model.last_decision_id = self.id_
 
         return self.id_

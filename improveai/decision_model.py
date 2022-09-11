@@ -132,6 +132,24 @@ class DecisionModel:
         """
         return self.__tracker
 
+    @property
+    def last_decision_id(self):
+        """
+        DecisionModel persists last tracked decision ID in `last_decision_id` property
+
+        Returns
+        -------
+        str
+            Ksuid as string
+
+        """
+        return self._last_decision_id
+
+    @last_decision_id.setter
+    def last_decision_id(self, value):
+        is_valid_ksuid(value)
+        self._last_decision_id = value
+
     @constant
     def TIEBREAKER_MULTIPLIER() -> float:
         """
@@ -169,6 +187,9 @@ class DecisionModel:
 
         self.chooser = None
         self.givens_provider = gp.GivensProvider()
+
+        # init `self._last_decision_id` to None
+        self._last_decision_id = None
 
     def load(self, model_url: str):
         """
@@ -270,7 +291,7 @@ class DecisionModel:
         # return equivalent of double scores
         return self._score(variants=variants, givens=givens)
 
-    def _score(self, variants: list or np.ndarray, givens: dict) -> np.ndarray:
+    def _score(self, variants: list or np.ndarray, givens: dict or None) -> np.ndarray:
         """
         Call predict and calculate scores for provided variants
 
@@ -278,6 +299,8 @@ class DecisionModel:
         ----------
         variants: list or np.ndarray
             collection of variants to be scored
+        givens: dict or None
+            givens for variants
 
         Returns
         -------
@@ -291,17 +314,35 @@ class DecisionModel:
         if DEBUG is True:
             print(f'[DEBUG] givens: {givens}')
         if self.chooser is None:
-            return DecisionModel.__generate_descending_gaussians(count=len(variants))
+            return DecisionModel._generate_descending_gaussians(count=len(variants))
+
+        # encode variants with single givens
+        encoded_variants = \
+            self.chooser.encode_variants_single_givens(variants=variants, givens=givens)
+        # fill missing features and create numpy matrix for xgboost to predict on
+        features_matrix = self.chooser.fill_missing_features(encoded_variants=encoded_variants)
 
         try:
-            scores = self.chooser.score(variants=variants, givens=givens) + \
+            # calculate predictions
+            scores = self.chooser.calculate_predictions(features_matrix=features_matrix) + \
                      np.array(np.random.rand(len(variants)), dtype='float64') * \
                      self.TIEBREAKER_MULTIPLIER
         except Exception as exc:
             warnings.warn(
                 'Error when calculating predictions: {}. Returning Gaussian scores'
-                    .format(exc))
-            scores = DecisionModel.__generate_descending_gaussians(count=len(variants))
+                .format(exc))
+            scores = DecisionModel._generate_descending_gaussians(count=len(variants))
+
+        # try:
+        #     scores = self.chooser.score(variants=variants, givens=givens) + \
+        #              np.array(np.random.rand(len(variants)), dtype='float64') * \
+        #              self.TIEBREAKER_MULTIPLIER
+        # except Exception as exc:
+        #     warnings.warn(
+        #         'Error when calculating predictions: {}. Returning Gaussian scores'
+        #             .format(exc))
+        #     scores = DecisionModel.__generate_descending_gaussians(count=len(variants))
+
         return scores.astype(np.float64)
 
     @staticmethod
@@ -411,7 +452,7 @@ class DecisionModel:
         # pass
 
     @staticmethod
-    def __generate_descending_gaussians(count: int) -> np.ndarray:
+    def _generate_descending_gaussians(count: int) -> np.ndarray:
         """
         Generates random floats and sorts in a descending fashion
 
