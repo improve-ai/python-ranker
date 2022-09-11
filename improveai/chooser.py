@@ -374,7 +374,7 @@ class XGBChooser:
         """
 
         encoded_variants = \
-            self._encode_variants_single_givens(variants=variants, givens=givens)
+            self.encode_variants_single_givens(variants=variants, givens=givens)
 
         encoded_variants_to_np_method = \
             fast_encoded_variants_to_np if CYTHON_BACKEND_AVAILABLE \
@@ -396,7 +396,60 @@ class XGBChooser:
 
         return scores
 
-    def _encode_variants_single_givens(
+    def fill_missing_features(self, encoded_variants):
+        """
+        Fills missing features in encoded variants and packs them into 2D numpy array
+
+        Parameters
+        ----------
+        encoded_variants: list
+            a list of encoded variants (dicts)
+
+        Returns
+        -------
+        np.ndarray
+            2D numpy array with all features for xgb model
+
+        """
+        encoded_variants_to_np_method = \
+            fast_encoded_variants_to_np if CYTHON_BACKEND_AVAILABLE else encoded_variants_to_np
+
+        features_matrix = encoded_variants_to_np_method(
+            encoded_variants=encoded_variants, feature_names=self.model_feature_names)
+
+        if CYTHON_BACKEND_AVAILABLE:
+            features_matrix = np.asarray(features_matrix)
+
+        return features_matrix
+
+    def calculate_predictions(self, features_matrix: np.ndarray):
+        """
+        Calculates predictions on provided matrix with loaded model
+
+        Parameters
+        ----------
+        features_matrix: np.ndarray
+            array to be a source for DMatrix
+
+        Returns
+        -------
+
+        """
+        # make sure input is a numpy array
+        assert isinstance(features_matrix, np.ndarray)
+        # make sure input for predictions is not empty
+        assert features_matrix.size > 0
+        # make sure it is 2D array
+        assert len(features_matrix.shape) == 2
+        # make sure all features are present
+        assert len(self.model_feature_names) == features_matrix.shape[1]
+        scores = \
+            self.model.predict(
+                DMatrix(features_matrix, feature_names=self.model_feature_names)) \
+            .astype('float64')
+        return scores
+
+    def encode_variants_single_givens(
             self, variants: list or tuple or np.ndarray, givens: dict or None) -> Iterable:
         """
         Implemented as a XGBChooser helper method
