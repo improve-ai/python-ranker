@@ -594,4 +594,83 @@ class DecisionModel:
         # TODO implement using DecisionContext
         pass
 
+    def choose_from(self, variants: list or np.ndarray, scores: list or np.ndarray):
+        """
+        Wrapper for chaining
+        Parameters
+        ----------
+        variants: np.ndarray or list or tuple
+            variants to be set
+        scores: list or np.ndarray
+            list of already calculated scores
+        Returns
+        -------
+        Decision
+            decision object with provided with already scored variants and best selected
+        """
+
+        pass
+
+    def choose_first(self, variants: list or np.ndarray):
+        """
+        Chooses first from provided variants using gaussian scores (_generate_descending_gaussians())
+        Parameters
+        ----------
+        variants: list or tuple or np.ndarray
+            collection of variants passed as positional parameters
+        Returns
+        -------
+        Decision
+            A decision with first variants as the best one and gaussian scores
+        """
+        pass
+
+    def first(self, *variants):
+        """
+        Makes decision using first variant as best and tracks it.
+        Accepts variants as pythonic args
+        Parameters
+        ----------
+        *variants: list or tuple or np.ndarray
+            collection of variants of which first will be chosen
+        Returns
+        -------
+        object, str
+            tuple with (<first variant>, <decision id>)
+        """
+        pass
+
+    def choose_random(self, variants: list or np.ndarray):
+        """
+        Shuffles variants to return Decision with gaussian scores and random best variant
+        Parameters
+        ----------
+        *variants: list or tuple or np.ndarray
+            collection of variants of which random will be chosen
+        Returns
+        -------
+        Decision
+            Decision with randomly chosen best variant
+        """
+        pass
+
+    def random(self, *variants):
+        """
+        Makes decision using randomly selected variant as best and tracks it.
+        Accepts variants as pythonic args
+
+        Parameters
+        ----------
+        variants: list or np.ndarray
+            collection of variants of which first will be chosen
+
+        Returns
+        -------
+        object, str
+            tuple with (<random variant>, <decision id>)
+        """
+        pass
+
+    def choose_multivariate(self, variant_map: dict):
+        pass
 

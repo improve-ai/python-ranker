@@ -117,16 +117,16 @@ class DecisionContext:
             a tuple of (<best variant>, <decision id>)
 
         """
-        decision = self.decide(variants=variants)
+        decision = self.decide(variants=variants, track=True)
         return decision.get(), decision.id_
 
     def decide(self, variants: list or np.ndarray, scores: list or np.ndarray = None,
-               ordered: bool = False, track: bool = True) -> d.Decision:
+               ordered: bool = False, track: bool = False) -> d.Decision:
         """
-        Creates immediately tracked decision. If not scores are provided and
-        input variants are not ranked performs scoring and ranking. If scores
-        are provided but variants are not ordered ranks varians before making a
-        decision
+        Creates decision but does not track it by default.
+        If not scores are provided and input variants are not ranked performs
+        scoring and ranking. If scores are provided but variants are not ordered
+        ranks varians before making a decision
 
         Parameters
         ----------
@@ -186,9 +186,101 @@ class DecisionContext:
             ranked variants and decision ID
 
         """
-        decision = self.decide(variants=variants)
+        decision = self.decide(variants=variants, track=True)
         return decision.ranked(), decision.id_
 
     def optimize(self):
         # TODO implement
         pass
+
+    def choose_first(self, variants: list or tuple or np.ndarray) -> d.Decision:
+        """
+        Chooses first from provided variants using gaussian scores (_generate_descending_gaussians())
+
+        Parameters
+        ----------
+        variants: list or tuple or np.ndarray
+            collection of variants passed as positional parameters
+
+        Returns
+        -------
+        Decision
+            A decision with first variants as the best one and gaussian scores
+        """
+
+        check_variants(variants=variants)
+        return self.decide(variants=variants, ordered=True)
+
+    def first(self, *variants) -> tuple:
+        """
+        Makes decision using first variant as best and tracks it.
+        Accepts variants as pythonic *args
+
+        Parameters
+        ----------
+        variants: list or tuple or np.ndarray
+            collection of variants of which first will be chosen
+
+        Returns
+        -------
+        object, str
+            a tuple of (<first variant>, <decision id>)
+        """
+
+        check_variants(variants=variants)
+        decision = self.decide(variants=get_variants_from_args(variants), ordered=True)
+        return decision.get(), decision.id_
+
+    def choose_random(self, variants: list or tuple or np.ndarray) -> d.Decision:
+        """
+        Shuffles variants to return Decision with gaussian scores and random best variant
+
+        Parameters
+        ----------
+        variants: list or tuple or np.ndarray
+            collection of variants of which random will be chosen
+
+        Returns
+        -------
+        Decision
+            Decision with randomly chosen best variant
+        """
+        check_variants(variants=variants)
+        return self.decide(variants, scores=np.random.normal(size=len(variants)))
+
+    def random(self, *variants) -> tuple:
+        """
+        Makes decision using randomly selected variant as best and tracks it.
+        Accepts variants as pythonic *args
+
+        Parameters
+        ----------
+        variants: list or np.ndarray
+            collection of variants of which first will be chosen
+
+        Returns
+        -------
+        object, str
+            a tuple of (<random variant>, <decision id>)
+        """
+        decision = self.choose_random(variants=get_variants_from_args(variants))
+        return decision.get(), decision.id_
+
+    def choose_from(
+            self, variants: list or tuple or np.ndarray, scores: np.ndarray or list or None) -> d.Decision:
+        """
+        Makes a Decision without tracking it
+
+        Parameters
+        ----------
+        variants: list or tuple or np.ndarray
+            array of variants to choose from
+        scores: np.ndarray or list or None
+            list of scores for variants
+
+        Returns
+        -------
+        Decision
+            snapshot of the Decision made with provided variants and available givens
+        """
+        return self.decide(variants=variants, scores=scores)
