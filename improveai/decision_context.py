@@ -126,7 +126,7 @@ class DecisionContext:
         Creates decision but does not track it by default.
         If not scores are provided and input variants are not ranked performs
         scoring and ranking. If scores are provided but variants are not ordered
-        ranks varians before making a decision
+        ranks variants before making a decision
 
         Parameters
         ----------
@@ -208,7 +208,7 @@ class DecisionContext:
             A decision with first variants as the best one and gaussian scores
         """
 
-        check_variants(variants=variants)
+        # make decision and do not track it
         return self.decide(variants=variants, ordered=True)
 
     def first(self, *variants) -> tuple:
@@ -227,8 +227,10 @@ class DecisionContext:
             a tuple of (<first variant>, <decision id>)
         """
 
-        check_variants(variants=variants)
-        decision = self.decide(variants=get_variants_from_args(variants), ordered=True)
+        # make decision and track immediately
+        decision = self.decide(
+            variants=get_variants_from_args(variants), ordered=True, track=True)
+        # return best and decision ID
         return decision.get(), decision.id_
 
     def choose_random(self, variants: list or tuple or np.ndarray) -> d.Decision:
@@ -245,7 +247,6 @@ class DecisionContext:
         Decision
             Decision with randomly chosen best variant
         """
-        check_variants(variants=variants)
         return self.decide(variants, scores=np.random.normal(size=len(variants)))
 
     def random(self, *variants) -> tuple:
@@ -263,7 +264,8 @@ class DecisionContext:
         object, str
             a tuple of (<random variant>, <decision id>)
         """
-        decision = self.choose_random(variants=get_variants_from_args(variants))
+        decision = self.decide(
+            variants=get_variants_from_args(variants), scores=np.random.normal(size=len(variants)), track=True)
         return decision.get(), decision.id_
 
     def choose_from(

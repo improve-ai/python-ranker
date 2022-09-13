@@ -561,9 +561,10 @@ class DecisionModel:
     def decide(self, variants: list or np.ndarray, scores: list or np.ndarray = None,
                ordered: bool = False, track: bool = False):
         """
-        Get decision for provided inputs. If scores are provided use them to rank variants.
-        If `ordered` is true it means variants are ordered from best to worst and there is
-        no need for scoring
+        Creates decision but does not track it by default.
+        If not scores are provided and input variants are not ranked performs
+        scoring and ranking. If scores are provided but variants are not ordered
+        ranks variants before making a decision
 
         Parameters
         ----------
@@ -608,8 +609,7 @@ class DecisionModel:
         Decision
             decision object with provided with already scored variants and best selected
         """
-
-        pass
+        return self.decide(variants=variants, scores=scores)
 
     def choose_first(self, variants: list or np.ndarray):
         """
@@ -623,7 +623,9 @@ class DecisionModel:
         Decision
             A decision with first variants as the best one and gaussian scores
         """
-        pass
+
+        # make decision and do not track it
+        return self.decide(variants=variants, ordered=True)
 
     def first(self, *variants):
         """
@@ -638,7 +640,10 @@ class DecisionModel:
         object, str
             tuple with (<first variant>, <decision id>)
         """
-        pass
+        decision = self.decide(
+            variants=get_variants_from_args(variants), ordered=True, track=True)
+        # return best and decision ID
+        return decision.get(), decision.id_
 
     def choose_random(self, variants: list or np.ndarray):
         """
@@ -652,7 +657,7 @@ class DecisionModel:
         Decision
             Decision with randomly chosen best variant
         """
-        pass
+        return self.decide(variants, scores=np.random.normal(size=len(variants)))
 
     def random(self, *variants):
         """
@@ -669,7 +674,9 @@ class DecisionModel:
         object, str
             tuple with (<random variant>, <decision id>)
         """
-        pass
+        decision = self.decide(
+            variants=get_variants_from_args(variants), scores=np.random.normal(size=len(variants)), track=True)
+        return decision.get(), decision.id_
 
     def choose_multivariate(self, variant_map: dict):
         pass
