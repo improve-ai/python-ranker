@@ -157,13 +157,15 @@ class Decision:
         """
         assert self.ranked_variants is not None
         # make sure that self.__id_ is set for the first time
-        assert self.id_ is None
+        assert self.id_ is None, \
+            f'This decision has already an ID set: {self.id_} which means it has already been tracked'
         # track() message ID for current decision -> decision ID
         self.__id_ = self.decision_model.tracker.track(
             ranked_variants=self.ranked_variants, givens=self.givens, model_name=self.decision_model.model_name)
         # if self.id_ is not None at this point it means that track() was called successfully
-        assert self.id_ is not None, 'decision tracking failed -> please check console for tracking error.'
-        # persist most recent decision ID to `tracked` decision model
+        assert self.id_ is not None, \
+            'Decision tracking failed -> please check console for tracking error.'
+        # cache most recent tracked decision ID to a decision model
         self.decision_model.last_decision_id = self.id_
 
         return self.id_

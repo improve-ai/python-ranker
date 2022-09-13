@@ -596,6 +596,7 @@ class DecisionModel:
         pass
 
     def choose_from(self, variants: list or np.ndarray, scores: list or np.ndarray):
+        # TODO method deprecated - will be removed in v8 upgrade
         """
         Wrapper for chaining
         Parameters
@@ -612,6 +613,7 @@ class DecisionModel:
         return self.decide(variants=variants, scores=scores)
 
     def choose_first(self, variants: list or np.ndarray):
+        # TODO method deprecated - will be removed in v8 upgrade
         """
         Chooses first from provided variants using gaussian scores (_generate_descending_gaussians())
         Parameters
@@ -628,6 +630,7 @@ class DecisionModel:
         return self.decide(variants=variants, ordered=True)
 
     def first(self, *variants):
+        # TODO method deprecated - will be removed in v8 upgrade
         """
         Makes decision using first variant as best and tracks it.
         Accepts variants as pythonic args
@@ -646,6 +649,7 @@ class DecisionModel:
         return decision.get(), decision.id_
 
     def choose_random(self, variants: list or np.ndarray):
+        # TODO method deprecated - will be removed in v8 upgrade
         """
         Shuffles variants to return Decision with gaussian scores and random best variant
         Parameters
@@ -660,6 +664,7 @@ class DecisionModel:
         return self.decide(variants, scores=np.random.normal(size=len(variants)))
 
     def random(self, *variants):
+        # TODO method deprecated - will be removed in v8 upgrade
         """
         Makes decision using randomly selected variant as best and tracks it.
         Accepts variants as pythonic args

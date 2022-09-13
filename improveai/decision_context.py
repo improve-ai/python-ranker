@@ -194,6 +194,7 @@ class DecisionContext:
         pass
 
     def choose_first(self, variants: list or tuple or np.ndarray) -> d.Decision:
+        # TODO method deprecated - will be removed in v8 upgrade
         """
         Chooses first from provided variants using gaussian scores (_generate_descending_gaussians())
 
@@ -212,6 +213,7 @@ class DecisionContext:
         return self.decide(variants=variants, ordered=True)
 
     def first(self, *variants) -> tuple:
+        # TODO method deprecated - will be removed in v8 upgrade
         """
         Makes decision using first variant as best and tracks it.
         Accepts variants as pythonic *args
@@ -234,6 +236,7 @@ class DecisionContext:
         return decision.get(), decision.id_
 
     def choose_random(self, variants: list or tuple or np.ndarray) -> d.Decision:
+        # TODO method deprecated - will be removed in v8 upgrade
         """
         Shuffles variants to return Decision with gaussian scores and random best variant
 
@@ -250,6 +253,7 @@ class DecisionContext:
         return self.decide(variants, scores=np.random.normal(size=len(variants)))
 
     def random(self, *variants) -> tuple:
+        # TODO method deprecated - will be removed in v8 upgrade
         """
         Makes decision using randomly selected variant as best and tracks it.
         Accepts variants as pythonic *args
@@ -270,6 +274,7 @@ class DecisionContext:
 
     def choose_from(
             self, variants: list or tuple or np.ndarray, scores: np.ndarray or list or None) -> d.Decision:
+        # TODO method deprecated - will be removed in v8 upgrade
         """
         Makes a Decision without tracking it
 
