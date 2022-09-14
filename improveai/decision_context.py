@@ -189,9 +189,23 @@ class DecisionContext:
         decision = self.decide(variants=variants, track=True)
         return decision.ranked(), decision.id_
 
-    def optimize(self):
-        # TODO implement
-        pass
+    def optimize(self, variant_map: dict):
+        """
+        Get the best configuration for a given variants map
+
+        Parameters
+        ----------
+        variant_map: dict
+            mapping variants name -> variants list
+
+        Returns
+        -------
+        object, str
+            best variant and a decision ID
+
+        """
+        return self.which_from(
+            variants=self.decision_model.full_factorial_variants(variant_map=variant_map))
 
     def choose_first(self, variants: list or tuple or np.ndarray):
         # TODO method deprecated - will be removed in v8 upgrade
@@ -291,3 +305,19 @@ class DecisionContext:
             snapshot of the Decision made with provided variants and available givens
         """
         return self.decide(variants=variants, scores=scores)
+
+    def choose_multivariate(self, variant_map):
+        """
+
+
+        Parameters
+        ----------
+        variant_map
+
+        Returns
+        -------
+
+        """
+        return self.choose_from(
+            variants=self.decision_model.full_factorial_variants(variant_map=variant_map),
+            scores=None)

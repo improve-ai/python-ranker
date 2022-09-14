@@ -1,4 +1,3 @@
-from itertools import product
 import re
 import warnings
 
@@ -32,13 +31,6 @@ class DecisionModel:
         """
 
         return self.__model_name
-
-    # @model_name.setter
-    # def model_name(self, value: str or None):
-    #     if value is not None:
-    #         assert isinstance(value, str)
-    #         assert re.search(DecisionModel.MODEL_NAME_REGEXP, value) is not None
-    #     self.__model_name = value
 
     @property
     def chooser(self) -> XGBChooser:
@@ -411,9 +403,6 @@ class DecisionModel:
 
         """
 
-        # score variants
-        # use GivensProvider for givens (this will result in empty givens for now)
-
         # assure provided variants are not empty
         assert len(variants) > 0
         # make sure score have the same length that ranked variants
@@ -479,7 +468,7 @@ class DecisionModel:
 
         """
 
-        assert givens is not None
+        # assert givens is not None
         return dc.DecisionContext(decision_model=self, givens=givens)
 
     def which(self, *variants) -> tuple:
@@ -540,11 +529,6 @@ class DecisionModel:
         """
         assert self.model_name is not None
         assert re.search(XGBChooser.MODEL_NAME_REGEXP, self.model_name) is not None
-        # TODO this is checked on the lower level - no need to check multiple times
-        # assert isinstance(reward, float) or isinstance(reward, int)
-        # assert reward is not None
-        # assert not np.isnan(reward)
-        # assert not np.isinf(reward)
 
         # make sure provided decision id is valid
         assert decision_id is not None and is_valid_ksuid(decision_id)
@@ -584,17 +568,30 @@ class DecisionModel:
             decision object with provided input
 
         """
-        return dc.DecisionContext(
-            decision_model=self, givens=self.givens_provider.givens(for_model=self))\
+
+        return self.given(givens=self.givens_provider.givens(for_model=self))\
             .decide(variants=variants, scores=scores, ordered=ordered, track=track)
 
-    def optimize(self):
-        # TODO implement using DecisionContext
-        pass
+    def optimize(self, variant_map: dict):
+        """
+        Get the best configuration for a given variants map
+
+        Parameters
+        ----------
+        variant_map: dict
+            mapping variants name -> variants list
+
+        Returns
+        -------
+        object, str
+            best variant and a decision ID
+
+        """
+        return self.which_from(variants=self.full_factorial_variants(variant_map=variant_map))
 
     def full_factorial_variants(self, variant_map: dict):
         """
-        Creates full factorial from input variants map, i.e. for vairants_map
+        Creates full factorial from input variants map, i.e. for variants_map
         {'variants_0': ['01', '02'],
          'variants_1': ['11', '12', '13']}
         it creates a list of dicts:
@@ -654,12 +651,14 @@ class DecisionModel:
         # TODO method deprecated - will be removed in v8 upgrade
         """
         Wrapper for chaining
+
         Parameters
         ----------
         variants: np.ndarray or list or tuple
             variants to be set
         scores: list or np.ndarray
             list of already calculated scores
+
         Returns
         -------
         Decision
@@ -671,10 +670,12 @@ class DecisionModel:
         # TODO method deprecated - will be removed in v8 upgrade
         """
         Chooses first from provided variants using gaussian scores (_generate_descending_gaussians())
+
         Parameters
         ----------
         variants: list or tuple or np.ndarray
             collection of variants passed as positional parameters
+
         Returns
         -------
         Decision
@@ -689,10 +690,12 @@ class DecisionModel:
         """
         Makes decision using first variant as best and tracks it.
         Accepts variants as pythonic args
+
         Parameters
         ----------
         *variants: list or tuple or np.ndarray
             collection of variants of which first will be chosen
+
         Returns
         -------
         object, str
@@ -707,10 +710,12 @@ class DecisionModel:
         # TODO method deprecated - will be removed in v8 upgrade
         """
         Shuffles variants to return Decision with gaussian scores and random best variant
+
         Parameters
         ----------
         *variants: list or tuple or np.ndarray
             collection of variants of which random will be chosen
+
         Returns
         -------
         Decision
@@ -739,5 +744,19 @@ class DecisionModel:
         return decision.get(), decision.id_
 
     def choose_multivariate(self, variant_map: dict):
-        pass
+        # TODO method deprecated - will be removed in v8 upgrade
+        """
+        Chooses the best configuration from full factorial from input variants map,
+         i.e. for variants_map.
 
+        Parameters
+        ----------
+        variant_map: dict
+            map of key -> variants set
+
+        Returns
+        -------
+
+        """
+        return self.given(givens=self.givens_provider.givens(for_model=self))\
+            .choose_multivariate(variant_map=variant_map)
