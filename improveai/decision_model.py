@@ -1,3 +1,4 @@
+from itertools import product
 import re
 import warnings
 
@@ -10,7 +11,7 @@ import improveai.decision_tracker as dt
 import improveai.givens_provider as gp
 from improveai.settings import DEBUG
 from improveai.utils.general_purpose_tools import constant, check_variants, \
-    get_variants_from_args, is_valid_ksuid
+    get_variants_from_args, is_valid_ksuid, is_valid_variants_type
 
 
 class DecisionModel:
@@ -591,9 +592,63 @@ class DecisionModel:
         # TODO implement using DecisionContext
         pass
 
-    def full_factorial_variants(self):
-        # TODO implement using DecisionContext
-        pass
+    def full_factorial_variants(self, variant_map: dict):
+        """
+        Creates full factorial from input variants map, i.e. for vairants_map
+        {'variants_0': ['01', '02'],
+         'variants_1': ['11', '12', '13']}
+        it creates a list of dicts:
+        [{'variants_0': '01', 'variants_1': '11'},
+         {'variants_0': '02', 'variants_1': '11'},
+         {'variants_0': '01', 'variants_1': '12'},
+         {'variants_0': '02', 'variants_1': '22'},
+         {'variants_0': '01', 'variants_1': '13'},
+         {'variants_0': '02', 'variants_1': '23'},
+        ]
+
+        Parameters
+        ----------
+        variant_map: dict
+            map of key -> variants set
+
+        Returns
+        -------
+        list
+            list of 'fully factorial variants' dicts
+
+        """
+        # check if all entries in variants_map are lists or tuples or np.arrays
+        variants_map_fixed = {
+            variants_key: variants if is_valid_variants_type(variants) else [variants]
+            for variants_key, variants in variant_map.items()}
+
+        # 1. meshgrid treats each sequence as a different 'variable' and prepares all vs all permutations
+        #    meshgrid returns list of n-dimensional arrays where N is initial number of 'dimensions' (keys)
+        #    in variant map (len(variant_map.keys()))
+        #    variants_0 'dimension' meshgrid output ((3, 2) shape):
+        #    [['00' '01']
+        #     ['00' '01']
+        #     ['00' '01']]
+        #
+        #    variants_1 'dimension' meshgrid output ((3, 2) shape):
+        #    [['11' '11']
+        #     ['12' '12']
+        #     ['13' '13']]
+        # 2. each element returned by meshgrid must be flattened ((1,) shape) and will represent a 'single
+        #    dimension':
+        #
+        #    flattened variants_0 meshgrid result: ['00', '01', '00', '01', '00', '01']
+        #    flattened variants_1 meshgrid result: ['11', '11', '12', '12', '13', '13']
+        #
+        #    Since each element was flattened calling np.vstack() will stack them 'vertically'
+        #    (as if they were rows):
+        #    [['00', '01', '00', '01', '00', '01'],
+        #     ['11', '11', '12', '12', '13', '13']]
+        #
+        # 3. transposing np.vstack() result yields full factorial of values of variants map ->
+        #    last step is to convert 'records' to dicts using variant_map keys
+        return [dict(zip(variants_map_fixed.keys(), variants)) for variants
+                in np.vstack([v.flat for v in np.meshgrid(*variants_map_fixed.values())]).T]
 
     def choose_from(self, variants: list or np.ndarray, scores: list or np.ndarray):
         # TODO method deprecated - will be removed in v8 upgrade

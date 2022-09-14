@@ -121,7 +121,7 @@ class DecisionContext:
         return decision.get(), decision.id_
 
     def decide(self, variants: list or np.ndarray, scores: list or np.ndarray = None,
-               ordered: bool = False, track: bool = False) -> d.Decision:
+               ordered: bool = False, track: bool = False):
         """
         Creates decision but does not track it by default.
         If not scores are provided and input variants are not ranked performs
@@ -193,7 +193,7 @@ class DecisionContext:
         # TODO implement
         pass
 
-    def choose_first(self, variants: list or tuple or np.ndarray) -> d.Decision:
+    def choose_first(self, variants: list or tuple or np.ndarray):
         # TODO method deprecated - will be removed in v8 upgrade
         """
         Chooses first from provided variants using gaussian scores (_generate_descending_gaussians())
@@ -235,7 +235,7 @@ class DecisionContext:
         # return best and decision ID
         return decision.get(), decision.id_
 
-    def choose_random(self, variants: list or tuple or np.ndarray) -> d.Decision:
+    def choose_random(self, variants: list or tuple or np.ndarray):
         # TODO method deprecated - will be removed in v8 upgrade
         """
         Shuffles variants to return Decision with gaussian scores and random best variant
@@ -273,7 +273,7 @@ class DecisionContext:
         return decision.get(), decision.id_
 
     def choose_from(
-            self, variants: list or tuple or np.ndarray, scores: np.ndarray or list or None) -> d.Decision:
+            self, variants: list or tuple or np.ndarray, scores: np.ndarray or list or None):
         # TODO method deprecated - will be removed in v8 upgrade
         """
         Makes a Decision without tracking it
