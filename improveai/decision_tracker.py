@@ -10,7 +10,7 @@ from warnings import warn
 from ksuid import Ksuid
 
 from improveai.chooser import XGBChooser
-from improveai.utils.general_purpose_tools import constant, is_valid_ksuid
+from improveai.utils.general_purpose_tools import constant, check_variants, is_valid_ksuid
 
 
 class DecisionTracker:
@@ -433,7 +433,7 @@ class DecisionTracker:
 
         track_runners_up = self._should_track_runners_up(variants_count=body[self.VARIANTS_COUNT_KEY])
 
-        if len(ranked_variants) == 2:
+        if len(ranked_variants) == 2 and self.max_runners_up > 0:
             # for 2 variants runners_up should be True
             assert track_runners_up
 
@@ -519,8 +519,9 @@ class DecisionTracker:
         """
 
         assert isinstance(track_runners_up, bool)
+
         # TODO maybe this check is pointless
-        # check_variants(ranked_variants)
+        check_variants(ranked_variants)
 
         assert len(ranked_variants) > 1
         if len(ranked_variants) == 2:

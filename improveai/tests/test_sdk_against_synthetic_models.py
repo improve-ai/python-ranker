@@ -1,5 +1,7 @@
 import json
 import os
+
+import numpy as np
 import requests_mock as rqm
 from tqdm import tqdm
 
@@ -45,10 +47,8 @@ def test_sdk_against_all_synthetic_models():
             with rqm.Mocker() as m:
                 m.post(TRACK_URL, text='success')
                 dm.chooser.imposed_noise = noise
-                decision = dm.given(givens=givens).choose_from(variants=variants)
-                # np.random.seed(seed)
-                chosen_variant = decision.get()
-                scores = decision.scores
+                scores = dm._score(variants=variants, givens=givens)
+                chosen_variant = variants[np.argmax(scores)]
 
                 assert chosen_variant == output['variant']
                 assert all(abs(scores - output['scores']) < 2 ** -22)
@@ -83,10 +83,8 @@ def test_primitive_predicts_identical_with_primitive_dicts():
             with rqm.Mocker() as m:
                 m.post(TRACK_URL, text='success')
                 dm.chooser.imposed_noise = noise
-                decision = dm.given(givens=givens).choose_from(variants=variants)
-                # np.random.seed(seed)
-                chosen_variant = decision.get()
-                scores = decision.scores
+                scores = dm._score(variants=variants, givens=givens)
+                chosen_variant = variants[np.argmax(scores)]
 
                 assert chosen_variant == output['variant']
                 assert all(abs(scores - output['scores']) < 2 ** -22)
@@ -95,10 +93,8 @@ def test_primitive_predicts_identical_with_primitive_dicts():
             with rqm.Mocker() as m:
                 m.post(TRACK_URL, text='success')
                 dm.chooser.imposed_noise = noise
-                decision = dm.given(givens=givens).choose_from(variants=dicts_variants)
-                # np.random.seed(seed)
-                chosen_variant = decision.get()
-                scores = decision.scores
+                scores = dm._score(variants=dicts_variants, givens=givens)
+                chosen_variant = dicts_variants[np.argmax(scores)]
 
                 assert chosen_variant == {"$value": output['variant']}
                 assert all(abs(scores - output['scores']) < 2 ** -22)
@@ -117,13 +113,6 @@ def test_model_predicts_identical_for_nullish_variants():
     dm = \
         DecisionModel(model_name=None, track_url=TRACK_URL)\
         .load(os.sep.join([SDK_PATH, test_case['model_url']]))
-    print('### dm.tracker ###')
-    print(TRACK_URL)
-    print(dm.track_url)
-    print(dm.tracker)
-
-    # dt = DecisionTracker(track_url=TRACK_URL)
-    # dm.track_with(tracker=dt)
 
     variants = [None, {}, [], {'$value': None}]
     noise = 0.1
@@ -132,12 +121,7 @@ def test_model_predicts_identical_for_nullish_variants():
     with rqm.Mocker() as m:
         m.post(TRACK_URL, text='success')
         dm.chooser.imposed_noise = noise
-        decision = dm.given(givens=None).choose_from(variants=variants)
-        # np.random.seed(seed)
-        # calling to calc scores
-        decision.get()
-        scores = decision.scores
-        print('### SCORES FROM OUTER SCOPE ###')
+        scores = dm._score(variants=variants, givens=None)
 
         for bsc_index, bsc in enumerate(scores):
             for osc_index, osc in enumerate(scores):

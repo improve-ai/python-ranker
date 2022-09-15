@@ -154,6 +154,7 @@ class Decision:
             decision ID (ksuid) obtained during tracking
 
         """
+        # make sure variants are not None
         assert self.ranked_variants is not None
         # make sure that self.__id_ is set for the first time
         assert self.id_ is None, \

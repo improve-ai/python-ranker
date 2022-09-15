@@ -35,6 +35,14 @@ class TestDecisionTracker:
         self._not_tracks_seed = value
 
     @property
+    def not_tracks_seed_1(self):
+        return self._not_tracks_seed_1
+
+    @not_tracks_seed_1.setter
+    def not_tracks_seed_1(self, value):
+        self._not_tracks_seed_1 = value
+
+    @property
     def track_url(self) -> str:
         return self._track_url
 
@@ -90,6 +98,8 @@ class TestDecisionTracker:
 
         self.not_tracks_seed = \
             int(os.getenv('DECISION_TRACKER_NOT_TRACKS_SEED'))
+        self.not_tracks_seed_1 = \
+            int(os.getenv('DECISION_TRACKER_NOT_TRACKS_SEED_1'))
 
         self.track_url = os.getenv('DECISION_TRACKER_TEST_URL')
         self.api_key = os.getenv('DECISION_TRACKER_TEST_API_KEY')
@@ -220,7 +230,7 @@ class TestDecisionTracker:
         runners_up = None
 
         has_sample = decision_tracker._is_sample_available(
-            variants=self.variants[:1], runners_up=runners_up)
+            ranked_variants=self.variants[:1], runners_up=runners_up)
 
         assert has_sample is False
 
@@ -231,7 +241,7 @@ class TestDecisionTracker:
         runners_up = self.variants[1:2]
 
         has_sample = decision_tracker._is_sample_available(
-            variants=self.variants[:2], runners_up=runners_up)
+            ranked_variants=self.variants[:2], runners_up=runners_up)
 
         assert has_sample is False
 
@@ -243,7 +253,7 @@ class TestDecisionTracker:
         runners_up = self.variants[1:10]
 
         has_sample = decision_tracker._is_sample_available(
-            variants=variants, runners_up=runners_up)
+            ranked_variants=variants, runners_up=runners_up)
 
         assert has_sample is False
 
@@ -255,7 +265,7 @@ class TestDecisionTracker:
         runners_up = self.variants[1:4]
 
         has_sample = decision_tracker._is_sample_available(
-            variants=variants, runners_up=runners_up)
+            ranked_variants=variants, runners_up=runners_up)
 
         assert has_sample is True
 
@@ -267,7 +277,7 @@ class TestDecisionTracker:
         runners_up = self.variants[1:9]
 
         has_sample = decision_tracker._is_sample_available(
-            variants=variants, runners_up=runners_up)
+            ranked_variants=variants, runners_up=runners_up)
 
         assert has_sample is True
 
@@ -276,49 +286,44 @@ class TestDecisionTracker:
         decision_tracker.max_runners_up = self.max_runners_up
 
         ranked_variants = []
-        variant = None
         track_runners_up = False
 
-        with raises(AssertionError) as aerr:
+        with raises(ValueError) as verr:
             decision_tracker.get_sample(
-                variant=variant, variants=ranked_variants,
-                track_runners_up=track_runners_up)
+                ranked_variants=ranked_variants, track_runners_up=track_runners_up)
 
     def test_get_sample_raises_for_1_variant_not_tracks(self):
         decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
         decision_tracker.max_runners_up = self.max_runners_up
 
-        variant = self.variants[0]
         variants = self.variants[:1]
         track_runners_up = False
 
         with raises(AssertionError) as aerr:
             decision_tracker.get_sample(
-                variant=variant, variants=variants, track_runners_up=track_runners_up)
+                ranked_variants=variants, track_runners_up=track_runners_up)
 
     def test_get_sample_raises_for_1_variant_tracks(self):
         decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
         decision_tracker.max_runners_up = self.max_runners_up
 
-        variant = self.variants[0]
         variants = self.variants[:1]
         track_runners_up = True
 
         with raises(AssertionError) as aerr:
             decision_tracker.get_sample(
-                variant=variant, variants=variants, track_runners_up=track_runners_up)
+                ranked_variants=variants, track_runners_up=track_runners_up)
 
     def test_get_sample_raises_for_2_variants_no_runners_up_positive_max_runners_up(self):
         decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
         decision_tracker.max_runners_up = self.max_runners_up
 
-        variant = self.variants[0]
         variants = self.variants[:2]
         track_runners_up = True
 
         with raises(AssertionError) as aerr:
             decision_tracker.get_sample(
-                variant=variant, variants=variants, track_runners_up=track_runners_up)
+                ranked_variants=variants, track_runners_up=track_runners_up)
 
     def test_get_sample_raises_for_2_variants_tracks_0_max_runners_up(self):
 
@@ -327,71 +332,61 @@ class TestDecisionTracker:
         decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
         decision_tracker.max_runners_up = max_runners_up
 
-        variant = self.variants[0]
         variants = self.variants[:2]
         track_runners_up = True
 
         with raises(AssertionError) as aerr:
             decision_tracker.get_sample(
-                variant=variant, variants=variants, track_runners_up=track_runners_up)
+                ranked_variants=variants, track_runners_up=track_runners_up)
 
     def test_get_sample_raises_for_non_bool_track_runners_up_01(self):
         decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
         decision_tracker.max_runners_up = self.max_runners_up
 
-        variant = self.variants[0]
         track_runners_up = None
 
         with raises(AssertionError) as ae:
             decision_tracker.get_sample(
-                variant=variant, variants=self.variants,
-                track_runners_up=track_runners_up)
+                ranked_variants=self.variants, track_runners_up=track_runners_up)
 
     def test_get_sample_raises_for_non_bool_track_runners_up_02(self):
         decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
         decision_tracker.max_runners_up = self.max_runners_up
 
-        variant = self.variants[0]
         ranked_variants = self.variants[:10]
         track_runners_up = None
 
         with raises(AssertionError) as ae:
             decision_tracker.get_sample(
-                variant=variant, variants=ranked_variants,
-                track_runners_up=track_runners_up)
+                ranked_variants=ranked_variants, track_runners_up=track_runners_up)
 
     def test_get_sample_raises_on_track_runners_up_and_not_ranked_variants(self):
         decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
         decision_tracker.max_runners_up = self.max_runners_up
 
         ranked_variants = ['z', 'x', 'a', 'a', 'b', 'c']
-        variant = ranked_variants[2]
         track_runners_up = True
 
         with raises(AssertionError) as aerr:
             decision_tracker.get_sample(
-                variant=variant, variants=ranked_variants,
-                track_runners_up=track_runners_up)
+                ranked_variants=ranked_variants, track_runners_up=track_runners_up)
 
     def test_get_sample_raises_for_wrong_variants_type(self):
         decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
         decision_tracker.max_runners_up = self.max_runners_up
 
         ranked_variants = {'variants': [None, None, None]}
-        variant = ranked_variants['variants'][0]
         track_runners_up = False
 
-        with raises(TypeError) as terr:
+        with raises(AssertionError) as aerr:
             decision_tracker.get_sample(
-                variant=variant, variants=ranked_variants,
-                track_runners_up=track_runners_up)
+                ranked_variants=ranked_variants, track_runners_up=track_runners_up)
 
     def test_get_sample_not_tracks(self):
 
         decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
         decision_tracker.max_runners_up = self.max_runners_up
 
-        variant = self.variants[0]
         track_runners_up = False
 
         expected_sample = \
@@ -399,8 +394,7 @@ class TestDecisionTracker:
 
         np.random.seed(self.sample_seed)
         sample = decision_tracker.get_sample(
-            variant=variant, variants=self.variants,
-            track_runners_up=track_runners_up)
+            ranked_variants=self.variants, track_runners_up=track_runners_up)
 
         assert sample == expected_sample
 
@@ -413,10 +407,9 @@ class TestDecisionTracker:
         track_runners_up = False
 
         sample = decision_tracker.get_sample(
-            variant=variant, variants=ranked_variants,
-            track_runners_up=track_runners_up)
+            ranked_variants=ranked_variants, track_runners_up=track_runners_up)
 
-        assert sample == ranked_variants[1]
+        assert sample == ranked_variants[2]
         assert sample != variant
 
     def test_get_sample_no_variants_not_tracks_3_identical_variants(self):
@@ -429,8 +422,7 @@ class TestDecisionTracker:
         track_runners_up = False
 
         sample = decision_tracker.get_sample(
-            variant=variant, variants=ranked_variants,
-            track_runners_up=track_runners_up)
+            ranked_variants=ranked_variants, track_runners_up=track_runners_up)
 
         assert sample is ranked_variants[1]
         assert sample == variant
@@ -440,15 +432,13 @@ class TestDecisionTracker:
         decision_tracker.max_runners_up = self.max_runners_up
 
         ranked_variants = ['z', 'x', 'a', 'a', 'b', 'c']
-        variant = ranked_variants[2]
         track_runners_up = False
 
         np.random.seed(self.sample_seed)
         sample = decision_tracker.get_sample(
-            variant=variant, variants=ranked_variants,
-            track_runners_up=track_runners_up)
+            ranked_variants=ranked_variants, track_runners_up=track_runners_up)
 
-        assert sample == ranked_variants[0]
+        assert sample == ranked_variants[1]
         assert sample is not None
 
     def test_get_sample_no_variants_not_tracks_identical_variants_02(self):
@@ -457,16 +447,14 @@ class TestDecisionTracker:
         decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
         decision_tracker.max_runners_up = self.max_runners_up
 
-        ranked_variants = ['z', 'x', 'a', 'a', 'b', 'c']
-        variant = ranked_variants[2]
+        ranked_variants = ['a', 'x', 'z', 'a', 'b', 'c']
         track_runners_up = False
 
         np.random.seed(self.first_sample_identical_with_variant_seed)
         sample = decision_tracker.get_sample(
-            variant=variant, variants=ranked_variants,
-            track_runners_up=track_runners_up)
+            ranked_variants=ranked_variants, track_runners_up=track_runners_up)
 
-        assert sample == ranked_variants[0]
+        assert sample == ranked_variants[3]
         assert sample is not None
 
     def test_get_sample_3_none_variants_not_tracks(self):
@@ -474,13 +462,11 @@ class TestDecisionTracker:
         decision_tracker.max_runners_up = self.max_runners_up
 
         ranked_variants = [None, None, None]
-        variant = ranked_variants[0]
         track_runners_up = False
 
         np.random.seed(self.sample_seed)
         sample = decision_tracker.get_sample(
-            variant=variant, variants=ranked_variants,
-            track_runners_up=track_runners_up)
+            ranked_variants=ranked_variants, track_runners_up=track_runners_up)
 
         assert sample is None
 
@@ -488,7 +474,6 @@ class TestDecisionTracker:
         decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
         decision_tracker.max_runners_up = self.max_runners_up
 
-        variant = self.variants[0]
         track_runners_up = True
 
         expected_sample = \
@@ -496,8 +481,7 @@ class TestDecisionTracker:
 
         np.random.seed(self.sample_seed)
         sample = decision_tracker.get_sample(
-            variant=variant, variants=self.variants,
-            track_runners_up=track_runners_up)
+            ranked_variants=self.variants, track_runners_up=track_runners_up)
 
         assert sample == expected_sample
 
@@ -509,13 +493,11 @@ class TestDecisionTracker:
         decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
         decision_tracker.max_runners_up = max_runners_up
 
-        variant = self.variants[0]
         track_runners_up = True
 
         with raises(AssertionError) as ae:
             decision_tracker.get_sample(
-                variant=variant, variants=self.variants,
-                track_runners_up=track_runners_up)
+                ranked_variants=self.variants, track_runners_up=track_runners_up)
 
     def test_get_sample_tracks_no_sample_02(self):
         # make sure there are no variants to sample from
@@ -524,14 +506,12 @@ class TestDecisionTracker:
         decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
         decision_tracker.max_runners_up = max_runners_up
 
-        variant = self.variants[0]
         ranked_variants = self.variants[:40]
         track_runners_up = True
 
         with raises(AssertionError) as ae:
             decision_tracker.get_sample(
-                variant=variant, variants=ranked_variants,
-                track_runners_up=track_runners_up)
+                ranked_variants=ranked_variants, track_runners_up=track_runners_up)
 
     def test_get_sample_tracks_sample_is_last_variant(self):
         # make sure there are no variants to sample from
@@ -540,13 +520,11 @@ class TestDecisionTracker:
         decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
         decision_tracker.max_runners_up = max_runners_up
 
-        variant = self.variants[0]
         ranked_variants = self.variants + [100]
         track_runners_up = True
 
         sample = decision_tracker.get_sample(
-            variant=variant, variants=ranked_variants,
-            track_runners_up=track_runners_up)
+            ranked_variants=ranked_variants, track_runners_up=track_runners_up)
 
         assert sample == ranked_variants[-1]
 
@@ -586,10 +564,8 @@ class TestDecisionTracker:
             with catch_warnings(record=True) as w:
                 simplefilter("always")
                 decision_id = decision_tracker.track(
-                    variant=None,
-                    variants=[None],
-                    givens=None, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=False)
+                    ranked_variants=[None],
+                    givens=None, model_name=self.dummy_model_name)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -601,7 +577,7 @@ class TestDecisionTracker:
 
         variants = [1, 2, 3]
         variant = variants[0]
-        expected_sample = 2
+        expected_sample = 3
 
         expected_track_body = {
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
@@ -632,12 +608,10 @@ class TestDecisionTracker:
 
             with catch_warnings(record=True) as w:
                 simplefilter("always")
-                np.random.seed(self.sample_seed)
+                np.random.seed(self.not_tracks_seed_1)
                 decision_id = decision_tracker.track(
-                    variant=variant,
-                    variants=variants,
-                    givens=None, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=False)
+                    ranked_variants=variants,
+                    givens=None, model_name=self.dummy_model_name)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -649,8 +623,7 @@ class TestDecisionTracker:
 
         variants = [el for el in range(1, 20, 1)]
         top_runners_up = variants[1:self.max_runners_up + 1]
-        variant = variants[0]
-        expected_sample = 12
+        expected_sample = 18
 
         expected_track_body = {
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
@@ -682,12 +655,10 @@ class TestDecisionTracker:
 
             with catch_warnings(record=True) as w:
                 simplefilter("always")
-                np.random.seed(self.sample_seed)
+                np.random.seed(self.tracks_seed)
                 decision_id = decision_tracker.track(
-                    variant=variant,
-                    variants=variants,
-                    givens=None, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=True)
+                    ranked_variants=variants,
+                    givens=None, model_name=self.dummy_model_name)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -733,110 +704,9 @@ class TestDecisionTracker:
                 simplefilter("always")
                 np.random.seed(self.sample_seed)
                 decision_id = decision_tracker.track(
-                    variant=variant,
-                    variants=variants,
-                    givens=None, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=True)
+                    ranked_variants=variants,
+                    givens=None, model_name=self.dummy_model_name)
 
-                assert len(w) == 0
-
-            assert is_valid_ksuid(decision_id)
-
-    def test_track_2_variants_02(self):
-
-        decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
-        decision_tracker.max_runners_up = self.max_runners_up
-
-        variants = [0, 1]
-        top_runners_up = [variants[0]]
-        variant = variants[1]
-
-        expected_track_body = {
-            decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
-            decision_tracker.MODEL_KEY: self.dummy_model_name,
-            decision_tracker.VARIANT_KEY: variant,
-            decision_tracker.VARIANTS_COUNT_KEY: len(variants),
-            decision_tracker.RUNNERS_UP_KEY: top_runners_up}
-
-        expected_request_json = json.dumps(expected_track_body, sort_keys=False)
-
-        def custom_matcher(request):
-            request_dict = deepcopy(request.json())
-            del request_dict[decision_tracker.MESSAGE_ID_KEY]
-
-            if json.dumps(request_dict, sort_keys=False) != \
-                    expected_request_json:
-
-                print('request body:')
-                print(request.text)
-                print(request.json())
-                print('expected body (minus message_id):')
-                print(expected_track_body)
-                return None
-            return True
-
-        with rqm.Mocker() as m:
-            m.post(self.track_url, text='success',
-                   additional_matcher=custom_matcher)
-
-            with catch_warnings(record=True) as w:
-                simplefilter("always")
-                np.random.seed(self.sample_seed)
-                decision_id = decision_tracker.track(
-                    variant=variant,
-                    variants=variants,
-                    givens=None, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=True)
-                assert len(w) == 0
-
-            assert is_valid_ksuid(decision_id)
-
-    def test_track_2_variants_03(self):
-
-        decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
-        decision_tracker.max_runners_up = self.max_runners_up
-
-        variants = [0, 1]
-        top_runners_up = [variants[1]]
-        variant = variants[0]
-        variants_ranked_and_track_runners_up = True
-
-        expected_track_body = {
-            decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
-            decision_tracker.MODEL_KEY: self.dummy_model_name,
-            decision_tracker.VARIANT_KEY: variant,
-            decision_tracker.VARIANTS_COUNT_KEY: len(variants),
-            decision_tracker.RUNNERS_UP_KEY: top_runners_up}
-
-        expected_request_json = json.dumps(expected_track_body, sort_keys=False)
-
-        def custom_matcher(request):
-            request_dict = deepcopy(request.json())
-            del request_dict[decision_tracker.MESSAGE_ID_KEY]
-
-            if json.dumps(request_dict, sort_keys=False) != \
-                    expected_request_json:
-
-                print('request body:')
-                print(request.text)
-                print(request.json())
-                print('expected body (minus message_id):')
-                print(expected_track_body)
-                return None
-            return True
-
-        with rqm.Mocker() as m:
-            m.post(self.track_url, text='success',
-                   additional_matcher=custom_matcher)
-
-            with catch_warnings(record=True) as w:
-                simplefilter("always")
-                np.random.seed(self.sample_seed)
-                decision_id = decision_tracker.track(
-                    variant=variant,
-                    variants=variants,
-                    givens=None, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=variants_ranked_and_track_runners_up)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -849,9 +719,8 @@ class TestDecisionTracker:
         decision_tracker.max_runners_up = max_runners_up
 
         variants = [0, 1]
-        variant = variants[1]
-        sample = variants[0]
-        variants_ranked_and_track_runners_up = True
+        variant = variants[0]
+        sample = variants[1]
 
         expected_track_body = {
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
@@ -885,28 +754,11 @@ class TestDecisionTracker:
                 simplefilter("always")
                 np.random.seed(self.sample_seed)
                 decision_id = decision_tracker.track(
-                    variant=variant,
-                    variants=variants,
-                    givens=None, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=variants_ranked_and_track_runners_up)
+                    ranked_variants=variants,
+                    givens=None, model_name=self.dummy_model_name)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
-
-    def test_track_2_variants_raises_for_variants_ranked_and_track_runners_up_false(self):
-        decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
-        decision_tracker.max_runners_up = self.max_runners_up
-
-        variants = [0, 1]
-        variant = variants[0]
-        variants_ranked_and_track_runners_up = False
-
-        with raises(AssertionError) as ae:
-            decision_tracker.track(
-                variant=variant,
-                variants=variants,
-                givens=None, model_name=self.dummy_model_name,
-                variants_ranked_and_track_runners_up=variants_ranked_and_track_runners_up)
 
     def test_track_2_variants_raises_for_positive_max_runners_up(self):
 
@@ -914,9 +766,8 @@ class TestDecisionTracker:
         decision_tracker.max_runners_up = self.max_runners_up
 
         variants = [0, 1]
-        top_runners_up = [variants[0]]
-        variant = variants[1]
-        variants_ranked_and_track_runners_up = True
+        top_runners_up = [variants[1]]
+        variant = variants[0]
 
         expected_track_body = {
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
@@ -950,10 +801,8 @@ class TestDecisionTracker:
                 simplefilter("always")
                 np.random.seed(self.sample_seed)
                 decision_tracker.track(
-                    variant=variant,
-                    variants=variants,
-                    givens=None, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=variants_ranked_and_track_runners_up)
+                    ranked_variants=variants,
+                    givens=None, model_name=self.dummy_model_name)
                 assert len(w) == 0
 
     def test_track_2_variants_zero_max_runners_up(self):
@@ -964,16 +813,14 @@ class TestDecisionTracker:
         decision_tracker.max_runners_up = max_runners_up
 
         variants = [0, 1]
-        variant = variants[1]
-        variants_ranked_and_track_runners_up = True
-        expected_sample = variants[0]
+        variant = variants[0]
+        expected_sample = variants[1]
 
         expected_track_body = {
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
             decision_tracker.MODEL_KEY: self.dummy_model_name,
             decision_tracker.VARIANT_KEY: variant,
             decision_tracker.VARIANTS_COUNT_KEY: len(variants),
-            # decision_tracker.RUNNERS_UP_KEY: top_runners_up
             decision_tracker.SAMPLE_KEY: expected_sample}
 
         expected_request_json = json.dumps(expected_track_body, sort_keys=False)
@@ -1001,10 +848,7 @@ class TestDecisionTracker:
                 simplefilter("always")
                 np.random.seed(self.sample_seed)
                 decision_tracker.track(
-                    variant=variant,
-                    variants=variants,
-                    givens=None, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=variants_ranked_and_track_runners_up)
+                    ranked_variants=variants, givens=None, model_name=self.dummy_model_name)
                 assert len(w) == 0
 
     def test_track(self):
@@ -1014,9 +858,8 @@ class TestDecisionTracker:
 
         variants = [el for el in range(1, 20, 1)]
         top_runners_up = variants[1:decision_tracker.max_runners_up + 1]
-        variant = variants[0]
         givens = {'dummy': 'givens'}
-        expected_sample = 12
+        expected_sample = 18
 
         expected_track_body = {
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
@@ -1050,34 +893,13 @@ class TestDecisionTracker:
 
             with catch_warnings(record=True) as w:
                 simplefilter("always")
-                np.random.seed(self.sample_seed)
+                np.random.seed(self.tracks_seed)
                 decision_id = decision_tracker.track(
-                    variant=variant,
-                    variants=variants,
-                    givens=givens, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=True)
+                    ranked_variants=variants,
+                    givens=givens, model_name=self.dummy_model_name)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
-
-    def test_track_best_not_first_ranked_and_tracks(self):
-
-        decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
-        decision_tracker.max_runners_up = self.max_runners_up
-
-        variants = [el for el in range(1, 20, 1)]
-        variant = variants[self.max_runners_up]
-        givens = {'dummy': 'givens'}
-
-        with rqm.Mocker() as m:
-            m.post(self.track_url, text='success')
-
-            with raises(AssertionError) as ae:
-                decision_tracker.track(
-                    variant=variant,
-                    variants=variants,
-                    givens=givens, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=True)
 
     def test_track_ndarray_variants(self):
 
@@ -1086,9 +908,8 @@ class TestDecisionTracker:
 
         variants = [el for el in range(1, 20, 1)]
         top_runners_up = variants[1:self.max_runners_up + 1]
-        variant = variants[0]
         givens = {'dummy': 'givens'}
-        expected_sample = 12
+        expected_sample = 18
 
         expected_track_body = {
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
@@ -1118,18 +939,15 @@ class TestDecisionTracker:
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success',
                    additional_matcher=custom_matcher)
-
             with catch_warnings(record=True) as w:
                 simplefilter("always")
-                np.random.seed(self.sample_seed)
+                np.random.seed(self.tracks_seed)
                 decision_id = decision_tracker.track(
-                    variant=variant,
-                    variants=np.array(variants),
-                    givens=givens, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=True)
-                assert len(w) == 0
+                    ranked_variants=np.array(variants),
+                    givens=givens, model_name=self.dummy_model_name)
+            assert len(w) == 0
 
-            assert is_valid_ksuid(decision_id)
+        assert is_valid_ksuid(decision_id)
 
     def test_track_2_variants_and_sample(self):
 
@@ -1138,8 +956,6 @@ class TestDecisionTracker:
 
         variants = [el for el in range(1, 3, 1)]
         top_runners_up = variants[1:]
-        variant = variants[0]
-        expected_sample = None
 
         expected_track_body = {
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
@@ -1147,7 +963,6 @@ class TestDecisionTracker:
             decision_tracker.VARIANT_KEY: variants[0],
             decision_tracker.VARIANTS_COUNT_KEY: len(variants),
             decision_tracker.RUNNERS_UP_KEY: top_runners_up,
-            # decision_tracker.SAMPLE_KEY: expected_sample
         }
 
         expected_request_json = json.dumps(expected_track_body, sort_keys=False)
@@ -1174,10 +989,8 @@ class TestDecisionTracker:
                 simplefilter("always")
                 np.random.seed(self.sample_seed)
                 decision_id = decision_tracker.track(
-                    variant=variant,
-                    variants=variants,
-                    givens=None, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=True)
+                    ranked_variants=variants,
+                    givens=None, model_name=self.dummy_model_name)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1190,7 +1003,6 @@ class TestDecisionTracker:
         decision_tracker.max_runners_up = max_runners_up
 
         variants = [el for el in range(1, 3, 1)]
-        variant = variants[0]
         expected_sample = variants[1]
 
         expected_track_body = {
@@ -1225,10 +1037,8 @@ class TestDecisionTracker:
                 simplefilter("always")
                 np.random.seed(self.sample_seed)
                 decision_id = decision_tracker.track(
-                    variant=variant,
-                    variants=variants,
-                    givens=None, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=True)
+                    ranked_variants=variants,
+                    givens=None, model_name=self.dummy_model_name)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1261,7 +1071,6 @@ class TestDecisionTracker:
         decision_tracker.max_runners_up = max_runners_up
 
         variants = [el for el in range(0, 1)]
-        variant = variants[0]
 
         expected_track_body = {
             decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
@@ -1294,11 +1103,8 @@ class TestDecisionTracker:
                 simplefilter("always")
                 np.random.seed(self.sample_seed)
                 decision_id = decision_tracker.track(
-                    variant=variant,
-                    variants=variants,
-                    givens=None, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=
-                    decision_tracker._should_track_runners_up(len(variants)))
+                    ranked_variants=variants,
+                    givens=None, model_name=self.dummy_model_name)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1309,9 +1115,7 @@ class TestDecisionTracker:
             simplefilter("always")
             model_name = ''
             decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
-            result = decision_tracker.track(
-                variant=1, variants=[1, 2, 3], givens=None, model_name=model_name,
-                variants_ranked_and_track_runners_up=False)
+            result = decision_tracker.track(ranked_variants=[1, 2, 3], givens=None, model_name=model_name)
             assert len(w) > 0
             assert result is None
 
@@ -1319,9 +1123,7 @@ class TestDecisionTracker:
             simplefilter("always")
             model_name = '!@#$%^&*()'
             decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
-            result = decision_tracker.track(
-                variant=1, variants=[1, 2, 3], givens=None, model_name=model_name,
-                variants_ranked_and_track_runners_up=False)
+            result = decision_tracker.track(ranked_variants=[1, 2, 3], givens=None, model_name=model_name)
             assert len(w) > 0
             assert result is None
 
@@ -1329,9 +1131,7 @@ class TestDecisionTracker:
             simplefilter("always")
             model_name = ''.join(['a' for _ in range(65)])
             decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
-            result = decision_tracker.track(
-                variant=1, variants=[1, 2, 3], givens=None, model_name=model_name,
-                variants_ranked_and_track_runners_up=False)
+            result = decision_tracker.track(ranked_variants=[1, 2, 3], givens=None, model_name=model_name)
             assert len(w) > 0
             assert result is None
 
@@ -1349,7 +1149,6 @@ class TestDecisionTracker:
             return True
 
         variants = [el for el in range(0, 1)]
-        variant = variants[0]
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success',
@@ -1359,11 +1158,8 @@ class TestDecisionTracker:
                 simplefilter("always")
                 np.random.seed(self.sample_seed)
                 decision_id = decision_tracker.track(
-                    variant=variant,
-                    variants=variants,
-                    givens=None, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=
-                    decision_tracker._should_track_runners_up(len(variants)))
+                    ranked_variants=variants,
+                    givens=None, model_name=self.dummy_model_name)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1420,7 +1216,6 @@ class TestDecisionTracker:
             return True
 
         variants = [el for el in range(0, 1)]
-        variant = variants[0]
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success',
@@ -1430,11 +1225,8 @@ class TestDecisionTracker:
                 simplefilter("always")
                 np.random.seed(self.sample_seed)
                 decision_id = decision_tracker.track(
-                    variant=variant,
-                    variants=variants,
-                    givens=None, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=
-                    decision_tracker._should_track_runners_up(len(variants)))
+                    ranked_variants=variants,
+                    givens=None, model_name=self.dummy_model_name)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1490,7 +1282,6 @@ class TestDecisionTracker:
             return True
 
         variants = [el for el in range(0, 1)]
-        variant = variants[0]
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success',
@@ -1500,11 +1291,8 @@ class TestDecisionTracker:
                 simplefilter("always")
                 np.random.seed(self.sample_seed)
                 decision_id = decision_tracker.track(
-                    variant=variant,
-                    variants=variants,
-                    givens=None, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=
-                    decision_tracker._should_track_runners_up(len(variants)))
+                    ranked_variants=variants,
+                    givens=None, model_name=self.dummy_model_name)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1532,7 +1320,6 @@ class TestDecisionTracker:
             return True
 
         variants = [el for el in range(0, 1)]
-        variant = variants[0]
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success',
@@ -1542,11 +1329,8 @@ class TestDecisionTracker:
                 simplefilter("always")
                 np.random.seed(self.sample_seed)
                 decision_id = decision_tracker.track(
-                    variant=variant,
-                    variants=variants,
-                    givens=None, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=
-                    decision_tracker._should_track_runners_up(len(variants)))
+                    ranked_variants=variants,
+                    givens=None, model_name=self.dummy_model_name)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1584,7 +1368,6 @@ class TestDecisionTracker:
             return True
 
         variants = [el for el in range(0, 1)]
-        variant = variants[0]
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success',
@@ -1594,11 +1377,8 @@ class TestDecisionTracker:
                 simplefilter("always")
                 np.random.seed(self.sample_seed)
                 decision_id = decision_tracker.track(
-                    variant=variant,
-                    variants=variants,
-                    givens=None, model_name=self.dummy_model_name,
-                    variants_ranked_and_track_runners_up=
-                    decision_tracker._should_track_runners_up(len(variants)))
+                    ranked_variants=variants,
+                    givens=None, model_name=self.dummy_model_name)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
