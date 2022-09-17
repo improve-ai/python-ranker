@@ -83,8 +83,23 @@ class DecisionModel:
     @track_url.setter
     def track_url(self, value: str or None):
         self._track_url = value
-        if hasattr(self, '__tracker') and getattr(self, '__tracker') is not None:
+
+        # cases:
+        # 1. __tracker is set and is not None
+        # 2. __tracker is set and is None
+        # 3. __tracker is not set
+
+        # additionally self.track_api_key:
+        # 1. is set
+        # 2. is not set
+
+        # Allow None value in constructor
+        if hasattr(self, '_DecisionModel__tracker') and getattr(self, '_DecisionModel__tracker') is not None:
             self.__tracker.track_url = value
+        elif (not hasattr(self, '_DecisionModel__tracker') or self.__tracker is None) and value is not None:
+            self.__tracker = dt.DecisionTracker(
+                track_url=value,
+                track_api_key=self.track_api_key if hasattr(self, '_DecisionModel__track_api_key') else None)
 
     @property
     def track_api_key(self):
@@ -110,7 +125,11 @@ class DecisionModel:
             track API key for this instance
 
         """
+        # set API key to decision model
         self.__track_api_key = value
+        # update API key on the tracker
+        if hasattr(self, '_DecisionModel__tracker') and getattr(self, '_DecisionModel__tracker') is not None:
+            self.__tracker.api_key = value
 
     @property
     def tracker(self) -> dt.DecisionTracker:
@@ -177,7 +196,8 @@ class DecisionModel:
         self.track_url = track_url
         self.track_api_key = track_api_key
 
-        self.__tracker = dt.DecisionTracker(track_url=track_url, track_api_key=self.track_api_key)
+        if not hasattr(self, '_DecisionModel__tracker'):
+            self.__tracker = None
 
         self.chooser = None
         self.givens_provider = gp.GivensProvider()
@@ -217,7 +237,6 @@ class DecisionModel:
             new instance of decision model
 
         """
-
         self.chooser = self._get_chooser(model_url=model_url)
         self._resolve_model_name()
 
@@ -509,7 +528,7 @@ class DecisionModel:
 
         """
 
-        decision = self.decide(variants)
+        decision = self.decide(variants, track=True)
         return decision.get(), decision.id_
 
     def add_reward(self, reward: float, decision_id: str):
@@ -721,6 +740,7 @@ class DecisionModel:
         Decision
             Decision with randomly chosen best variant
         """
+        check_variants(variants)
         return self.decide(variants, scores=np.random.normal(size=len(variants)))
 
     def random(self, *variants):
@@ -739,6 +759,8 @@ class DecisionModel:
         object, str
             tuple with (<random variant>, <decision id>)
         """
+        # TODO test if it raises the same way choose_random raises
+        check_variants(variants)
         decision = self.decide(
             variants=get_variants_from_args(variants), scores=np.random.normal(size=len(variants)), track=True)
         return decision.get(), decision.id_

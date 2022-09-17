@@ -241,6 +241,8 @@ class DecisionTracker:
 
     @track_url.setter
     def track_url(self, new_val: str):
+        # TODO test that for tracker
+        assert new_val is not None
         self._track_url = new_val
 
     @property

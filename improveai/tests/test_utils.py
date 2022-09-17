@@ -43,18 +43,11 @@ def get_test_data(path_to_test_json: str, method: str = 'readlines') -> dict:
     return loaded_json
 
 
-def assert_valid_decision(decision, expected_variants, expected_givens, expected_scores, expected_best):
+def assert_valid_decision(decision, expected_ranked_variants, expected_givens):
     # validate givens
     assert decision.givens == expected_givens
-    # validate variants
-    np.testing.assert_array_equal(decision.variants, expected_variants)
-    # validate scores
-    np.testing.assert_array_equal(
-        convert_values_to_float32(decision.scores),
-        convert_values_to_float32(expected_scores))
-
-    # validate best
-    assert convert_values_to_float32(decision.best) == convert_values_to_float32(expected_best)
+    # validate ranked variants
+    np.testing.assert_array_equal(decision.ranked_variants, expected_ranked_variants)
 
 
 def is_valid_ksuid(id_):

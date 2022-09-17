@@ -10,6 +10,7 @@ import string
 import sys
 from unittest import TestCase
 import warnings
+from warnings import warn, catch_warnings, simplefilter
 import xgboost as xgb
 
 sys.path.append(
@@ -241,8 +242,7 @@ class TestDecisionModel(TestCase):
         decision_model = dm.DecisionModel(model_name='dummy-model')
         assert decision_model.model_name == 'dummy-model'
         assert decision_model.track_url is None
-        assert decision_model.tracker is not None and isinstance(decision_model.tracker, dt.DecisionTracker)
-        assert decision_model.tracker.track_url is None
+        assert decision_model.tracker is None
 
     # test model loading
     def test_load_model_sync_native_fs(self):
@@ -352,15 +352,14 @@ class TestDecisionModel(TestCase):
 
         np.random.seed(score_seed)
         # evaluated_callable = getattr(dm.DecisionModel, evaluated_method_name)
-        if evaluated_method_name == 'top_scoring_variant':
-            calculated_best = \
-                dm.DecisionModel.top_scoring_variant(variants=variants, scores=calculated_scores)
-            expected_best = expected_output.get('best', None)
-            assert expected_best is not None
-            assert calculated_best == expected_best
-        elif evaluated_method_name == 'rank':
-            calculated_ranked_variants = \
-                dm.DecisionModel.rank(variants=variants, scores=calculated_scores)
+        # if evaluated_method_name == 'top_scoring_variant':
+        #     calculated_best = \
+        #         dm.DecisionModel.top_scoring_variant(variants=variants, scores=calculated_scores)
+        #     expected_best = expected_output.get('best', None)
+        #     assert expected_best is not None
+        #     assert calculated_best == expected_best
+        if evaluated_method_name == 'rank':
+            calculated_ranked_variants = decision_model._rank(variants=variants, scores=calculated_scores)
             expected_ranked_variants = expected_output.get('ranked_variants', None)
             np.testing.assert_array_equal(
                 expected_ranked_variants, calculated_ranked_variants)
@@ -374,9 +373,7 @@ class TestDecisionModel(TestCase):
             assert expected_best is not None
 
             # assert that returned decision is correct
-            assert_valid_decision(
-                decision=decision, expected_variants=variants, expected_givens=givens,
-                expected_scores=expected_scores, expected_best=expected_best)
+            assert_valid_decision(decision=decision, expected_ranked_variants=variants, expected_givens=givens)
         elif evaluated_method_name == 'first':
             # assert that returned variant is correct
             best_variant, decision_id = decision_model.first(*variants)
@@ -407,9 +404,7 @@ class TestDecisionModel(TestCase):
             assert expected_best is not None
 
             # assert that returned decision is correct
-            assert_valid_decision(
-                decision=decision, expected_variants=variants, expected_givens=givens,
-                expected_scores=expected_scores, expected_best=expected_best)
+            assert_valid_decision(decision=decision, expected_ranked_variants=variants, expected_givens=givens)
         elif evaluated_method_name == 'random':
             # assert that returned variant is correct
             best_variant, decision_id = decision_model.random(*variants)
@@ -496,15 +491,14 @@ class TestDecisionModel(TestCase):
             return
 
         np.random.seed(score_seed)
-        if evaluated_method_name == 'top_scoring_variant':
-            calculated_best = \
-                dm.DecisionModel.top_scoring_variant(variants=variants, scores=calculated_scores)
-            expected_best = expected_output.get('best', None)
-            assert expected_best is not None
-            assert calculated_best == expected_best
-        elif evaluated_method_name == 'rank':
-            calculated_ranked_variants = \
-                dm.DecisionModel.rank(variants=variants, scores=calculated_scores)
+        # if evaluated_method_name == 'top_scoring_variant':
+        #     calculated_best = \
+        #         dm.DecisionModel.top_scoring_variant(variants=variants, scores=calculated_scores)
+        #     expected_best = expected_output.get('best', None)
+        #     assert expected_best is not None
+        #     assert calculated_best == expected_best
+        if evaluated_method_name == 'rank':
+            calculated_ranked_variants = decision_model._rank(variants=variants, scores=calculated_scores)
             expected_ranked_variants = expected_output.get('ranked_variants', None)
             np.testing.assert_array_equal(
                 expected_ranked_variants, calculated_ranked_variants)
@@ -519,14 +513,13 @@ class TestDecisionModel(TestCase):
             assert expected_best is not None
 
             # assert that returned decision is correct
-            assert_valid_decision(
-                decision=decision, expected_variants=variants, expected_givens=givens,
-                expected_scores=expected_scores, expected_best=expected_best)
+            assert_valid_decision(decision=decision, expected_ranked_variants=variants, expected_givens=givens)
         elif evaluated_method_name == 'first':
             # assert that returned variant is correct
             with rqm.Mocker() as m:
                 m.post(self.track_url, text='success')
-                decision_model = dm.DecisionModel(model_name='dummy-model', track_url=self.track_url)
+                decision_model = \
+                    dm.DecisionModel(model_name='dummy-model', track_url=self.track_url)
 
                 np.random.seed(score_seed)
                 best_variant, decision_id = decision_model.first(*variants)
@@ -546,17 +539,20 @@ class TestDecisionModel(TestCase):
 
         elif evaluated_method_name == 'choose_random':
             np.random.seed(score_seed)
+
             decision = decision_model.choose_random(variants=variants)
 
             expected_scores = expected_output.get('scores', None)
             assert expected_scores is not None
+            expected_sorted_variants = np.array(variants)[np.argsort(expected_scores)[::-1]]
             expected_best = expected_output.get('best', None)
             assert expected_best is not None
 
+            assert expected_best == expected_sorted_variants[0]
+
             # assert that returned decision is correct
             assert_valid_decision(
-                decision=decision, expected_variants=variants, expected_givens=givens,
-                expected_scores=expected_scores, expected_best=expected_best)
+                decision=decision, expected_ranked_variants=expected_sorted_variants, expected_givens=givens)
         elif evaluated_method_name == 'random':
             # assert that returned variant is correct
             with rqm.Mocker() as m:
@@ -612,19 +608,19 @@ class TestDecisionModel(TestCase):
             evaluated_method_name='score',
             empty_callable_kwargs={'variants': None, 'givens': None})
 
-    def test_top_scoring_variant_no_model(self):
-        self._generic_desired_decision_model_method_call_no_model(
-            test_data_filename=os.getenv(
-                'DECISION_MODEL_TEST_TOP_SCORING_VARIANT_NATIVE_NO_MODEL_JSON'),
-            evaluated_method_name='top_scoring_variant')
-
-    def test_top_scoring_variant(self):
-        self._generic_desired_decision_model_method_call(
-            test_data_filename=os.getenv(
-                'DECISION_MODEL_TEST_TOP_SCORING_VARIANT_NATIVE_JSON'),
-            evaluated_method_name='top_scoring_variant',
-            empty_callable_kwargs={
-                'variants': None, 'givens': None, 'scores': None})
+    # def test_top_scoring_variant_no_model(self):
+    #     self._generic_desired_decision_model_method_call_no_model(
+    #         test_data_filename=os.getenv(
+    #             'DECISION_MODEL_TEST_TOP_SCORING_VARIANT_NATIVE_NO_MODEL_JSON'),
+    #         evaluated_method_name='top_scoring_variant')
+    #
+    # def test_top_scoring_variant(self):
+    #     self._generic_desired_decision_model_method_call(
+    #         test_data_filename=os.getenv(
+    #             'DECISION_MODEL_TEST_TOP_SCORING_VARIANT_NATIVE_JSON'),
+    #         evaluated_method_name='top_scoring_variant',
+    #         empty_callable_kwargs={
+    #             'variants': None, 'givens': None, 'scores': None})
 
     def test_ranked_no_model(self):
         self._generic_desired_decision_model_method_call_no_model(
@@ -668,7 +664,7 @@ class TestDecisionModel(TestCase):
 
         np.random.seed(score_seed)
         calculated_gaussians = \
-            dm.DecisionModel.generate_descending_gaussians(count=variants_count)
+            dm.DecisionModel._generate_descending_gaussians(count=variants_count)
 
         np.testing.assert_array_equal(calculated_gaussians, expected_scores)
 
@@ -706,12 +702,10 @@ class TestDecisionModel(TestCase):
         np.random.seed(scores_seed)
         decision = \
             dm.DecisionModel(model_name='test_choose_from_model')\
-            .choose_from(variants=variants)
+            .choose_from(variants=variants, scores=None)
 
         assert isinstance(decision, d.Decision)
-        assert_valid_decision(
-            decision=decision, expected_variants=variants, expected_givens=None,
-            expected_scores=expected_scores, expected_best=expected_best)
+        assert_valid_decision(decision=decision, expected_ranked_variants=variants, expected_givens=None)
 
     def test_given(self):
         path_to_test_json = \
@@ -875,7 +869,7 @@ class TestDecisionModel(TestCase):
         assert test_case is not None
 
         decision_model = \
-            dm.DecisionModel(model_name=None, track_url=self.track_url)
+            dm.DecisionModel(model_name='dummy-model', track_url=self.track_url)
 
         variants = test_case.get('variants', None)
         assert variants is not None
@@ -887,17 +881,43 @@ class TestDecisionModel(TestCase):
         expected_best = expected_output.get('best', None)
         assert expected_best is not None
 
-        with rqm.Mocker() as m:
-            m.post(self.track_url, text='success')
-            np.random.seed(scores_seed)
-            best, decision_id = decision_model.which(*variants)
-            assert is_valid_ksuid(decision_id)
-
-            np.random.seed(scores_seed)
-            best, decision_id = decision_model.which(variants)
-            assert is_valid_ksuid(decision_id)
+        # TODO assert that for model_name == None it warning will be thrown
+        #  and assertion from track() will be raise
+        with catch_warnings(record=True) as w:
+            simplefilter("always")
+            with rqm.Mocker() as m:
+                m.post(self.track_url, text='success')
+                np.random.seed(scores_seed)
+                best, decision_id = decision_model.which(*variants)
+                assert is_valid_ksuid(decision_id)
+                np.random.seed(scores_seed)
+                best, decision_id = decision_model.which(variants)
+                assert is_valid_ksuid(decision_id)
+                assert len(w) == 0
 
         assert best == expected_best
+
+    def test_which_valid_list_variants_no_model_none_model_name(self):
+        decision_model = \
+            dm.DecisionModel(model_name=None, track_url=self.track_url)
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+
+            with raises(AssertionError) as aerr:
+                decision_model.which(*list(range(10)))
+                assert aerr.value
+
+    def test_which_from_valid_list_variants_no_model_none_model_name(self):
+        decision_model = \
+            dm.DecisionModel(model_name=None, track_url=self.track_url)
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+
+            with raises(AssertionError) as aerr:
+                decision_model.which_from(list(range(10)))
+                assert aerr.value
 
     def test_which_valid_tuple_variants(self):
         path_to_test_json = \
@@ -935,6 +955,11 @@ class TestDecisionModel(TestCase):
             m.post(self.track_url, text='success')
             np.random.seed(scores_seed)
             best, decision_id = decision_model.which(*variants)
+
+            print('### best | decision_id ###')
+            print(best)
+            print(decision_id)
+
             assert is_valid_ksuid(decision_id)
             assert best == expected_best
 
@@ -1037,11 +1062,15 @@ class TestDecisionModel(TestCase):
             with raises(ValueError) as verr:
                 decision_model.which(*[ivs])
 
+    def test_constructor_with_none_track_url(self):
+        decision_model = dm.DecisionModel(model_name='dummy-model', track_url=None)
+        assert decision_model.track_url is None
+        assert decision_model.tracker is None
+        assert decision_model.track_api_key is None
+
     def test_which_none_track_url(self):
-        best_variant, decision_id = \
+        with raises(AssertionError) as aerr:
             dm.DecisionModel(model_name='dummy-model', track_url=None).which(1, 2, 3, 4, 5)
-        assert best_variant == 1
-        assert decision_id is None
 
     def test_choose_first_valid_variants_list(self):
         self._generic_desired_decision_model_method_call_no_model(
@@ -1126,10 +1155,8 @@ class TestDecisionModel(TestCase):
             dm.DecisionModel('dummy-model').first(None)
 
     def test_first_none_track_url(self):
-        best_variant, decision_id = \
+        with raises(AssertionError) as aerr:
             dm.DecisionModel(model_name='dummy-model', track_url=None).first(1, 2, 3, 4, 5)
-        assert best_variant == 1
-        assert decision_id is None
 
     def test_choose_random_valid_variants_list(self):
         self._generic_desired_decision_model_method_call_no_model(
@@ -1179,10 +1206,8 @@ class TestDecisionModel(TestCase):
         decision = decision_model.choose_random(variants=variants)
         expected_random_scores = \
             [1.6243453636632417, -0.6117564136500754, -0.5281717522634557, -1.0729686221561705, 0.8654076293246785]
-
-        np.testing.assert_array_equal(
-            convert_values_to_float32(expected_random_scores),
-            convert_values_to_float32(decision.scores))
+        expected_ranked_variants = np.array(variants)[np.argsort(expected_random_scores)][::-1]
+        np.testing.assert_array_equal(decision.ranked_variants, expected_ranked_variants)
 
         request_validity = {'request_body_ok': False}
 
@@ -1215,10 +1240,8 @@ class TestDecisionModel(TestCase):
             m.post(self.track_url, text='success', additional_matcher=custom_matcher)
 
             np.random.seed(int(tracks_runners_up_seed))
-            best = decision.get()
-            assert decision.chosen is True
-            assert decision.tracked is True
-            assert best == 1
+            decision_id = decision._track()
+            is_valid_ksuid(decision_id)
 
     def test_random_valid_variants_list(self):
         self._generic_desired_decision_model_method_call_no_model(
@@ -1262,11 +1285,9 @@ class TestDecisionModel(TestCase):
             dm.DecisionModel('dummy-model').random(None)
 
     def test_random_none_track_url(self):
-        best_variant, decision_id = \
-            dm.DecisionModel(model_name='dummy-model', track_url=None).random(1, 2, 3, 4, 5)
-        np.random.seed(1)
-        assert best_variant == 3
-        assert decision_id is None
+        with raises(AssertionError) as aerr:
+            best_variant, decision_id = \
+                dm.DecisionModel(model_name='dummy-model', track_url=None).random(1, 2, 3, 4, 5)
 
     def test_add_reward_inf(self):
         # V6_DUMMY_MODEL_PATH
@@ -1279,8 +1300,8 @@ class TestDecisionModel(TestCase):
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
-            decision = decision_model.choose_from(list(range(10)))
-            decision.get()
+            decision = decision_model.choose_from(list(range(10)), scores=None)
+            decision._track()
 
         reward = math.inf
 
@@ -1307,8 +1328,8 @@ class TestDecisionModel(TestCase):
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
-            decision = decision_model.choose_from(list(range(10)))
-            decision.get()
+            decision = decision_model.choose_from(list(range(10)), scores=None)
+            decision._track()
 
         reward = None
 
@@ -1346,8 +1367,9 @@ class TestDecisionModel(TestCase):
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success', additional_matcher=grab_decision_id_matcher)
-            decision = decision_model.choose_from(list(range(10)))
-            decision.get()
+            decision = decision_model.choose_from(list(range(10)), scores=None)
+            decision_id = decision._track()
+            assert decision_id == decision.id_
 
         expected_request_json = json.dumps(expected_add_reward_body, sort_keys=False)
 

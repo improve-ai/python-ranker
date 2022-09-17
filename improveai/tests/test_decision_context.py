@@ -318,9 +318,8 @@ class TestDecisionContext(TestCase):
             assert expected_best is not None
 
             assert_valid_decision(
-                decision=decision, expected_variants=expected_variants,
-                expected_givens=expected_givens, expected_scores=expected_scores,
-                expected_best=expected_best)
+                decision=decision, expected_ranked_variants=expected_variants,
+                expected_givens=expected_givens)
 
         elif tested_method_name == 'which':
             with rqm.Mocker() as m:
@@ -348,8 +347,7 @@ class TestDecisionContext(TestCase):
             expected_scores = expected_output.get('scores', None)
             assert expected_scores is not None
             assert_valid_decision(
-                decision=decision, expected_variants=variants, expected_givens=givens,
-                expected_scores=expected_scores, expected_best=expected_best)
+                decision=decision, expected_ranked_variants=variants, expected_givens=givens)
 
         elif tested_method_name == 'first':
             with rqm.Mocker() as m:
@@ -374,8 +372,7 @@ class TestDecisionContext(TestCase):
             expected_scores = expected_output.get('scores', None)
             assert expected_scores is not None
             assert_valid_decision(
-                decision=decision, expected_variants=variants, expected_givens=givens,
-                expected_scores=expected_scores, expected_best=expected_best)
+                decision=decision, expected_ranked_variants=variants, expected_givens=givens)
 
         elif tested_method_name == 'random':
             with rqm.Mocker() as m:

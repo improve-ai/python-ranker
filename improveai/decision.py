@@ -33,19 +33,6 @@ class Decision:
         return self.__decision_model
 
     @property
-    def tracked(self) -> bool:
-        """
-        A flag indicating if the Decision has already been tracked
-
-        Returns
-        -------
-        bool
-            A flag indicating if the Decision has already been tracked
-
-        """
-        return self.__tracked
-
-    @property
     def ranked_variants(self) -> list or tuple or np.ndarray:
         """
         Variants ranked from best to worst (using scores)
@@ -159,6 +146,8 @@ class Decision:
         # make sure that self.__id_ is set for the first time
         assert self.id_ is None, \
             f'This decision has already an ID set: {self.id_} which means it has already been tracked'
+        # TODO make sure tracker is ready
+        assert self.decision_model.tracker is not None
         # track() message ID for current decision -> decision ID
         self.__id_ = self.decision_model.tracker.track(
             ranked_variants=self.ranked_variants, givens=self.givens, model_name=self.decision_model.model_name)

@@ -161,7 +161,11 @@ class DecisionContext:
             assert scores is not None
             ranked_variants = self.decision_model._rank(variants=variants, scores=scores)
 
-        assert len(scores) == len(variants)
+        # TODO test this behaviour
+        if scores is not None:
+            assert len(scores) == len(variants)
+        else:
+            assert ordered is True
 
         decision = d.Decision(
             decision_model=self.decision_model, ranked_variants=ranked_variants, givens=givens)

@@ -39,7 +39,7 @@ class TestGivensProvider(TestCase):
 
     def test_givens_provider_no_givens(self):
         givens = gp.GivensProvider().givens(for_model=self.test_decision_model)
-        assert givens == {}
+        assert givens is None
 
     def test_givens_provider_good_givens(self):
         givens = gp.GivensProvider().givens(for_model=self.test_decision_model, givens=self.valid_test_givens)
