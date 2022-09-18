@@ -161,6 +161,10 @@ def check_variants(variants: list or tuple or np.ndarray) -> list or tuple or np
         raise ValueError('`variants` must not be an empty collection')
 
 
+def is_valid_variants_type(variants):
+    return type(variants) in ALLOWED_VARIANT_TYPES
+
+
 def get_variants_from_args(variants: list or tuple or np.ndarray) -> list or tuple or np.ndarray:
     """
     Extract variants from pythonic args
@@ -181,7 +185,7 @@ def get_variants_from_args(variants: list or tuple or np.ndarray) -> list or tup
         assert isinstance(variants[0], list) or isinstance(variants[0], tuple) or isinstance(variants[0], np.ndarray)
         return variants[0]
 
-    return variants
+    return [v if not is_object_numpy_type(v) else v.item() for v in variants]
 
 
 def is_valid_ksuid(id_: str) -> bool:
@@ -217,3 +221,23 @@ def is_valid_ksuid(id_: str) -> bool:
         return False
 
     return True
+
+
+def is_object_numpy_type(checked_object: object):
+    """
+    Check if a passed input object is a numpy type or not
+
+    Parameters
+    ----------
+    checked_object: object
+        object to be checked for numpy type
+
+    Returns
+    -------
+    bool
+        True if object is of a nupy type False otherwise
+
+    """
+    if type(checked_object).__module__ == np.__name__:
+        return True
+    return False

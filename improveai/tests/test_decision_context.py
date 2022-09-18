@@ -44,7 +44,7 @@ class TestDecisionContext(TestCase):
         assert self.decision_context_test_cases_dir is not None
         self.test_models_dir = os.getenv('DECISION_MODEL_PREDICTORS_DIR', None)
         assert self.test_models_dir is not None
-        self.test_track_url = 'mockup.url'
+        self.test_track_url = 'http://mockup.url'
         self.test_decision_model = dm.DecisionModel('dummy-model', track_url=self.test_track_url)
 
     # test choose_from
@@ -306,7 +306,7 @@ class TestDecisionContext(TestCase):
 
         elif tested_method_name == 'choose_from':
             np.random.seed(scores_seed)
-            decision = decision_context.choose_from(variants=variants)
+            decision = decision_context.choose_from(variants=variants, scores=None)
 
             expected_variants = variants
             expected_givens = givens
@@ -352,6 +352,9 @@ class TestDecisionContext(TestCase):
         elif tested_method_name == 'first':
             with rqm.Mocker() as m:
                 m.post(self.test_track_url, text='success')
+
+                print('### type(variants) ###')
+                print(type(variants))
 
                 np.random.seed(scores_seed)
                 best, decision_id = decision_context.first(*variants)

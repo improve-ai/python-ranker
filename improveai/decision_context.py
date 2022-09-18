@@ -2,7 +2,8 @@ import numpy as np
 
 import improveai.decision as d
 import improveai.decision_model as dm
-from improveai.utils.general_purpose_tools import check_variants, get_variants_from_args
+from improveai.utils.general_purpose_tools import check_variants, get_variants_from_args,\
+    is_object_numpy_type
 
 
 class DecisionContext:
@@ -145,7 +146,7 @@ class DecisionContext:
             decision object created for input data
 
         """
-
+        # TODO test with scores == None and scores != None
         # check variants
         check_variants(variants)
         # get givens via GivensProvider
@@ -166,6 +167,14 @@ class DecisionContext:
             assert len(scores) == len(variants)
         else:
             assert ordered is True
+
+        # TODO sleep over this
+        if isinstance(ranked_variants, np.ndarray):
+            ranked_variants = ranked_variants.tolist()
+
+        print(ranked_variants)
+        print(type(ranked_variants))
+        print(type(ranked_variants[0]))
 
         decision = d.Decision(
             decision_model=self.decision_model, ranked_variants=ranked_variants, givens=givens)
@@ -246,7 +255,8 @@ class DecisionContext:
         object, str
             a tuple of (<first variant>, <decision id>)
         """
-
+        # TODO think about get_variants_from_args() and checking variants for
+        #  numpy types
         # make decision and track immediately
         decision = self.decide(
             variants=get_variants_from_args(variants), ordered=True, track=True)
@@ -286,8 +296,13 @@ class DecisionContext:
         object, str
             a tuple of (<random variant>, <decision id>)
         """
+        # check variants before scoring
+        check_variants(variants)
+        # unpack variants -> avoid pitfall of [[variants]] in random scores generation
+        unpacked_variants = get_variants_from_args(variants)
+        # decide which one is best
         decision = self.decide(
-            variants=get_variants_from_args(variants), scores=np.random.normal(size=len(variants)), track=True)
+            variants=unpacked_variants, scores=np.random.normal(size=len(unpacked_variants)), track=True)
         return decision.get(), decision.id_
 
     def choose_from(

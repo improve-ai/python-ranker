@@ -430,7 +430,9 @@ class DecisionModel:
         # convert variants to numpy array for faster sorting
         variants_np = variants if isinstance(variants, np.ndarray) else np.array(variants)
         # return descending sorted variants
-        return variants_np[np.argsort(scores * -1)]
+        # sorted_variants_np = variants_np[np.argsort(scores * -1)]
+        # return variants_np[np.argsort(scores * -1)].tolist()
+        return variants_np[np.argsort(scores)][::-1].tolist()
 
     def rank(self, variants: list or np.ndarray):
         """
@@ -761,8 +763,10 @@ class DecisionModel:
         """
         # TODO test if it raises the same way choose_random raises
         check_variants(variants)
+        unpacked_variants = get_variants_from_args(variants)
         decision = self.decide(
-            variants=get_variants_from_args(variants), scores=np.random.normal(size=len(variants)), track=True)
+            variants=get_variants_from_args(unpacked_variants),
+            scores=np.random.normal(size=len(unpacked_variants)), track=True)
         return decision.get(), decision.id_
 
     def choose_multivariate(self, variant_map: dict):
