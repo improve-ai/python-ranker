@@ -168,14 +168,6 @@ class DecisionContext:
         else:
             assert ordered is True
 
-        # TODO sleep over this
-        if isinstance(ranked_variants, np.ndarray):
-            ranked_variants = ranked_variants.tolist()
-
-        print(ranked_variants)
-        print(type(ranked_variants))
-        print(type(ranked_variants[0]))
-
         decision = d.Decision(
             decision_model=self.decision_model, ranked_variants=ranked_variants, givens=givens)
 
@@ -278,6 +270,7 @@ class DecisionContext:
         Decision
             Decision with randomly chosen best variant
         """
+        check_variants(variants)
         return self.decide(variants, scores=np.random.normal(size=len(variants)))
 
     def random(self, *variants) -> tuple:

@@ -155,7 +155,7 @@ class TestDecisionContext(TestCase):
         for iv in invalid_test_variants:
             with raises(AssertionError) as aerr:
                 dc.DecisionContext(decision_model=self.test_decision_model, givens=valid_givens)\
-                    .choose_from(variants=iv)
+                    .choose_from(variants=iv, scores=None)
 
     # test score
 
@@ -317,8 +317,9 @@ class TestDecisionContext(TestCase):
             expected_best = test_output.get('best', None)
             assert expected_best is not None
 
+            expected_ranked_variants = np.array(expected_variants)[np.argsort(expected_scores)[::-1]]
             assert_valid_decision(
-                decision=decision, expected_ranked_variants=expected_variants,
+                decision=decision, expected_ranked_variants=expected_ranked_variants,
                 expected_givens=expected_givens)
 
         elif tested_method_name == 'which':
@@ -327,9 +328,6 @@ class TestDecisionContext(TestCase):
 
                 np.random.seed(scores_seed)
                 best, decision_id = decision_context.which(variants)
-                # print('### BEST ###')
-                # print(best)
-                # assert False
                 assert best == expected_best
                 assert is_valid_ksuid(decision_id)
 
@@ -342,12 +340,12 @@ class TestDecisionContext(TestCase):
             np.random.seed(scores_seed)
             decision = decision_context.choose_first(variants=variants)
 
-            assert decision.chosen is True
-            assert decision.tracked is False
+            assert decision.id_ is None
             expected_scores = expected_output.get('scores', None)
             assert expected_scores is not None
+            expected_ranked_variants = np.array(variants)[np.argsort(expected_scores)[::-1]]
             assert_valid_decision(
-                decision=decision, expected_ranked_variants=variants, expected_givens=givens)
+                decision=decision, expected_ranked_variants=expected_ranked_variants, expected_givens=givens)
 
         elif tested_method_name == 'first':
             with rqm.Mocker() as m:
@@ -370,12 +368,13 @@ class TestDecisionContext(TestCase):
             np.random.seed(scores_seed)
             decision = decision_context.choose_random(variants=variants)
 
-            assert decision.chosen is True
-            assert decision.tracked is False
+            assert decision.id_ is None
             expected_scores = expected_output.get('scores', None)
             assert expected_scores is not None
+            expected_ranked_variants = np.array(variants)[np.argsort(expected_scores)[::-1]]
             assert_valid_decision(
-                decision=decision, expected_ranked_variants=variants, expected_givens=givens)
+                decision=decision, expected_ranked_variants=expected_ranked_variants,
+                expected_givens=givens)
 
         elif tested_method_name == 'random':
             with rqm.Mocker() as m:
@@ -962,9 +961,11 @@ class TestDecisionContext(TestCase):
         expected_random_scores = \
             [1.6243453636632417, -0.6117564136500754, -0.5281717522634557, -1.0729686221561705, 0.8654076293246785]
 
-        np.testing.assert_array_equal(
-            convert_values_to_float32(expected_random_scores),
-            convert_values_to_float32(decision.scores))
+        # np.testing.assert_array_equal(
+        #     convert_values_to_float32(expected_random_scores),
+        #     convert_values_to_float32(decision.scores))
+        expected_ranked_variants = np.array(variants)[np.argsort(expected_random_scores)[::-1]]
+        np.testing.assert_array_equal(expected_ranked_variants, decision.ranked_variants)
 
         request_validity = {'request_body_ok': False}
 
@@ -997,7 +998,7 @@ class TestDecisionContext(TestCase):
             m.post(self.test_track_url, text='success', additional_matcher=custom_matcher)
 
             np.random.seed(int(tracks_runners_up_seed))
+            decision._track()
             best = decision.get()
-            assert decision.chosen is True
-            assert decision.tracked is True
+            is_valid_ksuid(decision.id_)
             assert best == 1
