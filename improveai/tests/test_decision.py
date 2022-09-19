@@ -133,10 +133,6 @@ class TestDecision(TestCase):
             self, decision: d.Decision, set_attr_name: str,
             set_attr_value: object):
 
-        print('### set_attr_value ###')
-        print(set_attr_name)
-        print(set_attr_value)
-
         with raises(AttributeError) as aerr:
             setattr(decision, set_attr_name, set_attr_value)
             assert str(aerr.value) == "AttributeError: can't set attribute"
@@ -656,7 +652,7 @@ class TestDecision(TestCase):
             is_valid_ksuid(decision_id)
 
             with raises(AssertionError) as aerr:
-                decision_id = decision._track()
+                decision._track()
 
     def _get_complete_tracked_decision(self):
         test_case_filename = os.getenv('DECISION_TEST_GET_02_JSON')

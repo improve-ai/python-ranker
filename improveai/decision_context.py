@@ -118,11 +118,12 @@ class DecisionContext:
             a tuple of (<best variant>, <decision id>)
 
         """
-        decision = self.decide(variants=variants, track=True)
+        decision = self.decide(variants=variants)
+        decision._track()
         return decision.get(), decision.id_
 
     def decide(self, variants: list or np.ndarray, scores: list or np.ndarray = None,
-               ordered: bool = False, track: bool = False):
+               ordered: bool = False):
         """
         Creates decision but does not track it by default.
         If not scores are provided and input variants are not ranked performs
@@ -171,9 +172,6 @@ class DecisionContext:
         decision = d.Decision(
             decision_model=self.decision_model, ranked_variants=ranked_variants, givens=givens)
 
-        if track:
-            decision._track()
-
         return decision
 
     def rank(self, variants: list or np.ndarray) -> tuple:
@@ -191,7 +189,8 @@ class DecisionContext:
             ranked variants and decision ID
 
         """
-        decision = self.decide(variants=variants, track=True)
+        decision = self.decide(variants=variants)
+        decision._track()
         return decision.ranked(), decision.id_
 
     def optimize(self, variant_map: dict):
@@ -250,8 +249,8 @@ class DecisionContext:
         # TODO think about get_variants_from_args() and checking variants for
         #  numpy types
         # make decision and track immediately
-        decision = self.decide(
-            variants=get_variants_from_args(variants), ordered=True, track=True)
+        decision = self.decide(variants=get_variants_from_args(variants), ordered=True)
+        decision._track()
         # return best and decision ID
         return decision.get(), decision.id_
 
@@ -295,7 +294,8 @@ class DecisionContext:
         unpacked_variants = get_variants_from_args(variants)
         # decide which one is best
         decision = self.decide(
-            variants=unpacked_variants, scores=np.random.normal(size=len(unpacked_variants)), track=True)
+            variants=unpacked_variants, scores=np.random.normal(size=len(unpacked_variants)))
+        decision._track()
         return decision.get(), decision.id_
 
     def choose_from(

@@ -530,7 +530,8 @@ class DecisionModel:
 
         """
 
-        decision = self.decide(variants, track=True)
+        decision = self.decide(variants)
+        decision._track()
         return decision.get(), decision.id_
 
     def add_reward(self, reward: float, decision_id: str):
@@ -565,7 +566,7 @@ class DecisionModel:
                 warnings.warn('`track_url` is None - reward not added')
 
     def decide(self, variants: list or np.ndarray, scores: list or np.ndarray = None,
-               ordered: bool = False, track: bool = False):
+               ordered: bool = False):
         """
         Creates decision but does not track it by default.
         If not scores are provided and input variants are not ranked performs
@@ -591,7 +592,7 @@ class DecisionModel:
         """
 
         return self.given(givens=self.givens_provider.givens(for_model=self))\
-            .decide(variants=variants, scores=scores, ordered=ordered, track=track)
+            .decide(variants=variants, scores=scores, ordered=ordered)
 
     def optimize(self, variant_map: dict):
         """
@@ -722,8 +723,8 @@ class DecisionModel:
         object, str
             tuple with (<first variant>, <decision id>)
         """
-        decision = self.decide(
-            variants=get_variants_from_args(variants), ordered=True, track=True)
+        decision = self.decide(variants=get_variants_from_args(variants), ordered=True)
+        decision._track()
         # return best and decision ID
         return decision.get(), decision.id_
 
@@ -766,7 +767,8 @@ class DecisionModel:
         unpacked_variants = get_variants_from_args(variants)
         decision = self.decide(
             variants=get_variants_from_args(unpacked_variants),
-            scores=np.random.normal(size=len(unpacked_variants)), track=True)
+            scores=np.random.normal(size=len(unpacked_variants)))
+        decision._track()
         return decision.get(), decision.id_
 
     def choose_multivariate(self, variant_map: dict):
