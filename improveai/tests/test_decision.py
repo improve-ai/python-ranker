@@ -5,7 +5,7 @@ import math
 import requests_mock as rqm
 import numpy as np
 import os
-from pytest import fixture, raises, warns
+from pytest import fixture, raises
 import sys
 from unittest import TestCase
 import warnings
@@ -635,6 +635,29 @@ class TestDecision(TestCase):
         is_valid_ksuid(decision_id)
         assert decision.id_ == decision_id
 
+    def test_double_track_raises(self):
+        ranked_variants = [el for el in range(20)]
+        ranked_variants[0] = {
+            "text": "lovely corgi",
+            "chars": 12,
+            "words": 2}
+
+        decision = d.Decision(
+            decision_model=self.decision_model_valid_track_url,
+            ranked_variants=ranked_variants, givens={})
+
+        assert decision.id_ is None
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+            decision_id = decision._track()
+            assert decision_id is not None
+            assert decision_id == decision.id_
+            is_valid_ksuid(decision_id)
+
+            with raises(AssertionError) as aerr:
+                decision_id = decision._track()
+
     def _get_complete_tracked_decision(self):
         test_case_filename = os.getenv('DECISION_TEST_GET_02_JSON')
         path_to_test_case_file = \
@@ -776,7 +799,6 @@ class TestDecision(TestCase):
             m0.post(self.track_url, text='success')
             np.random.seed(0)
             decision._track()
-            # decision.choose_from(variants=variants).get()
 
         reward = 'string'
 
