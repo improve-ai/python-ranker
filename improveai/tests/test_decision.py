@@ -15,7 +15,7 @@ sys.path.append(
 
 import improveai.decision as d
 import improveai.decision_model as dm
-from improveai.tests.test_utils import get_test_data
+from improveai.tests.test_utils import get_test_data, is_valid_ksuid
 
 
 class TestDecision(TestCase):
@@ -43,11 +43,11 @@ class TestDecision(TestCase):
     @mockup_givens.setter
     def mockup_givens(self, value):
         self._mockup_given = value
-        
+
     @property
     def test_jsons_data_directory(self):
         return self._test_jsons_data_directory
-    
+
     @test_jsons_data_directory.setter
     def test_jsons_data_directory(self, value):
         self._test_jsons_data_directory = value
@@ -115,19 +115,19 @@ class TestDecision(TestCase):
 
     def test_raises_value_error_when_model_none(self):
         with raises(AssertionError) as aerr:
-            d.Decision(decision_model=None)
+            d.Decision(decision_model=None, ranked_variants=[1, 2, 3, 4], givens=None)
 
     def test_raises_value_error_when_model_str(self):
         with raises(AssertionError) as aerr:
-            d.Decision(decision_model='abc')
+            d.Decision(decision_model='abc', ranked_variants=[1, 2, 3, 4], givens=None)
 
     def test_raises_value_error_when_model_number(self):
         with raises(AssertionError) as aerr:
-            d.Decision(decision_model=123.13)
+            d.Decision(decision_model=123.13, ranked_variants=[1, 2, 3, 4], givens=None)
 
     def test_raises_value_error_when_model_bool(self):
         with raises(AssertionError) as aerr:
-            d.Decision(decision_model=True)
+            d.Decision(decision_model=True, ranked_variants=[1, 2, 3, 4], givens=None)
 
     def _generic_outer_setter_raises_test(
             self, decision: d.Decision, set_attr_name: str,
@@ -142,19 +142,19 @@ class TestDecision(TestCase):
             assert str(aerr.value) == "AttributeError: can't set attribute"
 
     def test_model_setter(self):
-        decision = d.Decision(decision_model=self.decision_model_no_track_url)
+        decision = d.Decision(
+            decision_model=self.decision_model_no_track_url, ranked_variants=[1, 2, 3],
+            givens=None)
 
         assert decision.decision_model is not None
-        assert decision.givens is None
-
         self._generic_outer_setter_raises_test(
             decision=decision, set_attr_name='decision_model',
             set_attr_value='dummy value')
 
-        assert decision.givens is None
-
     def test_model_getter(self):
-        decision = d.Decision(decision_model=self.decision_model_no_track_url)
+        decision = d.Decision(
+            decision_model=self.decision_model_no_track_url, ranked_variants=[1, 2, 3],
+            givens=None)
         assert decision.decision_model is not None
         assert decision.decision_model == self.decision_model_no_track_url
 
@@ -208,42 +208,72 @@ class TestDecision(TestCase):
             assert str(aerr.value)
 
     def test_givens_setter(self):
-        decision = d.Decision(decision_model=self.decision_model_no_track_url)
-        decision.givens = self.mockup_givens
+        decision = d.Decision(
+            decision_model=self.decision_model_no_track_url,
+            ranked_variants=[1, 2, 3], givens=self.mockup_givens)
 
         assert decision.givens is not None
         assert decision.givens == self.mockup_givens
         assert isinstance(decision.givens, dict)
 
-        assert decision.variants == [None]
-        assert decision.chosen is False
-        assert decision.best is None
+        assert decision.ranked_variants == [1, 2, 3]
+        assert decision.id_ is None
+
+    def test_givens_setter_raises_attribute_error_for_givens_setting_attempt(self):
+
+        with raises(AttributeError) as atrerr:
+            decision = d.Decision(
+                decision_model=self.decision_model_no_track_url,
+                ranked_variants=[1, 2, 3], givens=None)
+            decision.givens = 'dummy string'
+            assert str(atrerr.value)
+
+        with raises(AttributeError) as atrerr:
+            decision = d.Decision(
+                decision_model=self.decision_model_no_track_url,
+                ranked_variants=[1, 2, 3], givens=None)
+            decision.givens = ['dummy', 'string']
+            assert str(atrerr.value)
+
+        with raises(AttributeError) as atrerr:
+            decision = d.Decision(
+                decision_model=self.decision_model_no_track_url,
+                ranked_variants=[1, 2, 3], givens=None)
+            decision.givens = 1234
+            assert str(atrerr.value)
+
+        with raises(AttributeError) as atrerr:
+            decision = d.Decision(
+                decision_model=self.decision_model_no_track_url,
+                ranked_variants=[1, 2, 3], givens=None)
+            decision.givens = 1234.1234
+            assert str(atrerr.value)
+
+    def test_givens_setter_raises_assertion_error_for_bad_givens_type(self):
 
         with raises(AssertionError) as aerr:
-            setattr(decision, 'givens', 'dummy_value')
-            assert str(aerr.value) == "AttributeError: can't set attribute"
+            d.Decision(
+                decision_model=self.decision_model_no_track_url,
+                ranked_variants=[1, 2, 3], givens='dummy string')
+            assert str(aerr.value)
 
-    def test_givens_setter_raises_type_error_for_non_dict(self):
+        with raises(AssertionError) as aerr:
+            d.Decision(
+                decision_model=self.decision_model_no_track_url,
+                ranked_variants=[1, 2, 3], givens=['dummy', 'string'])
+            assert str(aerr.value)
 
-        with raises(AssertionError) as terr:
-            decision = d.Decision(decision_model=self.decision_model_no_track_url)
-            decision.givens = 'dummy string'
-            assert str(terr.value)
+        with raises(AssertionError) as aerr:
+            d.Decision(
+                decision_model=self.decision_model_no_track_url,
+                ranked_variants=[1, 2, 3], givens=1234)
+            assert str(aerr.value)
 
-        with raises(AssertionError) as terr:
-            decision = d.Decision(decision_model=self.decision_model_no_track_url)
-            decision.givens = ['dummy', 'string']
-            assert str(terr.value)
-
-        with raises(AssertionError) as terr:
-            decision = d.Decision(decision_model=self.decision_model_no_track_url)
-            decision.givens = 1234
-            assert str(terr.value)
-
-        with raises(AssertionError) as terr:
-            decision = d.Decision(decision_model=self.decision_model_no_track_url)
-            decision.givens = 1234.1234
-            assert str(terr.value)
+        with raises(AssertionError) as aerr:
+            d.Decision(
+                decision_model=self.decision_model_no_track_url,
+                ranked_variants=[1, 2, 3], givens=1234.1234)
+            assert str(aerr.value)
 
     def _check_decision_before_call(self, decision, test_variants, test_givens):
         assert decision.id_ is None
@@ -331,15 +361,9 @@ class TestDecision(TestCase):
             ranked_variants=test_variants,
             givens=test_givens)
 
-        self._check_decision_before_call(decision, test_variants, test_givens)
-
         ranked_variants = decision.ranked()
-        np.testing.assert_array_equal([1, 2, 3], test_variants)
-
-        self._check_decision_after_call(
-            decision=decision, ranked_variants=[1, 2, 3], test_variants=test_variants,
-            best_variant=None, expected_best=None, decision_id=None,
-            check_ranked=True, check_best=True, check_tracked=False)
+        np.testing.assert_array_equal(test_variants, decision.ranked_variants)
+        np.testing.assert_array_equal(test_variants, ranked_variants)
 
     def test__track_01(self):
 
@@ -371,8 +395,6 @@ class TestDecision(TestCase):
             np.random.seed(0)
             decision_id = decision._track()
 
-        # TODO check why this not raises
-        assert False
         self._check_decision_after_call(
             decision=decision, ranked_variants=None, test_variants=test_variants,
             best_variant=None, expected_best=None, decision_id=decision_id,
@@ -516,48 +538,35 @@ class TestDecision(TestCase):
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
-            best_variant = decision._track()
+            decision_id = decision._track()
 
         assert decision.id_ is not None
         np.testing.assert_array_equal(decision.ranked_variants, [None])
-        assert best_variant is None
-
-
-    def test_get_04(self):
-
-        decision = d.Decision(decision_model=self.decision_model_valid_track_url)
-
-        assert decision.chosen is False
-
-        with raises(AssertionError) as aerr:
-            with rqm.Mocker() as m:
-                m.post(self.track_url, text='success')
-                decision.variants = None
-                decision.givens = {}
-                decision.get()
+        is_valid_ksuid(decision_id)
+        assert decision.get() is None
 
     def test_get_05(self):
 
-        decision = d.Decision(decision_model=self.decision_model_no_track_url)
+        decision = d.Decision(
+            decision_model=self.decision_model_no_track_url,
+            ranked_variants=[1, 2, 3],  givens={})
 
-        assert decision.chosen is False
+        assert decision.id_ is None
 
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
-            decision.variants = [None]
-            decision.givens = {}
-            decision.get()
-            assert decision.chosen is True
+            best_variant = decision.get()
+            assert decision.id_ is None
 
-            # expect exactly 1 warning
-            assert len(w) == 1
+        assert best_variant == 1
 
-    def test_get_06(self):
+    # TODO check if tracking follows desired frequency (1/min(max_runners_up, len(variants))
+    def test__track_06(self):
         # this is a test case which covers tracking runners up from within
         # get() call
 
-        variants = [el for el in range(100)]
-        variants[9] = {
+        ranked_variants = [el for el in range(100)]
+        ranked_variants[0] = {
             "text": "lovely corgi",
             "chars": 12,
             "words": 2}
@@ -575,100 +584,56 @@ class TestDecision(TestCase):
                 runners_up_tracked.append(False)
             return True
 
-        for _ in variants:
+        for _ in ranked_variants:
             with rqm.Mocker() as m:
                 m.post(self.track_url, text='success', additional_matcher=custom_matcher)
 
                 with warnings.catch_warnings(record=True) as w:
                     warnings.simplefilter("always")
 
-                    # np.random.seed(self.tracks_seed)
-                    decision = d.Decision(decision_model=self.decision_model_valid_track_url)
-                    assert decision.chosen is False
-                    decision.variants = variants
-                    decision.givens = {}
-                    best_variant = decision.get()
-                    assert decision.chosen is True
-                    assert decision.tracked is True
+                    np.random.seed(self.tracks_seed)
+                    decision = d.Decision(
+                        decision_model=self.decision_model_valid_track_url,
+                        ranked_variants=ranked_variants, givens={})
+                    assert decision.id_ is None
+                    decision_id = decision._track()
+
                     print('Got following warnings count')
                     print(len(w))
 
-        assert any(runners_up_tracked)
-        assert decision.chosen is True
-        assert best_variant == variants[9]
+        assert all(runners_up_tracked)
+        is_valid_ksuid(decision.id_)
+        is_valid_ksuid(decision_id)
+        assert decision.id_ == decision_id
 
-    def test_get_07(self):
+    def test__track_07(self):
         # this is a test case which covers NOT tracking runners up from within
-        # get() call
+        # _track() call
 
-        decision = d.Decision(decision_model=self.decision_model_valid_track_url)
-
-        assert decision.chosen is False
-
-        variants = [el for el in range(20)]
-        variants[9] = {
+        ranked_variants = [el for el in range(20)]
+        ranked_variants[0] = {
             "text": "lovely corgi",
             "chars": 12,
             "words": 2}
+
+        decision = d.Decision(
+            decision_model=self.decision_model_valid_track_url,
+            ranked_variants=ranked_variants, givens={})
+
+        assert decision.id_ is None
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
 
             with warnings.catch_warnings(record=True) as w:
                 warnings.simplefilter("always")
-                decision.variants = variants
-                decision.givens = {}
-                best_variant = decision.get()
+                np.random.seed(self.not_tracks_seed)
+                decision_id = decision._track()
                 assert len(w) == 0
 
-        assert decision.chosen is True
-        assert decision.tracked is True
-        assert best_variant == variants[9]
-
-    def test_get_08(self):
-        # this is a test case which covers tracking runners up from within
-        # get() call
-
-        decision_tracker = self.decision_model_valid_track_url.tracker
-
-        expected_track_body = {
-            decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
-            decision_tracker.MODEL_KEY: self.decision_model_valid_track_url.model_name,
-            decision_tracker.VARIANT_KEY: None,
-            decision_tracker.VARIANTS_COUNT_KEY: 1,
-        }
-
-        expected_request_json = json.dumps(expected_track_body, sort_keys=False)
-
-        request_validity = {
-            'request_body_ok': True}
-
-        def custom_matcher(request):
-
-            request_dict = deepcopy(request.json())
-            del request_dict[self.decision_model_valid_track_url.tracker.MESSAGE_ID_KEY]
-
-            if json.dumps(request_dict, sort_keys=False) != \
-                    expected_request_json:
-                request_validity['request_body_ok'] = True
-
-            return True
-
-        with rqm.Mocker() as m:
-            m.post(self.track_url, text='success', additional_matcher=custom_matcher)
-
-            with warnings.catch_warnings(record=True) as w:
-                warnings.simplefilter("always")
-
-                decision = d.Decision(decision_model=self.decision_model_valid_track_url)
-                assert decision.chosen is False
-
-                memoized_variant = decision.get()
-                assert decision.chosen is True
-                assert decision.tracked is True
-                assert memoized_variant is None
-                assert len(w) == 0
-                assert request_validity['request_body_ok']
+        is_valid_ksuid(decision.id_)
+        is_valid_ksuid(decision_id)
+        assert decision.id_ == decision_id
 
     def _get_complete_tracked_decision(self):
         test_case_filename = os.getenv('DECISION_TEST_GET_02_JSON')
@@ -694,28 +659,15 @@ class TestDecision(TestCase):
             ranked_variants=test_variants, givens=test_givens)
 
         assert decision.id_ is None
-        assert decision.tracked is False
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
-            # decision.givens = test_givens
-            # decision.variants = test_variants
             np.random.seed(0)
             decision._track()
             best_variant = decision.get()
 
-        assert decision.tracked is True
         assert decision.id_ is not None
         return decision, best_variant
-
-    # def test_choose_from_already_chosen(self):
-    #     decision, best_variant = self._get_complete_tracked_decision()
-    #
-    #     with raises(AttributeError) as atr_err:
-    #         decision.ranked_variants = self.dummy_variants
-    #
-    #     # assert decision.variants == set_variants
-    #     # assert best_variant == decision.best
 
     def test_setting_ranked_variants_after_decision_creation_raises(self):
         decision = d.Decision(
@@ -725,100 +677,17 @@ class TestDecision(TestCase):
         assert decision.ranked_variants == list(range(10))
         assert decision.givens is None
 
-        with raises(AttributeError) as atr_err:
-            decision.variants = self.dummy_variants
-
-    def test_given_givens_already_set(self):
-        decision = d.Decision(decision_model=self.decision_model_no_track_url)
-
-        assert decision.variants == [None]
-        assert decision.givens is None
-        assert decision.chosen is False
-        assert decision.best is None
-
-        decision.givens = self.dummy_givens
-
-        assert decision.variants == [None]
-        assert decision.givens is self.dummy_givens
-        assert decision.chosen is False
-        assert decision.best is None
-
-        appended_dummy_givens = deepcopy(self.dummy_givens)
-        appended_dummy_givens['dummy1'] = 'givens'
-
-        decision.givens = appended_dummy_givens
-
-        assert decision.variants == [None]
-        assert decision.givens is self.dummy_givens
-        assert decision.chosen is False
-        assert decision.best is None
-
-    def test_given_already_chosen(self):
-        decision, best_variant = self._get_complete_tracked_decision()
-
-        assert decision.chosen is True
-
-        existing_givens = decision.givens
-
-        assert {'dummy_given': 'abc'} != existing_givens
-        decision.givens = {'dummy_given': 'abc'}
-
-        assert decision.givens == existing_givens
-        assert best_variant == decision.best
-
-    def test_get_already_chosen(self):
-        decision, memoized_variant = self._get_complete_tracked_decision()
-
-        assert decision.chosen is True
-
-        memoized_variant_from_decision = decision.get()
-
-        assert memoized_variant == decision.best == \
-               memoized_variant_from_decision
-
-    def test_get_with_zero_len_variants(self):
-
-        test_case_filename = \
-            os.getenv('DECISION_TEST_GET_ZERO_LENGTH_VARIANTS_JSON')
-        path_to_test_case_file = \
-            os.sep.join([self.test_jsons_data_directory, test_case_filename])
-
-        test_data = get_test_data(path_to_test_json=path_to_test_case_file, method='read')
-
-        test_case = test_data.get("test_case", None)
-        if test_case is None:
-            raise ValueError('`test_case` can`t be empty')
-
-        test_variants = test_case.get('variants', None)
-        if test_variants is None:
-            raise ValueError('`variants` can`t be empty')
-
-        test_given = test_case.get('givens', None)
-        if test_given is None:
-            raise ValueError('`givens` can`t be empty')
-
-        decision = d.Decision(decision_model=self.decision_model_valid_track_url)
-
-        assert decision.chosen is False
-
-        with raises(ValueError) as verr:
-            with rqm.Mocker() as m:
-                m.post(self.track_url, text='success')
-                decision.variants = test_variants
-                decision.givens = test_given
-                decision.get()
-
     def test_get_with_none_track_url(self):
         variants = [el for el in range(10)]
 
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
             np.random.seed(1)
-            decision = self.decision_model_no_track_url.choose_from(variants=variants)
+            decision = self.decision_model_no_track_url.choose_from(
+                variants=variants, scores=None)
             best_variant = decision.get()
             assert decision.id_ is None
             assert best_variant == 0
-            assert len(w) == 1
 
     def test_consistent_encoding(self):
         # since it is impossible to access encoded features from get() call
@@ -847,42 +716,6 @@ class TestDecision(TestCase):
         with np.testing.assert_raises(AssertionError):
             np.testing.assert_array_equal(
                 encoded_variants_no_seed_0, encoded_variants_no_seed_1)
-
-    def test_get_consistent_scores(self):
-        variants = [{'num': el, 'string': str(el)} for el in range(10)]
-        consistency_seed = int(os.getenv('DECISION_TEST_CONSISTENCY_SEED'))
-
-        if consistency_seed is None:
-            raise ValueError('consistency seed must not be None')
-
-        with rqm.Mocker() as m:
-            m.post(self.track_url, text='success')
-
-            decision_1 = d.Decision(decision_model=self.decision_model_valid_track_url)
-            decision_1.variants = variants
-            np.random.seed(consistency_seed)
-            decision_1.get()
-
-            decision_2 = d.Decision(decision_model=self.decision_model_valid_track_url)
-            decision_2.variants = variants
-            np.random.seed(consistency_seed)
-            decision_2.get()
-
-            np.testing.assert_array_equal(decision_1.scores, decision_2.scores)
-
-        with rqm.Mocker() as m:
-            m.post(self.track_url, text='success')
-
-            decision_3 = d.Decision(decision_model=self.decision_model_valid_track_url)
-            decision_3.variants = variants
-            decision_3.get()
-
-            decision_4 = d.Decision(decision_model=self.decision_model_valid_track_url)
-            decision_4.variants = variants
-            decision_4.get()
-
-            with np.testing.assert_raises(AssertionError):
-                np.testing.assert_array_equal(decision_3.scores, decision_4.scores)
 
     def test_add_reward(self):
         variants = [el for el in range(10)]
@@ -1003,321 +836,152 @@ class TestDecision(TestCase):
             with raises(AssertionError) as aerr:
                 decision.add_reward(reward=reward)
 
-    def _generic_test_peek(self, test_case_filename: str, no_chooser: bool = False):
-        path_to_test_case_file = \
-            os.sep.join([self.test_jsons_data_directory, test_case_filename])
-
-        test_data = get_test_data(path_to_test_json=path_to_test_case_file, method='read')
-
-        test_case = test_data.get("test_case", None)
-        assert test_case is not None
-
-        test_variants = test_case.get('variants', None)
-        assert test_variants is not None
-
-        test_givens = test_case.get('givens', None)
-
-        if no_chooser:
-            self.decision_model_valid_track_url.chooser = None
-
-        decision = d.Decision(decision_model=self.decision_model_valid_track_url)
-
-        assert decision.chosen is False
-
-        decision.variants = test_variants
-        decision.givens = test_givens
-
-        expected_output = test_data.get('test_output', None)
-        assert expected_output is not None
-
-        expected_best = expected_output.get('best', None)
-        assert expected_best is not None
-
-        expected_scores = expected_output.get('scores', None)
-        assert expected_scores is not None
-
-        decision.variants = test_variants
-        decision.givens = test_givens
-        calculated_best = decision.peek()
-
-        assert expected_best == calculated_best
-        assert decision.id_ is not None
-        assert not decision.tracked
-
-    def test_peek_valid_variants_no_givens(self):
-        test_case_filename = \
-            os.getenv('DECISION_TEST_PEEK_VALID_VARIANTS_NO_GIVENS_JSON', None)
-        assert test_case_filename is not None
-        self._generic_test_peek(test_case_filename=test_case_filename)
-
-    def test_peek_valid_variants_no_givens_no_model(self):
-        test_case_filename = \
-            os.getenv('DECISION_TEST_PEEK_VALID_VARIANTS_NO_GIVENS_NO_MODEL_JSON', None)
-        assert test_case_filename is not None
-        self._generic_test_peek(test_case_filename=test_case_filename)
-
-    def test_peek_valid_variants_valid_givens(self):
-        test_case_filename = \
-            os.getenv('DECISION_TEST_PEEK_VALID_VARIANTS_VALID_GIVENS_JSON', None)
-        assert test_case_filename is not None
-        self._generic_test_peek(test_case_filename=test_case_filename)
-
-    def test_peek_valid_variants_valid_givens_no_model(self):
-        test_case_filename = \
-            os.getenv('DECISION_TEST_PEEK_VALID_VARIANTS_VALID_GIVENS_NO_MODEL_JSON', None)
-        assert test_case_filename is not None
-        self._generic_test_peek(test_case_filename=test_case_filename)
-
-    def test_peek_already_chosen(self):
-        test_case_filename = \
-            os.getenv('DECISION_TEST_PEEK_ALREADY_CHOSEN_JSON', None)
-        assert test_case_filename is not None
-        self._generic_test_peek(test_case_filename=test_case_filename)
-
-    def test_peek_raises_for_single_none_variant(self):
-        decision = d.Decision(decision_model=self.decision_model_valid_track_url)
-        best = decision.peek()
-        assert best is None
-
-    def test_peek_sets_chosen_and_returns_best_on_second_call(self):
-        decision = d.Decision(decision_model=self.decision_model_valid_track_url)
-        decision.variants = [1, 2, 3, 4, 5]
-        best_1 = deepcopy(decision.peek())
-        assert decision.chosen is True
-        best_2 = decision.peek()
-        assert best_1 == best_2
-
-    def test_get_after_peek_tracks(self):
-        decision = d.Decision(decision_model=self.decision_model_valid_track_url)
-        decision.variants = [1, 2, 3, 4, 5]
-        # call peek()
-        best_1 = deepcopy(decision.peek())
-        best_1_id_ = deepcopy(decision.id_)
-        # make sure peek() chooses best but does not track
-        assert decision.chosen is True
-        assert not decision.tracked
-
-        request_validity = {'request_body_ok': False}
-
-        decision_tracker = self.decision_model_valid_track_url.tracker
-
-        expected_track_body = {
-            decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
-            decision_tracker.MODEL_KEY: self.decision_model_valid_track_url.model_name,
-            decision_tracker.VARIANT_KEY: 3,
-            decision_tracker.VARIANTS_COUNT_KEY: 5,
-            decision_tracker.RUNNERS_UP_KEY: [4, 5, 1, 2]
-        }
-
-        expected_request_json = json.dumps(expected_track_body, sort_keys=False)
-
-        def custom_matcher(request):
-            request_dict = deepcopy(request.json())
-            del request_dict[self.decision_model_valid_track_url.tracker.MESSAGE_ID_KEY]
-            if json.dumps(request_dict, sort_keys=False) == expected_request_json:
-                request_validity['request_body_ok'] = True
-
-            return True
-
-        with rqm.Mocker() as m:
-            m.post(self.track_url, text='success', additional_matcher=custom_matcher)
-            np.random.seed(self.tracks_seed)
-            # assert that variant is already chosen
-            assert decision.chosen is True
-            best_2 = decision.get()
-            assert decision.id_ == best_1_id_
-            # assert that best tracks
-            assert decision.tracked is True
-            assert best_2 == best_1
-            assert request_validity['request_body_ok']
-
     def test_variants_setter_valid_int_variants(self):
-        decision = d.Decision(self.decision_model_valid_track_url)
-        expected_variants = [1, 2, 3, 4]
-        decision.variants = expected_variants
+        expected_ranked_variants = [1, 2, 3, 4]
+        decision = d.Decision(
+            decision_model=self.decision_model_valid_track_url,
+            ranked_variants=expected_ranked_variants, givens=None)
 
-        assert decision.variants == expected_variants
-
-        with warns(UserWarning) as uw:
-            decision.variants = expected_variants
-            assert len(uw) != 0
-            assert uw.list[0].message
+        np.testing.assert_array_equal(expected_ranked_variants, decision.ranked_variants)
 
     def test_variants_setter_valid_str_variants(self):
-        decision = d.Decision(self.decision_model_valid_track_url)
-        expected_variants = ['1', '2', '3', '4']
-        decision.variants = expected_variants
+        ranked_expected_variants = ['1', '2', '3', '4']
 
-        assert decision.variants == expected_variants
+        decision = d.Decision(
+            decision_model=self.decision_model_valid_track_url,
+            ranked_variants=ranked_expected_variants, givens=None)
 
-        with warns(UserWarning) as uw:
-            decision.variants = expected_variants
-            assert len(uw) != 0
-            assert uw.list[0].message
+        assert decision.ranked_variants == ranked_expected_variants
+
+    def test_attempt_to_set_ranked_variants_raises(self):
+        ranked_expected_variants = ['1', '2', '3', '4']
+
+        decision = d.Decision(
+            decision_model=self.decision_model_valid_track_url,
+            ranked_variants=ranked_expected_variants, givens=None)
+
+        with raises(AttributeError) as atrrerr:
+            decision.ranked_variants = ['4', '3', '2', '1']
+
+        np.testing.assert_array_equal(decision.ranked_variants, ranked_expected_variants)
+
+    def test_attempt_to_set_givens_raises(self):
+        ranked_expected_variants = ['1', '2', '3', '4']
+        givens = {'test': 'givens'}
+
+        decision = d.Decision(
+            decision_model=self.decision_model_valid_track_url,
+            ranked_variants=ranked_expected_variants, givens=givens)
+
+        with raises(AttributeError) as atrrerr:
+            decision.givens = {'test': 'modified givens'}
+
+        assert decision.givens == givens
+
+    def test_attempt_to_set_id__raises(self):
+        ranked_expected_variants = ['1', '2', '3', '4']
+
+        decision = d.Decision(
+            decision_model=self.decision_model_valid_track_url,
+            ranked_variants=ranked_expected_variants, givens=None)
+
+        with raises(AttributeError) as atrrerr:
+            decision.id_ = 'dummy-id'
+
+        assert decision.id_ is None
+
+    def test_attempt_to_set_decision_model_raises(self):
+        ranked_expected_variants = ['1', '2', '3', '4']
+
+        decision = d.Decision(
+            decision_model=self.decision_model_valid_track_url,
+            ranked_variants=ranked_expected_variants, givens=None)
+
+        with raises(AttributeError) as atrrerr:
+            decision.decision_model = self.decision_model_no_track_url
+
+        assert decision.decision_model == self.decision_model_valid_track_url
 
     def test_variants_setter_valid_bool_variants(self):
-        decision = d.Decision(self.decision_model_valid_track_url)
-        expected_variants = [True, False]
-        decision.variants = expected_variants
+        expected_ranked_variants = [True, False]
+        decision = d.Decision(
+            decision_model=self.decision_model_valid_track_url,
+            ranked_variants=expected_ranked_variants, givens=None)
 
-        assert decision.variants == expected_variants
-
-        with warns(UserWarning) as uw:
-            decision.variants = expected_variants
-            assert len(uw) != 0
-            assert uw.list[0].message
+        np.testing.assert_array_equal(expected_ranked_variants, decision.ranked_variants)
 
     def test_variants_setter_valid_object_variants(self):
-        decision = d.Decision(self.decision_model_valid_track_url)
-        expected_variants = [1, {'2': 3, '4': [5, 6], '6': {7: 8}}, [9, 10, 11]]
-        decision.variants = expected_variants
+        expected_ranked_variants = [1, {'2': 3, '4': [5, 6], '6': {7: 8}}, [9, 10, 11]]
+        decision = d.Decision(
+            decision_model=self.decision_model_valid_track_url,
+            ranked_variants=expected_ranked_variants, givens=None)
 
-        assert decision.variants == expected_variants
-
-        with warns(UserWarning) as uw:
-            decision.variants = expected_variants
-            assert len(uw) != 0
-            assert uw.list[0].message
+        np.testing.assert_array_equal(expected_ranked_variants, decision.ranked_variants)
 
     def test_variants_setter_raises_for_zero_length_variants(self):
-        decision = d.Decision(self.decision_model_valid_track_url)
         with raises(ValueError) as verr:
-            decision.variants = []
+            d.Decision(
+                decision_model=self.decision_model_valid_track_url,
+                ranked_variants=[], givens=None)
 
-    def test_variants_setter_raises_for_none_variants(self):
-        decision = d.Decision(self.decision_model_valid_track_url)
+        with raises(ValueError) as verr:
+            d.Decision(
+                decision_model=self.decision_model_valid_track_url,
+                ranked_variants=(), givens=None)
+
+        with raises(ValueError) as verr:
+            d.Decision(
+                decision_model=self.decision_model_valid_track_url,
+                ranked_variants=np.array([]), givens=None)
+
         with raises(AssertionError) as aerr:
-            decision.variants = None
+            d.Decision(
+                decision_model=self.decision_model_valid_track_url,
+                ranked_variants=None, givens=None)
 
     def test_variants_setter_raises_for_bad_type_variants(self):
-        decision = d.Decision(self.decision_model_valid_track_url)
         with raises(AssertionError) as aerr:
-            decision.variants = 123
+            d.Decision(
+                decision_model=self.decision_model_valid_track_url,
+                ranked_variants=123, givens=None)
 
         with raises(AssertionError) as aerr:
-            decision.variants = 123.123
+            d.Decision(
+                decision_model=self.decision_model_valid_track_url,
+                ranked_variants=123.123, givens=None)
 
         with raises(AssertionError) as aerr:
-            decision.variants = '123'
+            d.Decision(
+                decision_model=self.decision_model_valid_track_url,
+                ranked_variants='123', givens=None)
 
         with raises(AssertionError) as aerr:
-            decision.variants = True
+            d.Decision(
+                decision_model=self.decision_model_valid_track_url,
+                ranked_variants=True, givens=None)
 
         with raises(AssertionError) as aerr:
-            decision.variants = {}
+            d.Decision(
+                decision_model=self.decision_model_valid_track_url,
+                ranked_variants={}, givens=None)
 
         with raises(AssertionError) as aerr:
-            decision.variants = {'1': 2, '3': '4'}
+            d.Decision(
+                decision_model=self.decision_model_valid_track_url,
+                ranked_variants={'1': 2, '3': '4'}, givens=None)
 
     def test_givens_setter_valid_givens(self):
-        decision = d.Decision(self.decision_model_valid_track_url)
         expected_givens = {'g0': 1, 'g1': 2, 'g3': {1: 2, '3': 4}}
-        decision.givens = expected_givens
+        decision = d.Decision(
+            decision_model=self.decision_model_valid_track_url,
+            ranked_variants=[1, 2, 3, 4], givens=expected_givens)
 
         assert decision.givens == expected_givens
-
-        with warns(UserWarning) as uw:
-            decision.givens = expected_givens
-            assert len(uw) != 0
-            assert uw.list[0].message
 
     def test_givens_setter_valid_empty_givens(self):
-        decision = d.Decision(self.decision_model_valid_track_url)
         expected_givens = {}
-        decision.givens = expected_givens
+        decision = d.Decision(
+            decision_model=self.decision_model_valid_track_url,
+            ranked_variants=[1, 2, 3], givens=expected_givens)
 
         assert decision.givens == expected_givens
-
-        with warns(UserWarning) as uw:
-            decision.givens = expected_givens
-            assert len(uw) != 0
-            assert uw.list[0].message
-
-    def test_givens_setter_raises_for_bad_type_givens(self):
-        decision = d.Decision(self.decision_model_valid_track_url)
-        with raises(AssertionError) as aerr:
-            decision.givens = 123
-
-        with raises(AssertionError) as aerr:
-            decision.givens = 123.123
-
-        with raises(AssertionError) as aerr:
-            decision.givens = '123'
-
-        with raises(AssertionError) as aerr:
-            decision.givens = True
-
-        with raises(AssertionError) as aerr:
-            decision.givens = []
-
-        with raises(AssertionError) as aerr:
-            decision.givens = np.array([])
-
-        with raises(AssertionError) as aerr:
-            decision.givens = tuple([1, 2, 3])
-
-################################################################################
-
-    def test_scores_setter_valid_scores(self):
-        decision = d.Decision(self.decision_model_valid_track_url)
-        expected_variants = [1, 2, 3, 4]
-        expected_scores = [0.1, 0.2, 0.3, 0.4]
-
-        decision.variants = expected_variants
-        decision.scores = expected_scores
-
-        assert decision.variants == expected_variants
-        assert decision.scores == expected_scores
-
-        with warns(UserWarning) as uw:
-            decision.variants = expected_variants
-            assert len(uw) != 0
-            assert uw.list[0].message
-
-    def test_scores_setter_raises_for_scores_shorter_than_variants(self):
-        decision = d.Decision(self.decision_model_valid_track_url)
-        expected_variants = [1, 2, 3]
-        decision.variants = expected_variants
-
-        expected_scores = [0.1, 0.2, 0.3, 0.4]
-
-        with raises(AssertionError) as aerr:
-            decision.scores = expected_scores
-
-    def test_scores_setter_raises_for_empty_scores(self):
-        decision = d.Decision(self.decision_model_valid_track_url)
-        expected_variants = [1, 2, 3]
-        decision.variants = expected_variants
-        expected_scores = []
-
-        with raises(AssertionError) as aerr:
-            decision.scores = expected_scores
-
-    def test_scores_setter_raises_for_none_scores(self):
-        decision = d.Decision(self.decision_model_valid_track_url)
-        expected_variants = [1, 2, 3]
-        decision.variants = expected_variants
-        expected_scores = None
-
-        with raises(AssertionError) as aerr:
-            decision.scores = expected_scores
-
-    def test_scores_setter_for_bad_types(self):
-        decision = d.Decision(self.decision_model_valid_track_url)
-        expected_variants = [1, 2, 3]
-        decision.variants = expected_variants
-
-        with raises(AssertionError) as aerr:
-            decision.scores = 123
-
-        with raises(AssertionError) as aerr:
-            decision.scores = 123.123
-
-        with raises(AssertionError) as aerr:
-            decision.scores = '123'
-
-        with raises(AssertionError) as aerr:
-            decision.scores = {'1': 123, '2': '123'}
-
-        with raises(AssertionError) as aerr:
-            decision.scores = {'1': 123, '2': '123'}
