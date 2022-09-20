@@ -520,12 +520,10 @@ class DecisionTracker:
 
         """
 
-        assert isinstance(track_runners_up, bool)
-
-        # TODO maybe this check is pointless
         check_variants(ranked_variants)
-
+        assert isinstance(track_runners_up, bool)
         assert len(ranked_variants) > 1
+
         if len(ranked_variants) == 2:
             assert self.max_runners_up == 0
 
