@@ -785,6 +785,15 @@ class TestDecision(TestCase):
             m1.post(self.track_url, text='success', additional_matcher=custom_matcher)
             decision.add_reward(reward=reward)
 
+    def test_add_reward_none_track_url(self):
+        variants = list(range(20))
+        decision = d.Decision(
+            decision_model=self.decision_model_no_track_url,
+            ranked_variants=variants, givens=None)
+
+        with raises(AssertionError) as aerr:
+            decision._track()
+
     def test_add_reward_string_reward(self):
         variants = list(range(20))
         decision = d.Decision(
@@ -1019,5 +1028,6 @@ class TestDecision(TestCase):
             decision_model=self.decision_model_valid_track_url,
             ranked_variants=tested_ranked_variants, givens={})
         calculated_ranked_variants = decision.ranked()
+        assert calculated_ranked_variants[0] is None
         np.testing.assert_array_equal(tested_ranked_variants, calculated_ranked_variants)
         np.testing.assert_array_equal(tested_ranked_variants, decision.ranked_variants)
