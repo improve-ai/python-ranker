@@ -339,7 +339,7 @@ class DecisionTracker:
             None if there are no runners up to track otherwise list of tracked runners up
 
         """
-
+        check_variants(ranked_variants)
         # len(ranked_variants) - 1 -> this will not include last element of collection
         top_runners_up = ranked_variants[1:min(len(ranked_variants), self.max_runners_up + 1)]\
             if ranked_variants is not None else None

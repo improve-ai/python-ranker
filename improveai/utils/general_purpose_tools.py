@@ -154,6 +154,7 @@ def check_variants(variants: list or tuple or np.ndarray) -> list or tuple or np
         checked variants
 
     """
+    # following checks take only less than 0,001 ms
     assert variants is not None
     assert type(variants) in ALLOWED_VARIANT_TYPES
     # raise if variants are an empty list

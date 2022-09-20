@@ -174,15 +174,14 @@ class TestDecisionTracker:
         np.testing.assert_array_equal(
             top_runners_up, self.variants[1:self.max_runners_up + 1])
 
+    # TODO empty variants are not allowed -> maybe remove?
     def test_top_runners_up_empty_variants(self):
 
         decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
         decision_tracker.max_runners_up = self.max_runners_up
 
-        top_runners_up = \
+        with raises(ValueError) as verr:
             decision_tracker._top_runners_up(ranked_variants=[])
-
-        assert top_runners_up is None
 
     def test_top_runners_up_single_variant(self):
 
