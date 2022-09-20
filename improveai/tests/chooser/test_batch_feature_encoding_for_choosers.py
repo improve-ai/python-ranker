@@ -103,7 +103,7 @@ class TestChooserFeatureEncoding(TestCase):
 
         np.random.seed(self.batch_encoding_seed)
         tested_output_float64 = \
-            self.xgb_chooser._encode_variants_single_givens(
+            self.xgb_chooser.encode_variants_single_givens(
                 variants=test_variants, givens=test_givens)
 
         tested_output_float32 = \
@@ -161,7 +161,7 @@ class TestChooserFeatureEncoding(TestCase):
 
         np.random.seed(self.batch_encoding_seed)
         encoded_variants = \
-            self.xgb_chooser._encode_variants_single_givens(
+            self.xgb_chooser.encode_variants_single_givens(
                 variants=test_variants, givens=test_givens)
 
         missings_filled_array_float64 = encoded_variants_to_np(
@@ -198,7 +198,7 @@ class TestChooserFeatureEncoding(TestCase):
             raise ValueError("Expected output is empty")
 
         encoded_variants = \
-            self.xgb_chooser._encode_variants_single_givens(
+            self.xgb_chooser.encode_variants_single_givens(
                 variants=test_variants, givens=test_givens)
 
         missings_filled_array_float64 = encoded_variants_to_np(
@@ -237,7 +237,7 @@ class TestChooserFeatureEncoding(TestCase):
             raise ValueError("Expected output is empty")
 
         encoded_variants = \
-            self.xgb_chooser._encode_variants_single_givens(
+            self.xgb_chooser.encode_variants_single_givens(
                 variants=test_variants, givens=test_givens)
 
         # done for 100% coverage
