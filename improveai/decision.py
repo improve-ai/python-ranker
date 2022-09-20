@@ -133,7 +133,7 @@ class Decision:
         """
         return self.ranked_variants
 
-    def _track(self):
+    def track(self):
         """
         track this decision
 

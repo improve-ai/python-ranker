@@ -998,7 +998,7 @@ class TestDecisionContext(TestCase):
             m.post(self.test_track_url, text='success', additional_matcher=custom_matcher)
 
             np.random.seed(int(tracks_runners_up_seed))
-            decision._track()
+            decision.track()
             best = decision.get()
             is_valid_ksuid(decision.id_)
             assert best == 1

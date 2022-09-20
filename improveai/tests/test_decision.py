@@ -389,7 +389,7 @@ class TestDecision(TestCase):
             m.post(self.track_url, text='success')
             # freeze seed to always replicate track_runners_up value
             np.random.seed(0)
-            decision_id = decision._track()
+            decision_id = decision.track()
 
         self._check_decision_after_call(
             decision=decision, ranked_variants=None, test_variants=test_variants,
@@ -489,7 +489,7 @@ class TestDecision(TestCase):
             m.post(self.track_url, text='success')
             # freeze seed to always replicate track_runners_up value
             np.random.seed(0)
-            decision_id = decision._track()
+            decision_id = decision.track()
 
         self._check_decision_after_call(
             decision=decision, ranked_variants=None, test_variants=test_variants,
@@ -534,7 +534,7 @@ class TestDecision(TestCase):
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
-            decision_id = decision._track()
+            decision_id = decision.track()
 
         assert decision.id_ is not None
         np.testing.assert_array_equal(decision.ranked_variants, [None])
@@ -592,7 +592,7 @@ class TestDecision(TestCase):
                         decision_model=self.decision_model_valid_track_url,
                         ranked_variants=ranked_variants, givens={})
                     assert decision.id_ is None
-                    decision_id = decision._track()
+                    decision_id = decision.track()
 
                     print('Got following warnings count')
                     print(len(w))
@@ -624,7 +624,7 @@ class TestDecision(TestCase):
             with warnings.catch_warnings(record=True) as w:
                 warnings.simplefilter("always")
                 np.random.seed(self.not_tracks_seed)
-                decision_id = decision._track()
+                decision_id = decision.track()
                 assert len(w) == 0
 
         is_valid_ksuid(decision.id_)
@@ -646,13 +646,13 @@ class TestDecision(TestCase):
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
-            decision_id = decision._track()
+            decision_id = decision.track()
             assert decision_id is not None
             assert decision_id == decision.id_
             is_valid_ksuid(decision_id)
 
             with raises(AssertionError) as aerr:
-                decision._track()
+                decision.track()
 
     def _get_complete_tracked_decision(self):
         test_case_filename = os.getenv('DECISION_TEST_GET_02_JSON')
@@ -682,7 +682,7 @@ class TestDecision(TestCase):
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
             np.random.seed(0)
-            decision._track()
+            decision.track()
             best_variant = decision.get()
 
         assert decision.id_ is not None
@@ -762,7 +762,7 @@ class TestDecision(TestCase):
             decision.variants = variants
             # freeze seed to assure runners up are not tracked
             np.random.seed(0)
-            decision._track()
+            decision.track()
 
         expected_request_json = json.dumps(expected_add_reward_body, sort_keys=False)
 
@@ -792,7 +792,7 @@ class TestDecision(TestCase):
             ranked_variants=variants, givens=None)
 
         with raises(AssertionError) as aerr:
-            decision._track()
+            decision.track()
 
     def test_add_reward_string_reward(self):
         variants = list(range(20))
@@ -803,7 +803,7 @@ class TestDecision(TestCase):
         with rqm.Mocker() as m0:
             m0.post(self.track_url, text='success')
             np.random.seed(0)
-            decision._track()
+            decision.track()
 
         reward = 'string'
 
@@ -822,7 +822,7 @@ class TestDecision(TestCase):
         with rqm.Mocker() as m0:
             m0.post(self.track_url, text='success')
             np.random.seed(0)
-            decision._track()
+            decision.track()
 
         reward = math.inf
 

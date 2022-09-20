@@ -1240,7 +1240,7 @@ class TestDecisionModel(TestCase):
             m.post(self.track_url, text='success', additional_matcher=custom_matcher)
 
             np.random.seed(int(tracks_runners_up_seed))
-            decision_id = decision._track()
+            decision_id = decision.track()
             is_valid_ksuid(decision_id)
 
     def test_random_valid_variants_list(self):
@@ -1301,7 +1301,7 @@ class TestDecisionModel(TestCase):
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
             decision = decision_model.choose_from(list(range(10)), scores=None)
-            decision._track()
+            decision.track()
 
         reward = math.inf
 
@@ -1329,7 +1329,7 @@ class TestDecisionModel(TestCase):
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
             decision = decision_model.choose_from(list(range(10)), scores=None)
-            decision._track()
+            decision.track()
 
         reward = None
 
@@ -1368,7 +1368,7 @@ class TestDecisionModel(TestCase):
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success', additional_matcher=grab_decision_id_matcher)
             decision = decision_model.choose_from(list(range(10)), scores=None)
-            decision_id = decision._track()
+            decision_id = decision.track()
             assert decision_id == decision.id_
 
         expected_request_json = json.dumps(expected_add_reward_body, sort_keys=False)

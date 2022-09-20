@@ -119,7 +119,7 @@ class DecisionContext:
 
         """
         decision = self.decide(variants=variants)
-        decision._track()
+        decision.track()
         return decision.get(), decision.id_
 
     def decide(self, variants: list or np.ndarray, scores: list or np.ndarray = None,
@@ -190,7 +190,7 @@ class DecisionContext:
 
         """
         decision = self.decide(variants=variants)
-        decision._track()
+        decision.track()
         return decision.ranked(), decision.id_
 
     def optimize(self, variant_map: dict):
@@ -250,7 +250,7 @@ class DecisionContext:
         #  numpy types
         # make decision and track immediately
         decision = self.decide(variants=get_variants_from_args(variants), ordered=True)
-        decision._track()
+        decision.track()
         # return best and decision ID
         return decision.get(), decision.id_
 
@@ -295,7 +295,7 @@ class DecisionContext:
         # decide which one is best
         decision = self.decide(
             variants=unpacked_variants, scores=np.random.normal(size=len(unpacked_variants)))
-        decision._track()
+        decision.track()
         return decision.get(), decision.id_
 
     def choose_from(

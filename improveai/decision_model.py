@@ -531,7 +531,7 @@ class DecisionModel:
         """
 
         decision = self.decide(variants)
-        decision._track()
+        decision.track()
         return decision.get(), decision.id_
 
     def add_reward(self, reward: float, decision_id: str):
@@ -724,7 +724,7 @@ class DecisionModel:
             tuple with (<first variant>, <decision id>)
         """
         decision = self.decide(variants=get_variants_from_args(variants), ordered=True)
-        decision._track()
+        decision.track()
         # return best and decision ID
         return decision.get(), decision.id_
 
@@ -768,7 +768,7 @@ class DecisionModel:
         decision = self.decide(
             variants=get_variants_from_args(unpacked_variants),
             scores=np.random.normal(size=len(unpacked_variants)))
-        decision._track()
+        decision.track()
         return decision.get(), decision.id_
 
     def choose_multivariate(self, variant_map: dict):
