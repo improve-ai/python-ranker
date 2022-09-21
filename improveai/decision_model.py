@@ -788,3 +788,43 @@ class DecisionModel:
         """
         return self.given(givens=self.givens_provider.givens(for_model=self))\
             .choose_multivariate(variant_map=variant_map)
+
+    def track(self, variant: object, sample: object, sample_pool_size: int):
+        """
+        Tracks provided variant with an input sample. Assuming runners up are not tracked
+
+        Parameters
+        ----------
+        variant: object
+            variant to be tracked
+        sample: object
+            a sample for an input variant
+        sample_pool_size: int
+            variants count - 1 (?)
+
+        Returns
+        -------
+        str
+            decision ID
+        """
+
+        # this assumes runners up were not tracked ->
+        # count = 1 + sample_pool_size
+
+        assert self.track_url is not None
+        assert self.tracker is not None
+
+        body = {
+            self.tracker.TYPE_KEY: self.tracker.DECISION_TYPE,
+            self.tracker.VARIANT_KEY: variant,
+            self.tracker.SAMPLE_KEY: sample,
+            self.tracker.VARIANTS_COUNT_KEY: 1 + sample_pool_size,
+        }
+
+        givens = self.givens_provider.givens(for_model=self)
+        if givens is not None:
+            body[self.tracker.GIVENS_KEY] = givens
+
+        return self.tracker.post_improve_request(
+            body_values=body,
+            block=lambda result, error: (warnings.warn("Improve.track error: {}".format(error)) if error else 0, 0))
