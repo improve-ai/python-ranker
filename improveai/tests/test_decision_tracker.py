@@ -1458,6 +1458,11 @@ class TestDecisionTracker:
             model_name = ''.join(['a' for _ in range(65)])
             decision_tracker.add_reward(reward=1.0, model_name=model_name, decision_id=str(Ksuid()))
 
+    def test_trck_url_setter_raises_for_none(self):
+        decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
+        with raises(AssertionError) as aerr:
+            decision_tracker.track_url = None
+
     def test_tracker_with_api_headers(self):
         # self, track_url: str, max_runners_up: int = 50, track_api_key: str = None
         dummy_api_key = 'dummy-api-key'
@@ -1492,3 +1497,22 @@ class TestDecisionTracker:
             for k, v in expected_headers.items():
                 assert k in headers_cache['headers']
                 assert v == headers_cache['headers'][k]
+
+    def test_track_returns_none_for_model_name_none(self):
+        decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+            # ranked_variants: list or np.ndarray, givens: dict, model_name: str
+            decision_id = decision_tracker.track(ranked_variants=[0, 1, 2], givens={}, model_name=None)
+            assert decision_id is None
+
+    def test_track_returns_none_for_bad_model_name(self):
+        decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
+        bad_model_name = '!@#$%^&*()'
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success')
+            # ranked_variants: list or np.ndarray, givens: dict, model_name: str
+            decision_id = decision_tracker.track(ranked_variants=[0, 1, 2], givens={}, model_name=bad_model_name)
+            assert decision_id is None
+
+

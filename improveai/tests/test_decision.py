@@ -361,7 +361,7 @@ class TestDecision(TestCase):
         np.testing.assert_array_equal(test_variants, decision.ranked_variants)
         np.testing.assert_array_equal(test_variants, ranked_variants)
 
-    def test__track_01(self):
+    def test_track_01(self):
 
         test_case_filename = os.getenv('DECISION_TEST_GET_01_JSON')
         path_to_test_case_file = \
@@ -462,7 +462,7 @@ class TestDecision(TestCase):
             best_variant=None, expected_best=None, decision_id=None,
             check_ranked=True, check_best=False, check_tracked=False)
 
-    def test__track_02(self):
+    def test_track_02(self):
         test_case_filename = os.getenv('DECISION_TEST_GET_02_JSON')
         path_to_test_case_file = \
             os.sep.join([self.test_jsons_data_directory, test_case_filename])
@@ -524,7 +524,7 @@ class TestDecision(TestCase):
         np.testing.assert_array_equal(decision.ranked_variants, [None])
         np.testing.assert_array_equal(decision.ranked_variants, ranked_variants)
 
-    def test__track_03(self):
+    def test_track_03(self):
 
         decision = d.Decision(
             decision_model=self.decision_model_valid_track_url,
@@ -557,7 +557,7 @@ class TestDecision(TestCase):
         assert best_variant == 1
 
     # TODO check if tracking follows desired frequency (1/min(max_runners_up, len(variants))
-    def test__track_06(self):
+    def test_track_06(self):
         # this is a test case which covers tracking runners up from within
         # get() call
 
@@ -602,7 +602,7 @@ class TestDecision(TestCase):
         is_valid_ksuid(decision_id)
         assert decision.id_ == decision_id
 
-    def test__track_07(self):
+    def test_track_07(self):
         # this is a test case which covers NOT tracking runners up from within
         # _track() call
 
