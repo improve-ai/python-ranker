@@ -252,7 +252,7 @@ class DecisionModel:
             was model loaded or not
 
         """
-        return self.chooser is None and isinstance(self.chooser, XGBChooser)
+        return self.chooser is not None and isinstance(self.chooser, XGBChooser)
 
     def _resolve_model_name(self):
         """
@@ -531,7 +531,8 @@ class DecisionModel:
         """
 
         decision = self.decide(variants)
-        decision.track()
+        if self.track_url is not None and self.tracker is not None:
+            decision.track()
         return decision.get(), decision.id_
 
     def add_reward(self, reward: float, decision_id: str):
@@ -814,17 +815,7 @@ class DecisionModel:
         assert self.track_url is not None
         assert self.tracker is not None
 
-        body = {
-            self.tracker.TYPE_KEY: self.tracker.DECISION_TYPE,
-            self.tracker.VARIANT_KEY: variant,
-            self.tracker.SAMPLE_KEY: sample,
-            self.tracker.VARIANTS_COUNT_KEY: 1 + sample_pool_size,
-        }
-
         givens = self.givens_provider.givens(for_model=self)
-        if givens is not None:
-            body[self.tracker.GIVENS_KEY] = givens
-
-        return self.tracker.post_improve_request(
-            body_values=body,
-            block=lambda result, error: (warnings.warn("Improve.track error: {}".format(error)) if error else 0, 0))
+        ranked_variants = [variant] + [sample for _ in range(sample_pool_size)]
+        return self.tracker.track(
+            ranked_variants=ranked_variants, givens=givens, model_name=self.model_name)

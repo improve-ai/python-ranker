@@ -119,7 +119,8 @@ class DecisionContext:
 
         """
         decision = self.decide(variants=variants)
-        decision.track()
+        if self.decision_model.track_url is not None and self.decision_model.tracker is not None:
+            decision.track()
         return decision.get(), decision.id_
 
     def decide(self, variants: list or np.ndarray, scores: list or np.ndarray = None,
@@ -138,8 +139,6 @@ class DecisionContext:
             scores for variants, nullable
         ordered: bool
             flag indicating if input variants are ordered
-        track: bool
-            should decision be tracked
 
         Returns
         -------
@@ -152,26 +151,24 @@ class DecisionContext:
         check_variants(variants)
         # get givens via GivensProvider
         givens = self.decision_model.givens_provider.givens(for_model=self.decision_model, givens=self.givens)
-
         # rank variants if they are not ordered
-        ranked_variants = variants
+        assert isinstance(ordered, bool)
+        if scores is not None and ordered is True:
+            raise ValueError('Both `scores` and `ordered` are not None. One of them must be None (please check docs).')
+
         if not ordered:
 
             if scores is None:
                 scores = self.decision_model._score(variants=variants, givens=givens)
 
             assert scores is not None
-            ranked_variants = self.decision_model._rank(variants=variants, scores=scores)
-
-        # TODO test this behaviour
-        if scores is not None:
             assert len(scores) == len(variants)
+            ranked_variants = self.decision_model._rank(variants=variants, scores=scores)
         else:
-            assert ordered is True
+            ranked_variants = variants
 
         decision = d.Decision(
             decision_model=self.decision_model, ranked_variants=ranked_variants, givens=givens)
-
         return decision
 
     def rank(self, variants: list or np.ndarray) -> tuple:

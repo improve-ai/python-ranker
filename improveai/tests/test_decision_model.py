@@ -351,13 +351,7 @@ class TestDecisionModel(TestCase):
             empty_callable_kwargs[scores_key] = calculated_scores_float32
 
         np.random.seed(score_seed)
-        # evaluated_callable = getattr(dm.DecisionModel, evaluated_method_name)
-        # if evaluated_method_name == 'top_scoring_variant':
-        #     calculated_best = \
-        #         dm.DecisionModel.top_scoring_variant(variants=variants, scores=calculated_scores)
-        #     expected_best = expected_output.get('best', None)
-        #     assert expected_best is not None
-        #     assert calculated_best == expected_best
+
         if evaluated_method_name == 'rank':
             calculated_ranked_variants = decision_model._rank(variants=variants, scores=calculated_scores)
             expected_ranked_variants = expected_output.get('ranked_variants', None)
@@ -491,12 +485,7 @@ class TestDecisionModel(TestCase):
             return
 
         np.random.seed(score_seed)
-        # if evaluated_method_name == 'top_scoring_variant':
-        #     calculated_best = \
-        #         dm.DecisionModel.top_scoring_variant(variants=variants, scores=calculated_scores)
-        #     expected_best = expected_output.get('best', None)
-        #     assert expected_best is not None
-        #     assert calculated_best == expected_best
+
         if evaluated_method_name == 'rank':
             calculated_ranked_variants = decision_model._rank(variants=variants, scores=calculated_scores)
             expected_ranked_variants = expected_output.get('ranked_variants', None)
@@ -607,20 +596,6 @@ class TestDecisionModel(TestCase):
                 'DECISION_MODEL_TEST_SCORE_NATIVE_JSON'),
             evaluated_method_name='score',
             empty_callable_kwargs={'variants': None, 'givens': None})
-
-    # def test_top_scoring_variant_no_model(self):
-    #     self._generic_desired_decision_model_method_call_no_model(
-    #         test_data_filename=os.getenv(
-    #             'DECISION_MODEL_TEST_TOP_SCORING_VARIANT_NATIVE_NO_MODEL_JSON'),
-    #         evaluated_method_name='top_scoring_variant')
-    #
-    # def test_top_scoring_variant(self):
-    #     self._generic_desired_decision_model_method_call(
-    #         test_data_filename=os.getenv(
-    #             'DECISION_MODEL_TEST_TOP_SCORING_VARIANT_NATIVE_JSON'),
-    #         evaluated_method_name='top_scoring_variant',
-    #         empty_callable_kwargs={
-    #             'variants': None, 'givens': None, 'scores': None})
 
     def test_ranked_no_model(self):
         self._generic_desired_decision_model_method_call_no_model(
@@ -1069,8 +1044,17 @@ class TestDecisionModel(TestCase):
         assert decision_model.track_api_key is None
 
     def test_which_none_track_url(self):
-        with raises(AssertionError) as aerr:
-            dm.DecisionModel(model_name='dummy-model', track_url=None).which(1, 2, 3, 4, 5)
+        chosen_variant, decision_id = dm.DecisionModel(model_name='dummy-model', track_url=None).which(1, 2, 3, 4, 5)
+        # make sure which did not track decision
+        assert decision_id is None
+        assert chosen_variant == 1
+
+    def test_which_from_none_track_url(self):
+        chosen_variant, decision_id = dm.DecisionModel(model_name='dummy-model', track_url=None)\
+            .which_from(variants=[1, 2, 3, 4, 5])
+        # make sure which did not track decision
+        assert decision_id is None
+        assert chosen_variant == 1
 
     def test_choose_first_valid_variants_list(self):
         self._generic_desired_decision_model_method_call_no_model(
@@ -1398,3 +1382,257 @@ class TestDecisionModel(TestCase):
             m.post(self.track_url, text='success')
             with raises(AssertionError) as aerr:
                 model.add_reward(1.0, decision_id=str(Ksuid))
+
+    def test_read_only_model_name(self):
+        # model not loaded
+        constructor_model_name = 'test-model'
+        model = dm.DecisionModel(constructor_model_name)
+        with raises(AttributeError) as atrerr:
+            model.model_name = 'dummy-model'
+
+        assert model.model_name == constructor_model_name
+
+        model_url = os.getenv('DUMMY_MODEL_PATH', None)
+        assert model_url is not None
+
+        # model loaded
+        model.load(model_url=model_url)
+        with raises(AttributeError) as atrerr:
+            model.model_name = 'dummy-model'
+
+        assert model.model_name == constructor_model_name
+
+    def test_not_none_track_url_constructor_creates_tracker(self):
+        dummy_url = 'http://dummy.url'
+        model = dm.DecisionModel(model_name='dummy-model', track_url=dummy_url)
+        assert model.track_url is not None
+        assert model.track_url == dummy_url
+
+        assert model.tracker is not None
+        assert model.tracker.track_url == dummy_url
+
+    def test_track_url_was_none_set_to_not_none_creates_tracker(self):
+        model = dm.DecisionModel(model_name='dummy-model')
+        assert model.track_url is None
+        assert model.tracker is None
+
+        dummy_url = 'http://dummy.url'
+        model.track_url = dummy_url
+        assert model.tracker is not None
+        assert model.tracker.track_url == dummy_url
+
+    def test_setting_track_url_sets_it_to_tracker(self):
+        dummy_url_0 = 'http://dummy.url'
+        model = dm.DecisionModel(model_name='dummy-model', track_url=dummy_url_0)
+        assert model.track_url == dummy_url_0
+        assert model.tracker.track_url == dummy_url_0
+
+        dummy_url_1 = 'http://dummy-1.url'
+        model.track_url = dummy_url_1
+        assert model.track_url == dummy_url_1
+        assert model.tracker.track_url == dummy_url_1
+
+    def test_setting_api_key_sets_it_to_tracker(self):
+        dummy_url = 'http://dummy.url'
+        model = dm.DecisionModel(model_name='dummy-model', track_url=dummy_url)
+        assert model.track_url == dummy_url
+        assert model.tracker.track_url == dummy_url
+        assert model.track_api_key is None
+
+        dummy_track_api_key = 'test-track-api-key'
+        model.track_api_key = dummy_track_api_key
+        assert model.track_api_key is not None
+        assert model.track_api_key == dummy_track_api_key
+        assert model.tracker.api_key == dummy_track_api_key
+
+    def test__is_loaded_for_not_loaded_model(self):
+        model = dm.DecisionModel(model_name='dummy-model')
+        assert not model._is_loaded()
+
+    def test__is_loaded_for_loaded_model(self):
+        model = dm.DecisionModel(model_name='dummy-model')
+        model_url = os.getenv('DUMMY_MODEL_PATH', None)
+        assert model_url is not None
+        # model loaded
+        model.load(model_url=model_url)
+        assert model._is_loaded()
+
+    # decide(nonnull list variants, list scores = null, ordered = false)
+    def test_decide_no_model_no_scores_not_ordered(self):
+        model = dm.DecisionModel(model_name='dummy-model')
+        expected_ranked_variants = list(range(10))
+        decision = model.decide(variants=expected_ranked_variants)
+        np.testing.assert_array_equal(decision.ranked_variants, expected_ranked_variants)
+        np.testing.assert_array_equal(decision.ranked_variants, expected_ranked_variants)
+        assert decision.id_ is None
+
+    def test_decide_valid_model_no_scores_not_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_MODEL_TEST_DECIDE_NATIVE_NO_SCORES_NOT_ORDERED_JSON')
+
+        path_to_test_json = \
+            ('{}' + os.sep + '{}').format(
+                self.test_cases_directory, test_case_json_filename)
+
+        test_case_json = get_test_data(path_to_test_json)
+
+        test_case_input = test_case_json.get('test_case', None)
+        assert test_case_input is not None
+
+        variants = test_case_input.get('variants', None)
+        assert variants is not None
+
+        scores_seed = int(test_case_json.get('scores_seed', None))
+        assert scores_seed is not None
+
+        model = dm.DecisionModel(model_name='dummy-model')
+        model_url = os.getenv('DUMMY_MODEL_PATH', None)
+        assert model_url is not None
+        # model loaded
+        model.load(model_url=model_url)
+
+        np.random.seed(scores_seed)
+        calculated_decision = model.decide(variants=variants)
+
+        test_output = test_case_json.get('test_output', None)
+        assert test_output is not None
+
+        expected_scores = test_output.get('scores', None)
+        assert expected_scores is not None
+
+        expected_ranked_variants = np.array(variants)[np.argsort(expected_scores)[::-1]]
+        np.testing.assert_array_equal(calculated_decision.ranked_variants, expected_ranked_variants)
+
+    def test_decide_valid_model_scores_not_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_MODEL_TEST_DECIDE_NATIVE_SCORES_NOT_ORDERED_JSON')
+
+        path_to_test_json = \
+            ('{}' + os.sep + '{}').format(
+                self.test_cases_directory, test_case_json_filename)
+
+        test_case_json = get_test_data(path_to_test_json)
+
+        test_case_input = test_case_json.get('test_case', None)
+        assert test_case_input is not None
+
+        variants = test_case_input.get('variants', None)
+        assert variants is not None
+
+        scores = test_case_input.get('scores', None)
+        assert scores is not None
+
+        scores_seed = int(test_case_json.get('scores_seed', None))
+        assert scores_seed is not None
+
+        model = dm.DecisionModel(model_name='dummy-model')
+        model_url = os.getenv('DUMMY_MODEL_PATH', None)
+        assert model_url is not None
+        # model loaded
+        model.load(model_url=model_url)
+
+        np.random.seed(scores_seed)
+        calculated_decision = model.decide(variants=variants, scores=scores)
+
+        expected_ranked_variants = test_case_json.get('test_output', None)
+        assert expected_ranked_variants is not None
+
+        np.testing.assert_array_equal(calculated_decision.ranked_variants, expected_ranked_variants)
+
+    def test_decide_valid_model_no_scores_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_MODEL_TEST_DECIDE_NATIVE_NO_SCORES_ORDERED_JSON')
+
+        path_to_test_json = \
+            ('{}' + os.sep + '{}').format(
+                self.test_cases_directory, test_case_json_filename)
+
+        test_case_json = get_test_data(path_to_test_json)
+
+        test_case_input = test_case_json.get('test_case', None)
+        assert test_case_input is not None
+
+        variants = test_case_input.get('variants', None)
+        assert variants is not None
+
+        scores_seed = int(test_case_json.get('scores_seed', None))
+        assert scores_seed is not None
+
+        model = dm.DecisionModel(model_name='dummy-model')
+        model_url = os.getenv('DUMMY_MODEL_PATH', None)
+        assert model_url is not None
+        # model loaded
+        model.load(model_url=model_url)
+
+        np.random.seed(scores_seed)
+        calculated_decision = model.decide(variants=variants, ordered=True)
+
+        expected_ranked_variants = test_case_json.get('test_output', None)
+        assert expected_ranked_variants is not None
+
+        np.testing.assert_array_equal(calculated_decision.ranked_variants, variants)
+        np.testing.assert_array_equal(variants, expected_ranked_variants)
+
+    def test_decide_raises_for_variants_and_scores_different_length(self):
+        model = dm.DecisionModel(model_name='dummy-model')
+        variants = [1, 2, 3]
+        scores = [0.1, 0.2, 0.3, 0.4]
+
+        with raises(AssertionError) as aerr:
+            model.decide(variants=variants, scores=scores)
+
+    def test_decide_raises_for_bad_ordered_type(self):
+        model = dm.DecisionModel(model_name='dummy-model')
+        variants = [1, 2, 3]
+
+        with raises(AssertionError) as aerr:
+            model.decide(variants=variants, ordered=None)
+
+        with raises(AssertionError) as aerr:
+            model.decide(variants=variants, ordered='True')
+
+        with raises(AssertionError) as aerr:
+            model.decide(variants=variants, ordered=1)
+
+        with raises(AssertionError) as aerr:
+            model.decide(variants=variants, ordered=1.123)
+
+    def test_decide_raises_for_bad_variants(self):
+        model = dm.DecisionModel(model_name='dummy-model')
+
+        with raises(AssertionError) as aerr:
+            variants = 1
+            model.decide(variants=variants, ordered=None)
+
+        with raises(AssertionError) as aerr:
+            variants = 1.123
+            model.decide(variants=variants, ordered=None)
+
+        with raises(AssertionError) as aerr:
+            variants = 'string'
+            model.decide(variants=variants, ordered=None)
+
+        with raises(AssertionError) as aerr:
+            variants = True
+            model.decide(variants=variants, ordered=None)
+
+        with raises(AssertionError) as aerr:
+            variants = {'test-dict': 123}
+            model.decide(variants=variants, ordered=None)
+
+    def test_decide_with_ndarray_variants(self):
+        model = dm.DecisionModel(model_name='dummy-model')
+        variants = np.array([1, 2, 3])
+
+        decision = model.decide(variants=variants)
+        np.testing.assert_array_equal(variants, decision.ranked_variants)
+
+    def test_decide_with_tuple_variants(self):
+        model = dm.DecisionModel(model_name='dummy-model')
+        variants = (1, 2, 3)
+
+        decision = model.decide(variants=variants)
+        np.testing.assert_array_equal(variants, decision.ranked_variants)
+
+    def test_decide_raises_for_scores_and_ordered_true(self):
+        model = dm.DecisionModel(model_name='dummy-model')
+
+        with raises(ValueError) as verr:
+            model.decide(variants=[1, 2, 3], scores=[1, 2, 3], ordered=True)
