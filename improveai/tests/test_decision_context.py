@@ -289,8 +289,11 @@ class TestDecisionContext(TestCase):
 
         expected_output = test_case_json.get('test_output', None)
         assert expected_output is not None
-        expected_best = expected_output.get('best', None)
-        assert expected_best is not None
+
+        if tested_method_name != 'rank':
+            expected_best = expected_output.get('best', None)
+            assert expected_best is not None
+
         decision_context = dc.DecisionContext(decision_model=self.test_decision_model, givens=givens)
 
         if tested_method_name == 'score':
@@ -389,6 +392,19 @@ class TestDecisionContext(TestCase):
                 best, decision_id = decision_context.random(variants)
                 assert best == expected_best
                 assert is_valid_ksuid(decision_id)
+
+        elif tested_method_name == 'rank':
+            with rqm.Mocker() as m:
+                m.post(self.test_track_url, text='success')
+
+                expected_ranked = expected_output.get('ranked_variants', None)
+                assert expected_ranked is not None
+
+                np.random.seed(scores_seed)
+                calculated_ranked, decision_id = decision_context.rank(variants=variants)
+                np.testing.assert_array_equal(calculated_ranked, expected_ranked)
+                assert is_valid_ksuid(decision_id)
+
         else:
             raise ValueError(f'tested_method_name: {tested_method_name} not suported')
 
@@ -501,6 +517,41 @@ class TestDecisionContext(TestCase):
                 m.post(self.test_track_url, text='success')
                 with raises(ValueError) as verr:
                     dc.DecisionContext(decision_model=self.test_decision_model, givens=valid_givens).which(*iv)
+
+    def test_which_none_track_url(self):
+        model = dm.DecisionModel(model_name='dummy-model', track_url=None)
+        chosen_variant, decision_id = dc.DecisionContext(decision_model=model, givens=None).which(1, 2, 3, 4, 5)
+        # make sure which did not track decision
+        assert decision_id is None
+        assert chosen_variant == 1
+
+    def test_which_from_none_track_url(self):
+        model = dm.DecisionModel(model_name='dummy-model', track_url=None)
+        chosen_variant, decision_id = dc.DecisionContext(decision_model=model, givens=None)\
+            .which_from(variants=[1, 2, 3, 4, 5])
+
+        # make sure which did not track decision
+        assert decision_id is None
+        assert chosen_variant == 1
+
+    def test_rank_no_model(self):
+        # test_case_json_name, tested_method_name, variants_converter=None
+        self._generic_test_selected_method(
+            test_case_json_name=os.getenv(
+                'DECISION_CONTEXT_TEST_RANK_NATIVE_NO_MODEL_JSON'),
+            tested_method_name='rank', variants_converter=None)
+
+    def test_rank(self):
+        self._generic_test_selected_method(
+            test_case_json_name=os.getenv(
+                'DECISION_CONTEXT_TEST_RANK_NATIVE_JSON'),
+            tested_method_name='rank', variants_converter=None)
+
+    def test_rank_no_track_url(self):
+        model = dm.DecisionModel('test-model')
+        ranked_variants, decision_id = model.rank([1, 2, 3, 4])
+        assert decision_id is None
+        np.testing.assert_array_equal(ranked_variants, [1, 2, 3, 4])
 
     def test_choose_first_valid_list_variants_valid_givens(self):
         self._generic_test_selected_method(

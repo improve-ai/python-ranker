@@ -187,7 +187,9 @@ class DecisionContext:
 
         """
         decision = self.decide(variants=variants)
-        decision.track()
+        # decision.track()
+        if self.decision_model.track_url is not None and self.decision_model.tracker is not None:
+            decision.track()
         return decision.ranked(), decision.id_
 
     def optimize(self, variant_map: dict):
@@ -330,3 +332,35 @@ class DecisionContext:
         return self.choose_from(
             variants=self.decision_model.full_factorial_variants(variant_map=variant_map),
             scores=None)
+
+    # nullable object variant, nullable list runners_up, nullable sample, int samplePoolSize
+    def track(self, variant: object, runners_up: list or np.ndarray, sample: object, sample_pool_size: int) -> str:
+        """
+        Tracks provided variant with runners up and sample
+
+        Parameters
+        ----------
+        variant: object
+            variant to be tracked
+        runners_up: list
+            runners_up to be tracked
+        sample: object
+            a sample for an input variant
+        sample_pool_size: int
+            variants count - 1 (?)
+
+        Returns
+        -------
+        str
+            decision ID
+        """
+        assert self.decision_model.track_url is not None
+        assert self.decision_model.tracker is not None
+
+        check_variants(runners_up)
+        if not isinstance(runners_up, list):
+            runners_up = list(runners_up)
+
+        ranked_variants = [variant] + runners_up + [sample for _ in range(sample_pool_size)]
+        return self.decision_model.tracker.track(
+            ranked_variants=ranked_variants, givens=self.givens, model_name=self.decision_model.model_name)

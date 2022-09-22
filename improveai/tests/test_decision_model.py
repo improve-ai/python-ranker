@@ -597,19 +597,25 @@ class TestDecisionModel(TestCase):
             evaluated_method_name='score',
             empty_callable_kwargs={'variants': None, 'givens': None})
 
-    def test_ranked_no_model(self):
+    def test_rank_no_model(self):
         self._generic_desired_decision_model_method_call_no_model(
             test_data_filename=os.getenv(
                 'DECISION_MODEL_TEST_RANK_NATIVE_NO_MODEL_JSON'),
             evaluated_method_name='rank')
 
-    def test_ranked(self):
+    def test_rank(self):
         self._generic_desired_decision_model_method_call(
             test_data_filename=os.getenv(
                 'DECISION_MODEL_TEST_RANK_NATIVE_JSON'),
             evaluated_method_name='rank',
             empty_callable_kwargs={
                 'variants': None, 'givens': None, 'scores': None})
+
+    def test_rank_no_track_url(self):
+        model = dm.DecisionModel('test-model')
+        ranked_variants, decision_id = model.rank([1, 2, 3, 4])
+        assert decision_id is None
+        np.testing.assert_array_equal(ranked_variants, [1, 2, 3, 4])
 
     def test_generate_descending_gaussians(self):
         path_to_test_json = \
@@ -1636,3 +1642,5 @@ class TestDecisionModel(TestCase):
 
         with raises(ValueError) as verr:
             model.decide(variants=[1, 2, 3], scores=[1, 2, 3], ordered=True)
+
+    # TODO test choose_multivariate and optimize

@@ -362,16 +362,6 @@ class DecisionModel:
                 .format(exc))
             scores = DecisionModel._generate_descending_gaussians(count=len(variants))
 
-        # try:
-        #     scores = self.chooser.score(variants=variants, givens=givens) + \
-        #              np.array(np.random.rand(len(variants)), dtype='float64') * \
-        #              self.TIEBREAKER_MULTIPLIER
-        # except Exception as exc:
-        #     warnings.warn(
-        #         'Error when calculating predictions: {}. Returning Gaussian scores'
-        #             .format(exc))
-        #     scores = DecisionModel.__generate_descending_gaussians(count=len(variants))
-
         return scores.astype(np.float64)
 
     @staticmethod
@@ -436,7 +426,8 @@ class DecisionModel:
 
     def rank(self, variants: list or np.ndarray):
         """
-        Ranks provided variants from best to worst
+        Ranks provided variants from best to worst.
+        Tracks if track_url and tracker are not None
 
         Parameters
         ----------
@@ -450,6 +441,8 @@ class DecisionModel:
 
         """
         decision = self.decide(variants=variants)
+        if self.track_url is not None and self.tracker is not None:
+            decision.track()
         return decision.ranked(), decision.id_
 
     @staticmethod
@@ -582,8 +575,6 @@ class DecisionModel:
             scores for variants
         ordered: bool
             are variants ordered from best to worst
-        track: bool
-            should decision be tracked
 
         Returns
         -------
@@ -790,14 +781,16 @@ class DecisionModel:
         return self.given(givens=self.givens_provider.givens(for_model=self))\
             .choose_multivariate(variant_map=variant_map)
 
-    def track(self, variant: object, sample: object, sample_pool_size: int):
+    def track(self, variant: object, runners_up: list, sample: object, sample_pool_size: int):
         """
-        Tracks provided variant with an input sample. Assuming runners up are not tracked
+        Tracks provided variant with runners up and sample
 
         Parameters
         ----------
         variant: object
             variant to be tracked
+        runners_up: list
+            runners_up to be tracked
         sample: object
             a sample for an input variant
         sample_pool_size: int
@@ -809,13 +802,5 @@ class DecisionModel:
             decision ID
         """
 
-        # this assumes runners up were not tracked ->
-        # count = 1 + sample_pool_size
-
-        assert self.track_url is not None
-        assert self.tracker is not None
-
-        givens = self.givens_provider.givens(for_model=self)
-        ranked_variants = [variant] + [sample for _ in range(sample_pool_size)]
-        return self.tracker.track(
-            ranked_variants=ranked_variants, givens=givens, model_name=self.model_name)
+        return self.given(givens=self.givens_provider.givens(for_model=self)) \
+            .track(variant=variant, runners_up=runners_up, sample=sample, sample_pool_size=sample_pool_size)
