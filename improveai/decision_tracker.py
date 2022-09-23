@@ -390,6 +390,56 @@ class DecisionTracker:
 
         return False
 
+    def _get_decision_track_body(
+            self, variant: object, model_name: str, variants_count: int, givens: dict,
+            runners_up: list, sample: object, has_sample: bool):
+        """
+        Helper method to create track body. used by DecisionTracker's track() and
+        DecisionModel / DecisionContext track()
+
+        Parameters
+        ----------
+        variant: object
+            tracked variant
+        model_name: str
+            tracked model name
+        variants_count: int
+            number of variants
+        givens: dict
+            givens for this decision
+        runners_up: list
+            list of runners up to be tracked
+        has_sample: bool
+            has Decision a sample
+        sample: object
+            sample to be tracked
+
+        Returns
+        -------
+        dict
+            body for _post_improve_request()
+
+        """
+        assert re.search(XGBChooser.MODEL_NAME_REGEXP, model_name) is not None
+
+        body = {
+            self.TYPE_KEY: self.DECISION_TYPE,
+            self.MODEL_KEY: model_name,
+            self.VARIANT_KEY: variant,
+            self.VARIANTS_COUNT_KEY: variants_count}
+
+        if runners_up is not None:
+            check_variants(runners_up)
+            body[self.RUNNERS_UP_KEY] = runners_up
+
+        if has_sample:
+            body[self.SAMPLE_KEY] = sample
+
+        if givens is not None:
+            body[self.GIVENS_KEY] = givens
+
+        return body
+
     def track(self, ranked_variants: list or np.ndarray, givens: dict, model_name: str) -> str or None:
         """
         Track that variant is causal in the system
@@ -426,14 +476,8 @@ class DecisionTracker:
         if isinstance(ranked_variants, np.ndarray):
             ranked_variants = ranked_variants.tolist()
 
-        body = {
-            self.TYPE_KEY: self.DECISION_TYPE,
-            self.MODEL_KEY: model_name,
-            self.VARIANT_KEY: ranked_variants[0],
-            self.VARIANTS_COUNT_KEY: len(ranked_variants) if ranked_variants is not None else 1
-        }
-
-        track_runners_up = self._should_track_runners_up(variants_count=body[self.VARIANTS_COUNT_KEY])
+        variants_count = len(ranked_variants) if ranked_variants is not None else 1
+        track_runners_up = self._should_track_runners_up(variants_count=variants_count)
 
         if len(ranked_variants) == 2 and self.max_runners_up > 0:
             # for 2 variants runners_up should be True
@@ -444,15 +488,16 @@ class DecisionTracker:
         runners_up = None
         if track_runners_up:
             runners_up = self._top_runners_up(ranked_variants=ranked_variants)
-            if runners_up is not None:
-                body[self.RUNNERS_UP_KEY] = runners_up
 
         # If runners_up == None and len(variants) == 2 -> sample should be extracted
-        if self._is_sample_available(ranked_variants=ranked_variants, runners_up=runners_up):
-            body[self.SAMPLE_KEY] = self.get_sample(ranked_variants=ranked_variants, track_runners_up=track_runners_up)
+        sample = None
+        has_sample = self._is_sample_available(ranked_variants=ranked_variants, runners_up=runners_up)
+        if has_sample:
+            sample = self.get_sample(ranked_variants=ranked_variants, track_runners_up=track_runners_up)
 
-        if givens is not None:
-            body[self.GIVENS_KEY] = givens
+        body = self._get_decision_track_body(
+            variant=ranked_variants[0], model_name=model_name, variants_count=variants_count,
+            givens=givens, runners_up=runners_up, sample=sample, has_sample=has_sample)
 
         return self.post_improve_request(
             body_values=body,

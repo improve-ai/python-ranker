@@ -794,7 +794,7 @@ class DecisionModel:
         sample: object
             a sample for an input variant
         sample_pool_size: int
-            variants count - 1 (?)
+            number of variants from which sample was drawn
 
         Returns
         -------

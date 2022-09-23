@@ -5,6 +5,7 @@ import os
 from pytest import fixture, raises
 import requests_mock as rqm
 from unittest import TestCase
+from warnings import catch_warnings, simplefilter
 
 import improveai.decision_model as dm
 import improveai.decision_context as dc
@@ -46,6 +47,7 @@ class TestDecisionContext(TestCase):
         assert self.test_models_dir is not None
         self.test_track_url = 'http://mockup.url'
         self.test_decision_model = dm.DecisionModel('dummy-model', track_url=self.test_track_url)
+        self.dummy_test_givens = {'a': 1, 'b': '2', 'c': True}
 
     # test choose_from
     # - valid variants, valid givens
@@ -1053,3 +1055,228 @@ class TestDecisionContext(TestCase):
             best = decision.get()
             is_valid_ksuid(decision.id_)
             assert best == 1
+
+    def test_track(self):
+        decision_model = dm.DecisionModel('dummy-model', track_url=self.test_track_url)
+        decision_context = \
+            dc.DecisionContext(decision_model=decision_model, givens=self.dummy_test_givens)
+        decision_tracker = decision_model.tracker
+        decision_tracker.max_runners_up = 5
+
+        variant = 1
+        runners_up = [2, 3, 4, 5, 6]
+        sample = 7
+        sample_pool_size = 10
+
+        expected_track_body = {
+            decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
+            decision_tracker.MODEL_KEY: decision_model.model_name,
+            decision_tracker.VARIANT_KEY: variant,
+            decision_tracker.VARIANTS_COUNT_KEY: 16,
+            decision_tracker.RUNNERS_UP_KEY: runners_up,
+            decision_tracker.SAMPLE_KEY: sample,
+            decision_tracker.GIVENS_KEY: self.dummy_test_givens
+        }
+
+        expected_request_json = json.dumps(expected_track_body, sort_keys=False)
+
+        def custom_matcher(request):
+            request_dict = deepcopy(request.json())
+            del request_dict[decision_tracker.MESSAGE_ID_KEY]
+
+            if json.dumps(request_dict, sort_keys=False) != \
+                    expected_request_json:
+
+                print('raw request body:')
+                print(request.text)
+                print('compared request string')
+                print(json.dumps(request_dict, sort_keys=False))
+                print('expected body:')
+                print(expected_request_json)
+                return None
+            return True
+
+        tracks_runners_up_seed = os.getenv('DECISION_TRACKER_TRACKS_SEED', None)
+
+        assert tracks_runners_up_seed is not None
+
+        with rqm.Mocker() as m:
+            m.post(self.test_track_url, text='success', additional_matcher=custom_matcher)
+            decision_id = decision_context.track(
+                variant=variant, runners_up=runners_up, sample=sample,
+                sample_pool_size=sample_pool_size)
+            is_valid_ksuid(decision_id)
+
+    def test_track_no_runners_up(self):
+        decision_model = dm.DecisionModel('dummy-model', track_url=self.test_track_url)
+        decision_context = \
+            dc.DecisionContext(decision_model=decision_model, givens=self.dummy_test_givens)
+        decision_tracker = decision_model.tracker
+        decision_tracker.max_runners_up = 0
+
+        variant = 1
+        runners_up = None
+        sample = 7
+        sample_pool_size = 10
+
+        expected_track_body = {
+            decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
+            decision_tracker.MODEL_KEY: decision_model.model_name,
+            decision_tracker.VARIANT_KEY: variant,
+            decision_tracker.VARIANTS_COUNT_KEY: 11,
+            decision_tracker.SAMPLE_KEY: sample,
+            decision_tracker.GIVENS_KEY: self.dummy_test_givens
+        }
+
+        expected_request_json = json.dumps(expected_track_body, sort_keys=False)
+
+        def custom_matcher(request):
+            request_dict = deepcopy(request.json())
+            del request_dict[decision_tracker.MESSAGE_ID_KEY]
+
+            if json.dumps(request_dict, sort_keys=False) != \
+                    expected_request_json:
+
+                print('raw request body:')
+                print(request.text)
+                print('compared request string')
+                print(json.dumps(request_dict, sort_keys=False))
+                print('expected body:')
+                print(expected_request_json)
+                return None
+            return True
+
+        tracks_runners_up_seed = os.getenv('DECISION_TRACKER_TRACKS_SEED', None)
+
+        assert tracks_runners_up_seed is not None
+
+        with rqm.Mocker() as m:
+            m.post(self.test_track_url, text='success', additional_matcher=custom_matcher)
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                decision_id = decision_context.track(
+                    variant=variant, runners_up=runners_up, sample=sample,
+                    sample_pool_size=sample_pool_size)
+                is_valid_ksuid(decision_id)
+                assert len(w) == 0
+
+    def test_track_no_sample(self):
+        decision_model = dm.DecisionModel('dummy-model', track_url=self.test_track_url)
+        decision_context = \
+            dc.DecisionContext(decision_model=decision_model, givens=self.dummy_test_givens)
+        decision_tracker = decision_model.tracker
+        decision_tracker.max_runners_up = 5
+
+        variant = 1
+        runners_up = [2, 3, 4, 5, 6]
+        sample = None
+        sample_pool_size = 0
+
+        expected_track_body = {
+            decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
+            decision_tracker.MODEL_KEY: decision_model.model_name,
+            decision_tracker.VARIANT_KEY: variant,
+            decision_tracker.VARIANTS_COUNT_KEY: 6,
+            decision_tracker.RUNNERS_UP_KEY: runners_up,
+            decision_tracker.GIVENS_KEY: self.dummy_test_givens
+        }
+
+        expected_request_json = json.dumps(expected_track_body, sort_keys=False)
+
+        def custom_matcher(request):
+            request_dict = deepcopy(request.json())
+            del request_dict[decision_tracker.MESSAGE_ID_KEY]
+
+            if json.dumps(request_dict, sort_keys=False) != \
+                    expected_request_json:
+
+                print('raw request body:')
+                print(request.text)
+                print('compared request string')
+                print(json.dumps(request_dict, sort_keys=False))
+                print('expected body:')
+                print(expected_request_json)
+                return None
+            return True
+
+        tracks_runners_up_seed = os.getenv('DECISION_TRACKER_TRACKS_SEED', None)
+
+        assert tracks_runners_up_seed is not None
+
+        with rqm.Mocker() as m:
+            m.post(self.test_track_url, text='success', additional_matcher=custom_matcher)
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                decision_id = decision_context.track(
+                    variant=variant, runners_up=runners_up, sample=sample,
+                    sample_pool_size=sample_pool_size)
+                is_valid_ksuid(decision_id)
+                assert len(w) == 0
+
+    def test_track_no_runners_up_no_sample(self):
+        decision_model = dm.DecisionModel('dummy-model', track_url=self.test_track_url)
+        decision_context = \
+            dc.DecisionContext(decision_model=decision_model, givens=self.dummy_test_givens)
+        decision_tracker = decision_model.tracker
+        decision_tracker.max_runners_up = 5
+
+        variant = 1
+        runners_up = None
+        sample = None
+        sample_pool_size = 0
+
+        expected_track_body = {
+            decision_tracker.TYPE_KEY: decision_tracker.DECISION_TYPE,
+            decision_tracker.MODEL_KEY: decision_model.model_name,
+            decision_tracker.VARIANT_KEY: variant,
+            decision_tracker.VARIANTS_COUNT_KEY: 1,
+            decision_tracker.GIVENS_KEY: self.dummy_test_givens
+        }
+
+        expected_request_json = json.dumps(expected_track_body, sort_keys=False)
+
+        def custom_matcher(request):
+            request_dict = deepcopy(request.json())
+            del request_dict[decision_tracker.MESSAGE_ID_KEY]
+
+            if json.dumps(request_dict, sort_keys=False) != \
+                    expected_request_json:
+
+                print('raw request body:')
+                print(request.text)
+                print('compared request string')
+                print(json.dumps(request_dict, sort_keys=False))
+                print('expected body:')
+                print(expected_request_json)
+                return None
+            return True
+
+        tracks_runners_up_seed = os.getenv('DECISION_TRACKER_TRACKS_SEED', None)
+
+        assert tracks_runners_up_seed is not None
+
+        with rqm.Mocker() as m:
+            m.post(self.test_track_url, text='success', additional_matcher=custom_matcher)
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                decision_id = decision_context.track(
+                    variant=variant, runners_up=runners_up, sample=sample,
+                    sample_pool_size=sample_pool_size)
+                is_valid_ksuid(decision_id)
+                assert len(w) == 0
+
+    def test_track_raises_for_empty_runners_up(self):
+        decision_model = dm.DecisionModel('dummy-model', track_url=self.test_track_url)
+        decision_context = \
+            dc.DecisionContext(decision_model=decision_model, givens=self.dummy_test_givens)
+        with raises(ValueError) as verr:
+            decision_context.track(
+                variant=1, runners_up=[], sample=2, sample_pool_size=2)
+
+    def test_track_raises_for_no_track_url(self):
+        decision_model = dm.DecisionModel('dummy-model')
+        decision_context = \
+            dc.DecisionContext(decision_model=decision_model, givens=self.dummy_test_givens)
+        with raises(AssertionError) as aeerr:
+            decision_context.track(
+                variant=1, runners_up=[1, 2, 3], sample=2, sample_pool_size=2)

@@ -1,9 +1,9 @@
 import numpy as np
+from warnings import warn
 
 import improveai.decision as d
 import improveai.decision_model as dm
-from improveai.utils.general_purpose_tools import check_variants, get_variants_from_args,\
-    is_object_numpy_type
+from improveai.utils.general_purpose_tools import check_variants, get_variants_from_args
 
 
 class DecisionContext:
@@ -347,7 +347,7 @@ class DecisionContext:
         sample: object
             a sample for an input variant
         sample_pool_size: int
-            variants count - 1 (?)
+            number of variants from which sample was drawn
 
         Returns
         -------
@@ -357,10 +357,22 @@ class DecisionContext:
         assert self.decision_model.track_url is not None
         assert self.decision_model.tracker is not None
 
-        check_variants(runners_up)
-        if not isinstance(runners_up, list):
-            runners_up = list(runners_up)
+        if runners_up is not None:
+            check_variants(runners_up)
 
-        ranked_variants = [variant] + runners_up + [sample for _ in range(sample_pool_size)]
-        return self.decision_model.tracker.track(
-            ranked_variants=ranked_variants, givens=self.givens, model_name=self.decision_model.model_name)
+        if runners_up is None:
+            runners_up_count = 0
+        else:
+            if not isinstance(runners_up, list):
+                runners_up = list(runners_up)
+            runners_up_count = len(runners_up)
+
+        variants_count = 1 + runners_up_count + sample_pool_size
+        body = self.decision_model.tracker._get_decision_track_body(
+            variant=variant, model_name=self.decision_model.model_name, variants_count=variants_count,
+            givens=self.givens, runners_up=runners_up, sample=sample,
+            has_sample=True if sample_pool_size > 0 else False)
+
+        return self.decision_model.tracker.post_improve_request(
+            body_values=body,
+            block=lambda result, error: (warn("Improve.track error: {}".format(error)) if error else 0, 0))
