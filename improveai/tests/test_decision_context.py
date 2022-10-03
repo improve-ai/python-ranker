@@ -1280,3 +1280,8 @@ class TestDecisionContext(TestCase):
         with raises(AssertionError) as aeerr:
             decision_context.track(
                 variant=1, runners_up=[1, 2, 3], sample=2, sample_pool_size=2)
+
+    def test_optimize_empty_givens_no_model(self):
+
+
+        pass

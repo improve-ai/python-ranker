@@ -16,6 +16,7 @@ import xgboost as xgb
 sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
 
+from improveai import load_model
 import improveai.decision as d
 import improveai.decision_context as dc
 import improveai.decision_model as dm
@@ -262,6 +263,35 @@ class TestDecisionModel(TestCase):
         self._generic_test_loaded_url_none_model(
             test_data_filename=os.getenv(
                 'DECISION_MODEL_TEST_LOAD_MODEL_URL_NO_MODEL_JSON'))
+
+    def test_improveai_load_model_no_track_url(self):
+        model_url = os.getenv('DUMMY_MODEL_PATH', None)
+        assert model_url is not None
+
+        decision_model = load_model(model_url=model_url)
+
+        assert decision_model is not None
+        assert isinstance(decision_model, dm.DecisionModel)
+        assert decision_model.chooser is not None
+        assert isinstance(decision_model.chooser, XGBChooser)
+        assert decision_model.track_url is None
+        assert decision_model.tracker is None
+
+    def test_improveai_load_model_valid_track_url(self):
+        model_url = os.getenv('DUMMY_MODEL_PATH', None)
+        assert model_url is not None
+
+        decision_model = load_model(model_url=model_url, track_url=self.track_url)
+
+        assert decision_model is not None
+        assert isinstance(decision_model, dm.DecisionModel)
+        assert decision_model.chooser is not None
+        assert isinstance(decision_model.chooser, XGBChooser)
+        assert decision_model.track_url is not None
+        assert decision_model.track_url == self.track_url
+
+        assert decision_model.tracker is not None
+        assert decision_model.tracker.track_url == self.track_url
 
     def _generic_desired_decision_model_method_call(
             self, test_data_filename: str, evaluated_method_name: str,
@@ -596,6 +626,24 @@ class TestDecisionModel(TestCase):
                 'DECISION_MODEL_TEST_SCORE_NATIVE_JSON'),
             evaluated_method_name='score',
             empty_callable_kwargs={'variants': None, 'givens': None})
+
+    def test_score_raises_for_encoding_error(self):
+        variants = [object, np.array([1, 2, 3, 4])]
+
+        decision_model = dm.DecisionModel(model_name='test-model')
+
+        model_path = os.getenv('DUMMY_MODEL_PATH', None)
+        assert model_path is not None
+
+        decision_model.load(model_path)
+
+        with raises(AssertionError) as aerr:
+            decision_model.score(variants=variants)
+
+    def test_score_no_model_not_raises_for_encoding_error(self):
+        variants = [object, np.array([1, 2, 3, 4])]
+        decision_model = dm.DecisionModel(model_name='test-model')
+        decision_model.score(variants=variants)
 
     def test_rank_no_model(self):
         self._generic_desired_decision_model_method_call_no_model(
@@ -1852,3 +1900,8 @@ class TestDecisionModel(TestCase):
         with raises(AssertionError) as aeerr:
             decision_model.track(
                 variant=1, runners_up=[1, 2, 3], sample=2, sample_pool_size=2)
+
+    def test_optimize_no_model(self):
+
+
+        pass

@@ -1,0 +1,15 @@
+{
+    "test_case": {
+      "variant_map": {
+        "a": [1, 2, 3, 4, 5, 6],
+        "b": ["a", "b", "c", "d", "e", "f"],
+        "c": [{"text": "sanity"}, {"text": "check"}, {"text": "love love"}]
+    },
+      "givens": {}
+    },
+    "test_output": {
+      "variants": {"a": 1, "b": "a", "c": {"text": "sanity"}},
+      "decision_id": null
+    },
+  "scores_seed": 0
+}

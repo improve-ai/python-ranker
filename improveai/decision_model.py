@@ -804,3 +804,21 @@ class DecisionModel:
 
         return self.given(givens=self.givens_provider.givens(for_model=self)) \
             .track(variant=variant, runners_up=runners_up, sample=sample, sample_pool_size=sample_pool_size)
+
+
+def load_model(model_url: str, track_url: str = None):
+    """
+    Creates DecisionModel for provided model URL and track URL
+
+    Parameters
+    ----------
+    model_url: str
+        url to improve.ai model
+    track_url: str
+        url to improve.ai track endpoint
+
+    Returns
+    -------
+
+    """
+    return DecisionModel(model_name=None, track_url=track_url).load(model_url=model_url)

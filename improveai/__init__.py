@@ -4,7 +4,7 @@ from warnings import warn
 from improveai.decision import Decision
 from improveai.decision_context import DecisionContext
 from improveai.feature_encoder import FeatureEncoder
-from improveai.decision_model import DecisionModel
+from improveai.decision_model import DecisionModel, load_model
 from improveai.givens_provider import GivensProvider
 # import gcc and python3-dev detection utility
 from improveai.settings import CYTHON_BACKEND_AVAILABLE
