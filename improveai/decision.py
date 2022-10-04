@@ -1,5 +1,3 @@
-import warnings
-
 import numpy as np
 
 import improveai.decision_model as dm
@@ -35,7 +33,7 @@ class Decision:
         return self.__decision_model
 
     @property
-    def ranked_variants(self) -> list or tuple or np.ndarray:
+    def ranked(self) -> list or tuple or np.ndarray:
         """
         Variants ranked from best to worst (using scores)
 
@@ -45,7 +43,21 @@ class Decision:
             Variants ranked from best to worst (using scores)
 
         """
-        return self.__ranked_variants
+        return self.__ranked
+
+    # TODO add unittests for this
+    @property
+    def best(self) -> object:
+        """
+        Best variant for this Decision object -> first of ranked provided to constructor
+
+        Returns
+        -------
+        object
+            best variant for this Decision
+
+        """
+        return self.__best
 
     @property
     def id_(self):
@@ -60,7 +72,7 @@ class Decision:
         """
         return self.__id_
 
-    def __init__(self, decision_model: object, ranked_variants: list, givens: dict or None):
+    def __init__(self, decision_model: object, ranked: list, givens: dict or None):
         """
         Init with params
 
@@ -76,8 +88,9 @@ class Decision:
         assert isinstance(givens, dict) or givens is None
         self.__givens = givens
 
-        check_variants(ranked_variants)
-        self.__ranked_variants = ranked_variants
+        check_variants(ranked)
+        self.__ranked = ranked
+        self.__best = ranked[0]
         self.__id_ = None
 
     def add_reward(self, reward: float or int):
@@ -118,20 +131,9 @@ class Decision:
 
         """
 
-        return self.ranked_variants[0]
-
-    def ranked(self):
-        """
-        return ranked variants for this decision
-        tracks this decision
-
-        Returns
-        -------
-        list
-            ranked variants of this decision
-
-        """
-        return self.ranked_variants
+        if self.id_ is None:
+            self.track()
+        return self.best
 
     def track(self):
         """
@@ -144,7 +146,7 @@ class Decision:
 
         """
         # make sure variants are not None
-        assert self.ranked_variants is not None
+        assert self.ranked is not None
         # make sure that self.__id_ is set for the first time
         assert self.id_ is None, \
             f'This decision has already an ID set: {self.id_} which means it has already been tracked'
@@ -152,7 +154,7 @@ class Decision:
         assert self.decision_model.tracker is not None
         # track() message ID for current decision -> decision ID
         self.__id_ = self.decision_model.tracker.track(
-            ranked_variants=self.ranked_variants, givens=self.givens, model_name=self.decision_model.model_name)
+            ranked_variants=self.ranked, givens=self.givens, model_name=self.decision_model.model_name)
         # if self.id_ is not None at this point it means that track() was called successfully
         assert self.id_ is not None, \
             'Decision tracking failed -> please check console for tracking error.'
@@ -160,3 +162,15 @@ class Decision:
         self.decision_model.last_decision_id = self.id_
 
         return self.id_
+
+    def peek(self) -> object:
+        """
+        Returns best variant without tracking it
+
+        Returns
+        -------
+        object
+            best variant for this Decision
+
+        """
+        return self.best

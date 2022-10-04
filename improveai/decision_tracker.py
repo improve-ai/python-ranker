@@ -462,8 +462,7 @@ class DecisionTracker:
 
         """
 
-        if not self.track_url:
-            return None
+        assert self.track_url is not None
 
         if model_name is None:
             warnings.warn('`model_name` must not be None in order to be tracked')

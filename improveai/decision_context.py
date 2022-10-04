@@ -111,6 +111,7 @@ class DecisionContext:
         Parameters
         ----------
         variants: list or np.ndarray
+            variants from which best will be chosen
 
         Returns
         -------
@@ -118,10 +119,13 @@ class DecisionContext:
             a tuple of (<best variant>, <decision id>)
 
         """
+        # create a Decision object
         decision = self.decide(variants=variants)
+        # track if possible -> tracker and track_url exist
         if self.decision_model.track_url is not None and self.decision_model.tracker is not None:
             decision.track()
-        return decision.get(), decision.id_
+        # return best variant and decision ID to allow rewarding
+        return decision.best, decision.id_
 
     def decide(self, variants: list or np.ndarray, scores: list or np.ndarray = None,
                ordered: bool = False):
@@ -157,23 +161,27 @@ class DecisionContext:
             raise ValueError('Both `scores` and `ordered` are not None. One of them must be None (please check docs).')
 
         if not ordered:
-
+            # if variants are not ordered scoring or ranking must be performed
             if scores is None:
+                # if scores were not provided they must be calculated
                 scores = self.decision_model._score(variants=variants, givens=givens)
 
+            # at this point scores must not be None and must be of the same length as variants
             assert scores is not None
             assert len(scores) == len(variants)
+            # rank variants using scores
             ranked_variants = self.decision_model._rank(variants=variants, scores=scores)
         else:
+            # variants are already ordered
             ranked_variants = variants
 
         decision = d.Decision(
-            decision_model=self.decision_model, ranked_variants=ranked_variants, givens=givens)
+            decision_model=self.decision_model, ranked=ranked_variants, givens=givens)
         return decision
 
-    def rank(self, variants: list or np.ndarray) -> tuple:
+    def rank(self, variants: list or np.ndarray) -> list or np.ndarray:
         """
-        Ranks input variants, creates decision from them and tracks it
+        Ranks provided variants from best to worst and creates decision from them
 
         Parameters
         ----------
@@ -182,15 +190,10 @@ class DecisionContext:
 
         Returns
         -------
-        list or np.ndarray, str
-            ranked variants and decision ID
-
+        list or np.ndarray
+            ranked variants
         """
-        decision = self.decide(variants=variants)
-        # decision.track()
-        if self.decision_model.track_url is not None and self.decision_model.tracker is not None:
-            decision.track()
-        return decision.ranked(), decision.id_
+        return self.decide(variants=variants).ranked
 
     def optimize(self, variant_map: dict):
         """
@@ -249,7 +252,6 @@ class DecisionContext:
         #  numpy types
         # make decision and track immediately
         decision = self.decide(variants=get_variants_from_args(variants), ordered=True)
-        decision.track()
         # return best and decision ID
         return decision.get(), decision.id_
 
@@ -294,7 +296,6 @@ class DecisionContext:
         # decide which one is best
         decision = self.decide(
             variants=unpacked_variants, scores=np.random.normal(size=len(unpacked_variants)))
-        decision.track()
         return decision.get(), decision.id_
 
     def choose_from(
@@ -317,23 +318,25 @@ class DecisionContext:
         """
         return self.decide(variants=variants, scores=scores)
 
-    def choose_multivariate(self, variant_map):
+    def choose_multivariate(self, variant_map: dict) -> dict:
         """
-
+        Chooses the best configuration from full factorial of input variants map
 
         Parameters
         ----------
-        variant_map
+        variant_map: dict
+            map of key -> variants set
 
         Returns
         -------
+        dict
+            combination of the best variants in a dict
 
         """
         return self.choose_from(
             variants=dm.DecisionModel.full_factorial_variants(variant_map=variant_map),
             scores=None)
 
-    # nullable object variant, nullable list runners_up, nullable sample, int samplePoolSize
     def _track(self, variant: object, runners_up: list or np.ndarray, sample: object, sample_pool_size: int) -> str:
         """
         Tracks provided variant with runners up and sample

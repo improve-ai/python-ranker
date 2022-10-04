@@ -420,14 +420,11 @@ class DecisionModel:
         # convert variants to numpy array for faster sorting
         variants_np = variants if isinstance(variants, np.ndarray) else np.array(variants)
         # return descending sorted variants
-        # sorted_variants_np = variants_np[np.argsort(scores * -1)]
-        # return variants_np[np.argsort(scores * -1)].tolist()
         return variants_np[np.argsort(scores)][::-1].tolist()
 
-    def rank(self, variants: list or np.ndarray):
+    def rank(self, variants: list or np.ndarray) -> list:
         """
-        Ranks provided variants from best to worst.
-        Tracks if track_url and tracker are not None
+        Ranks provided variants from best to worst and creates decision from them
 
         Parameters
         ----------
@@ -436,14 +433,10 @@ class DecisionModel:
 
         Returns
         -------
-        list or np.ndarray, str
-            best to worst ranked variants and decision ID
-
+        list or np.ndarray
+            best to worst ranked variants
         """
-        decision = self.decide(variants=variants)
-        if self.track_url is not None and self.tracker is not None:
-            decision.track()
-        return decision.ranked(), decision.id_
+        return self.decide(variants=variants).ranked
 
     @staticmethod
     def _generate_descending_gaussians(count: int) -> np.ndarray:
@@ -515,6 +508,7 @@ class DecisionModel:
         Parameters
         ----------
         variants: list or np.ndarray
+            variants from which best will be chosen
 
         Returns
         -------
@@ -523,10 +517,13 @@ class DecisionModel:
 
         """
 
+        # create a Decision object
         decision = self.decide(variants)
+        # track if possible -> tracker and track_url exist
         if self.track_url is not None and self.tracker is not None:
             decision.track()
-        return decision.get(), decision.id_
+        # return best variant and decision ID to allow rewarding
+        return decision.best, decision.id_
 
     def add_reward(self, reward: float, decision_id: str):
         """
@@ -717,8 +714,6 @@ class DecisionModel:
             tuple with (<first variant>, <decision id>)
         """
         decision = self.decide(variants=get_variants_from_args(variants), ordered=True)
-        decision.track()
-        # return best and decision ID
         return decision.get(), decision.id_
 
     def choose_random(self, variants: list or np.ndarray):
@@ -761,14 +756,12 @@ class DecisionModel:
         decision = self.decide(
             variants=get_variants_from_args(unpacked_variants),
             scores=np.random.normal(size=len(unpacked_variants)))
-        decision.track()
         return decision.get(), decision.id_
 
-    def choose_multivariate(self, variant_map: dict):
+    def choose_multivariate(self, variant_map: dict) -> dict:
         # TODO method deprecated - will be removed in v8 upgrade
         """
-        Chooses the best configuration from full factorial from input variants map,
-         i.e. for variants_map.
+        Chooses the best configuration from full factorial of input variants map
 
         Parameters
         ----------
@@ -777,6 +770,8 @@ class DecisionModel:
 
         Returns
         -------
+        dict
+            combination of the best variants in a dict
 
         """
         return self.given(givens=self.givens_provider.givens(for_model=self))\
@@ -820,6 +815,8 @@ def load_model(model_url: str, track_url: str = None):
 
     Returns
     -------
+    DecisionModel
+        DecisionModel with Improve AI model and desired track_url
 
     """
     return DecisionModel(model_name=None, track_url=track_url).load(model_url=model_url)

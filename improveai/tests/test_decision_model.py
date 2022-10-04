@@ -661,8 +661,9 @@ class TestDecisionModel(TestCase):
 
     def test_rank_no_track_url(self):
         model = dm.DecisionModel('test-model')
-        ranked_variants, decision_id = model.rank([1, 2, 3, 4])
-        assert decision_id is None
+        ranked_variants = model.rank([1, 2, 3, 4])
+        # make sure call was not tracked
+        assert model.last_decision_id is None
         np.testing.assert_array_equal(ranked_variants, [1, 2, 3, 4])
 
     def test_generate_descending_gaussians(self):
@@ -1245,7 +1246,7 @@ class TestDecisionModel(TestCase):
         expected_random_scores = \
             [1.6243453636632417, -0.6117564136500754, -0.5281717522634557, -1.0729686221561705, 0.8654076293246785]
         expected_ranked_variants = np.array(variants)[np.argsort(expected_random_scores)][::-1]
-        np.testing.assert_array_equal(decision.ranked_variants, expected_ranked_variants)
+        np.testing.assert_array_equal(decision.ranked, expected_ranked_variants)
 
         request_validity = {'request_body_ok': False}
 
@@ -1516,8 +1517,8 @@ class TestDecisionModel(TestCase):
         model = dm.DecisionModel(model_name='dummy-model')
         expected_ranked_variants = list(range(10))
         decision = model.decide(variants=expected_ranked_variants)
-        np.testing.assert_array_equal(decision.ranked_variants, expected_ranked_variants)
-        np.testing.assert_array_equal(decision.ranked_variants, expected_ranked_variants)
+        np.testing.assert_array_equal(decision.ranked, expected_ranked_variants)
+        np.testing.assert_array_equal(decision.ranked, expected_ranked_variants)
         assert decision.id_ is None
 
     def test_decide_valid_model_no_scores_not_ordered(self):
@@ -1554,7 +1555,7 @@ class TestDecisionModel(TestCase):
         assert expected_scores is not None
 
         expected_ranked_variants = np.array(variants)[np.argsort(expected_scores)[::-1]]
-        np.testing.assert_array_equal(calculated_decision.ranked_variants, expected_ranked_variants)
+        np.testing.assert_array_equal(calculated_decision.ranked, expected_ranked_variants)
 
     def test_decide_valid_model_scores_not_ordered(self):
         test_case_json_filename = os.getenv('DECISION_MODEL_TEST_DECIDE_NATIVE_SCORES_NOT_ORDERED_JSON')
@@ -1589,7 +1590,7 @@ class TestDecisionModel(TestCase):
         expected_ranked_variants = test_case_json.get('test_output', None)
         assert expected_ranked_variants is not None
 
-        np.testing.assert_array_equal(calculated_decision.ranked_variants, expected_ranked_variants)
+        np.testing.assert_array_equal(calculated_decision.ranked, expected_ranked_variants)
 
     def test_decide_valid_model_no_scores_ordered(self):
         test_case_json_filename = os.getenv('DECISION_MODEL_TEST_DECIDE_NATIVE_NO_SCORES_ORDERED_JSON')
@@ -1621,7 +1622,7 @@ class TestDecisionModel(TestCase):
         expected_ranked_variants = test_case_json.get('test_output', None)
         assert expected_ranked_variants is not None
 
-        np.testing.assert_array_equal(calculated_decision.ranked_variants, variants)
+        np.testing.assert_array_equal(calculated_decision.ranked, variants)
         np.testing.assert_array_equal(variants, expected_ranked_variants)
 
     def test_decide_raises_for_variants_and_scores_different_length(self):
@@ -1676,14 +1677,14 @@ class TestDecisionModel(TestCase):
         variants = np.array([1, 2, 3])
 
         decision = model.decide(variants=variants)
-        np.testing.assert_array_equal(variants, decision.ranked_variants)
+        np.testing.assert_array_equal(variants, decision.ranked)
 
     def test_decide_with_tuple_variants(self):
         model = dm.DecisionModel(model_name='dummy-model')
         variants = (1, 2, 3)
 
         decision = model.decide(variants=variants)
-        np.testing.assert_array_equal(variants, decision.ranked_variants)
+        np.testing.assert_array_equal(variants, decision.ranked)
 
     def test_decide_raises_for_scores_and_ordered_true(self):
         model = dm.DecisionModel(model_name='dummy-model')

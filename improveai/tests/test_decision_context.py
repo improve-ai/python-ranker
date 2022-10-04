@@ -403,9 +403,9 @@ class TestDecisionContext(TestCase):
                 assert expected_ranked is not None
 
                 np.random.seed(scores_seed)
-                calculated_ranked, decision_id = decision_context.rank(variants=variants)
+                calculated_ranked = decision_context.rank(variants=variants)
+                assert decision_context.decision_model.last_decision_id is None
                 np.testing.assert_array_equal(calculated_ranked, expected_ranked)
-                assert is_valid_ksuid(decision_id)
 
         else:
             raise ValueError(f'tested_method_name: {tested_method_name} not suported')
@@ -551,8 +551,9 @@ class TestDecisionContext(TestCase):
 
     def test_rank_no_track_url(self):
         model = dm.DecisionModel('test-model')
-        ranked_variants, decision_id = model.rank([1, 2, 3, 4])
-        assert decision_id is None
+        ranked_variants = model.rank([1, 2, 3, 4])
+        # make sure call was not tracked
+        assert model.last_decision_id is None
         np.testing.assert_array_equal(ranked_variants, [1, 2, 3, 4])
 
     def test_choose_first_valid_list_variants_valid_givens(self):
@@ -1018,7 +1019,7 @@ class TestDecisionContext(TestCase):
         #     convert_values_to_float32(expected_random_scores),
         #     convert_values_to_float32(decision.scores))
         expected_ranked_variants = np.array(variants)[np.argsort(expected_random_scores)[::-1]]
-        np.testing.assert_array_equal(expected_ranked_variants, decision.ranked_variants)
+        np.testing.assert_array_equal(expected_ranked_variants, decision.ranked)
 
         request_validity = {'request_body_ok': False}
 

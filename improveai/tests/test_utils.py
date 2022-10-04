@@ -47,7 +47,7 @@ def assert_valid_decision(decision, expected_ranked_variants, expected_givens):
     # validate givens
     assert decision.givens == expected_givens
     # validate ranked variants
-    np.testing.assert_array_equal(decision.ranked_variants, expected_ranked_variants)
+    np.testing.assert_array_equal(decision.ranked, expected_ranked_variants)
 
 
 def is_valid_ksuid(id_):
