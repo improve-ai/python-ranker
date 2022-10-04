@@ -13,17 +13,15 @@ pip3 install improveai
 ## Initialization
 
 ```python
-from improveai import DecisionModel
+import improveai
 ```
 
 ```python
-
 # track and model urls are obtained from your Improve AI Gym configuration
 track_url = 'https://xxxx.lambda-url.us-east-1.on.aws/'
 model_url = 'https://xxxx.s3.amazonaws.com/models/latest/greetings.xgb.gz'
 
-greetings_model = DecisionModel('greetings', track_url)
-greetings_model.load(model_url)
+greetings_model = improveai.load_model(model_url, track_url)
 ```
 
 ## Usage
@@ -112,12 +110,12 @@ greeting, decision_id = greetings_model.which('Hello', 'Howdy', 'Hola')
 
 discount, decision_id = discounts_model.which(0.1, 0.2, 0.3)
 
-enabled, decision_id = feature_flag_model.which(true, false)
+enabled, decision_id = feature_flag_model.which(True, False)
 
 item, decision_id = filter_model.which(item, None)
 
-themes = {[ "font": "Helvetica", "size": 12, "color": "#000000"  ],
-          [ "font": "Comic Sans", "size": 16, "color": "#F0F0F0" ]}
+themes = [{"font": "Helvetica", "size": 12, "color": "#000000"},
+          {"font": "Comic Sans", "size": 16, "color": "#F0F0F0"}]
 
 theme, decision_id = themes_model.which(themes)
 ```
