@@ -998,6 +998,16 @@ class TestDecision(TestCase):
 
         assert decision.givens == expected_givens
 
+    def test_decision_raises_for_best_set_attempt(self):
+
+        expected_ranked = [1, 2, 3, 4]
+        decision = d.Decision(
+            decision_model=self.decision_model_valid_track_url,
+            ranked=expected_ranked, givens={})
+        with raises(AttributeError) as atrerr:
+            decision.best = 5
+        assert decision.best == expected_ranked[0]
+
     def test_givens_setter_valid_empty_givens(self):
         expected_givens = {}
         decision = d.Decision(
@@ -1024,3 +1034,17 @@ class TestDecision(TestCase):
         assert calculated_ranked_variants[0] is None
         np.testing.assert_array_equal(tested_ranked_variants, calculated_ranked_variants)
         np.testing.assert_array_equal(tested_ranked_variants, decision.ranked)
+
+    def test_best_not_none(self):
+        expected_best = 1
+        decision = d.Decision(
+            decision_model=self.decision_model_valid_track_url,
+            ranked=[expected_best, 91, 92, 93], givens={})
+        assert decision.best == expected_best
+
+    def test_best_none(self):
+        expected_best = None
+        decision = d.Decision(
+            decision_model=self.decision_model_valid_track_url,
+            ranked=[expected_best, 91, 92, 93], givens={})
+        assert decision.best == expected_best
