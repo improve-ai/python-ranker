@@ -1735,7 +1735,7 @@ class TestDecisionModel(TestCase):
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success', additional_matcher=custom_matcher)
-            decision_id = decision_model.track(
+            decision_id = decision_model._track(
                 variant=variant, runners_up=runners_up, sample=sample,
                 sample_pool_size=sample_pool_size)
             is_valid_ksuid(decision_id)
@@ -1784,7 +1784,7 @@ class TestDecisionModel(TestCase):
             m.post(self.track_url, text='success', additional_matcher=custom_matcher)
             with catch_warnings(record=True) as w:
                 simplefilter("always")
-                decision_id = decision_model.track(
+                decision_id = decision_model._track(
                     variant=variant, runners_up=runners_up, sample=sample,
                     sample_pool_size=sample_pool_size)
                 is_valid_ksuid(decision_id)
@@ -1834,7 +1834,7 @@ class TestDecisionModel(TestCase):
             m.post(self.track_url, text='success', additional_matcher=custom_matcher)
             with catch_warnings(record=True) as w:
                 simplefilter("always")
-                decision_id = decision_model.track(
+                decision_id = decision_model._track(
                     variant=variant, runners_up=runners_up, sample=sample,
                     sample_pool_size=sample_pool_size)
                 is_valid_ksuid(decision_id)
@@ -1883,7 +1883,7 @@ class TestDecisionModel(TestCase):
             m.post(self.track_url, text='success', additional_matcher=custom_matcher)
             with catch_warnings(record=True) as w:
                 simplefilter("always")
-                decision_id = decision_model.track(
+                decision_id = decision_model._track(
                     variant=variant, runners_up=runners_up, sample=sample,
                     sample_pool_size=sample_pool_size)
                 is_valid_ksuid(decision_id)
@@ -1892,13 +1892,13 @@ class TestDecisionModel(TestCase):
     def test_track_raises_for_empty_runners_up(self):
         decision_model = dm.DecisionModel('dummy-model', track_url=self.track_url)
         with raises(ValueError) as verr:
-            decision_model.track(
+            decision_model._track(
                 variant=1, runners_up=[], sample=2, sample_pool_size=2)
 
     def test_track_raises_for_no_track_url(self):
         decision_model = dm.DecisionModel('dummy-model')
         with raises(AssertionError) as aeerr:
-            decision_model.track(
+            decision_model._track(
                 variant=1, runners_up=[1, 2, 3], sample=2, sample_pool_size=2)
 
     def test_optimize_no_model(self):

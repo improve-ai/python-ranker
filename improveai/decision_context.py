@@ -208,7 +208,7 @@ class DecisionContext:
 
         """
         return self.which_from(
-            variants=self.decision_model.full_factorial_variants(variant_map=variant_map))
+            variants=dm.DecisionModel.full_factorial_variants(variant_map=variant_map))
 
     def choose_first(self, variants: list or tuple or np.ndarray):
         # TODO method deprecated - will be removed in v8 upgrade
@@ -330,11 +330,11 @@ class DecisionContext:
 
         """
         return self.choose_from(
-            variants=self.decision_model.full_factorial_variants(variant_map=variant_map),
+            variants=dm.DecisionModel.full_factorial_variants(variant_map=variant_map),
             scores=None)
 
     # nullable object variant, nullable list runners_up, nullable sample, int samplePoolSize
-    def track(self, variant: object, runners_up: list or np.ndarray, sample: object, sample_pool_size: int) -> str:
+    def _track(self, variant: object, runners_up: list or np.ndarray, sample: object, sample_pool_size: int) -> str:
         """
         Tracks provided variant with runners up and sample
 

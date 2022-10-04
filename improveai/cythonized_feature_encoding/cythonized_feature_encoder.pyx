@@ -253,7 +253,9 @@ cpdef double shrink(double noise):
         a shrunk noise
 
     """
-    return noise * pow(2, -17)
+    # return noise * pow(2, -17)
+    # TODO after pypi deploy make sure this is used in the trainer
+    return noise * np.float_power(2, -17)
 
 
 @cython.boundscheck(False)

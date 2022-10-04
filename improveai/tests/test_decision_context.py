@@ -1102,7 +1102,7 @@ class TestDecisionContext(TestCase):
 
         with rqm.Mocker() as m:
             m.post(self.test_track_url, text='success', additional_matcher=custom_matcher)
-            decision_id = decision_context.track(
+            decision_id = decision_context._track(
                 variant=variant, runners_up=runners_up, sample=sample,
                 sample_pool_size=sample_pool_size)
             is_valid_ksuid(decision_id)
@@ -1154,7 +1154,7 @@ class TestDecisionContext(TestCase):
             m.post(self.test_track_url, text='success', additional_matcher=custom_matcher)
             with catch_warnings(record=True) as w:
                 simplefilter("always")
-                decision_id = decision_context.track(
+                decision_id = decision_context._track(
                     variant=variant, runners_up=runners_up, sample=sample,
                     sample_pool_size=sample_pool_size)
                 is_valid_ksuid(decision_id)
@@ -1207,7 +1207,7 @@ class TestDecisionContext(TestCase):
             m.post(self.test_track_url, text='success', additional_matcher=custom_matcher)
             with catch_warnings(record=True) as w:
                 simplefilter("always")
-                decision_id = decision_context.track(
+                decision_id = decision_context._track(
                     variant=variant, runners_up=runners_up, sample=sample,
                     sample_pool_size=sample_pool_size)
                 is_valid_ksuid(decision_id)
@@ -1259,7 +1259,7 @@ class TestDecisionContext(TestCase):
             m.post(self.test_track_url, text='success', additional_matcher=custom_matcher)
             with catch_warnings(record=True) as w:
                 simplefilter("always")
-                decision_id = decision_context.track(
+                decision_id = decision_context._track(
                     variant=variant, runners_up=runners_up, sample=sample,
                     sample_pool_size=sample_pool_size)
                 is_valid_ksuid(decision_id)
@@ -1270,7 +1270,7 @@ class TestDecisionContext(TestCase):
         decision_context = \
             dc.DecisionContext(decision_model=decision_model, givens=self.dummy_test_givens)
         with raises(ValueError) as verr:
-            decision_context.track(
+            decision_context._track(
                 variant=1, runners_up=[], sample=2, sample_pool_size=2)
 
     def test_track_raises_for_no_track_url(self):
@@ -1278,7 +1278,7 @@ class TestDecisionContext(TestCase):
         decision_context = \
             dc.DecisionContext(decision_model=decision_model, givens=self.dummy_test_givens)
         with raises(AssertionError) as aeerr:
-            decision_context.track(
+            decision_context._track(
                 variant=1, runners_up=[1, 2, 3], sample=2, sample_pool_size=2)
 
     def test_optimize_empty_givens_no_model(self):

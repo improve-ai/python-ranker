@@ -601,9 +601,10 @@ class DecisionModel:
             best variant and a decision ID
 
         """
-        return self.which_from(variants=self.full_factorial_variants(variant_map=variant_map))
+        return self.which_from(variants=DecisionModel.full_factorial_variants(variant_map=variant_map))
 
-    def full_factorial_variants(self, variant_map: dict):
+    @staticmethod
+    def full_factorial_variants(variant_map: dict):
         """
         Creates full factorial from input variants map, i.e. for variants_map
         {'variants_0': ['01', '02'],
@@ -781,7 +782,7 @@ class DecisionModel:
         return self.given(givens=self.givens_provider.givens(for_model=self))\
             .choose_multivariate(variant_map=variant_map)
 
-    def track(self, variant: object, runners_up: list, sample: object, sample_pool_size: int):
+    def _track(self, variant: object, runners_up: list, sample: object, sample_pool_size: int):
         """
         Tracks provided variant with runners up and sample
 
@@ -803,7 +804,7 @@ class DecisionModel:
         """
 
         return self.given(givens=self.givens_provider.givens(for_model=self)) \
-            .track(variant=variant, runners_up=runners_up, sample=sample, sample_pool_size=sample_pool_size)
+            ._track(variant=variant, runners_up=runners_up, sample=sample, sample_pool_size=sample_pool_size)
 
 
 def load_model(model_url: str, track_url: str = None):
