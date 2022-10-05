@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import numpy as np
 
 import improveai.decision_model as dm
@@ -43,7 +45,7 @@ class Decision:
             Variants ranked from best to worst (using scores)
 
         """
-        return self.__ranked
+        return deepcopy(self.__ranked)
 
     # TODO add unittests for this
     @property
@@ -57,7 +59,7 @@ class Decision:
             best variant for this Decision
 
         """
-        return self.__best
+        return deepcopy(self.__best)
 
     @property
     def id_(self):

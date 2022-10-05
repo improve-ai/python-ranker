@@ -1041,6 +1041,7 @@ class TestDecision(TestCase):
             decision_model=self.decision_model_valid_track_url,
             ranked=[expected_best, 91, 92, 93], givens={})
         assert decision.best == expected_best
+        assert decision.id_ is None
 
     def test_best_none(self):
         expected_best = None
@@ -1048,3 +1049,4 @@ class TestDecision(TestCase):
             decision_model=self.decision_model_valid_track_url,
             ranked=[expected_best, 91, 92, 93], givens={})
         assert decision.best == expected_best
+        assert decision.id_ is None

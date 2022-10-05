@@ -47,6 +47,7 @@ class TestDecisionContext(TestCase):
         assert self.test_models_dir is not None
         self.test_track_url = 'http://mockup.url'
         self.test_decision_model = dm.DecisionModel('dummy-model', track_url=self.test_track_url)
+        self.test_decision_model_no_track_url = dm.DecisionModel('dummy-model')
         self.dummy_test_givens = {'a': 1, 'b': '2', 'c': True}
 
     # test choose_from
@@ -278,10 +279,18 @@ class TestDecisionContext(TestCase):
             # load model
             model_url = ('{}' + os.sep + '{}').format(self.test_models_dir, predictor_filename)
             self.test_decision_model.load(model_url=model_url)
+            self.test_decision_model_no_track_url.load(model_url=model_url)
+            print('### CHOOSER ###')
+            print(self.test_decision_model_no_track_url.chooser)
 
         # get test variants
-        variants = test_case.get('variants', None)
-        assert variants is not None
+        if tested_method_name not in ['choose_multivariate', 'optimize']:
+            variants = test_case.get('variants', None)
+            assert variants is not None
+        else:
+            variant_map = test_case.get('variant_map', None)
+            assert variant_map is not None
+
         if variants_converter is not None:
             variants = variants_converter(variants)
         givens = test_case.get('givens', None)
@@ -406,6 +415,54 @@ class TestDecisionContext(TestCase):
                 calculated_ranked = decision_context.rank(variants=variants)
                 assert decision_context.decision_model.last_decision_id is None
                 np.testing.assert_array_equal(calculated_ranked, expected_ranked)
+
+        elif tested_method_name == 'optimize':
+
+            scores_seed = test_case_json.get('scores_seed', None)
+            assert scores_seed is not None
+
+            # test with track url != None
+            with rqm.Mocker() as m:
+                m.post(self.test_track_url, text='success')
+                decision_context = dc.DecisionContext(
+                    decision_model=self.test_decision_model, givens=givens)
+                np.random.seed(scores_seed)
+                calculated_best, decision_id = \
+                    decision_context.optimize(variant_map=variant_map)
+                assert calculated_best == expected_best
+                assert decision_id is not None
+                assert is_valid_ksuid(decision_id)
+
+            # test with track url == None
+            decision_context = dc.DecisionContext(
+                decision_model=self.test_decision_model_no_track_url, givens=givens)
+            np.random.seed(scores_seed)
+            calculated_best, decision_id = \
+                decision_context.optimize(variant_map=variant_map)
+
+            assert calculated_best == expected_best
+
+            expected_decision_id = expected_output.get('expected_decision_id')
+            assert decision_id == expected_decision_id
+
+        elif tested_method_name == 'choose_multivariate':
+
+            scores_seed = test_case_json.get('scores_seed', None)
+            assert scores_seed is not None
+
+            np.random.seed(scores_seed)
+            calculated_decision = \
+                decision_context.choose_multivariate(variant_map=variant_map)
+
+            assert calculated_decision.best == expected_best
+
+            expected_ranked = expected_output.get('ranked', None)
+            assert expected_ranked is not None
+
+            np.testing.assert_array_equal(calculated_decision.ranked, expected_ranked)
+
+            expected_decision_id = expected_output.get('expected_decision_id')
+            assert calculated_decision.id_ == expected_decision_id
 
         else:
             raise ValueError(f'tested_method_name: {tested_method_name} not suported')
@@ -1282,7 +1339,47 @@ class TestDecisionContext(TestCase):
             decision_context._track(
                 variant=1, runners_up=[1, 2, 3], sample=2, sample_pool_size=2)
 
+    # TODO test choose_multivariate
+    def test_choose_multivariate_empty_givens_no_model(self):
+        self._generic_test_selected_method(
+            os.getenv('DECISION_CONTEXT_OPTIMIZE_CHOOSE_MULTIVARIATE_VALID_VARIANTS_EMPTY_GIVENS_NO_MODEL_JSON'),
+            tested_method_name='choose_multivariate')
+
+    # TODO test optimize
     def test_optimize_empty_givens_no_model(self):
+        self._generic_test_selected_method(
+            os.getenv('DECISION_CONTEXT_OPTIMIZE_CHOOSE_MULTIVARIATE_VALID_VARIANTS_EMPTY_GIVENS_NO_MODEL_JSON'),
+            tested_method_name='optimize')
 
+    def test_choose_multivariate_empty_givens(self):
+        self._generic_test_selected_method(
+            os.getenv('DECISION_CONTEXT_OPTIMIZE_CHOOSE_MULTIVARIATE_VALID_VARIANTS_EMPTY_GIVENS_JSON'),
+            tested_method_name='choose_multivariate')
 
-        pass
+    # TODO test optimize
+    def test_optimize_empty_givens(self):
+        self._generic_test_selected_method(
+            os.getenv('DECISION_CONTEXT_OPTIMIZE_CHOOSE_MULTIVARIATE_VALID_VARIANTS_EMPTY_GIVENS_JSON'),
+            tested_method_name='optimize')
+
+    def test_choose_multivariate_valid_variants_valid_givens(self):
+        self._generic_test_selected_method(
+            os.getenv('DECISION_CONTEXT_OPTIMIZE_CHOOSE_MULTIVARIATE_VALID_VARIANTS_VALID_GIVENS_JSON'),
+            tested_method_name='choose_multivariate')
+
+    # TODO test optimize
+    def test_optimize_valid_variants_valid_givens(self):
+        self._generic_test_selected_method(
+            os.getenv('DECISION_CONTEXT_OPTIMIZE_CHOOSE_MULTIVARIATE_VALID_VARIANTS_VALID_GIVENS_JSON'),
+            tested_method_name='optimize')
+
+    def test_choose_multivariate_valid_variants_valid_givens_no_model(self):
+        self._generic_test_selected_method(
+            os.getenv('DECISION_CONTEXT_OPTIMIZE_CHOOSE_MULTIVARIATE_VALID_VARIANTS_VALID_GIVENS_NO_MODEL_JSON'),
+            tested_method_name='choose_multivariate')
+
+    # TODO test optimize
+    def test_optimize_valid_variants_valid_givens_no_model(self):
+        self._generic_test_selected_method(
+            os.getenv('DECISION_CONTEXT_OPTIMIZE_CHOOSE_MULTIVARIATE_VALID_VARIANTS_VALID_GIVENS_NO_MODEL_JSON'),
+            tested_method_name='optimize')
