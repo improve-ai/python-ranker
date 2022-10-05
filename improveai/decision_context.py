@@ -3,7 +3,8 @@ from warnings import warn
 
 import improveai.decision as d
 import improveai.decision_model as dm
-from improveai.utils.general_purpose_tools import check_variants, get_variants_from_args
+from improveai.utils.general_purpose_tools import check_variants, get_variants_from_args, \
+    check_variant_map
 
 
 class DecisionContext:
@@ -210,6 +211,7 @@ class DecisionContext:
             best variant and a decision ID
 
         """
+        check_variant_map(variant_map=variant_map)
         return self.which_from(
             variants=dm.DecisionModel.full_factorial_variants(variant_map=variant_map))
 
@@ -333,6 +335,7 @@ class DecisionContext:
             combination of the best variants in a dict
 
         """
+        check_variant_map(variant_map=variant_map)
         return self.choose_from(
             variants=dm.DecisionModel.full_factorial_variants(variant_map=variant_map),
             scores=None)

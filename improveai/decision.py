@@ -19,7 +19,7 @@ class Decision:
             Givens used to make Decision
 
         """
-        return self.__givens
+        return deepcopy(self.__givens)
 
     @property
     def decision_model(self):
@@ -88,10 +88,10 @@ class Decision:
         self.__decision_model = decision_model
 
         assert isinstance(givens, dict) or givens is None
-        self.__givens = givens
+        self.__givens = deepcopy(givens)
 
         check_variants(ranked)
-        self.__ranked = ranked
+        self.__ranked = deepcopy(ranked)
         self.__best = ranked[0]
         self.__id_ = None
 

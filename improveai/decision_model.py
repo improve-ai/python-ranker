@@ -10,7 +10,7 @@ import improveai.decision_tracker as dt
 import improveai.givens_provider as gp
 from improveai.settings import DEBUG
 from improveai.utils.general_purpose_tools import constant, check_variants, \
-    get_variants_from_args, is_valid_ksuid, is_valid_variants_type
+    get_variants_from_args, is_valid_ksuid, is_valid_variants_type, check_variant_map
 
 
 class DecisionModel:
@@ -598,6 +598,7 @@ class DecisionModel:
             best variant and a decision ID
 
         """
+        check_variant_map(variant_map=variant_map)
         return self.which_from(variants=DecisionModel.full_factorial_variants(variant_map=variant_map))
 
     @staticmethod
@@ -774,6 +775,7 @@ class DecisionModel:
             combination of the best variants in a dict
 
         """
+        check_variant_map(variant_map=variant_map)(variant_map=variant_map)
         return self.given(givens=self.givens_provider.givens(for_model=self))\
             .choose_multivariate(variant_map=variant_map)
 

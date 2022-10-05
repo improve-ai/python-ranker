@@ -1383,3 +1383,44 @@ class TestDecisionContext(TestCase):
         self._generic_test_selected_method(
             os.getenv('DECISION_CONTEXT_OPTIMIZE_CHOOSE_MULTIVARIATE_VALID_VARIANTS_VALID_GIVENS_NO_MODEL_JSON'),
             tested_method_name='optimize')
+
+    def test_choose_multivariate_raises_for_empty_variant_map(self):
+        decision_context = dc.DecisionContext(decision_model=self.test_decision_model, givens=None)
+        with raises(AssertionError) as aerr:
+            decision_context.choose_multivariate({})
+
+    def test_choose_multivariate_raises_for_none_variant_map(self):
+        decision_context = dc.DecisionContext(decision_model=self.test_decision_model, givens=None)
+        with raises(AssertionError) as aerr:
+            decision_context.choose_multivariate(None)
+
+    def test_choose_multivariate_raises_for_wrong_variant_map_type(self):
+        decision_context = dc.DecisionContext(decision_model=self.test_decision_model, givens=None)
+        with raises(AssertionError) as aerr:
+            decision_context.choose_multivariate([1, 2, 3])
+
+    def test_choose_multivariate_raises_for_one_empty_entry_in_variant_map(self):
+        decision_context = dc.DecisionContext(decision_model=self.test_decision_model, givens=None)
+        with raises(ValueError) as verr:
+            decision_context.choose_multivariate({'a': [], 'b': [1, 2, 3]})
+
+    def test_optimize_raises_for_empty_variant_map(self):
+        decision_context = dc.DecisionContext(decision_model=self.test_decision_model, givens=None)
+        with raises(AssertionError) as aerr:
+            decision_context.optimize({})
+
+    def test_optimize_raises_for_none_variant_map(self):
+        decision_context = dc.DecisionContext(decision_model=self.test_decision_model, givens=None)
+        with raises(AssertionError) as aerr:
+            decision_context.optimize(None)
+
+    def test_optimize_raises_for_wrong_variant_map_type(self):
+        decision_context = dc.DecisionContext(decision_model=self.test_decision_model, givens=None)
+        with raises(AssertionError) as aerr:
+            decision_context.optimize([1, 2, 3])
+
+    def test_optimize_raises_for_one_empty_entry_in_variant_map(self):
+        decision_context = dc.DecisionContext(decision_model=self.test_decision_model, givens=None)
+        with raises(ValueError) as verr:
+            decision_context.optimize({'a': [], 'b': [1, 2, 3]})
+
