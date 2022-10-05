@@ -19,7 +19,7 @@ class Decision:
             Givens used to make Decision
 
         """
-        return deepcopy(self.__givens)
+        return self.__givens
 
     @property
     def decision_model(self):
@@ -45,7 +45,7 @@ class Decision:
             Variants ranked from best to worst (using scores)
 
         """
-        return deepcopy(self.__ranked)
+        return self.__ranked
 
     # TODO add unittests for this
     @property
@@ -59,7 +59,7 @@ class Decision:
             best variant for this Decision
 
         """
-        return deepcopy(self.__best)
+        return self.__best
 
     @property
     def id_(self):
@@ -88,10 +88,10 @@ class Decision:
         self.__decision_model = decision_model
 
         assert isinstance(givens, dict) or givens is None
-        self.__givens = deepcopy(givens)
+        self.__givens = givens
 
         check_variants(ranked)
-        self.__ranked = deepcopy(ranked)
+        self.__ranked = ranked
         self.__best = ranked[0]
         self.__id_ = None
 

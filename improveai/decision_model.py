@@ -775,7 +775,7 @@ class DecisionModel:
             combination of the best variants in a dict
 
         """
-        check_variant_map(variant_map=variant_map)(variant_map=variant_map)
+        check_variant_map(variant_map=variant_map)
         return self.given(givens=self.givens_provider.givens(for_model=self))\
             .choose_multivariate(variant_map=variant_map)
 

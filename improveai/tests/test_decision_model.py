@@ -312,13 +312,15 @@ class TestDecisionModel(TestCase):
         if test_case is None:
             raise ValueError('Test case can`t be None')
 
-        variants = test_case.get(variants_key, None)
+        if evaluated_method_name not in ['choose_multivariate', 'optimize']:
+            variants = test_case.get('variants', None)
+            assert variants is not None
 
-        if variants_key in empty_callable_kwargs:
-            empty_callable_kwargs[variants_key] = variants
-
-        if variants is None:
-            raise ValueError('Variants can`t be None')
+            if variants_key in empty_callable_kwargs:
+                empty_callable_kwargs[variants_key] = variants
+        else:
+            variant_map = test_case.get('variant_map', None)
+            assert variant_map is not None
 
         givens = test_case.get(givens_key, None)
 
@@ -363,11 +365,12 @@ class TestDecisionModel(TestCase):
             np.testing.assert_array_equal(calculated_scores_float32, expected_output_float32)
             return
 
-        np.random.seed(score_seed)
-        # calculated_scores = decision_model.score(**empty_callable_kwargs)
-        calculated_scores = decision_model._score(variants=variants, givens=givens)
+        if evaluated_method_name not in ['optimize', 'choose_multivariate']:
+            np.random.seed(score_seed)
+            # calculated_scores = decision_model.score(**empty_callable_kwargs)
+            calculated_scores = decision_model._score(variants=variants, givens=givens)
 
-        calculated_scores_float32 = convert_values_to_float32(calculated_scores)
+            calculated_scores_float32 = convert_values_to_float32(calculated_scores)
 
         if evaluated_method_name == '_score':
             assert expected_scores is not None
@@ -447,6 +450,53 @@ class TestDecisionModel(TestCase):
 
             assert best_variant == expected_best
             assert is_valid_ksuid(decision_id)
+        elif evaluated_method_name == 'choose_multivariate':
+            scores_seed = test_data.get('scores_seed', None)
+            assert scores_seed is not None
+
+            np.random.seed(scores_seed)
+            calculated_decision = \
+                decision_model.choose_multivariate(variant_map=variant_map)
+
+            expected_best = expected_output.get('best')
+
+            assert calculated_decision.best == expected_best
+
+            expected_ranked = expected_output.get('ranked', None)
+            assert expected_ranked is not None
+
+            np.testing.assert_array_equal(calculated_decision.ranked, expected_ranked)
+
+            expected_decision_id = expected_output.get('expected_decision_id')
+            assert calculated_decision.id_ == expected_decision_id
+
+        elif evaluated_method_name == 'optimize':
+            scores_seed = test_data.get('scores_seed', None)
+            assert scores_seed is not None
+
+            decision_model_track_url = dm.DecisionModel('test-model', track_url=self.track_url)
+            decision_model_track_url.load(model_url=model_url)
+            # test with track url != None
+            with rqm.Mocker() as m:
+                m.post(self.track_url, text='success')
+
+                np.random.seed(scores_seed)
+                calculated_best, decision_id = \
+                    decision_model_track_url.optimize(variant_map=variant_map)
+                expected_best = expected_output.get('best')
+                assert calculated_best == expected_best
+                assert decision_id is not None
+                assert is_valid_ksuid(decision_id)
+
+            # test with track url == None
+            np.random.seed(scores_seed)
+            calculated_best, decision_id = decision_model.optimize(variant_map=variant_map)
+
+            assert calculated_best == expected_best
+
+            expected_decision_id = expected_output.get('expected_decision_id')
+            assert decision_id == expected_decision_id
+
         else:
             raise ValueError('Unsupported method: {}'.format(evaluated_method_name))
 
@@ -466,8 +516,13 @@ class TestDecisionModel(TestCase):
         test_case = test_data.get(test_case_key, None)
         assert test_case is not None
 
-        variants = test_case.get(variants_key, None)
-        assert variants is not None
+        if evaluated_method_name not in ['choose_multivariate', 'optimize']:
+            variants = test_case.get('variants', None)
+            assert variants is not None
+
+        else:
+            variant_map = test_case.get('variant_map', None)
+            assert variant_map is not None
 
         if variants_input_type == 'numpy':
             variants = np.array(variants)
@@ -501,10 +556,11 @@ class TestDecisionModel(TestCase):
             np.testing.assert_array_equal(calculated_scores_float32, expected_output_float32)
             return
 
-        np.random.seed(score_seed)
-        calculated_scores = decision_model._score(variants=variants, givens=givens)
+        if evaluated_method_name not in ['choose_multivariate', 'optimize']:
+            np.random.seed(score_seed)
+            calculated_scores = decision_model._score(variants=variants, givens=givens)
 
-        calculated_scores_float32 = convert_values_to_float32(calculated_scores)
+            calculated_scores_float32 = convert_values_to_float32(calculated_scores)
 
         if evaluated_method_name == '_score':
             assert expected_scores is not None
@@ -597,6 +653,51 @@ class TestDecisionModel(TestCase):
 
                 assert best_variant == expected_best
                 assert is_valid_ksuid(decision_id)
+        elif evaluated_method_name == 'choose_multivariate':
+            scores_seed = test_data.get('scores_seed', None)
+            assert scores_seed is not None
+
+            np.random.seed(scores_seed)
+            calculated_decision = \
+                decision_model.choose_multivariate(variant_map=variant_map)
+
+            expected_best = expected_output.get('best')
+
+            assert calculated_decision.best == expected_best
+
+            expected_ranked = expected_output.get('ranked', None)
+            assert expected_ranked is not None
+
+            np.testing.assert_array_equal(calculated_decision.ranked, expected_ranked)
+
+            expected_decision_id = expected_output.get('expected_decision_id')
+            assert calculated_decision.id_ == expected_decision_id
+
+        elif evaluated_method_name == 'optimize':
+            scores_seed = test_data.get('scores_seed', None)
+            assert scores_seed is not None
+            decision_model_track_url = dm.DecisionModel(model_name='test-model', track_url=self.track_url)
+
+            # test with track url != None
+            with rqm.Mocker() as m:
+                m.post(self.track_url, text='success')
+
+                np.random.seed(scores_seed)
+                calculated_best, decision_id = decision_model_track_url.optimize(variant_map=variant_map)
+                expected_best = expected_output.get('best')
+                assert calculated_best == expected_best
+                assert decision_id is not None
+                assert is_valid_ksuid(decision_id)
+
+            # test with track url == None
+            np.random.seed(scores_seed)
+            calculated_best, decision_id = \
+                decision_model.optimize(variant_map=variant_map)
+
+            assert calculated_best == expected_best
+
+            expected_decision_id = expected_output.get('expected_decision_id')
+            assert decision_id == expected_decision_id
 
         else:
             raise ValueError('Unsupported method: {}'.format(evaluated_method_name))
@@ -1902,7 +2003,89 @@ class TestDecisionModel(TestCase):
             decision_model._track(
                 variant=1, runners_up=[1, 2, 3], sample=2, sample_pool_size=2)
 
-    def test_optimize_no_model(self):
+    def test_choose_multivariate_empty_givens_no_model(self):
+        self._generic_desired_decision_model_method_call_no_model(
+            test_data_filename=os.getenv('DECISION_MODEL_OPTIMIZE_CHOOSE_MULTIVARIATE_VALID_VARIANTS_EMPTY_GIVENS_NO_MODEL_JSON'),
+            evaluated_method_name='choose_multivariate')
 
+    def test_optimize_empty_givens_no_model(self):
 
-        pass
+        self._generic_desired_decision_model_method_call_no_model(
+            test_data_filename=os.getenv('DECISION_MODEL_OPTIMIZE_CHOOSE_MULTIVARIATE_VALID_VARIANTS_EMPTY_GIVENS_NO_MODEL_JSON'),
+            evaluated_method_name='optimize')
+
+    def test_choose_multivariate_empty_givens(self):
+        self._generic_desired_decision_model_method_call(
+            test_data_filename=os.getenv(
+                'DECISION_MODEL_OPTIMIZE_CHOOSE_MULTIVARIATE_VALID_VARIANTS_EMPTY_GIVENS_JSON'),
+            evaluated_method_name='choose_multivariate', empty_callable_kwargs={})
+
+    def test_optimize_empty_givens(self):
+        self._generic_desired_decision_model_method_call(
+            test_data_filename=os.getenv(
+                'DECISION_MODEL_OPTIMIZE_CHOOSE_MULTIVARIATE_VALID_VARIANTS_EMPTY_GIVENS_JSON'),
+            evaluated_method_name='optimize', empty_callable_kwargs={})
+
+    def test_choose_multivariate_valid_variants_valid_givens(self):
+        self._generic_desired_decision_model_method_call(
+            test_data_filename=os.getenv(
+                'DECISION_MODEL_OPTIMIZE_CHOOSE_MULTIVARIATE_VALID_VARIANTS_VALID_GIVENS_JSON'),
+            evaluated_method_name='choose_multivariate', empty_callable_kwargs={})
+
+    def test_optimize_valid_variants_valid_givens(self):
+        self._generic_desired_decision_model_method_call(
+            test_data_filename=os.getenv(
+                'DECISION_MODEL_OPTIMIZE_CHOOSE_MULTIVARIATE_VALID_VARIANTS_VALID_GIVENS_JSON'),
+            evaluated_method_name='optimize', empty_callable_kwargs={})
+
+    def test_choose_multivariate_valid_variants_valid_givens_no_model(self):
+        self._generic_desired_decision_model_method_call_no_model(
+            test_data_filename=os.getenv('DECISION_MODEL_OPTIMIZE_CHOOSE_MULTIVARIATE_VALID_VARIANTS_VALID_GIVENS_NO_MODEL_JSON'),
+            evaluated_method_name='choose_multivariate')
+
+    # TODO test optimize
+    def test_optimize_valid_variants_valid_givens_no_model(self):
+        self._generic_desired_decision_model_method_call_no_model(
+            test_data_filename=os.getenv('DECISION_MODEL_OPTIMIZE_CHOOSE_MULTIVARIATE_VALID_VARIANTS_VALID_GIVENS_NO_MODEL_JSON'),
+            evaluated_method_name='optimize')
+
+    def test_choose_multivariate_raises_for_empty_variant_map(self):
+        decision_model = dm.DecisionModel(model_name='test-model')
+        with raises(AssertionError) as aerr:
+            decision_model.choose_multivariate({})
+
+    def test_choose_multivariate_raises_for_none_variant_map(self):
+        decision_model = dm.DecisionModel(model_name='test-model')
+        with raises(AssertionError) as aerr:
+            decision_model.choose_multivariate(None)
+
+    def test_choose_multivariate_raises_for_wrong_variant_map_type(self):
+        decision_model = dm.DecisionModel(model_name='test-model')
+        with raises(AssertionError) as aerr:
+            decision_model.choose_multivariate([1, 2, 3])
+
+    def test_choose_multivariate_raises_for_one_empty_entry_in_variant_map(self):
+        decision_model = dm.DecisionModel(model_name='test-model')
+        with raises(ValueError) as verr:
+            decision_model.choose_multivariate({'a': [], 'b': [1, 2, 3]})
+
+    def test_optimize_raises_for_empty_variant_map(self):
+        decision_model = dm.DecisionModel(model_name='test-model')
+        with raises(AssertionError) as aerr:
+            decision_model.optimize({})
+
+    def test_optimize_raises_for_none_variant_map(self):
+        decision_model = dm.DecisionModel(model_name='test-model')
+        with raises(AssertionError) as aerr:
+            decision_model.optimize(None)
+
+    def test_optimize_raises_for_wrong_variant_map_type(self):
+        decision_model = dm.DecisionModel(model_name='test-model')
+        with raises(AssertionError) as aerr:
+            decision_model.optimize([1, 2, 3])
+
+    def test_optimize_raises_for_one_empty_entry_in_variant_map(self):
+        decision_model = dm.DecisionModel(model_name='test-model')
+        with raises(ValueError) as verr:
+            decision_model.optimize({'a': [], 'b': [1, 2, 3]})
+
