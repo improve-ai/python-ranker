@@ -280,8 +280,6 @@ class TestDecisionContext(TestCase):
             model_url = ('{}' + os.sep + '{}').format(self.test_models_dir, predictor_filename)
             self.test_decision_model.load(model_url=model_url)
             self.test_decision_model_no_track_url.load(model_url=model_url)
-            print('### CHOOSER ###')
-            print(self.test_decision_model_no_track_url.chooser)
 
         # get test variants
         if tested_method_name not in ['choose_multivariate', 'optimize']:
@@ -364,9 +362,6 @@ class TestDecisionContext(TestCase):
         elif tested_method_name == 'first':
             with rqm.Mocker() as m:
                 m.post(self.test_track_url, text='success')
-
-                print('### type(variants) ###')
-                print(type(variants))
 
                 np.random.seed(scores_seed)
                 best, decision_id = decision_context.first(*variants)
@@ -464,6 +459,29 @@ class TestDecisionContext(TestCase):
             expected_decision_id = expected_output.get('expected_decision_id')
             assert calculated_decision.id_ == expected_decision_id
 
+        elif tested_method_name == 'decide':
+            scores = test_case.get("scores", None)
+            ordered = test_case.get("ordered", None)
+
+            if ordered is True:
+                calculated_decision = decision_context.decide(variants=variants, ordered=ordered)
+            elif scores is not None:
+                calculated_decision = decision_context.decide(variants=variants, scores=scores)
+            else:
+                np.random.seed(scores_seed)
+                calculated_decision = decision_context.decide(variants=variants)
+
+            for v in calculated_decision.ranked:
+                print(v)
+
+            test_output = test_case_json.get('test_output', None)
+            assert test_output is not None
+
+            expected_ranked_variants = test_output.get('ranked', None)
+            assert expected_ranked_variants is not None
+
+            np.testing.assert_array_equal(calculated_decision.ranked, expected_ranked_variants)
+            assert calculated_decision.best == expected_best
         else:
             raise ValueError(f'tested_method_name: {tested_method_name} not suported')
 
@@ -1423,4 +1441,145 @@ class TestDecisionContext(TestCase):
         decision_context = dc.DecisionContext(decision_model=self.test_decision_model, givens=None)
         with raises(ValueError) as verr:
             decision_context.optimize({'a': [], 'b': [1, 2, 3]})
+
+    def test_decide_valid_model_no_scores_not_ordered_no_givens(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_VALID_MODEL_NO_GIVENS_NO_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_no_model_no_scores_not_ordered_no_givens(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_NO_MODEL_NO_GIVENS_NO_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_no_scores_ordered_no_givens(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_VALID_MODEL_NO_GIVENS_NO_SCORES_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_no_model_no_scores_ordered_no_givens(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_NO_MODEL_NO_GIVENS_NO_SCORES_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_scores_not_ordered_no_givens(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_VALID_MODEL_NO_GIVENS_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_no_model_scores_not_ordered_no_givens(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_NO_MODEL_NO_GIVENS_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_no_scores_not_ordered_valid_givens(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_VALID_MODEL_VALID_GIVENS_NO_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_no_model_no_scores_not_ordered_valid_givens(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_NO_MODEL_VALID_GIVENS_NO_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_no_scores_ordered_valid_givens(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_VALID_MODEL_VALID_GIVENS_NO_SCORES_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_no_model_no_scores_ordered_valid_givens(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_NO_MODEL_VALID_GIVENS_NO_SCORES_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_scores_not_ordered_valid_givens(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_VALID_MODEL_VALID_GIVENS_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_no_model_scores_not_ordered_valid_givens(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_NO_MODEL_VALID_GIVENS_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_raises_for_variants_and_scores_different_length(self):
+        context = dc.DecisionContext(decision_model=self.test_decision_model_no_track_url, givens={})
+        variants = [1, 2, 3]
+        scores = [0.1, 0.2, 0.3, 0.4]
+
+        with raises(AssertionError) as aerr:
+            context.decide(variants=variants, scores=scores)
+
+    def test_decide_raises_for_bad_ordered_type(self):
+        model = dm.DecisionModel(model_name='dummy-model')
+        context = dc.DecisionContext(decision_model=self.test_decision_model_no_track_url, givens={})
+        variants = [1, 2, 3]
+
+        with raises(AssertionError) as aerr:
+            context.decide(variants=variants, ordered=None)
+
+        with raises(AssertionError) as aerr:
+            context.decide(variants=variants, ordered='True')
+
+        with raises(AssertionError) as aerr:
+            context.decide(variants=variants, ordered=1)
+
+        with raises(AssertionError) as aerr:
+            context.decide(variants=variants, ordered=1.123)
+
+    def test_decide_raises_for_bad_variants(self):
+        context = dc.DecisionContext(decision_model=self.test_decision_model_no_track_url, givens={})
+
+        with raises(AssertionError) as aerr:
+            variants = 1
+            context.decide(variants=variants, ordered=None)
+
+        with raises(AssertionError) as aerr:
+            variants = 1.123
+            context.decide(variants=variants, ordered=None)
+
+        with raises(AssertionError) as aerr:
+            variants = 'string'
+            context.decide(variants=variants, ordered=None)
+
+        with raises(AssertionError) as aerr:
+            variants = True
+            context.decide(variants=variants, ordered=None)
+
+        with raises(AssertionError) as aerr:
+            variants = {'test-dict': 123}
+            context.decide(variants=variants, ordered=None)
+
+    def test_decide_with_ndarray_variants(self):
+        context = dc.DecisionContext(decision_model=self.test_decision_model_no_track_url, givens={})
+        variants = np.array([1, 2, 3])
+
+        decision = context.decide(variants=variants)
+        np.testing.assert_array_equal(variants, decision.ranked)
+
+    def test_decide_with_tuple_variants(self):
+        context = dc.DecisionContext(decision_model=self.test_decision_model_no_track_url, givens={})
+        variants = (1, 2, 3)
+
+        decision = context.decide(variants=variants)
+        np.testing.assert_array_equal(variants, decision.ranked)
+
+    def test_decide_raises_for_scores_and_ordered_true(self):
+        model = dm.DecisionModel(model_name='dummy-model')
+
+        with raises(ValueError) as verr:
+            model.decide(variants=[1, 2, 3], scores=[1, 2, 3], ordered=True)
+
+    def test_decide_input_variants_not_mutated_after_decision_creation_no_model(self):
+        context = dc.DecisionContext(decision_model=self.test_decision_model_no_track_url, givens={})
+        variants = [1, 2, 3]
+        expected_ranked_variants = list(reversed(variants))
+        decision = context.decide(variants=variants, scores=[1, 2, 3])
+        np.testing.assert_array_equal(decision.ranked, expected_ranked_variants)
+        np.testing.assert_array_equal(variants, [1, 2, 3])
+
+    def test_decide_input_variants_not_mutated_after_decision_creation(self):
+        model = dm.DecisionModel('test-model')
+
+        model_url = os.getenv('DUMMY_MODEL_PATH', None)
+        assert model_url is not None
+
+        model.load(model_url=model_url)
+
+        context = dc.DecisionContext(decision_model=model, givens={})
+
+        variants = [{'text': 'lovely corgi'}, {'text': 'bad swan'}, {'text': 'fat hippo'}]
+        np.random.seed(1)
+        decision = context.decide(variants=variants)
+        expected_ranked_variants = [{'text': 'lovely corgi'}, {'text': 'fat hippo'}, {'text': 'bad swan'}]
+        np.testing.assert_array_equal(decision.ranked, expected_ranked_variants)
+        np.testing.assert_array_equal(variants, [{'text': 'lovely corgi'}, {'text': 'bad swan'}, {'text': 'fat hippo'}])
 

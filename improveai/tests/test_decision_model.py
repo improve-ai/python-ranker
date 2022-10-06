@@ -1793,7 +1793,26 @@ class TestDecisionModel(TestCase):
         with raises(ValueError) as verr:
             model.decide(variants=[1, 2, 3], scores=[1, 2, 3], ordered=True)
 
-    # TODO test choose_multivariate and optimize
+    def test_decide_input_variants_not_mutated_after_decision_creation_no_model(self):
+        model = dm.DecisionModel(model_name='dummy-model')
+        variants = [1, 2, 3]
+        expected_ranked_variants = list(reversed(variants))
+        decision = model.decide(variants=variants, scores=[1, 2, 3])
+        np.testing.assert_array_equal(decision.ranked, expected_ranked_variants)
+        np.testing.assert_array_equal(variants, [1, 2, 3])
+
+    def test_decide_input_variants_not_mutated_after_decision_creation(self):
+        model = dm.DecisionModel(model_name='dummy-model')
+        model_url = os.getenv('DUMMY_MODEL_PATH', None)
+        assert model_url is not None
+        model.load(model_url=model_url)
+        variants = [{'text': 'lovely corgi'}, {'text': 'bad swan'}, {'text': 'fat hippo'}]
+        np.random.seed(1)
+        decision = model.decide(variants=variants)
+        expected_ranked_variants = [{'text': 'lovely corgi'}, {'text': 'fat hippo'}, {'text': 'bad swan'}]
+        np.testing.assert_array_equal(decision.ranked, expected_ranked_variants)
+        np.testing.assert_array_equal(variants, [{'text': 'lovely corgi'}, {'text': 'bad swan'}, {'text': 'fat hippo'}])
+
     def test_track(self):
         decision_model = dm.DecisionModel('dummy-model', track_url=self.track_url)
         decision_tracker = decision_model.tracker
