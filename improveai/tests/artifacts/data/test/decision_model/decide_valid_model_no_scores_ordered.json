@@ -1,6 +1,7 @@
 {
     "test_case": {
         "model_filename": "dummy_v6.xgb",
+        "ordered": true,
         "variants": [
             {
                 "text": "lovely corgi",
@@ -54,7 +55,13 @@
             }
         ]
     },
-    "test_output": [
+    "test_output": {
+        "best": {
+                "text": "lovely corgi",
+                "chars": 12,
+                "words": 2
+            },
+        "ranked": [
             {
                 "text": "lovely corgi",
                 "chars": 12,
@@ -105,7 +112,8 @@
                 "chars": 14,
                 "words": 2
             }
-        ],
+        ]
+    },
     "model_seed": 1,
     "scores_seed": 1
 }

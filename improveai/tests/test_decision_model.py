@@ -1623,7 +1623,7 @@ class TestDecisionModel(TestCase):
         assert decision.id_ is None
 
     def test_decide_valid_model_no_scores_not_ordered(self):
-        test_case_json_filename = os.getenv('DECISION_MODEL_TEST_DECIDE_NATIVE_NO_SCORES_NOT_ORDERED_JSON')
+        test_case_json_filename = os.getenv('DECISION_MODEL_TEST_DECIDE_VALID_MODEL_NO_SCORES_NOT_ORDERED_JSON')
 
         path_to_test_json = \
             ('{}' + os.sep + '{}').format(
@@ -1652,14 +1652,13 @@ class TestDecisionModel(TestCase):
         test_output = test_case_json.get('test_output', None)
         assert test_output is not None
 
-        expected_scores = test_output.get('scores', None)
-        assert expected_scores is not None
+        expected_ranked_variants = test_output.get('ranked', None)
+        assert expected_ranked_variants is not None
 
-        expected_ranked_variants = np.array(variants)[np.argsort(expected_scores)[::-1]]
         np.testing.assert_array_equal(calculated_decision.ranked, expected_ranked_variants)
 
     def test_decide_valid_model_scores_not_ordered(self):
-        test_case_json_filename = os.getenv('DECISION_MODEL_TEST_DECIDE_NATIVE_SCORES_NOT_ORDERED_JSON')
+        test_case_json_filename = os.getenv('DECISION_MODEL_TEST_DECIDE_VALID_MODEL_SCORES_NOT_ORDERED_JSON')
 
         path_to_test_json = \
             ('{}' + os.sep + '{}').format(
@@ -1688,13 +1687,16 @@ class TestDecisionModel(TestCase):
         np.random.seed(scores_seed)
         calculated_decision = model.decide(variants=variants, scores=scores)
 
-        expected_ranked_variants = test_case_json.get('test_output', None)
+        test_output = test_case_json.get('test_output', None)
+        assert test_output is not None
+
+        expected_ranked_variants = test_output.get("ranked", None)
         assert expected_ranked_variants is not None
 
         np.testing.assert_array_equal(calculated_decision.ranked, expected_ranked_variants)
 
     def test_decide_valid_model_no_scores_ordered(self):
-        test_case_json_filename = os.getenv('DECISION_MODEL_TEST_DECIDE_NATIVE_NO_SCORES_ORDERED_JSON')
+        test_case_json_filename = os.getenv('DECISION_MODEL_TEST_DECIDE_VALID_MODEL_NO_SCORES_ORDERED_JSON')
 
         path_to_test_json = \
             ('{}' + os.sep + '{}').format(
@@ -1720,7 +1722,10 @@ class TestDecisionModel(TestCase):
         np.random.seed(scores_seed)
         calculated_decision = model.decide(variants=variants, ordered=True)
 
-        expected_ranked_variants = test_case_json.get('test_output', None)
+        test_output = test_case_json.get('test_output', None)
+        assert test_output is not None
+
+        expected_ranked_variants = test_output.get("ranked", None)
         assert expected_ranked_variants is not None
 
         np.testing.assert_array_equal(calculated_decision.ranked, variants)
