@@ -10,7 +10,7 @@ import improveai.decision_tracker as dt
 import improveai.givens_provider as gp
 from improveai.settings import DEBUG
 from improveai.utils.general_purpose_tools import constant, check_variants, \
-    get_variants_from_args, is_valid_ksuid, is_valid_variants_type, check_variant_map
+    get_variants_from_args, is_valid_ksuid, is_valid_variants_type
 
 
 class DecisionModel:
@@ -548,7 +548,6 @@ class DecisionModel:
             best variant and a decision ID
 
         """
-        check_variant_map(variant_map=variant_map)
         return self.which_from(variants=DecisionModel.full_factorial_variants(variant_map=variant_map))
 
     def choose_from(self, variants: list or np.ndarray, scores: list or np.ndarray):
@@ -666,7 +665,6 @@ class DecisionModel:
             combination of the best variants in a dict
 
         """
-        check_variant_map(variant_map=variant_map)
         return self.given(givens=self.givens_provider.givens(for_model=self))\
             .choose_multivariate(variant_map=variant_map)
 
@@ -742,11 +740,16 @@ class DecisionModel:
             list of 'fully factorial variants' dicts
 
         """
+        # make sure variant map is a dict
+        assert isinstance(variant_map, dict)
+        # make sure that variant map is not empty
+        assert len(variant_map) > 0
         # check if all entries in variants_map are lists or tuples or np.arrays
         variants_map_fixed = {
             variants_key: variants if is_valid_variants_type(variants) else [variants]
             for variants_key, variants in variant_map.items()}
-
+        # make sure all collections of variants are of a correct type
+        [check_variants(vs) for vs in variant_map.values()]
         # 0. variant_map = {'variants_0': ['00', '01'], 'variants_1': ['11', '12', '13']}
         #
         # 1. meshgrid treats each sequence as a different 'variable' and prepares all vs all permutations

@@ -5,8 +5,7 @@ from warnings import warn
 
 import improveai.decision as d
 import improveai.decision_model as dm
-from improveai.utils.general_purpose_tools import check_variants, get_variants_from_args, \
-    check_variant_map
+from improveai.utils.general_purpose_tools import check_variants, get_variants_from_args
 
 
 class DecisionContext:
@@ -154,8 +153,6 @@ class DecisionContext:
 
         """
         # TODO test with scores == None and scores != None
-        # check variants
-        check_variants(variants)
         # get givens via GivensProvider
         givens = self.decision_model.givens_provider.givens(for_model=self.decision_model, givens=self.givens)
         # rank variants if they are not ordered
@@ -213,7 +210,6 @@ class DecisionContext:
             best variant and a decision ID
 
         """
-        check_variant_map(variant_map=variant_map)
         return self.which_from(
             variants=dm.DecisionModel.full_factorial_variants(variant_map=variant_map))
 
@@ -337,7 +333,7 @@ class DecisionContext:
             combination of the best variants in a dict
 
         """
-        check_variant_map(variant_map=variant_map)
+        # check_variant_map(variant_map=variant_map)
         return self.choose_from(
             variants=dm.DecisionModel.full_factorial_variants(variant_map=variant_map),
             scores=None)

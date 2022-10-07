@@ -1077,7 +1077,7 @@ class TestDecisionContext(TestCase):
         for iv in invalid_test_variants:
             with rqm.Mocker() as m:
                 m.post(self.test_track_url, text='success')
-                with raises(ValueError) as verr:
+                with raises(AssertionError) as aerr:
                     dc.DecisionContext(decision_model=self.test_decision_model, givens=valid_givens).random(*[iv])
 
     def test_choose_random_orders_runners_up_randomly(self):

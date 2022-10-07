@@ -166,17 +166,6 @@ def is_valid_variants_type(variants):
     return type(variants) in ALLOWED_VARIANT_TYPES
 
 
-def check_variant_map(variant_map: dict):
-    # make sure variant map is a dict
-    assert isinstance(variant_map, dict)
-
-    # make sure that variant map is not empty
-    assert len(variant_map) > 0
-
-    # make sure all collections of variants are of a correct type
-    [check_variants(vs) for vs in variant_map.values()]
-
-
 def get_variants_from_args(variants: list or tuple or np.ndarray) -> list or tuple or np.ndarray:
     """
     Extract variants from pythonic args

@@ -2114,7 +2114,7 @@ class TestDecisionModel(TestCase):
             decision_model.optimize({'a': [], 'b': [1, 2, 3]})
 
     def test_full_factorial_variants(self):
-        variant_map = {'variants_0': ['01', '02'],'variants_1': ['11', '12', '13']}
+        variant_map = {'variants_0': ['01', '02'], 'variants_1': ['11', '12', '13']}
         expected_output = \
             [{'variants_0': '01', 'variants_1': '11'},
              {'variants_0': '02', 'variants_1': '11'},
