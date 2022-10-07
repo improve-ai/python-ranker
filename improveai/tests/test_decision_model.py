@@ -1190,7 +1190,7 @@ class TestDecisionModel(TestCase):
 
         invalid_variants = [[], np.array([])]
         for ivs in invalid_variants:
-            with raises(ValueError) as verr:
+            with raises(AssertionError):
                 decision_model.which(*[ivs])
 
     def test_constructor_with_none_track_url(self):
@@ -1240,13 +1240,13 @@ class TestDecisionModel(TestCase):
             dm.DecisionModel('dummy-model').choose_first(variants=True)
 
     def test_choose_first_raises_for_empty_variants(self):
-        with raises(ValueError) as verr:
+        with raises(AssertionError):
             dm.DecisionModel('dummy-model').choose_first(variants=[])
 
-        with raises(ValueError) as verr:
+        with raises(AssertionError):
             dm.DecisionModel('dummy-model').choose_first(variants=np.array([]))
 
-        with raises(ValueError) as verr:
+        with raises(AssertionError):
             dm.DecisionModel('dummy-model').choose_first(variants=tuple())
 
     def test_choose_first_raises_for_none_variants(self):
@@ -1277,17 +1277,17 @@ class TestDecisionModel(TestCase):
             dm.DecisionModel('dummy-model').first(123.123)
 
     def test_first_raises_for_bool_variants(self):
-        with raises(AssertionError) as aerr:
+        with raises(AssertionError):
             dm.DecisionModel('dummy-model').first(True)
 
     def test_first_raises_for_empty_variants(self):
-        with raises(ValueError) as verr:
+        with raises(AssertionError):
             dm.DecisionModel('dummy-model').first(*[])
 
-        with raises(ValueError) as verr:
+        with raises(AssertionError):
             dm.DecisionModel('dummy-model').first(*np.array([]))
 
-        with raises(ValueError) as verr:
+        with raises(AssertionError):
             dm.DecisionModel('dummy-model').first(*tuple())
 
     def test_first_raises_for_none_variants(self):
@@ -1326,13 +1326,13 @@ class TestDecisionModel(TestCase):
             dm.DecisionModel('dummy-model').choose_random(variants=True)
 
     def test_choose_random_raises_for_empty_variants(self):
-        with raises(ValueError) as verr:
+        with raises(AssertionError):
             dm.DecisionModel('dummy-model').choose_random(variants=[])
 
-        with raises(ValueError) as verr:
+        with raises(AssertionError):
             dm.DecisionModel('dummy-model').choose_random(variants=np.array([]))
 
-        with raises(ValueError) as verr:
+        with raises(AssertionError):
             dm.DecisionModel('dummy-model').choose_random(variants=tuple())
 
     def test_choose_random_raises_for_none_variants(self):
@@ -1411,17 +1411,17 @@ class TestDecisionModel(TestCase):
             dm.DecisionModel('dummy-model').random(True)
 
     def test_random_raises_for_empty_variants(self):
-        with raises(ValueError) as verr:
+        with raises(AssertionError):
             dm.DecisionModel('dummy-model').random(*[])
 
-        with raises(ValueError) as verr:
+        with raises(AssertionError):
             dm.DecisionModel('dummy-model').random(*np.array([]))
 
-        with raises(ValueError) as verr:
+        with raises(AssertionError):
             dm.DecisionModel('dummy-model').random(*tuple())
 
     def test_random_raises_for_none_variants(self):
-        with raises(AssertionError) as aerr:
+        with raises(AssertionError):
             dm.DecisionModel('dummy-model').random(None)
 
     def test_random_none_track_url(self):
@@ -2017,7 +2017,7 @@ class TestDecisionModel(TestCase):
 
     def test_track_raises_for_empty_runners_up(self):
         decision_model = dm.DecisionModel('dummy-model', track_url=self.track_url)
-        with raises(ValueError) as verr:
+        with raises(AssertionError):
             decision_model._track(
                 variant=1, runners_up=[], sample=2, sample_pool_size=2)
 
@@ -2085,17 +2085,17 @@ class TestDecisionModel(TestCase):
 
     def test_choose_multivariate_raises_for_wrong_variant_map_type(self):
         decision_model = dm.DecisionModel(model_name='test-model')
-        with raises(AssertionError) as aerr:
+        with raises(AssertionError):
             decision_model.choose_multivariate([1, 2, 3])
 
     def test_choose_multivariate_raises_for_one_empty_entry_in_variant_map(self):
         decision_model = dm.DecisionModel(model_name='test-model')
-        with raises(ValueError) as verr:
+        with raises(AssertionError):
             decision_model.choose_multivariate({'a': [], 'b': [1, 2, 3]})
 
     def test_optimize_raises_for_empty_variant_map(self):
         decision_model = dm.DecisionModel(model_name='test-model')
-        with raises(AssertionError) as aerr:
+        with raises(AssertionError):
             decision_model.optimize({})
 
     def test_optimize_raises_for_none_variant_map(self):
@@ -2105,12 +2105,12 @@ class TestDecisionModel(TestCase):
 
     def test_optimize_raises_for_wrong_variant_map_type(self):
         decision_model = dm.DecisionModel(model_name='test-model')
-        with raises(AssertionError) as aerr:
+        with raises(AssertionError):
             decision_model.optimize([1, 2, 3])
 
     def test_optimize_raises_for_one_empty_entry_in_variant_map(self):
         decision_model = dm.DecisionModel(model_name='test-model')
-        with raises(ValueError) as verr:
+        with raises(AssertionError):
             decision_model.optimize({'a': [], 'b': [1, 2, 3]})
 
     def test_full_factorial_variants(self):
@@ -2124,6 +2124,101 @@ class TestDecisionModel(TestCase):
              {'variants_0': '02', 'variants_1': '13'}]
 
         calculated_full_factorial_variants = dm.DecisionModel.full_factorial_variants(variant_map=variant_map)
-        print('### calculated_full_factorial_variants ###')
-        print(calculated_full_factorial_variants)
         np.testing.assert_array_equal(calculated_full_factorial_variants, expected_output)
+
+    def test_full_factorial_variants_one_value_not_an_array(self):
+        variant_map = {'variants_0': '01', 'variants_1': ['11', '12', '13']}
+        expected_output = \
+            [{'variants_0': '01', 'variants_1': '11'},
+             {'variants_0': '01', 'variants_1': '12'},
+             {'variants_0': '01', 'variants_1': '13'}]
+
+        calculated_full_factorial_variants = dm.DecisionModel.full_factorial_variants(variant_map=variant_map)
+        np.testing.assert_array_equal(calculated_full_factorial_variants, expected_output)
+
+    def test_full_factorial_variants_one_value_nonse(self):
+        variant_map = {'variants_0': None, 'variants_1': ['11', '12', '13']}
+
+        with raises(AssertionError):
+            dm.DecisionModel.full_factorial_variants(variant_map=variant_map)
+
+    def test_full_factorial_variants_one_value_str_nparray(self):
+        variant_map = {'variants_0': np.array(['01', '02']), 'variants_1': ['11', '12', '13']}
+        expected_output = \
+            [{'variants_0': '01', 'variants_1': '11'},
+             {'variants_0': '02', 'variants_1': '11'},
+             {'variants_0': '01', 'variants_1': '12'},
+             {'variants_0': '02', 'variants_1': '12'},
+             {'variants_0': '01', 'variants_1': '13'},
+             {'variants_0': '02', 'variants_1': '13'}]
+
+        calculated_full_factorial_variants = dm.DecisionModel.full_factorial_variants(variant_map=variant_map)
+        np.testing.assert_array_equal(calculated_full_factorial_variants, expected_output)
+
+    def test_full_factorial_variants_one_value_int_nparray(self):
+        variant_map = {'variants_0': np.array([1, 2], dtype=int), 'variants_1': ['11', '12', '13']}
+        expected_output = \
+            [{'variants_0': 1, 'variants_1': '11'},
+             {'variants_0': 2, 'variants_1': '11'},
+             {'variants_0': 1, 'variants_1': '12'},
+             {'variants_0': 2, 'variants_1': '12'},
+             {'variants_0': 1, 'variants_1': '13'},
+             {'variants_0': 2, 'variants_1': '13'}]
+
+        calculated_full_factorial_variants = dm.DecisionModel.full_factorial_variants(variant_map=variant_map)
+        np.testing.assert_array_equal(calculated_full_factorial_variants, expected_output)
+
+    def test_full_factorial_variants_one_value_float_nparray(self):
+        variant_map = {'variants_0': np.array([1.1, 2.2]), 'variants_1': ['11', '12', '13']}
+        expected_output = \
+            [{'variants_0': 1.1, 'variants_1': '11'},
+             {'variants_0': 2.2, 'variants_1': '11'},
+             {'variants_0': 1.1, 'variants_1': '12'},
+             {'variants_0': 2.2, 'variants_1': '12'},
+             {'variants_0': 1.1, 'variants_1': '13'},
+             {'variants_0': 2.2, 'variants_1': '13'}]
+
+        calculated_full_factorial_variants = dm.DecisionModel.full_factorial_variants(variant_map=variant_map)
+        np.testing.assert_array_equal(calculated_full_factorial_variants, expected_output)
+
+    def test_test_full_factorial_variants_raises_for_none_variant_map(self):
+        variant_map = None
+        with raises(AssertionError) as aerr:
+            dm.DecisionModel.full_factorial_variants(variant_map=variant_map)
+
+    def test_test_full_factorial_variants_raises_for_empty_dict_variant_map(self):
+        variant_map = {}
+        with raises(AssertionError) as aerr:
+            dm.DecisionModel.full_factorial_variants(variant_map=variant_map)
+
+    def test_test_full_factorial_variants_raises_for_empty_list_value(self):
+        variant_map = {'variants_0': [], 'variants_1': ['11', '12', '13']}
+        with raises(AssertionError) as verr:
+            dm.DecisionModel.full_factorial_variants(variant_map=variant_map)
+
+    def test_test_full_factorial_variants_raises_for_empty_nparray_value(self):
+        variant_map = {'variants_0': np.array([]), 'variants_1': ['11', '12', '13']}
+        with raises(AssertionError) as verr:
+            dm.DecisionModel.full_factorial_variants(variant_map=variant_map)
+
+    def test_test_full_factorial_variants_raises_for_empty_tuple_value(self):
+        variant_map = {'variants_0': tuple(), 'variants_1': ['11', '12', '13']}
+        with raises(AssertionError) as verr:
+            dm.DecisionModel.full_factorial_variants(variant_map=variant_map)
+
+    def test_test_full_factorial_variants_raises_for_non_dict_variant_map(self):
+        variant_map = 'abc'
+        with raises(AssertionError) as aerr:
+            dm.DecisionModel.full_factorial_variants(variant_map=variant_map)
+
+        variant_map = []
+        with raises(AssertionError) as aerr:
+            dm.DecisionModel.full_factorial_variants(variant_map=variant_map)
+
+        variant_map = 1.23
+        with raises(AssertionError) as aerr:
+            dm.DecisionModel.full_factorial_variants(variant_map=variant_map)
+
+        variant_map = 1
+        with raises(AssertionError) as aerr:
+            dm.DecisionModel.full_factorial_variants(variant_map=variant_map)

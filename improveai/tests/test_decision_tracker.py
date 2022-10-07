@@ -180,7 +180,7 @@ class TestDecisionTracker:
         decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
         decision_tracker.max_runners_up = self.max_runners_up
 
-        with raises(ValueError) as verr:
+        with raises(AssertionError) as verr:
             decision_tracker._top_runners_up(ranked_variants=[])
 
     def test_top_runners_up_single_variant(self):
@@ -287,7 +287,7 @@ class TestDecisionTracker:
         ranked_variants = []
         track_runners_up = False
 
-        with raises(ValueError) as verr:
+        with raises(AssertionError):
             decision_tracker.get_sample(
                 ranked_variants=ranked_variants, track_runners_up=track_runners_up)
 
@@ -529,9 +529,9 @@ class TestDecisionTracker:
 
     def test_get_sample_raises_for_empty_variants(self):
         decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
-        with raises(ValueError):
+        with raises(AssertionError):
             decision_tracker.get_sample(ranked_variants=[], track_runners_up=True)
-        with raises(ValueError):
+        with raises(AssertionError):
             decision_tracker.get_sample(ranked_variants=[], track_runners_up=False)
 
     def test_get_sample_raises_for_bad_type_variants(self):

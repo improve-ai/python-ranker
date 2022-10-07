@@ -158,8 +158,7 @@ def check_variants(variants: list or tuple or np.ndarray) -> list or tuple or np
     assert variants is not None
     assert type(variants) in ALLOWED_VARIANT_TYPES
     # raise if variants are an empty list
-    if len(variants) == 0:
-        raise ValueError('`variants` must not be an empty collection')
+    assert len(variants) > 0, '`variants` must not be an empty collection'
 
 
 def is_valid_variants_type(variants):

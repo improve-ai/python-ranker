@@ -592,7 +592,7 @@ class TestDecisionContext(TestCase):
         for iv in invalid_test_variants:
             with rqm.Mocker() as m:
                 m.post(self.test_track_url, text='success')
-                with raises(ValueError) as verr:
+                with raises(AssertionError):
                     dc.DecisionContext(decision_model=self.test_decision_model, givens=valid_givens).which(*iv)
 
     def test_which_none_track_url(self):
@@ -739,7 +739,7 @@ class TestDecisionContext(TestCase):
         for iv in invalid_test_variants:
             with rqm.Mocker() as m:
                 m.post(self.test_track_url, text='success')
-                with raises(ValueError) as verr:
+                with raises(AssertionError):
                     dc.DecisionContext(decision_model=self.test_decision_model, givens=valid_givens)\
                         .choose_first(variants=iv)
 
@@ -852,7 +852,7 @@ class TestDecisionContext(TestCase):
         for iv in invalid_test_variants:
             with rqm.Mocker() as m:
                 m.post(self.test_track_url, text='success')
-                with raises(ValueError) as verr:
+                with raises(AssertionError):
                     dc.DecisionContext(decision_model=self.test_decision_model, givens=valid_givens)\
                         .first(*[iv])
 
@@ -965,7 +965,7 @@ class TestDecisionContext(TestCase):
         for iv in invalid_test_variants:
             with rqm.Mocker() as m:
                 m.post(self.test_track_url, text='success')
-                with raises(ValueError) as verr:
+                with raises(AssertionError):
                     dc.DecisionContext(decision_model=self.test_decision_model, givens=valid_givens)\
                         .choose_random(variants=iv)
 
@@ -1345,7 +1345,7 @@ class TestDecisionContext(TestCase):
         decision_model = dm.DecisionModel('dummy-model', track_url=self.test_track_url)
         decision_context = \
             dc.DecisionContext(decision_model=decision_model, givens=self.dummy_test_givens)
-        with raises(ValueError) as verr:
+        with raises(AssertionError):
             decision_context._track(
                 variant=1, runners_up=[], sample=2, sample_pool_size=2)
 
@@ -1419,7 +1419,7 @@ class TestDecisionContext(TestCase):
 
     def test_choose_multivariate_raises_for_one_empty_entry_in_variant_map(self):
         decision_context = dc.DecisionContext(decision_model=self.test_decision_model, givens=None)
-        with raises(ValueError) as verr:
+        with raises(AssertionError):
             decision_context.choose_multivariate({'a': [], 'b': [1, 2, 3]})
 
     def test_optimize_raises_for_empty_variant_map(self):
@@ -1439,7 +1439,7 @@ class TestDecisionContext(TestCase):
 
     def test_optimize_raises_for_one_empty_entry_in_variant_map(self):
         decision_context = dc.DecisionContext(decision_model=self.test_decision_model, givens=None)
-        with raises(ValueError) as verr:
+        with raises(AssertionError) as verr:
             decision_context.optimize({'a': [], 'b': [1, 2, 3]})
 
     def test_decide_valid_model_no_scores_not_ordered_no_givens(self):

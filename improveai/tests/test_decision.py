@@ -939,22 +939,22 @@ class TestDecision(TestCase):
         np.testing.assert_array_equal(expected_ranked_variants, decision.ranked)
 
     def test_variants_setter_raises_for_zero_length_variants(self):
-        with raises(ValueError) as verr:
+        with raises(AssertionError):
             d.Decision(
                 decision_model=self.decision_model_valid_track_url,
                 ranked=[], givens=None)
 
-        with raises(ValueError) as verr:
+        with raises(AssertionError):
             d.Decision(
                 decision_model=self.decision_model_valid_track_url,
                 ranked=(), givens=None)
 
-        with raises(ValueError) as verr:
+        with raises(AssertionError):
             d.Decision(
                 decision_model=self.decision_model_valid_track_url,
                 ranked=np.array([]), givens=None)
 
-        with raises(AssertionError) as aerr:
+        with raises(AssertionError):
             d.Decision(
                 decision_model=self.decision_model_valid_track_url,
                 ranked=None, givens=None)

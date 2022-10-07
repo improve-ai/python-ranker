@@ -10,7 +10,7 @@ import improveai.decision_tracker as dt
 import improveai.givens_provider as gp
 from improveai.settings import DEBUG
 from improveai.utils.general_purpose_tools import constant, check_variants, \
-    get_variants_from_args, is_valid_ksuid, is_valid_variants_type
+    get_variants_from_args, is_valid_ksuid, is_valid_variants_type, ALLOWED_VARIANT_TYPES
 
 
 class DecisionModel:
@@ -744,12 +744,16 @@ class DecisionModel:
         assert isinstance(variant_map, dict)
         # make sure that variant map is not empty
         assert len(variant_map) > 0
+        # make sure that each key stores not None value (variants == None is not allowed)
+        assert all(vs is not None for vs in variant_map.values())
+        # make sure that all collections in variant_map are not empty
+        assert all(len(vs) > 0 if type(vs) in ALLOWED_VARIANT_TYPES else True for vs in variant_map.values())
         # check if all entries in variants_map are lists or tuples or np.arrays
         variants_map_fixed = {
             variants_key: variants if is_valid_variants_type(variants) else [variants]
             for variants_key, variants in variant_map.items()}
         # make sure all collections of variants are of a correct type
-        [check_variants(vs) for vs in variant_map.values()]
+        [check_variants(vs) for vs in variants_map_fixed.values()]
         # 0. variant_map = {'variants_0': ['00', '01'], 'variants_1': ['11', '12', '13']}
         #
         # 1. meshgrid treats each sequence as a different 'variable' and prepares all vs all permutations
@@ -777,8 +781,10 @@ class DecisionModel:
         #
         # 3. transposing np.vstack() result yields full factorial of values of variants map ->
         #    last step is to convert 'records' to dicts using variant_map keys
+
+        all_variants = [np.array(vs, dtype='O') for vs in variants_map_fixed.values()]
         return [dict(zip(variants_map_fixed.keys(), variants)) for variants
-                in np.vstack([v.flat for v in np.meshgrid(*variants_map_fixed.values())]).T]
+                in np.vstack([v.flat for v in np.meshgrid(*all_variants)]).T]
 
 
 def load_model(model_url: str, track_url: str = None):
