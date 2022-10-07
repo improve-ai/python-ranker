@@ -645,7 +645,7 @@ class DecisionModel:
         check_variants(variants)
         unpacked_variants = get_variants_from_args(variants)
         decision = self.decide(
-            variants=get_variants_from_args(unpacked_variants),
+            variants=unpacked_variants,
             scores=np.random.normal(size=len(unpacked_variants)))
         return decision.get(), decision.id_
 
