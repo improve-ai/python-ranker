@@ -21,7 +21,8 @@ class DecisionModel:
     @property
     def model_name(self) -> str or None:
         """
-        Name of DecisionModel. None value is allowed but otherwise value must be a string and pass `MODEL_NAME_REGEXP` check
+        Name of DecisionModel. None value is allowed but otherwise value must be
+        a string and pass `MODEL_NAME_REGEXP` check
 
         Returns
         -------
@@ -82,6 +83,7 @@ class DecisionModel:
 
     @track_url.setter
     def track_url(self, value: str or None):
+        # TODO make sure this is fully covered by tests
         self._track_url = value
 
         # cases:
@@ -175,8 +177,7 @@ class DecisionModel:
         """
         return 2**-23
 
-    def __init__(
-            self, model_name: str, track_url: str = None, track_api_key: str = None):
+    def __init__(self, model_name: str, track_url: str = None, track_api_key: str = None):
         """
         Init with params
 
@@ -364,36 +365,6 @@ class DecisionModel:
 
         return scores.astype(np.float64)
 
-    @staticmethod
-    def _validate_variants_and_scores(variants: list or np.ndarray, scores: list or np.ndarray) -> bool:
-        """
-        Check if variants and scores are not malformed
-
-        Parameters
-        ----------
-        variants: np.ndarray
-            array of variants
-        scores: np.ndarray
-            array of scores
-
-        Returns
-        -------
-        bool
-            Flag indicating whether variants and scores are valid
-
-        """
-
-        if variants is None or scores is None:
-            raise ValueError('`variants` and `scores` can\'t be None')
-
-        if len(variants) != len(scores):
-            raise ValueError('Lengths of `variants` and `scores` mismatch!')
-
-        if len(variants) == 0:
-            return False
-
-        return True
-
     def _rank(self, variants: list or np.ndarray, scores: list or np.ndarray) -> np.ndarray:
         """
         Helper method to rank variants. Returns a numpy array with variants ranked from best to worst
@@ -437,27 +408,6 @@ class DecisionModel:
             best to worst ranked variants
         """
         return self.decide(variants=variants).ranked
-
-    @staticmethod
-    def _generate_descending_gaussians(count: int) -> np.ndarray:
-        """
-        Generates random floats and sorts in a descending fashion
-
-        Parameters
-        ----------
-        count: int
-            number of floats to generate
-
-        Returns
-        -------
-        np.ndarray
-            array of sorted floats
-
-        """
-
-        random_scores = np.random.normal(size=count)
-        random_scores[::-1].sort()
-        return random_scores
 
     def given(self, givens: dict) -> dc.DecisionContext:
         """
@@ -601,65 +551,6 @@ class DecisionModel:
         check_variant_map(variant_map=variant_map)
         return self.which_from(variants=DecisionModel.full_factorial_variants(variant_map=variant_map))
 
-    @staticmethod
-    def full_factorial_variants(variant_map: dict):
-        """
-        Creates full factorial from input variants map, i.e. for variants_map
-        {'variants_0': ['01', '02'],
-         'variants_1': ['11', '12', '13']}
-        it creates a list of dicts:
-        [{'variants_0': '01', 'variants_1': '11'},
-         {'variants_0': '02', 'variants_1': '11'},
-         {'variants_0': '01', 'variants_1': '12'},
-         {'variants_0': '02', 'variants_1': '22'},
-         {'variants_0': '01', 'variants_1': '13'},
-         {'variants_0': '02', 'variants_1': '23'},
-        ]
-
-        Parameters
-        ----------
-        variant_map: dict
-            map of key -> variants set
-
-        Returns
-        -------
-        list
-            list of 'fully factorial variants' dicts
-
-        """
-        # check if all entries in variants_map are lists or tuples or np.arrays
-        variants_map_fixed = {
-            variants_key: variants if is_valid_variants_type(variants) else [variants]
-            for variants_key, variants in variant_map.items()}
-
-        # 1. meshgrid treats each sequence as a different 'variable' and prepares all vs all permutations
-        #    meshgrid returns list of n-dimensional arrays where N is initial number of 'dimensions' (keys)
-        #    in variant map (len(variant_map.keys()))
-        #    variants_0 'dimension' meshgrid output ((3, 2) shape):
-        #    [['00' '01']
-        #     ['00' '01']
-        #     ['00' '01']]
-        #
-        #    variants_1 'dimension' meshgrid output ((3, 2) shape):
-        #    [['11' '11']
-        #     ['12' '12']
-        #     ['13' '13']]
-        # 2. each element returned by meshgrid must be flattened ((1,) shape) and will represent a 'single
-        #    dimension':
-        #
-        #    flattened variants_0 meshgrid result: ['00', '01', '00', '01', '00', '01']
-        #    flattened variants_1 meshgrid result: ['11', '11', '12', '12', '13', '13']
-        #
-        #    Since each element was flattened calling np.vstack() will stack them 'vertically'
-        #    (as if they were rows):
-        #    [['00', '01', '00', '01', '00', '01'],
-        #     ['11', '11', '12', '12', '13', '13']]
-        #
-        # 3. transposing np.vstack() result yields full factorial of values of variants map ->
-        #    last step is to convert 'records' to dicts using variant_map keys
-        return [dict(zip(variants_map_fixed.keys(), variants)) for variants
-                in np.vstack([v.flat for v in np.meshgrid(*variants_map_fixed.values())]).T]
-
     def choose_from(self, variants: list or np.ndarray, scores: list or np.ndarray):
         # TODO method deprecated - will be removed in v8 upgrade
         """
@@ -802,6 +693,89 @@ class DecisionModel:
 
         return self.given(givens=self.givens_provider.givens(for_model=self)) \
             ._track(variant=variant, runners_up=runners_up, sample=sample, sample_pool_size=sample_pool_size)
+
+    @staticmethod
+    def _generate_descending_gaussians(count: int) -> np.ndarray:
+        """
+        Generates random floats and sorts in a descending fashion
+
+        Parameters
+        ----------
+        count: int
+            number of floats to generate
+
+        Returns
+        -------
+        np.ndarray
+            array of sorted floats
+
+        """
+
+        random_scores = np.random.normal(size=count)
+        random_scores[::-1].sort()
+        return random_scores
+
+    @staticmethod
+    def full_factorial_variants(variant_map: dict):
+        # TODO add tests for full_factorial_variants
+        """
+        Creates full factorial from input variants map, i.e. for variants_map
+        {'variants_0': ['01', '02'],
+         'variants_1': ['11', '12', '13']}
+        it creates a list of dicts:
+        [{'variants_0': '01', 'variants_1': '11'},
+         {'variants_0': '02', 'variants_1': '11'},
+         {'variants_0': '01', 'variants_1': '12'},
+         {'variants_0': '02', 'variants_1': '22'},
+         {'variants_0': '01', 'variants_1': '13'},
+         {'variants_0': '02', 'variants_1': '23'},
+        ]
+
+        Parameters
+        ----------
+        variant_map: dict
+            map of key -> variants set
+
+        Returns
+        -------
+        list
+            list of 'fully factorial variants' dicts
+
+        """
+        # check if all entries in variants_map are lists or tuples or np.arrays
+        variants_map_fixed = {
+            variants_key: variants if is_valid_variants_type(variants) else [variants]
+            for variants_key, variants in variant_map.items()}
+
+        # 0. variant_map = {'variants_0': ['00', '01'], 'variants_1': ['11', '12', '13']}
+        #
+        # 1. meshgrid treats each sequence as a different 'variable' and prepares all vs all permutations
+        #    meshgrid returns list of n-dimensional arrays where N is initial number of 'dimensions' (keys)
+        #    in variant map (len(variant_map.keys()))
+        #    variants_0 'dimension' meshgrid output ((3, 2) shape):
+        #    [['00' '01']
+        #     ['00' '01']
+        #     ['00' '01']]
+        #
+        #    variants_1 'dimension' meshgrid output ((3, 2) shape):
+        #    [['11' '11']
+        #     ['12' '12']
+        #     ['13' '13']]
+        # 2. each element returned by meshgrid must be flattened ((1,) shape) and will represent a 'single
+        #    dimension':
+        #
+        #    flattened variants_0 meshgrid result: ['00', '01', '00', '01', '00', '01']
+        #    flattened variants_1 meshgrid result: ['11', '11', '12', '12', '13', '13']
+        #
+        #    Since each element was flattened calling np.vstack() will stack them 'vertically'
+        #    (as if they were rows):
+        #    [['00', '01', '00', '01', '00', '01'],
+        #     ['11', '11', '12', '12', '13', '13']]
+        #
+        # 3. transposing np.vstack() result yields full factorial of values of variants map ->
+        #    last step is to convert 'records' to dicts using variant_map keys
+        return [dict(zip(variants_map_fixed.keys(), variants)) for variants
+                in np.vstack([v.flat for v in np.meshgrid(*variants_map_fixed.values())]).T]
 
 
 def load_model(model_url: str, track_url: str = None):

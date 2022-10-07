@@ -2113,3 +2113,17 @@ class TestDecisionModel(TestCase):
         with raises(ValueError) as verr:
             decision_model.optimize({'a': [], 'b': [1, 2, 3]})
 
+    def test_full_factorial_variants(self):
+        variant_map = {'variants_0': ['01', '02'],'variants_1': ['11', '12', '13']}
+        expected_output = \
+            [{'variants_0': '01', 'variants_1': '11'},
+             {'variants_0': '02', 'variants_1': '11'},
+             {'variants_0': '01', 'variants_1': '12'},
+             {'variants_0': '02', 'variants_1': '12'},
+             {'variants_0': '01', 'variants_1': '13'},
+             {'variants_0': '02', 'variants_1': '13'}]
+
+        calculated_full_factorial_variants = dm.DecisionModel.full_factorial_variants(variant_map=variant_map)
+        print('### calculated_full_factorial_variants ###')
+        print(calculated_full_factorial_variants)
+        np.testing.assert_array_equal(calculated_full_factorial_variants, expected_output)
