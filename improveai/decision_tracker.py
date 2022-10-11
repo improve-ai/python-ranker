@@ -1,3 +1,4 @@
+import asyncio
 import re
 import warnings
 from copy import deepcopy
@@ -612,6 +613,87 @@ class DecisionTracker:
         except:
             return False
 
+    @staticmethod
+    def _exception_while_posting(loop, context):
+        """
+        Custom exception handler for asyncio
+        Parameters
+        ----------
+        loop: object
+            asyncio loop
+        context: dict
+            dict with info about error
+        Returns
+        -------
+        """
+        print(
+            'Model loading failed with error: {}'.format(
+                context.get('message', None)))
+        print(context.get('exception', None))
+
+    def _do_improve_post(self, payload: str, headers: dict):
+        """
+        Performs improveai POST request with provided payload and headers
+
+        Parameters
+        ----------
+        payload: str
+            JSON-encoded request data
+        headers: dict
+            headers for current request
+
+        Returns
+        -------
+        tuple
+            response (rq.models.Response), error (None if no errors were encountered during posting)
+
+        """
+        resp = None
+        error = None
+        try:
+            resp = rq.post(url=self.track_url, data=payload, headers=headers)
+        except Exception as exc:
+            error = exc
+
+        if not error and isinstance(resp, rq.models.Response):
+
+            if resp.status_code >= 400:
+                user_info = dict(deepcopy(resp.headers))
+                user_info[self.REQUEST_ERROR_CODE_KEY] = str(resp.status_code)
+
+                if payload:
+                    user_info[self.PAYLOAD_FOR_ERROR_KEY] = payload \
+                        if len(payload) <= 1000 else payload[:100]
+
+                error = str(error) if not isinstance(error, str) else error
+                error += \
+                    ' | when attempting to post to improve.ai endpoint got an error with ' \
+                    'code {} and user info: {}' \
+                    .format(str(resp.status_code), orjson.dumps(user_info).decode('utf-8'))
+
+        return resp, error
+
+    async def _async_do_improve_post(self, payload_json: Dict[str, object], headers: dict):
+        """
+        Async wrapper around _do_improve_post() so it does not block main thread
+
+        Parameters
+        ----------
+        payload_json: dict
+            dict to be sent with improve request
+        headers: dict
+            headers for current request
+
+        Returns
+        -------
+        str
+            decision ID (message ID for requests with rewards)
+
+        """
+        loop = asyncio.get_event_loop()
+        loop.set_exception_handler(DecisionTracker._exception_while_posting)
+        return await loop.run_in_executor(None, self._do_improve_post, *[payload_json, headers])
+
     def post_improve_request(self, body_values: Dict[str, object], block: callable) -> str:
         """
         Posts request to tracker endpoint
@@ -651,38 +733,15 @@ class DecisionTracker:
             warn("Data serialization error: {}\nbody: {}".format(exc, body))
             return None
 
-        error = None
-        resp = None
-
-        try:
-            resp = rq.post(url=self.track_url, data=payload_json, headers=headers)
-
-        except Exception as exc:
-            error = exc
+        resp, error = asyncio.get_event_loop().run_until_complete(
+            self._async_do_improve_post(payload_json=payload_json, headers=headers))
 
         if not block:
             return None
 
-        if not error and isinstance(resp, rq.models.Response):
-
-            if resp.status_code >= 400:
-                user_info = dict(deepcopy(resp.headers))
-                user_info[self.REQUEST_ERROR_CODE_KEY] = str(resp.status_code)
-                content = orjson.dumps(body).decode('utf-8')
-
-                if content:
-                    user_info[self.PAYLOAD_FOR_ERROR_KEY] = content \
-                        if len(content) <= 1000 else content[:100]
-
-                error = str(error) if not isinstance(error, str) else error
-                error += \
-                    ' | when attempting to post to improve.ai endpoint got an error with ' \
-                    'code {} and user info: {}' \
-                    .format(str(resp.status_code), orjson.dumps(user_info).decode('utf-8'))
-
         json_object = None
         if not error:
-            json_object = orjson.dumps(body).decode('utf-8')
+            json_object = payload_json
 
         if error:
             print('error')
@@ -696,3 +755,7 @@ class DecisionTracker:
                 'not happen (?)')
 
         return body[self.MESSAGE_ID_KEY]
+
+
+def async_improve_post():
+    pass
