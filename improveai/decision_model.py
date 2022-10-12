@@ -270,10 +270,6 @@ class DecisionModel:
             self.__model_name = self.chooser.model_name
         else:
             self.chooser.model_name = self.model_name
-            warnings.warn(
-                'Model name passed to the constructor: {} will not be '
-                'overwritten by loaded model name: {}.'
-                    .format(self.model_name, self.chooser.model_name))
 
     def _get_chooser(self, model_url: str) -> XGBChooser:
         """
