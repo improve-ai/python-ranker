@@ -939,7 +939,7 @@ class TestDecisionModel(TestCase):
 
         with warnings.catch_warnings(record=True) as w:
             decision_model = dm.DecisionModel(model_name=tested_model_name).load(model_url=model_url)
-            assert len(w) != 0
+            assert len(w) == 0
         assert decision_model.model_name is not None
         assert decision_model.model_name != chooser.model_name
 
