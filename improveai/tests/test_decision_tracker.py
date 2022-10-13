@@ -1,3 +1,4 @@
+import time
 from copy import deepcopy
 import json
 from ksuid import Ksuid
@@ -1173,19 +1174,10 @@ class TestDecisionTracker:
         decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
         decision_tracker.max_runners_up = self.max_runners_up
 
-        decision_id_container = {'decision_id': None}
-
-        def custom_matcher_caching_decision_id(request):
-            request_dict = deepcopy(request.json())
-            decision_id_container['decision_id'] = \
-                request_dict[decision_tracker.MESSAGE_ID_KEY]
-            return True
-
         variants = [el for el in range(0, 1)]
 
         with rqm.Mocker() as m:
-            m.post(self.track_url, text='success',
-                   additional_matcher=custom_matcher_caching_decision_id)
+            m.post(self.track_url, text='success')
 
             with catch_warnings(record=True) as w:
                 simplefilter("always")
@@ -1197,7 +1189,6 @@ class TestDecisionTracker:
 
             assert is_valid_ksuid(decision_id)
 
-        decision_id = decision_id_container['decision_id']
         reward = 1.0
 
         expected_add_reward_body = {
@@ -1240,19 +1231,10 @@ class TestDecisionTracker:
         decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
         decision_tracker.max_runners_up = self.max_runners_up
 
-        decision_id_container = {'decision_id': None}
-
-        def custom_matcher_caching_decision_id(request):
-            request_dict = deepcopy(request.json())
-            decision_id_container['decision_id'] = \
-                request_dict[decision_tracker.MESSAGE_ID_KEY]
-            return True
-
         variants = [el for el in range(0, 1)]
 
         with rqm.Mocker() as m:
-            m.post(self.track_url, text='success',
-                   additional_matcher=custom_matcher_caching_decision_id)
+            m.post(self.track_url, text='success')
 
             with catch_warnings(record=True) as w:
                 simplefilter("always")
@@ -1264,7 +1246,7 @@ class TestDecisionTracker:
 
             assert is_valid_ksuid(decision_id)
 
-        decision_id = decision_id_container['decision_id']
+        # decision_id = decision_id_container['decision_id']
         reward = 1
 
         expected_add_reward_body = {
@@ -1298,6 +1280,8 @@ class TestDecisionTracker:
 
             with catch_warnings(record=True) as w:
                 simplefilter("always")
+                print('### decision_id ###')
+                print(f'Decision ID: {decision_id is None}')
                 decision_tracker.add_reward(
                     reward=reward, model_name=self.dummy_model_name, decision_id=decision_id)
                 assert len(w) == 0
@@ -1472,6 +1456,7 @@ class TestDecisionTracker:
         headers_cache = {'headers': None}
 
         def cache_headers(request):
+            print('CACHE HEADERS')
             headers_cache['headers'] = request._request.headers
             return True
 
@@ -1483,17 +1468,14 @@ class TestDecisionTracker:
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success', additional_matcher=cache_headers)
 
-            decision_id = decision_tracker.post_improve_request(
-                body_values=mockup_body,
-                block=
-                lambda result, error: (
-                    warn("Improve.track error: {}".format(error))
-                    if error else 0, 0))
+            decision_id = decision_tracker.post_improve_request(body_values=mockup_body)
 
             print('### decision_id ###')
             print(decision_id)
+            print(headers_cache)
             assert is_valid_ksuid(decision_id)
 
+            time.sleep(2)
             for k, v in expected_headers.items():
                 assert k in headers_cache['headers']
                 assert v == headers_cache['headers'][k]
@@ -1515,4 +1497,15 @@ class TestDecisionTracker:
             decision_id = decision_tracker.track(ranked_variants=[0, 1, 2], givens={}, model_name=bad_model_name)
             assert decision_id is None
 
+    def test_post_improve_request_does_not_block_io(self):
+        track_url = 'https://bencv5hp7ekjurpcmd2i4r6ege0dwzyt.lambda-url.us-east-2.on.aws/'
+        decision_tracker = dtr.DecisionTracker(track_url=track_url)
+        dummy_body = {
+            'type': 'decision',
+            'model': 'test-model-0',
+            'variant': 'asd',
+            'count': 1}
 
+        msg_ids = [decision_tracker.post_improve_request(body_values=dummy_body) for _ in range(100)]
+
+        assert all([el is not None for el in msg_ids])

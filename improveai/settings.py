@@ -20,3 +20,4 @@ CYTHON_BACKEND_AVAILABLE = gcc_and_py3_dev_installed()
 DEBUG = False
 
 IMPROVE_ABS_PATH = os.sep.join(__file__.split(os.sep)[:-1])
+MAX_TRACK_THREADS = 16

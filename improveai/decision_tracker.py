@@ -1,4 +1,3 @@
-import asyncio
 import re
 import warnings
 from copy import deepcopy
@@ -10,6 +9,7 @@ from warnings import warn
 
 from ksuid import Ksuid
 
+import improveai
 from improveai.chooser import XGBChooser
 from improveai.utils.general_purpose_tools import constant, check_variants, is_valid_ksuid
 
@@ -499,9 +499,7 @@ class DecisionTracker:
             variant=ranked_variants[0], model_name=model_name, variants_count=variants_count,
             givens=givens, runners_up=runners_up, sample=sample, has_sample=has_sample)
 
-        return self.post_improve_request(
-            body_values=body,
-            block=lambda result, error: (warn("Improve.track error: {}".format(error)) if error else 0, 0))
+        return self.post_improve_request(body_values=body)
 
     def add_reward(self, reward: float or int, model_name: str, decision_id: str):
         """
@@ -540,10 +538,7 @@ class DecisionTracker:
             self.REWARD_KEY: reward,
             self.DECISION_ID_KEY: decision_id}
 
-        self.post_improve_request(
-            body_values=body,
-            block=lambda result, error: (
-                warn("Improve.track error: {}".format(error)) if error else 0, 0))
+        self.post_improve_request(body_values=body)
 
     def get_sample(self, ranked_variants: list, track_runners_up: bool) -> object:
         """
@@ -613,149 +608,76 @@ class DecisionTracker:
         except:
             return False
 
-    @staticmethod
-    def _exception_while_posting(loop, context):
-        """
-        Custom exception handler for asyncio
-        Parameters
-        ----------
-        loop: object
-            asyncio loop
-        context: dict
-            dict with info about error
-        Returns
-        -------
-        """
-        print(
-            'Model loading failed with error: {}'.format(
-                context.get('message', None)))
-        print(context.get('exception', None))
-
-    def _do_improve_post(self, payload: str, headers: dict):
-        """
-        Performs improveai POST request with provided payload and headers
-
-        Parameters
-        ----------
-        payload: str
-            JSON-encoded request data
-        headers: dict
-            headers for current request
-
-        Returns
-        -------
-        tuple
-            response (rq.models.Response), error (None if no errors were encountered during posting)
-
-        """
-        resp = None
-        error = None
+    def do_post_improve_request(self, payload_json: str, headers: dict):
         try:
-            resp = rq.post(url=self.track_url, data=payload, headers=headers)
+            response = rq.post(url=self.track_url, data=payload_json, headers=headers)
+            if response.status_code >= 400:
+                user_info = dict(deepcopy(response.headers))
+                user_info[self.REQUEST_ERROR_CODE_KEY] = str(response.status_code)
+
+                if payload_json:
+                    user_info[self.PAYLOAD_FOR_ERROR_KEY] = payload_json \
+                        if len(payload_json) <= 1000 else payload_json[:100]
+
+                warnings.warn(
+                    'When attempting to post to improve.ai endpoint got an error with code {} and user info: {}'
+                    .format(str(response.status_code), orjson.dumps(user_info).decode('utf-8')))
+
         except Exception as exc:
-            error = exc
+            print('Following error occurred:')
+            print(exc)
 
-        if not error and isinstance(resp, rq.models.Response):
-
-            if resp.status_code >= 400:
-                user_info = dict(deepcopy(resp.headers))
-                user_info[self.REQUEST_ERROR_CODE_KEY] = str(resp.status_code)
-
-                if payload:
-                    user_info[self.PAYLOAD_FOR_ERROR_KEY] = payload \
-                        if len(payload) <= 1000 else payload[:100]
-
-                error = str(error) if not isinstance(error, str) else error
-                error += \
-                    ' | when attempting to post to improve.ai endpoint got an error with ' \
-                    'code {} and user info: {}' \
-                    .format(str(resp.status_code), orjson.dumps(user_info).decode('utf-8'))
-
-        return resp, error
-
-    async def _async_do_improve_post(self, payload_json: Dict[str, object], headers: dict):
-        """
-        Async wrapper around _do_improve_post() so it does not block main thread
-
-        Parameters
-        ----------
-        payload_json: dict
-            dict to be sent with improve request
-        headers: dict
-            headers for current request
-
-        Returns
-        -------
-        str
-            decision ID (message ID for requests with rewards)
-
-        """
-        loop = asyncio.get_event_loop()
-        loop.set_exception_handler(DecisionTracker._exception_while_posting)
-        return await loop.run_in_executor(None, self._do_improve_post, *[payload_json, headers])
-
-    def post_improve_request(self, body_values: Dict[str, object], block: callable) -> str:
+    def post_improve_request(self, body_values: Dict[str, object], message_id: str = None) -> str:
         """
         Posts request to tracker endpoint
-
-
         Parameters
         ----------
         body_values: dict
             dict to be posted
         block: callable
             callable to execute on error
-
-
+        message_id: str or None
+            ksuid of a given request
         Returns
         -------
         str
             message id of sent improve request
-
         """
 
         headers = {'Content-Type': 'application/json'}
-
         if self.api_key:
             headers[self.API_KEY_HEADER] = self.api_key
 
-        # body = {self.MESSAGE_ID_KEY: message_id if message_id is not None else str(Ksuid())}
-        body = {self.MESSAGE_ID_KEY: str(Ksuid())}
-        assert self._is_valid_message_id(message_id=body[self.MESSAGE_ID_KEY])
-
+        assert self._is_valid_message_id(message_id=message_id)
+        body = {self.MESSAGE_ID_KEY: message_id if message_id is not None else str(Ksuid())}
         body.update(body_values)
 
         # serialization is a must-have for this requests
         try:
             payload_json = orjson.dumps(body).decode('utf-8')
-
         except Exception as exc:
             warn("Data serialization error: {}\nbody: {}".format(exc, body))
             return None
 
-        resp, error = asyncio.get_event_loop().run_until_complete(
-            self._async_do_improve_post(payload_json=payload_json, headers=headers))
-
-        if not block:
-            return None
-
-        json_object = None
-        if not error:
-            json_object = payload_json
-
-        if error:
-            print('error')
-            print(error)
-            block(None, error)
-        elif json_object:
-            block(json_object, None)
-        else:
-            raise NotImplementedError(
-                'Both error and payload objects are None / empty - this should '
-                'not happen (?)')
+        print('### headers ###')
+        print(headers)
+        improveai.track_improve_executor.submit(self.do_post_improve_request, *[payload_json, headers])
+        # try:
+        #     response = rq.post(url=self.track_url, data=payload_json, headers=headers)
+        #     if response.status_code >= 400:
+        #         user_info = dict(deepcopy(response.headers))
+        #         user_info[self.REQUEST_ERROR_CODE_KEY] = str(response.status_code)
+        #
+        #         if payload_json:
+        #             user_info[self.PAYLOAD_FOR_ERROR_KEY] = payload_json \
+        #                 if len(payload_json) <= 1000 else payload_json[:100]
+        #
+        #         warnings.warn(
+        #             'When attempting to post to improve.ai endpoint got an error with code {} and user info: {}'
+        #             .format(str(response.status_code), orjson.dumps(user_info).decode('utf-8')))
+        #
+        # except Exception as exc:
+        #     print('Following error occurred:')
+        #     print(exc)
 
         return body[self.MESSAGE_ID_KEY]
-
-
-def async_improve_post():
-    pass

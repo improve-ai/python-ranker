@@ -388,8 +388,11 @@ class TestDecision(TestCase):
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
             # freeze seed to always replicate track_runners_up value
-            np.random.seed(0)
-            decision_id = decision.track()
+            with warnings.catch_warnings(record=True) as w:
+                warnings.simplefilter("always")
+                np.random.seed(0)
+                decision_id = decision.track()
+                assert len(w) == 0
 
         self._check_decision_after_call(
             decision=decision, ranked_variants=None, test_variants=test_variants,

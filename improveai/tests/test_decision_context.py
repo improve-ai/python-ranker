@@ -338,15 +338,20 @@ class TestDecisionContext(TestCase):
             with rqm.Mocker() as m:
                 m.post(self.test_track_url, text='success')
 
-                np.random.seed(scores_seed)
-                best, decision_id = decision_context.which(variants)
-                assert best == expected_best
-                assert is_valid_ksuid(decision_id)
+                with catch_warnings(record=True) as w:
+                    simplefilter("always")
 
-                np.random.seed(scores_seed)
-                best, decision_id = decision_context.which(*variants)
-                assert best == expected_best
-                assert is_valid_ksuid(decision_id)
+                    np.random.seed(scores_seed)
+                    best, decision_id = decision_context.which(variants)
+                    assert best == expected_best
+                    assert is_valid_ksuid(decision_id)
+
+                    np.random.seed(scores_seed)
+                    best, decision_id = decision_context.which(*variants)
+                    assert best == expected_best
+                    assert is_valid_ksuid(decision_id)
+
+                    assert len(w) == 0
 
         elif tested_method_name == 'choose_first':
             np.random.seed(scores_seed)
@@ -363,15 +368,19 @@ class TestDecisionContext(TestCase):
             with rqm.Mocker() as m:
                 m.post(self.test_track_url, text='success')
 
-                np.random.seed(scores_seed)
-                best, decision_id = decision_context.first(*variants)
-                assert best == expected_best
-                assert is_valid_ksuid(decision_id)
+                with catch_warnings(record=True) as w:
+                    simplefilter("always")
 
-                np.random.seed(scores_seed)
-                best, decision_id = decision_context.first(variants)
-                assert best == expected_best
-                assert is_valid_ksuid(decision_id)
+                    np.random.seed(scores_seed)
+                    best, decision_id = decision_context.first(*variants)
+                    assert best == expected_best
+                    assert is_valid_ksuid(decision_id)
+
+                    np.random.seed(scores_seed)
+                    best, decision_id = decision_context.first(variants)
+                    assert best == expected_best
+                    assert is_valid_ksuid(decision_id)
+                    assert len(w) == 0
 
         elif tested_method_name == 'choose_random':
             np.random.seed(scores_seed)
@@ -389,27 +398,33 @@ class TestDecisionContext(TestCase):
             with rqm.Mocker() as m:
                 m.post(self.test_track_url, text='success')
 
-                np.random.seed(scores_seed)
-                best, decision_id = decision_context.random(*variants)
-                assert best == expected_best
-                assert is_valid_ksuid(decision_id)
+                with catch_warnings(record=True) as w:
+                    simplefilter("always")
+                    np.random.seed(scores_seed)
+                    best, decision_id = decision_context.random(*variants)
+                    assert best == expected_best
+                    assert is_valid_ksuid(decision_id)
 
-                np.random.seed(scores_seed)
-                best, decision_id = decision_context.random(variants)
-                assert best == expected_best
-                assert is_valid_ksuid(decision_id)
+                    np.random.seed(scores_seed)
+                    best, decision_id = decision_context.random(variants)
+                    assert best == expected_best
+                    assert is_valid_ksuid(decision_id)
+                    assert len(w) == 0
 
         elif tested_method_name == 'rank':
             with rqm.Mocker() as m:
                 m.post(self.test_track_url, text='success')
 
-                expected_ranked = expected_output.get('ranked_variants', None)
-                assert expected_ranked is not None
+                with catch_warnings(record=True) as w:
+                    simplefilter("always")
+                    expected_ranked = expected_output.get('ranked_variants', None)
+                    assert expected_ranked is not None
 
-                np.random.seed(scores_seed)
-                calculated_ranked = decision_context.rank(variants=variants)
-                assert decision_context.decision_model.last_decision_id is None
-                np.testing.assert_array_equal(calculated_ranked, expected_ranked)
+                    np.random.seed(scores_seed)
+                    calculated_ranked = decision_context.rank(variants=variants)
+                    assert decision_context.decision_model.last_decision_id is None
+                    np.testing.assert_array_equal(calculated_ranked, expected_ranked)
+                    assert len(w) == 0
 
         elif tested_method_name == 'optimize':
 
@@ -419,14 +434,17 @@ class TestDecisionContext(TestCase):
             # test with track url != None
             with rqm.Mocker() as m:
                 m.post(self.test_track_url, text='success')
-                decision_context = dc.DecisionContext(
-                    decision_model=self.test_decision_model, givens=givens)
-                np.random.seed(scores_seed)
-                calculated_best, decision_id = \
-                    decision_context.optimize(variant_map=variant_map)
-                assert calculated_best == expected_best
-                assert decision_id is not None
-                assert is_valid_ksuid(decision_id)
+                with catch_warnings(record=True) as w:
+                    simplefilter("always")
+                    decision_context = dc.DecisionContext(
+                        decision_model=self.test_decision_model, givens=givens)
+                    np.random.seed(scores_seed)
+                    calculated_best, decision_id = \
+                        decision_context.optimize(variant_map=variant_map)
+                    assert calculated_best == expected_best
+                    assert decision_id is not None
+                    assert is_valid_ksuid(decision_id)
+                    assert len(w) == 0
 
             # test with track url == None
             decision_context = dc.DecisionContext(
@@ -1126,11 +1144,14 @@ class TestDecisionContext(TestCase):
         with rqm.Mocker() as m:
             m.post(self.test_track_url, text='success', additional_matcher=custom_matcher)
 
-            np.random.seed(int(tracks_runners_up_seed))
-            decision.track()
-            best = decision.get()
-            is_valid_ksuid(decision.id_)
-            assert best == 1
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                np.random.seed(int(tracks_runners_up_seed))
+                decision.track()
+                best = decision.get()
+                is_valid_ksuid(decision.id_)
+                assert best == 1
+                assert len(w) == 0
 
     def test_track(self):
         decision_model = dm.DecisionModel('dummy-model', track_url=self.test_track_url)
@@ -1178,10 +1199,13 @@ class TestDecisionContext(TestCase):
 
         with rqm.Mocker() as m:
             m.post(self.test_track_url, text='success', additional_matcher=custom_matcher)
-            decision_id = decision_context._track(
-                variant=variant, runners_up=runners_up, sample=sample,
-                sample_pool_size=sample_pool_size)
-            is_valid_ksuid(decision_id)
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                decision_id = decision_context._track(
+                    variant=variant, runners_up=runners_up, sample=sample,
+                    sample_pool_size=sample_pool_size)
+                is_valid_ksuid(decision_id)
+                assert len(w) == 0
 
     def test_track_no_runners_up(self):
         decision_model = dm.DecisionModel('dummy-model', track_url=self.test_track_url)

@@ -377,6 +377,4 @@ class DecisionContext:
             givens=self.givens, runners_up=runners_up, sample=sample,
             has_sample=True if sample_pool_size > 0 else False)
 
-        return self.decision_model.tracker.post_improve_request(
-            body_values=body,
-            block=lambda result, error: (warn("Improve.track error: {}".format(error)) if error else 0, 0))
+        return self.decision_model.tracker.post_improve_request(body_values=body)

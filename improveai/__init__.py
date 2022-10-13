@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 from pkg_resources import get_distribution, DistributionNotFound
 from warnings import warn
 
@@ -7,7 +8,7 @@ from improveai.feature_encoder import FeatureEncoder
 from improveai.decision_model import DecisionModel, load_model
 from improveai.givens_provider import GivensProvider
 # import gcc and python3-dev detection utility
-from improveai.settings import CYTHON_BACKEND_AVAILABLE
+from improveai.settings import CYTHON_BACKEND_AVAILABLE, MAX_TRACK_THREADS
 
 if CYTHON_BACKEND_AVAILABLE:
     # if gcc and python3 dev installed use cythonized FeatureEcoder
@@ -22,3 +23,5 @@ try:
     __version__ = get_distribution('improveai').version
 except DistributionNotFound as enferr:
     __version__ = 'Distribution not found - please install `improveai` wit pip'
+
+track_improve_executor = ThreadPoolExecutor(max_workers=MAX_TRACK_THREADS)
