@@ -1,3 +1,4 @@
+import time
 from argparse import ArgumentParser
 import json
 import numpy as np
@@ -5,6 +6,17 @@ import os
 
 from improveai import DecisionModel, DecisionContext
 from improveai.utils.general_purpose_tools import read_jsonstring_from_file
+
+
+def mockup_and_execute(executed_function, function_kwargs, mockup_track_endpoint, track_url):
+    if mockup_track_endpoint:
+        with rqm.Mocker() as m:
+            m.post(track_url, text='success')
+            result = executed_function(**function_kwargs)
+            time.sleep(0.125)
+            return result
+    else:
+        return executed_function(**function_kwargs)
 
 
 if __name__ == '__main__':
@@ -54,6 +66,13 @@ if __name__ == '__main__':
 
     pa = ap.parse_args()
 
+    if pa.mockup_track_endpoint:
+        try:
+            import requests_mock as rqm
+        except ImportError as ierr:
+            raise ImportError(
+                'Please install `requests_mock` package to mock track endpoint:\npip3 install requests_mock')
+
     dm = DecisionModel(model_name=None, track_url=pa.track_url).load(model_url=pa.model_url)
 
     if pa.operation not in DecisionModel.SUPPORTED_CALLS:
@@ -71,29 +90,30 @@ if __name__ == '__main__':
     dc = DecisionContext(decision_model=dm, givens=givens)
     if pa.operation == 'get':
 
-        decision = dc.choose_from(variants=variants)
-        if pa.mockup_track_endpoint:
-            try:
-                import requests_mock as rqm
-            except ImportError as ierr:
-                raise ImportError(
-                    'Please install `requests_mock` package to mock track endpoint: pip3 install requests_mock')
-
-            with rqm.Mocker() as m:
-                m.post(pa.track_url, text='success')
-                result = decision.get()
-        else:
-            result = decision.get()
-        scores = decision.scores
+        scores = dc.score(variants=variants)
+        decision = dc.decide(variants=variants, scores=scores)
+        result = mockup_and_execute(
+            executed_function=decision.get, function_kwargs={},
+            mockup_track_endpoint=pa.mockup_track_endpoint, track_url=pa.track_url)
     else:
-        scores = \
-            dm._score(variants=variants, givens=givens)
+        scores = dm._score(variants=variants, givens=givens) \
+            if pa.operation not in ["optimize", "choose_multivariate"] else None
 
         if pa.operation == 'score':
             result = scores
         else:
-            desired_operation = getattr(dm, pa.operation)
-            result = desired_operation(**{'variants': variants, 'scores': scores})
+            desired_operation = getattr(dc, pa.operation)
+            if pa.operation in ["rank", "which_from"]:
+                kwargs = {'variants': variants}
+            elif pa.operation in ["optimize", "choose_multivariate"]:
+                kwargs = {'variant_map': variants}
+            else:
+                kwargs = {'variants': variants, 'scores': scores}
+
+            # executed_function, function_kwargs, mockup_track_endpoint, track_url
+            result = mockup_and_execute(
+                executed_function=desired_operation, function_kwargs=kwargs,
+                mockup_track_endpoint=pa.mockup_track_endpoint, track_url=pa.track_url)
 
         if isinstance(result, np.ndarray):
             result = result.tolist()
