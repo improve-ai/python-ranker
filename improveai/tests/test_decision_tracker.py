@@ -13,7 +13,9 @@ from warnings import catch_warnings, simplefilter
 sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
 
+import improveai
 import improveai.decision_tracker as dtr
+from improveai.settings import MAX_TRACK_THREADS
 from improveai.utils.general_purpose_tools import is_valid_ksuid
 
 
@@ -1515,14 +1517,45 @@ class TestDecisionTracker:
             time.sleep(0.1)
 
     def test_post_improve_request_does_not_block_io(self):
-        track_url = 'https://bencv5hp7ekjurpcmd2i4r6ege0dwzyt.lambda-url.us-east-2.on.aws/'
-        decision_tracker = dtr.DecisionTracker(track_url=track_url)
+        # make multiple requests and check that:
+        # max N threads are running
+        # I/O is not blocked
+        decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
         dummy_body = {
             'type': 'decision',
             'model': 'test-model-0',
             'variant': 'asd',
             'count': 1}
 
-        msg_ids = [decision_tracker.post_improve_request(body_values=dummy_body) for _ in range(100)]
+        requests_attempts = 500
+
+        msg_ids = [None] * requests_attempts
+        tasks_in_queue = [None] * requests_attempts
+        executor_threads = [None] * requests_attempts
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, status_code=200)
+            for request_index in range(requests_attempts):
+                msg_ids[request_index] = decision_tracker.post_improve_request(body_values=dummy_body)
+                # assert that each time at most <= MAX_TRACK_THREADS tasks are in queue
+                tasks_in_queue[request_index] = improveai.track_improve_executor._work_queue.qsize()
+                executor_threads[request_index] = len(improveai.track_improve_executor._threads)
+                print('## CURRENT THREADS ##')
+                print(executor_threads[request_index])
+
+            # wait for all threads to finish
+            time.sleep(3)
+        # assert that all threads finished
+        current_qsize = improveai.track_improve_executor._work_queue.qsize()
+        print('### current_qsize ###')
+        assert improveai.track_improve_executor._work_queue.qsize() == 0
 
         assert all([el is not None for el in msg_ids])
+        assert all([el is not None for el in tasks_in_queue])
+        assert all([el is not None for el in executor_threads])
+
+        assert max(tasks_in_queue) <= MAX_TRACK_THREADS
+        assert max(executor_threads) <= MAX_TRACK_THREADS
+
+        assert 1 < np.mean(tasks_in_queue) <= MAX_TRACK_THREADS
+        assert 1 < np.mean(executor_threads) <= MAX_TRACK_THREADS

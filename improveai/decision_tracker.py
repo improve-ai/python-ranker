@@ -635,6 +635,7 @@ class DecisionTracker:
                     user_info[self.PAYLOAD_FOR_ERROR_KEY] = payload_json \
                         if len(payload_json) <= 1000 else payload_json[:100]
 
+                # TODO test this path within thread but how?
                 warn(
                     'When attempting to post to improve.ai endpoint got an error with code {} and user info: {}'
                     .format(str(response.status_code), orjson.dumps(user_info).decode('utf-8')))
