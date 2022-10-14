@@ -8,6 +8,7 @@ from pytest import fixture, raises
 import requests_mock as rqm
 import string
 import sys
+import time
 from unittest import TestCase
 import warnings
 from warnings import warn, catch_warnings, simplefilter
@@ -487,6 +488,7 @@ class TestDecisionModel(TestCase):
                 assert calculated_best == expected_best
                 assert decision_id is not None
                 assert is_valid_ksuid(decision_id)
+                time.sleep(0.1)
 
             # test with track url == None
             np.random.seed(scores_seed)
@@ -611,6 +613,7 @@ class TestDecisionModel(TestCase):
 
                 assert best_variant == expected_best
                 assert is_valid_ksuid(decision_id)
+                time.sleep(0.1)
 
         elif evaluated_method_name == 'choose_random':
             np.random.seed(score_seed)
@@ -653,6 +656,7 @@ class TestDecisionModel(TestCase):
 
                 assert best_variant == expected_best
                 assert is_valid_ksuid(decision_id)
+                time.sleep(0.1)
         elif evaluated_method_name == 'choose_multivariate':
             scores_seed = test_data.get('scores_seed', None)
             assert scores_seed is not None
@@ -688,6 +692,7 @@ class TestDecisionModel(TestCase):
                 assert calculated_best == expected_best
                 assert decision_id is not None
                 assert is_valid_ksuid(decision_id)
+                time.sleep(0.1)
 
             # test with track url == None
             np.random.seed(scores_seed)
@@ -987,6 +992,7 @@ class TestDecisionModel(TestCase):
             np.random.seed(scores_seed)
             best, decision_id = decision_model.which(variants)
             assert is_valid_ksuid(decision_id)
+            time.sleep(0.1)
 
         assert best == expected_best
 
@@ -1024,6 +1030,7 @@ class TestDecisionModel(TestCase):
                 np.random.seed(scores_seed)
                 best, decision_id = decision_model.which(variants)
                 assert is_valid_ksuid(decision_id)
+                time.sleep(0.1)
                 assert len(w) == 0
 
         assert best == expected_best
@@ -1098,6 +1105,7 @@ class TestDecisionModel(TestCase):
             best, decision_id = decision_model.which(variants)
             assert is_valid_ksuid(decision_id)
             assert best == expected_best
+            time.sleep(0.1)
 
     def test_which_valid_ndarray_variants(self):
         path_to_test_json = \
@@ -1142,6 +1150,7 @@ class TestDecisionModel(TestCase):
             best, decision_id = decision_model.which(variants)
             assert is_valid_ksuid(decision_id)
             assert best == expected_best
+            time.sleep(0.1)
 
     def test_which_invalid_variants(self):
         path_to_test_json = \
@@ -1382,6 +1391,7 @@ class TestDecisionModel(TestCase):
             np.random.seed(int(tracks_runners_up_seed))
             decision_id = decision.track()
             is_valid_ksuid(decision_id)
+            time.sleep(0.1)
 
     def test_random_valid_variants_list(self):
         self._generic_desired_decision_model_method_call_no_model(
@@ -1442,6 +1452,7 @@ class TestDecisionModel(TestCase):
             m.post(self.track_url, text='success')
             decision = decision_model.choose_from(list(range(10)), scores=None)
             decision.track()
+            time.sleep(0.1)
 
         reward = math.inf
 
@@ -1470,6 +1481,7 @@ class TestDecisionModel(TestCase):
             m.post(self.track_url, text='success')
             decision = decision_model.choose_from(list(range(10)), scores=None)
             decision.track()
+            time.sleep(0.1)
 
         reward = None
 
@@ -1510,6 +1522,7 @@ class TestDecisionModel(TestCase):
             decision = decision_model.choose_from(list(range(10)), scores=None)
             decision_id = decision.track()
             assert decision_id == decision.id_
+            time.sleep(0.1)
 
         expected_request_json = json.dumps(expected_add_reward_body, sort_keys=False)
 
@@ -1531,6 +1544,7 @@ class TestDecisionModel(TestCase):
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success', additional_matcher=custom_matcher)
             decision_model.add_reward(reward=reward, decision_id=decision.id_)
+            time.sleep(0.1)
 
     def test_add_rewards_raises_for_none_model_name(self):
         model = dm.DecisionModel(model_name=None, track_url=self.track_url)
@@ -1865,6 +1879,7 @@ class TestDecisionModel(TestCase):
                 variant=variant, runners_up=runners_up, sample=sample,
                 sample_pool_size=sample_pool_size)
             is_valid_ksuid(decision_id)
+            time.sleep(0.1)
 
     def test_track_no_runners_up(self):
         decision_model = dm.DecisionModel('dummy-model', track_url=self.track_url)
@@ -1914,6 +1929,7 @@ class TestDecisionModel(TestCase):
                     variant=variant, runners_up=runners_up, sample=sample,
                     sample_pool_size=sample_pool_size)
                 is_valid_ksuid(decision_id)
+                time.sleep(0.1)
                 assert len(w) == 0
 
     def test_track_no_sample(self):
@@ -1964,6 +1980,7 @@ class TestDecisionModel(TestCase):
                     variant=variant, runners_up=runners_up, sample=sample,
                     sample_pool_size=sample_pool_size)
                 is_valid_ksuid(decision_id)
+                time.sleep(0.1)
                 assert len(w) == 0
 
     def test_track_no_runners_up_no_sample(self):
@@ -2013,6 +2030,7 @@ class TestDecisionModel(TestCase):
                     variant=variant, runners_up=runners_up, sample=sample,
                     sample_pool_size=sample_pool_size)
                 is_valid_ksuid(decision_id)
+                time.sleep(0.1)
                 assert len(w) == 0
 
     def test_track_raises_for_empty_runners_up(self):

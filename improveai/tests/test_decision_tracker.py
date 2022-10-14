@@ -8,7 +8,7 @@ import requests_mock as rqm
 import os
 from pytest import fixture, raises
 import sys
-from warnings import warn, catch_warnings, simplefilter
+from warnings import catch_warnings, simplefilter
 
 sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
@@ -600,6 +600,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=[None],
                     givens=None, model_name=self.dummy_model_name)
+                time.sleep(0.1)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -646,6 +647,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=variants,
                     givens=None, model_name=self.dummy_model_name)
+                time.sleep(0.1)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -693,6 +695,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=variants,
                     givens=None, model_name=self.dummy_model_name)
+                time.sleep(0.1)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -740,7 +743,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=variants,
                     givens=None, model_name=self.dummy_model_name)
-
+                time.sleep(0.1)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -790,6 +793,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=variants,
                     givens=None, model_name=self.dummy_model_name)
+                time.sleep(0.1)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -837,6 +841,7 @@ class TestDecisionTracker:
                 decision_tracker.track(
                     ranked_variants=variants,
                     givens=None, model_name=self.dummy_model_name)
+                time.sleep(0.1)
                 assert len(w) == 0
 
     def test_track_2_variants_zero_max_runners_up(self):
@@ -883,6 +888,7 @@ class TestDecisionTracker:
                 np.random.seed(self.sample_seed)
                 decision_tracker.track(
                     ranked_variants=variants, givens=None, model_name=self.dummy_model_name)
+                time.sleep(0.1)
                 assert len(w) == 0
 
     def test_track(self):
@@ -931,6 +937,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=variants,
                     givens=givens, model_name=self.dummy_model_name)
+                time.sleep(0.1)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -979,6 +986,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=np.array(variants),
                     givens=givens, model_name=self.dummy_model_name)
+            time.sleep(0.1)
             assert len(w) == 0
 
         assert is_valid_ksuid(decision_id)
@@ -1025,6 +1033,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=variants,
                     givens=None, model_name=self.dummy_model_name)
+                time.sleep(0.1)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1073,6 +1082,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=variants,
                     givens=None, model_name=self.dummy_model_name)
+                time.sleep(0.1)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1139,6 +1149,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=variants,
                     givens=None, model_name=self.dummy_model_name)
+                time.sleep(0.1)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1185,6 +1196,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=variants,
                     givens=None, model_name=self.dummy_model_name)
+                time.sleep(0.1)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1224,6 +1236,7 @@ class TestDecisionTracker:
                 simplefilter("always")
                 decision_tracker.add_reward(
                     reward=reward, model_name=self.dummy_model_name, decision_id=decision_id)
+                time.sleep(0.1)
                 assert len(w) == 0
 
     def test_add_int_reward(self):
@@ -1242,6 +1255,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=variants,
                     givens=None, model_name=self.dummy_model_name)
+                time.sleep(0.1)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1284,6 +1298,7 @@ class TestDecisionTracker:
                 print(f'Decision ID: {decision_id is None}')
                 decision_tracker.add_reward(
                     reward=reward, model_name=self.dummy_model_name, decision_id=decision_id)
+                time.sleep(0.1)
                 assert len(w) == 0
 
     def test_add_reward_bad_reward_type(self):
@@ -1310,6 +1325,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=variants,
                     givens=None, model_name=self.dummy_model_name)
+                time.sleep(0.1)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1348,6 +1364,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=variants,
                     givens=None, model_name=self.dummy_model_name)
+                time.sleep(0.1)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1396,6 +1413,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=variants,
                     givens=None, model_name=self.dummy_model_name)
+                time.sleep(0.1)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1469,13 +1487,10 @@ class TestDecisionTracker:
             m.post(self.track_url, text='success', additional_matcher=cache_headers)
 
             decision_id = decision_tracker.post_improve_request(body_values=mockup_body)
+            time.sleep(0.1)
 
-            print('### decision_id ###')
-            print(decision_id)
-            print(headers_cache)
             assert is_valid_ksuid(decision_id)
 
-            time.sleep(2)
             for k, v in expected_headers.items():
                 assert k in headers_cache['headers']
                 assert v == headers_cache['headers'][k]
@@ -1487,6 +1502,7 @@ class TestDecisionTracker:
             # ranked_variants: list or np.ndarray, givens: dict, model_name: str
             decision_id = decision_tracker.track(ranked_variants=[0, 1, 2], givens={}, model_name=None)
             assert decision_id is None
+            time.sleep(0.1)
 
     def test_track_returns_none_for_bad_model_name(self):
         decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
@@ -1496,6 +1512,7 @@ class TestDecisionTracker:
             # ranked_variants: list or np.ndarray, givens: dict, model_name: str
             decision_id = decision_tracker.track(ranked_variants=[0, 1, 2], givens={}, model_name=bad_model_name)
             assert decision_id is None
+            time.sleep(0.1)
 
     def test_post_improve_request_does_not_block_io(self):
         track_url = 'https://bencv5hp7ekjurpcmd2i4r6ege0dwzyt.lambda-url.us-east-2.on.aws/'

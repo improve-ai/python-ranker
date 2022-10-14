@@ -4,6 +4,7 @@ import numpy as np
 import os
 from pytest import fixture, raises
 import requests_mock as rqm
+import time
 from unittest import TestCase
 from warnings import catch_warnings, simplefilter
 
@@ -351,6 +352,7 @@ class TestDecisionContext(TestCase):
                     assert best == expected_best
                     assert is_valid_ksuid(decision_id)
 
+                    time.sleep(0.1)
                     assert len(w) == 0
 
         elif tested_method_name == 'choose_first':
@@ -380,6 +382,7 @@ class TestDecisionContext(TestCase):
                     best, decision_id = decision_context.first(variants)
                     assert best == expected_best
                     assert is_valid_ksuid(decision_id)
+                    time.sleep(0.1)
                     assert len(w) == 0
 
         elif tested_method_name == 'choose_random':
@@ -409,6 +412,7 @@ class TestDecisionContext(TestCase):
                     best, decision_id = decision_context.random(variants)
                     assert best == expected_best
                     assert is_valid_ksuid(decision_id)
+                    time.sleep(0.1)
                     assert len(w) == 0
 
         elif tested_method_name == 'rank':
@@ -424,6 +428,7 @@ class TestDecisionContext(TestCase):
                     calculated_ranked = decision_context.rank(variants=variants)
                     assert decision_context.decision_model.last_decision_id is None
                     np.testing.assert_array_equal(calculated_ranked, expected_ranked)
+                    time.sleep(0.1)
                     assert len(w) == 0
 
         elif tested_method_name == 'optimize':
@@ -444,6 +449,7 @@ class TestDecisionContext(TestCase):
                     assert calculated_best == expected_best
                     assert decision_id is not None
                     assert is_valid_ksuid(decision_id)
+                    time.sleep(0.1)
                     assert len(w) == 0
 
             # test with track url == None
@@ -1150,6 +1156,7 @@ class TestDecisionContext(TestCase):
                 decision.track()
                 best = decision.get()
                 is_valid_ksuid(decision.id_)
+                time.sleep(0.1)
                 assert best == 1
                 assert len(w) == 0
 
@@ -1205,6 +1212,7 @@ class TestDecisionContext(TestCase):
                     variant=variant, runners_up=runners_up, sample=sample,
                     sample_pool_size=sample_pool_size)
                 is_valid_ksuid(decision_id)
+                time.sleep(0.1)
                 assert len(w) == 0
 
     def test_track_no_runners_up(self):
@@ -1258,6 +1266,7 @@ class TestDecisionContext(TestCase):
                     variant=variant, runners_up=runners_up, sample=sample,
                     sample_pool_size=sample_pool_size)
                 is_valid_ksuid(decision_id)
+                time.sleep(0.1)
                 assert len(w) == 0
 
     def test_track_no_sample(self):
@@ -1311,6 +1320,7 @@ class TestDecisionContext(TestCase):
                     variant=variant, runners_up=runners_up, sample=sample,
                     sample_pool_size=sample_pool_size)
                 is_valid_ksuid(decision_id)
+                time.sleep(0.1)
                 assert len(w) == 0
 
     def test_track_no_runners_up_no_sample(self):
@@ -1363,6 +1373,7 @@ class TestDecisionContext(TestCase):
                     variant=variant, runners_up=runners_up, sample=sample,
                     sample_pool_size=sample_pool_size)
                 is_valid_ksuid(decision_id)
+                time.sleep(0.1)
                 assert len(w) == 0
 
     def test_track_raises_for_empty_runners_up(self):

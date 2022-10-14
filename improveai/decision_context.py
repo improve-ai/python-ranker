@@ -1,7 +1,6 @@
 from copy import deepcopy
 
 import numpy as np
-from warnings import warn
 
 import improveai.decision as d
 import improveai.decision_model as dm

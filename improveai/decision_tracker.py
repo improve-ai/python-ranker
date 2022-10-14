@@ -1,9 +1,9 @@
-import re
-import warnings
 from copy import deepcopy
 import numpy as np
 import orjson
+import re
 import requests as rq
+from threading import RLock
 from typing import Dict
 from warnings import warn
 
@@ -466,11 +466,11 @@ class DecisionTracker:
         assert self.track_url is not None
 
         if model_name is None:
-            warnings.warn('`model_name` must not be None in order to be tracked')
+            warn('`model_name` must not be None in order to be tracked')
             return None
 
         if not re.search(XGBChooser.MODEL_NAME_REGEXP, model_name):
-            warnings.warn(f'`model_name` must comply with {XGBChooser.MODEL_NAME_REGEXP} regexp')
+            warn(f'`model_name` must comply with {XGBChooser.MODEL_NAME_REGEXP} regexp')
             return None
 
         if isinstance(ranked_variants, np.ndarray):
@@ -619,7 +619,7 @@ class DecisionTracker:
                     user_info[self.PAYLOAD_FOR_ERROR_KEY] = payload_json \
                         if len(payload_json) <= 1000 else payload_json[:100]
 
-                warnings.warn(
+                warn(
                     'When attempting to post to improve.ai endpoint got an error with code {} and user info: {}'
                     .format(str(response.status_code), orjson.dumps(user_info).decode('utf-8')))
 
@@ -659,25 +659,6 @@ class DecisionTracker:
             warn("Data serialization error: {}\nbody: {}".format(exc, body))
             return None
 
-        print('### headers ###')
-        print(headers)
         improveai.track_improve_executor.submit(self.do_post_improve_request, *[payload_json, headers])
-        # try:
-        #     response = rq.post(url=self.track_url, data=payload_json, headers=headers)
-        #     if response.status_code >= 400:
-        #         user_info = dict(deepcopy(response.headers))
-        #         user_info[self.REQUEST_ERROR_CODE_KEY] = str(response.status_code)
-        #
-        #         if payload_json:
-        #             user_info[self.PAYLOAD_FOR_ERROR_KEY] = payload_json \
-        #                 if len(payload_json) <= 1000 else payload_json[:100]
-        #
-        #         warnings.warn(
-        #             'When attempting to post to improve.ai endpoint got an error with code {} and user info: {}'
-        #             .format(str(response.status_code), orjson.dumps(user_info).decode('utf-8')))
-        #
-        # except Exception as exc:
-        #     print('Following error occurred:')
-        #     print(exc)
 
         return body[self.MESSAGE_ID_KEY]
