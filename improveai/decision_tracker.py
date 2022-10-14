@@ -3,7 +3,6 @@ import numpy as np
 import orjson
 import re
 import requests as rq
-from threading import RLock
 from typing import Dict
 from warnings import warn
 

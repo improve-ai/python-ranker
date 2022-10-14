@@ -1262,7 +1262,6 @@ class TestDecisionTracker:
 
             assert is_valid_ksuid(decision_id)
 
-        # decision_id = decision_id_container['decision_id']
         reward = 1
 
         expected_add_reward_body = {

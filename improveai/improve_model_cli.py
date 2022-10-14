@@ -2,7 +2,6 @@ from argparse import ArgumentParser
 import json
 import numpy as np
 import os
-import simplejson
 
 from improveai import DecisionModel, DecisionContext
 from improveai.utils.general_purpose_tools import read_jsonstring_from_file
