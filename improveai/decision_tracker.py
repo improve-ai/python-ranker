@@ -609,6 +609,22 @@ class DecisionTracker:
             return False
 
     def do_post_improve_request(self, payload_json: str, headers: dict):
+        """
+        Execute improve POST request with provided payload and headers
+
+        Parameters
+        ----------
+        payload_json: str
+            improveai body dumped to JSON
+        headers: dict
+            request headers
+
+        Returns
+        -------
+        None
+            None
+
+        """
         try:
             response = rq.post(url=self.track_url, data=payload_json, headers=headers)
             if response.status_code >= 400:
