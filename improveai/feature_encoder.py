@@ -534,6 +534,14 @@ def sprinkle(x, small_noise):
     """
     return (x + small_noise) * (1 + small_noise)
 
+def get_noise_offset_scale(noise):
+    return (noise * 2 ** -142, 1 + noise * 2 ** -17)
+
+def v8_sprinkle(x, noise_offset, noise_scale):
+    # x + noise_offset will round to x for most values of x
+    # allows different values when x == 0.0
+    return (x + noise_offset) * noise_scale
+
 
 def reverse_sprinkle(sprinkled_x, small_noise):
     """
