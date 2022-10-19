@@ -535,7 +535,7 @@ def sprinkle(x, small_noise):
     return (x + small_noise) * (1 + small_noise)
 
 def get_noise_offset_scale(noise):
-    # x + noise * 2 ** -142 will round to zero for most values of x. Used to create
+    # x + noise * 2 ** -142 will round to x for most values of x. Used to create
     # distinct values when x is 0.0 since x * (1 + noise * 2 ** -17) will be zero
     return (noise * 2 ** -142, 1 + noise * 2 ** -17)
 
