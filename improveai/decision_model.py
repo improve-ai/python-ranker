@@ -405,7 +405,7 @@ class DecisionModel:
         """
         return self.decide(variants=variants).ranked
 
-    def given(self, givens: dict) -> dc.DecisionContext:
+    def given(self, context: dict) -> dc.DecisionContext:
         """
         Wrapper for chaining.
 
@@ -422,7 +422,7 @@ class DecisionModel:
         """
 
         # assert givens is not None
-        return dc.DecisionContext(decision_model=self, givens=givens)
+        return dc.DecisionContext(decision_model=self, context=context)
 
     def which(self, *variants) -> tuple:
         """
@@ -526,7 +526,7 @@ class DecisionModel:
 
         """
 
-        return self.given(givens=self.givens_provider.givens(for_model=self))\
+        return self.given(context=self.givens_provider.givens(for_model=self))\
             .decide(variants=variants, scores=scores, ordered=ordered)
 
     def optimize(self, variant_map: dict):
@@ -661,7 +661,7 @@ class DecisionModel:
             combination of the best variants in a dict
 
         """
-        return self.given(givens=self.givens_provider.givens(for_model=self))\
+        return self.given(context=self.givens_provider.givens(for_model=self))\
             .choose_multivariate(variant_map=variant_map)
 
     def _track(self, variant: object, runners_up: list, sample: object, sample_pool_size: int):
@@ -685,7 +685,7 @@ class DecisionModel:
             decision ID
         """
 
-        return self.given(givens=self.givens_provider.givens(for_model=self)) \
+        return self.given(context=self.givens_provider.givens(for_model=self)) \
             ._track(variant=variant, runners_up=runners_up, sample=sample, sample_pool_size=sample_pool_size)
 
     @staticmethod

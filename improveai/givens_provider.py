@@ -3,24 +3,23 @@ import improveai.decision_model as dm
 
 class GivensProvider:
 
-    def givens(self, for_model, givens: dict or None = None) -> dict:
+    def givens(self, for_model, context = None) -> tuple:
         """
-        Provides givens for input `for_model`. Input `givens` are included in
+        Provides givens for input `for_model`. Input `context` are included in
         returned value
 
         Parameters
         ----------
         for_model: dm.DecisionModel
             instance of DecisionModel for which givens should be provided
-        givens: dict or None
-            givens which will be returned
+        context:
+            context which will be included as the first element of the givens
 
         Returns
         -------
-        dict or None
-            givens which will be returned
+        tuple
+            givens containing only the provided context
 
         """
         assert isinstance(for_model, dm.DecisionModel)
-        assert isinstance(givens, dict) or givens is None
-        return givens
+        return (context)

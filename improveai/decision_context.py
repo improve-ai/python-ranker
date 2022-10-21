@@ -30,7 +30,7 @@ class DecisionContext:
         self._decision_model = value
 
     @property
-    def givens(self) -> dict:
+    def context(self) -> dict:
         """
         Givens for this DecisionContext
 
@@ -42,13 +42,13 @@ class DecisionContext:
         """
         return self._givens
 
-    @givens.setter
-    def givens(self, value):
+    @context.setter
+    def context(self, value):
         # givens can be None or dict
         assert isinstance(value, dict) or value is None
         self._givens = value
 
-    def __init__(self, decision_model, givens: dict or None):
+    def __init__(self, decision_model, context: dict or None):
         """
         Init with params
 
@@ -60,7 +60,7 @@ class DecisionContext:
             givens for this DecisionContext
         """
         self.decision_model = decision_model
-        self.givens = givens
+        self.context = context
 
     def score(self, variants) -> np.ndarray:
         """
@@ -79,7 +79,7 @@ class DecisionContext:
         """
 
         # get givens from provider
-        givens = self.decision_model.givens_provider.givens(for_model=self.decision_model, givens=self.givens)
+        givens = self.decision_model.givens_provider.givens(for_model=self.decision_model, context=self.context)
         return self.decision_model._score(variants=variants, givens=givens)
 
     def which(self, *variants) -> tuple:
@@ -153,7 +153,7 @@ class DecisionContext:
         """
         # TODO test with scores == None and scores != None
         # get givens via GivensProvider
-        givens = self.decision_model.givens_provider.givens(for_model=self.decision_model, givens=self.givens)
+        givens = self.decision_model.givens_provider.givens(for_model=self.decision_model, context=self.context)
         # rank variants if they are not ordered
         assert isinstance(ordered, bool)
         if scores is not None and ordered is True:
@@ -373,7 +373,7 @@ class DecisionContext:
         variants_count = 1 + runners_up_count + sample_pool_size
         body = self.decision_model.tracker._get_decision_track_body(
             variant=variant, model_name=self.decision_model.model_name, variants_count=variants_count,
-            givens=self.givens, runners_up=runners_up, sample=sample,
+            givens=self.context, runners_up=runners_up, sample=sample,
             has_sample=True if sample_pool_size > 0 else False)
 
         return self.decision_model.tracker.post_improve_request(body_values=body)
