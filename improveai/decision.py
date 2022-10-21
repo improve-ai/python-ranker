@@ -156,8 +156,7 @@ class Decision:
         self.__id_ = self.decision_model.tracker.track(
             ranked_variants=self.ranked, givens=self.givens, model_name=self.decision_model.model_name)
         # if self.id_ is not None at this point it means that track() was called successfully
-        assert self.id_ is not None, \
-            'Decision tracking failed -> please check console for tracking error.'
+        assert self.id_ is not None
         # cache most recent tracked decision ID to a decision model
         self.decision_model.last_decision_id = self.id_
 

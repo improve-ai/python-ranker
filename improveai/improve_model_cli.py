@@ -13,7 +13,7 @@ def mockup_and_execute(executed_function, function_kwargs, mockup_track_endpoint
         with rqm.Mocker() as m:
             m.post(track_url, text='success')
             result = executed_function(**function_kwargs)
-            time.sleep(0.125)
+            time.sleep(0.15)
             return result
     else:
         return executed_function(**function_kwargs)
