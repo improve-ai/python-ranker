@@ -534,16 +534,16 @@ def sprinkle(x, small_noise):
     """
     return (x + small_noise) * (1 + small_noise)
 
-def get_noise_offset_scale(noise):
+def get_noise_shift_scale(noise):
     assert noise >= 0.0 and noise < 1.0
     # x + noise * 2 ** -142 will round to x for most values of x. Used to create
     # distinct values when x is 0.0 since x * (1 + noise * 2 ** -17) will be zero
     return (noise * 2 ** -142, 1 + noise * 2 ** -17)
 
-def v8_sprinkle(x, noise_offset, noise_scale):
+def v8_sprinkle(x, noise_shift, noise_scale):
     # x + noise_offset will round to x for most values of x
     # allows different values when x == 0.0
-    return (x + noise_offset) * noise_scale
+    return (x + noise_shift) * noise_scale
 
 
 def reverse_sprinkle(sprinkled_x, small_noise):
