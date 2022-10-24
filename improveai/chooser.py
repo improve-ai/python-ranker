@@ -11,6 +11,7 @@ from xgboost.core import XGBoostError
 from improveai.feature_encoder import FeatureEncoder
 from improveai.settings import CYTHON_BACKEND_AVAILABLE
 from improveai.utils.choosers_feature_encoding_tools import encoded_variants_to_np
+from improveai.utils.general_purpose_tools import constant
 from improveai.utils.gzip_tools import check_and_get_unzipped_model
 from improveai.utils.url_tools import is_path_http_addr, get_model_bytes_from_url
 
@@ -240,42 +241,62 @@ class XGBChooser:
         assert 0 <= value <= 1
         self._imposed_noise = value
 
-    def __init__(
-            self, model_metadata_key: str = 'json',
-            model_feature_names_key: str = 'feature_names',
-            model_seed_key: str = 'model_seed',
-            model_name_key: str = 'model_name'):
+    @property
+    def improveai_major_version_from_metadata(self) -> str or None:
         """
-        Init with params
+        Stores the Improve AI model version
 
-        Parameters
-        ----------
-        model_metadata_key: str
-            key storing 'model metadata' inside 'user defined metadata'
-        model_feature_names_key: str
-            key storing 'feature names' inside 'model metadata'
-        model_seed_key: str
-            key storing 'seed' inside 'model metadata'
-        model_name_key: str
-            key storing 'model name' inside 'model metadata'
+        Returns
+        -------
+        str or None
+            string version of the Improve AI model or None
+        """
+        return self._improveai_model_version
+
+    @improveai_major_version_from_metadata.setter
+    def improveai_major_version_from_metadata(self, value):
+        self._improveai_model_version = value
+
+    @constant
+    def MODEL_METADATA_KEY():
+        return 'json'
+
+    @constant
+    def MODEL_FEATURE_NAMES_KEY():
+        return 'feature_names'
+
+    @constant
+    def MODEL_SEED_KEY():
+        return 'model_seed'
+
+    @constant
+    def MODEL_NAME_KEY():
+        return 'model_name'
+
+    @constant
+    def IMPROVE_AI_ALLOWED_MAJOR_VERSION():
+        return 7
+
+    @constant
+    def IMPROVEAI_VERSION_KEY():
+        return 'ai.improve.version'
+
+    def __init__(self):
+        """
+        Initialize chooser object
         """
 
         self.model = None
-        self.model_metadata_key = model_metadata_key
         self.model_metadata = None
 
         self.feature_encoder = None
-        self.model_feature_names_key = model_feature_names_key
         self.model_feature_names = np.empty(shape=(1,))
 
-        self.model_seed_key = model_seed_key
         self.model_seed = None
-
-        self.model_name_key = model_name_key
         self._model_name = None
-
         self.current_noise = None
         self._imposed_noise = None
+        self._improveai_major_version_from_metadata = None
 
     def load_model(self, input_model_src: str, verbose: bool = False):
         """
@@ -331,11 +352,41 @@ class XGBChooser:
         self.model_name = self._get_model_name(model_metadata=model_metadata)
         self.model_feature_names = \
             self._get_model_feature_names(model_metadata=model_metadata)
+        # TODO test this
+        self.improveai_major_version_from_metadata = \
+            self._get_improveai_major_version(model_metadata=model_metadata)
 
         if CYTHON_BACKEND_AVAILABLE:
             self.feature_encoder = FastFeatureEncoder(model_seed=self.model_seed)
         else:
             self.feature_encoder = FeatureEncoder(model_seed=self.model_seed)
+
+    def _get_improveai_major_version(self, model_metadata: dict) -> str or None:
+        """
+        Extract Improve AI version from model metadata and return it if it is valid / allowed
+
+        Parameters
+        ----------
+        model_metadata: dict
+            a dictionary containing model metadata
+
+        Returns
+        -------
+        str or None
+            major Improve AI version extracted from loaded improve model
+        """
+        improveai_major_version = None
+        if self.IMPROVEAI_VERSION_KEY in model_metadata.keys():
+            improveai_version = model_metadata[self.IMPROVEAI_VERSION_KEY]
+
+            print('### improveai_version ###')
+            print(improveai_version)
+
+            assert improveai_version is not None and isinstance(improveai_version, str)
+            # major version is the first chunk of version string
+            improveai_major_version = int(improveai_version.split('.')[0])
+            assert improveai_major_version == self.IMPROVE_AI_ALLOWED_MAJOR_VERSION
+        return improveai_major_version
 
     def _get_model_metadata(self) -> dict:
         """
@@ -350,9 +401,9 @@ class XGBChooser:
         assert 'user_defined_metadata' in self.model.attributes().keys()
         user_defined_metadata_str = self.model.attr('user_defined_metadata')
         user_defined_metadata = json.loads(user_defined_metadata_str)
-        assert self.model_metadata_key in user_defined_metadata.keys()
+        assert self.MODEL_METADATA_KEY in user_defined_metadata.keys()
 
-        return user_defined_metadata[self.model_metadata_key]
+        return user_defined_metadata[self.MODEL_METADATA_KEY]
 
     def score(self, variants: list or tuple or np.ndarray, givens: dict or None, **kwargs) -> np.ndarray:
         """
@@ -545,7 +596,7 @@ class XGBChooser:
         if not model_metadata:
             raise ValueError('Model metadata empty or None!')
 
-        feature_names = model_metadata.get(self.model_feature_names_key, None)
+        feature_names = model_metadata.get(self.MODEL_FEATURE_NAMES_KEY, None)
 
         if not feature_names:
             raise ValueError('Feature names not in model metadata!')
@@ -571,7 +622,7 @@ class XGBChooser:
         if not model_metadata:
             raise ValueError('Model metadata empty or None!')
 
-        model_seed = model_metadata.get(self.model_seed_key, None)
+        model_seed = model_metadata.get(self.MODEL_SEED_KEY, None)
 
         if not model_seed:
             raise ValueError('Feature names not in model metadata!')
@@ -596,7 +647,7 @@ class XGBChooser:
         if not model_metadata:
             raise ValueError('Model metadata empty or None!')
 
-        model_name = model_metadata.get(self.model_name_key, None)
+        model_name = model_metadata.get(self.MODEL_NAME_KEY, None)
 
         if not model_name:
             raise ValueError('Feature names not in model metadata!')

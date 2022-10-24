@@ -2240,3 +2240,34 @@ class TestDecisionModel(TestCase):
         variant_map = 1
         with raises(AssertionError) as aerr:
             dm.DecisionModel.full_factorial_variants(variant_map=variant_map)
+
+    def test_load_model_with_valid_improveai_version(self):
+        decision_model = dm.DecisionModel('test-model')
+        model_path = os.getenv('DUMMY_MODEL_VALID_IMPROVEAI_VERSION_PATH', None)
+        assert model_path is not None
+        # loading should not raise an error
+        decision_model.load(model_path)
+        assert decision_model.chooser.improveai_major_version_from_metadata == 7
+
+    def test_load_model_with_improveai_version_none(self):
+        decision_model = dm.DecisionModel('test-model')
+        model_path = os.getenv('DUMMY_MODEL_NONE_IMPROVEAI_VERSION_PATH', None)
+        assert model_path is not None
+        # loading should not raise an error
+        with raises(AssertionError):
+            decision_model.load(model_path)
+
+    def test_load_model_with_invalid_improveai_version(self):
+        decision_model = dm.DecisionModel('test-model')
+        model_path = os.getenv('DUMMY_MODEL_INVALID_IMPROVEAI_VERSION_PATH', None)
+        assert model_path is not None
+        # loading should not raise an error
+        with raises(AssertionError):
+            decision_model.load(model_path)
+
+    def test_load_model_with_no_improveai_version(self):
+        decision_model = dm.DecisionModel('test-model')
+        model_path = os.getenv('DUMMY_MODEL_PATH', None)
+        assert model_path is not None
+        decision_model.load(model_path)
+        assert decision_model.chooser.improveai_major_version_from_metadata is None
