@@ -7,7 +7,6 @@ import cython
 from libc.math cimport isnan
 import numpy as np
 cimport numpy as np
-import warnings
 import xxhash
 
 
@@ -15,7 +14,7 @@ cdef object xxhash3 = xxhash.xxh3_64_intdigest
 cdef set JSON_SERIALIZABLE_TYPES = {int, float, str, bool, list, tuple, dict}
 
 import improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils as cfeu
-import improveai.feature_encoder as fe
+from improveai.utils.general_purpose_tools import ALLOWED_VARIANT_COLLECTION_TYPES
 
 
 encoded_variant_into_np_row = cfeu.encoded_variant_into_np_row
@@ -66,7 +65,7 @@ cpdef _has_top_level_string_keys(dict checked_dict):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef encode(object object_, unsigned long long seed, double small_noise, dict features):
+cpdef encode(object object_, unsigned long long seed, double small_noise, dict features, unsigned long long offset=0):
     """
     Encodes a JSON serializable object to  a flat key - value pair(s) structure / dict
     (sometimes a single `object_` will result in 2 features, e.g. strings, lists, etc...).
@@ -112,7 +111,7 @@ cpdef encode(object object_, unsigned long long seed, double small_noise, dict f
         if isnan(object_):  # nan is treated as missing feature, return
             return
 
-        feature_name = hash_to_feature_name(seed)
+        feature_name = hash_to_feature_name(seed, offset=offset)
 
         previous_object_ = \
             _get_previous_value(feature_name=feature_name, into=features, small_noise=small_noise)
@@ -129,7 +128,7 @@ cpdef encode(object object_, unsigned long long seed, double small_noise, dict f
     if isinstance(object_, str):
         hashed = xxhash3(object_, seed=seed)
 
-        feature_name = hash_to_feature_name(seed)
+        feature_name = hash_to_feature_name(seed, offset=offset)
 
         previous_hashed = \
             _get_previous_value(feature_name=feature_name, into=features, small_noise=small_noise)
@@ -137,7 +136,7 @@ cpdef encode(object object_, unsigned long long seed, double small_noise, dict f
         features[feature_name] = \
             sprinkle(<double>(<long long>(((hashed & 0xffff0000) >> 16) - 0x8000)) + previous_hashed, small_noise)
 
-        hashed_feature_name = hash_to_feature_name(hashed)
+        hashed_feature_name = hash_to_feature_name(hashed, offset=offset)
 
         previous_hashed_for_feature_name = \
             _get_previous_value(feature_name=hashed_feature_name, into=features, small_noise=small_noise)
@@ -150,12 +149,12 @@ cpdef encode(object object_, unsigned long long seed, double small_noise, dict f
     if isinstance(object_, dict):
         assert _has_top_level_string_keys(object_)
         for key, value in object_.items():
-            encode(value, xxhash3(key, seed=seed), small_noise, features)
+            encode(value, xxhash3(key, seed=seed), small_noise, features, offset=offset)
         return
 
     if isinstance(object_, (list, tuple)):
         for index, item in enumerate(object_):
-            encode(item, xxhash3(index.to_bytes(8, byteorder='big'), seed=seed), small_noise, features)
+            encode(item, xxhash3(index.to_bytes(8, byteorder='big'), seed=seed), small_noise, features, offset=offset)
 
         return
 
@@ -193,7 +192,7 @@ cpdef double _get_previous_value(str feature_name, dict into, double small_noise
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef str hash_to_feature_name(unsigned long long hash_):
+cpdef str hash_to_feature_name(unsigned long long hash_, unsigned long long offset=0):
     """
     Converts a hash to string which will become a feature name
 
@@ -201,6 +200,9 @@ cpdef str hash_to_feature_name(unsigned long long hash_):
     ----------
     hash_: int
         an integer output from xxhash3
+    offset: int
+        feature name offset corresponding to position in the top level array
+        (0 if top level is not an array or parent was a first element)
 
     Returns
     -------
@@ -208,7 +210,8 @@ cpdef str hash_to_feature_name(unsigned long long hash_):
         a string representation of a hex feature name created from int
 
     """
-    return '%0*x' % (8, (hash_ >> 32))
+    assert isinstance(offset, int)
+    return '%0*x' % (8, ((hash_ >> 32) + offset))
 
 
 @cython.boundscheck(False)
@@ -412,6 +415,9 @@ cdef class FeatureEncoder:
 
         if isinstance(variant, dict):
             encode(variant, self.variant_seed, small_noise, into)
+        elif type(variant) in ALLOWED_VARIANT_COLLECTION_TYPES:
+            [encode(top_level_value, self.value_seed, small_noise, into, offset=top_level_index)
+             for top_level_index, top_level_value in enumerate(variant)]
         else:
             encode(variant, self.value_seed, small_noise, into)
 

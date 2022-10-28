@@ -3,6 +3,8 @@ import math
 import numpy as np
 import xxhash
 
+from improveai.utils.general_purpose_tools import ALLOWED_VARIANT_COLLECTION_TYPES
+
 
 xxhash3 = xxhash.xxh3_64_intdigest
 JSON_SERIALIZABLE_TYPES = {int, float, str, bool, list, tuple, dict, type(None)}
@@ -142,6 +144,9 @@ class FeatureEncoder:
 
         if isinstance(variant, dict):
             encode(variant, self.variant_seed, small_noise, into)
+        elif type(variant) in ALLOWED_VARIANT_COLLECTION_TYPES:
+            [encode(top_level_value, self.value_seed, small_noise, into, offset=top_level_index)
+             for top_level_index, top_level_value in enumerate(variant)]
         else:
             encode(variant, self.value_seed, small_noise, into)
 
@@ -217,6 +222,7 @@ class FeatureEncoder:
             self, variants: Iterable, multiple_givens: Iterable,
             multiple_extra_features: Iterable, feature_names: Iterable,
             noise: float) -> np.ndarray:
+
         """
         Provided list of variants and corresponding lists of givens and extra
         features encodes variants completely and converts to numpy array
@@ -337,7 +343,7 @@ def _has_top_level_string_keys(checked_dict) -> bool:
     return all(isinstance(k, str) for k in checked_dict.keys())
 
 
-def encode(object_, seed, small_noise, features):
+def encode(object_, seed, small_noise, features, offset=0):
     """
     Encodes a JSON serializable object to  a flat key - value pair(s) structure / dict
     (sometimes a single `object_` will result in 2 features, e.g. strings, lists, etc...).
@@ -366,6 +372,10 @@ def encode(object_, seed, small_noise, features):
         a shrunk noise to be added to value of encoded feature
     features: dict
         a flat dict of {<feature name>: <feature value>, ...} pairs
+    offset: int
+        feature name offset corresponding to position in the top level array
+        (0 if top level is not an array or parent was a first element)
+
 
     Returns
     -------
@@ -380,7 +390,7 @@ def encode(object_, seed, small_noise, features):
         if math.isnan(object_):  # nan is treated as missing feature, return
             return
 
-        feature_name = hash_to_feature_name(seed)
+        feature_name = hash_to_feature_name(seed, offset=offset)
 
         previous_object_ = \
             _get_previous_value(feature_name=feature_name, into=features, small_noise=small_noise)
@@ -392,7 +402,7 @@ def encode(object_, seed, small_noise, features):
     if isinstance(object_, str):
         hashed = xxhash3(object_, seed=seed)
 
-        feature_name = hash_to_feature_name(seed)
+        feature_name = hash_to_feature_name(seed, offset=offset)
 
         previous_hashed = \
             _get_previous_value(feature_name=feature_name, into=features, small_noise=small_noise)
@@ -400,7 +410,7 @@ def encode(object_, seed, small_noise, features):
         features[feature_name] = \
             sprinkle((((hashed & 0xffff0000) >> 16) - 0x8000) + previous_hashed, small_noise)
 
-        hashed_feature_name = hash_to_feature_name(hashed)
+        hashed_feature_name = hash_to_feature_name(hashed, offset=offset)
 
         previous_hashed_for_feature_name = \
             _get_previous_value(feature_name=hashed_feature_name, into=features, small_noise=small_noise)
@@ -413,12 +423,12 @@ def encode(object_, seed, small_noise, features):
     if isinstance(object_, dict):
         assert _has_top_level_string_keys(object_)
         for key, value in object_.items():
-            encode(value, xxhash3(key, seed=seed), small_noise, features)
+            encode(value, xxhash3(key, seed=seed), small_noise, features, offset=offset)
         return
 
     if isinstance(object_, (list, tuple)):
         for index, item in enumerate(object_):
-            encode(item, xxhash3(index.to_bytes(8, byteorder='big'), seed=seed), small_noise, features)
+            encode(item, xxhash3(index.to_bytes(8, byteorder='big'), seed=seed), small_noise, features, offset=offset)
         return
     # None, json null, or unsupported type. Treat as missing feature, return
 
@@ -451,7 +461,7 @@ def _get_previous_value(
         return reverse_sprinkle(into[feature_name], small_noise)
 
 
-def hash_to_feature_name(hash_: int):
+def hash_to_feature_name(hash_: int, offset: int = 0):
     """
     Converts a hash to string which will become a feature name
 
@@ -459,6 +469,9 @@ def hash_to_feature_name(hash_: int):
     ----------
     hash_: int
         an integer output from xxhash3
+    offset: int
+        feature name offset corresponding to position in the top level array
+        (0 if top level is not an array or parent was a first element)
 
     Returns
     -------
@@ -466,7 +479,8 @@ def hash_to_feature_name(hash_: int):
         a string representation of a hex feature name created from int
 
     """
-    return '%0*x' % (8, (hash_ >> 32))
+    assert isinstance(offset, int)
+    return '%0*x' % (8, ((hash_ >> 32) + offset))
 
 
 def shrink(noise):

@@ -11,7 +11,7 @@ import improveai.decision_tracker as dt
 import improveai.givens_provider as gp
 from improveai.settings import DEBUG
 from improveai.utils.general_purpose_tools import constant, check_variants, \
-    get_variants_from_args, is_valid_ksuid, is_valid_variants_type, ALLOWED_VARIANT_TYPES
+    get_variants_from_args, is_valid_ksuid, is_valid_variants_type, ALLOWED_VARIANT_COLLECTION_TYPES
 
 
 class DecisionModel:
@@ -744,7 +744,7 @@ class DecisionModel:
         # make sure that each key stores not None value (variants == None is not allowed)
         assert all(vs is not None for vs in variant_map.values())
         # make sure that all collections in variant_map are not empty
-        assert all(len(vs) > 0 if type(vs) in ALLOWED_VARIANT_TYPES else True for vs in variant_map.values())
+        assert all(len(vs) > 0 if type(vs) in ALLOWED_VARIANT_COLLECTION_TYPES else True for vs in variant_map.values())
         # check if all entries in variants_map are lists or tuples or np.arrays
         variants_map_fixed = {
             variants_key: variants if is_valid_variants_type(variants) else [variants]
