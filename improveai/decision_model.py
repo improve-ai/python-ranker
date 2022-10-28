@@ -1,3 +1,4 @@
+from pathlib import Path
 import re
 import warnings
 
@@ -222,7 +223,7 @@ class DecisionModel:
             assert re.search(DecisionModel.MODEL_NAME_REGEXP, model_name) is not None, \
                 f'Valid model name must pass regexpr: {DecisionModel.MODEL_NAME_REGEXP}'
 
-    def load(self, model_url: str):
+    def load(self, model_url: str or Path):
         """
         Synchronously loads XGBoost model from provided path, creates instance
         of DecisionModel and returns it

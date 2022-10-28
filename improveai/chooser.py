@@ -2,6 +2,7 @@ from collections.abc import Iterable
 from copy import deepcopy
 import json
 import numpy as np
+from pathlib import Path
 import pickle
 import re
 from traceback import print_exc
@@ -321,11 +322,9 @@ class XGBChooser:
                     str(input_model_src[:10]) + ' ... ' + str(
                         input_model_src[-10:])))
 
-            raw_model_src = self.get_model_src(model_src=input_model_src)
-
             model_src = \
-                raw_model_src if isinstance(raw_model_src, str) \
-                else bytearray(raw_model_src)
+                input_model_src if isinstance(input_model_src, str) or isinstance(input_model_src, Path) \
+                else bytearray(input_model_src)
 
             self.model = Booster()
             self.model.load_model(model_src)
@@ -571,7 +570,7 @@ class XGBChooser:
 
         """
         raw_model_src = model_src
-        if is_path_http_addr(pth_to_model=model_src):
+        if not isinstance(model_src, Path) and is_path_http_addr(pth_to_model=model_src):
             raw_model_src = get_model_bytes_from_url(model_url=model_src)
 
         unzipped_model_src = check_and_get_unzipped_model(model_src=raw_model_src)
