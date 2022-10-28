@@ -1,6 +1,7 @@
 from io import BytesIO
 import gzip
 import os
+from pathlib import Path
 from typing import Union
 
 
@@ -50,13 +51,13 @@ def get_unzip_gz(to_be_unzpd_bytes: bytes) -> bytes:
     if not isinstance(to_be_unzpd_bytes, bytes):
         raise TypeError('`unzpd_bytes` param should be of bytes type')
 
-    unzpd_buffer = BytesIO(to_be_unzpd_bytes)
-    unzpd_buffer.seek(0)
-    res = gzip.decompress(unzpd_buffer.read())
+    unzipped_buffer = BytesIO(to_be_unzpd_bytes)
+    unzipped_buffer.seek(0)
+    res = gzip.decompress(unzipped_buffer.read())
     return res
 
 
-def check_and_get_unzipped_model(model_src: Union[str, bytes]) -> Union[str, bytes]:
+def check_and_get_unzipped_model(model_src: Union[str, bytes]) -> Union[str, bytes, Path]:
     """
     Checks if provided model is a compressed one and unzips it if so.
 
@@ -77,7 +78,7 @@ def check_and_get_unzipped_model(model_src: Union[str, bytes]) -> Union[str, byt
             return get_unzip_gz(to_be_unzpd_bytes=model_src)
         else:
             return model_src
-    elif isinstance(model_src, str):
+    elif isinstance(model_src, str) or isinstance(model_src, Path):
         if not os.path.isfile(model_src):
             raise ValueError(
                 'This is not a proper path: {} and reading model from '

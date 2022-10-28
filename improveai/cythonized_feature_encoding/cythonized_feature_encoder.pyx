@@ -66,29 +66,6 @@ cpdef _has_top_level_string_keys(dict checked_dict):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef warn_about_array_encoding(object object_):
-    """
-    If object is an array warning will be printed (only once so the encoding speed does not suffer)
-
-    Parameters
-    ----------
-    object_: object
-        encoded object
-
-    Returns
-    -------
-    None
-        None
-
-    """
-    # check if variant is a list, tuple or array
-    if not fe.WARNED_ABOUT_ARRAY_ENCODING and \
-            (isinstance(object_, list) or isinstance(object_, tuple) or isinstance(object_, np.ndarray)):
-        warnings.warn('Array encoding may change in the near future')
-        fe.WARNED_ABOUT_ARRAY_ENCODING = True
-
-@cython.boundscheck(False)
-@cython.wraparound(False)
 cpdef encode(object object_, unsigned long long seed, double small_noise, dict features):
     """
     Encodes a JSON serializable object to  a flat key - value pair(s) structure / dict
@@ -127,7 +104,6 @@ cpdef encode(object object_, unsigned long long seed, double small_noise, dict f
     """
 
     assert _is_object_json_serializable(object_=object_)
-    warn_about_array_encoding(object_=object_)
 
     cdef str feature_name = None
     cdef double previous_object_
