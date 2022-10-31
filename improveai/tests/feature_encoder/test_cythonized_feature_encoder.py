@@ -3,16 +3,14 @@ import json
 import numpy as np
 import os
 from pprint import pprint
-from pytest import fixture, raises, warns
+from pytest import fixture, raises
 import sys
 from unittest import TestCase
-from warnings import catch_warnings, simplefilter
 import xgboost as xgb
 
 sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
 
-import improveai
 import improveai.cythonized_feature_encoding.cythonized_feature_encoder as cfe
 
 FeatureEncoder = cfe.FeatureEncoder
@@ -20,9 +18,6 @@ sprinkle = cfe.sprinkle
 shrink = cfe.shrink
 reverse_sprinkle = cfe.reverse_sprinkle
 _get_previous_value = cfe._get_previous_value
-
-# add_noise = cfe.add_noise
-
 
 import improveai.settings as improve_settings
 from improveai.utils.general_purpose_tools import read_jsonstring_from_file
@@ -1084,18 +1079,18 @@ class TestEncoder(TestCase):
             test_case_filename=os.getenv(
                 "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_FOO_BAR_JSON"))
 
-    def test_foo_bar_primitive_dict_equals_list(self):
-        self._generic_test_encode_record_for_same_output_from_json_data(
-            first_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_FOO_BAR_JSON'),
-            second_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_PRIMITIVE_DICT_FOO_BAR_JSON'))
+    # def test_foo_bar_primitive_dict_equals_list(self):
+    #     self._generic_test_encode_record_for_same_output_from_json_data(
+    #         first_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_FOO_BAR_JSON'),
+    #         second_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_PRIMITIVE_DICT_FOO_BAR_JSON'))
 
-    def test_foo_bar_dict_equals_list(self):
-
-        self._generic_test_encode_record_for_same_output_from_json_data(
-            first_test_case_filename=os.getenv(
-                'FEATURE_ENCODER_TEST_FOO_BAR_JSON'),
-            second_test_case_filename=os.getenv(
-                'FEATURE_ENCODER_TEST_DICT_FOO_BAR_JSON'))
+    # def test_foo_bar_dict_equals_list(self):
+    #
+    #     self._generic_test_encode_record_for_same_output_from_json_data(
+    #         first_test_case_filename=os.getenv(
+    #             'FEATURE_ENCODER_TEST_FOO_BAR_JSON'),
+    #         second_test_case_filename=os.getenv(
+    #             'FEATURE_ENCODER_TEST_DICT_FOO_BAR_JSON'))
 
     def test_same_output_string_dict(self):
 
