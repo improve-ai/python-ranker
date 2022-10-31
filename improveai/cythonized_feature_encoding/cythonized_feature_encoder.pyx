@@ -211,7 +211,7 @@ cpdef str hash_to_feature_name(unsigned long long hash_, unsigned long long offs
 
     """
     assert isinstance(offset, int)
-    return '%0*x' % (8, ((hash_ >> 32) + offset))
+    return ('%0*x' % (8, ((hash_ >> 32) + offset)))[-8:]
 
 
 @cython.boundscheck(False)
