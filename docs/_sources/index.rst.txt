@@ -14,7 +14,6 @@ Welcome to Improve AI python SDK documentation!
    About Improve AI python SDK  <readme.md>
 
 
-Classes
 ===============================================
 
 .. toctree::

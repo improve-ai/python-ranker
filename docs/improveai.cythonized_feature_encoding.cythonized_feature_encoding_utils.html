@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>cythonized_feature_encoding_utils.pyx module &mdash; improveai 7.0.3 documentation</title>
+  <title>cythonized_feature_encoding_utils.pyx module &mdash; improveai 7.2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
@@ -15,7 +15,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -31,7 +33,7 @@
             <a href="index.html" class="icon icon-home"> improveai
           </a>
               <div class="version">
-                7.0.3
+                7.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -61,7 +63,13 @@
 <li class="toctree-l1"><a class="reference internal" href="improveai.settings.html">SDK settings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.utils.general_purpose_tools.html">general purpose tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.utils.choosers_feature_encoding_tools.html">feature encoding tools</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">cythonized feature encoding tools</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">cythonized feature encoding tools</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.encode_variants_multiple_givens"><code class="docutils literal notranslate"><span class="pre">encode_variants_multiple_givens()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.encode_variants_single_givens"><code class="docutils literal notranslate"><span class="pre">encode_variants_single_givens()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.encoded_variant_into_np_row"><code class="docutils literal notranslate"><span class="pre">encoded_variant_into_np_row()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.encoded_variants_to_np"><code class="docutils literal notranslate"><span class="pre">encoded_variants_to_np()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.utils.gzip_tools.html">gzip tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.utils.url_tools.html">URL tools</a></li>
 </ul>
@@ -91,7 +99,7 @@
            <div itemprop="articleBody">
              
   <section id="module-improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils">
-<span id="cythonized-feature-encoding-utils-pyx-module"></span><h1>cythonized_feature_encoding_utils.pyx module<a class="headerlink" href="#module-improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils" title="Permalink to this headline"></a></h1>
+<span id="cythonized-feature-encoding-utils-pyx-module"></span><h1>cythonized_feature_encoding_utils.pyx module<a class="headerlink" href="#module-improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils" title="Permalink to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.encode_variants_multiple_givens">
 <span class="sig-name descname"><span class="pre">encode_variants_multiple_givens</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.encode_variants_multiple_givens" title="Permalink to this definition"></a></dt>

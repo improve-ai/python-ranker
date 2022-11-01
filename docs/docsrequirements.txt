@@ -1,1 +1,7 @@
 sphinx
+recommonmark
+sphinx_automodapi
+sphinx_autodoc_typehints
+enum_tools
+sphinx_toolbox
+sphinx_rtd_theme

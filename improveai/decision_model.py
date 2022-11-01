@@ -10,14 +10,21 @@ import improveai.decision_context as dc
 import improveai.decision_tracker as dt
 import improveai.givens_provider as gp
 from improveai.settings import DEBUG
-from improveai.utils.general_purpose_tools import constant, check_variants, \
+from improveai.utils.general_purpose_tools import check_variants, \
     get_variants_from_args, is_valid_ksuid, is_valid_variants_type, ALLOWED_VARIANT_COLLECTION_TYPES
 
 
 class DecisionModel:
 
     SUPPORTED_CALLS = ['score', 'rank', 'get', 'which_from', 'optimize']
+    """
+    Method calls supported by Improve model CLI
+    """
+
     MODEL_NAME_REGEXP = XGBChooser.MODEL_NAME_REGEXP
+    """
+    Model name regexp used to verify all model names (both user provided and cached in boosters)
+    """
 
     @property
     def model_name(self) -> str or None:
@@ -84,7 +91,6 @@ class DecisionModel:
 
     @track_url.setter
     def track_url(self, value: str or None):
-        # TODO make sure this is fully covered by tests
         self._track_url = value
 
         # cases:
@@ -165,8 +171,8 @@ class DecisionModel:
         is_valid_ksuid(value)
         self._last_decision_id = value
 
-    @constant
-    def TIEBREAKER_MULTIPLIER() -> float:
+    @property
+    def TIEBREAKER_MULTIPLIER(self) -> float:
         """
         Small value randomized and added to model's scores
 
@@ -712,18 +718,20 @@ class DecisionModel:
 
     @staticmethod
     def full_factorial_variants(variant_map: dict):
-        # TODO add tests for full_factorial_variants
         """
         Creates full factorial from input variants map, i.e. for variants_map
-        {'variants_0': ['01', '02'],
-         'variants_1': ['11', '12', '13']}
+        {
+        'variants_0': ['01', '02'],
+        'variants_1': ['11', '12', '13']}
+
         it creates a list of dicts:
-        [{'variants_0': '01', 'variants_1': '11'},
-         {'variants_0': '02', 'variants_1': '11'},
-         {'variants_0': '01', 'variants_1': '12'},
-         {'variants_0': '02', 'variants_1': '22'},
-         {'variants_0': '01', 'variants_1': '13'},
-         {'variants_0': '02', 'variants_1': '23'},
+        [
+        {'variants_0': '01', 'variants_1': '11'},
+        {'variants_0': '02', 'variants_1': '11'},
+        {'variants_0': '01', 'variants_1': '12'},
+        {'variants_0': '02', 'variants_1': '22'},
+        {'variants_0': '01', 'variants_1': '13'},
+        {'variants_0': '02', 'variants_1': '23'},
         ]
 
         Parameters

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>general_purpose_tools.py module &mdash; improveai 7.0.3 documentation</title>
+  <title>general_purpose_tools.py module &mdash; improveai 7.2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
@@ -15,7 +15,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -31,7 +33,7 @@
             <a href="index.html" class="icon icon-home"> improveai
           </a>
               <div class="version">
-                7.0.3
+                7.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -59,7 +61,18 @@
 <p class="caption" role="heading"><span class="caption-text">Utils:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="improveai.settings.html">SDK settings</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">general purpose tools</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">general purpose tools</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.utils.general_purpose_tools.append_prefix_to_dict_keys"><code class="docutils literal notranslate"><span class="pre">append_prefix_to_dict_keys()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.utils.general_purpose_tools.check_variants"><code class="docutils literal notranslate"><span class="pre">check_variants()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.utils.general_purpose_tools.get_variants_from_args"><code class="docutils literal notranslate"><span class="pre">get_variants_from_args()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.utils.general_purpose_tools.impute_missing_dict_keys"><code class="docutils literal notranslate"><span class="pre">impute_missing_dict_keys()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.utils.general_purpose_tools.is_object_numpy_type"><code class="docutils literal notranslate"><span class="pre">is_object_numpy_type()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.utils.general_purpose_tools.is_valid_ksuid"><code class="docutils literal notranslate"><span class="pre">is_valid_ksuid()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.utils.general_purpose_tools.is_valid_variants_type"><code class="docutils literal notranslate"><span class="pre">is_valid_variants_type()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.utils.general_purpose_tools.read_jsonstring_from_file"><code class="docutils literal notranslate"><span class="pre">read_jsonstring_from_file()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.utils.general_purpose_tools.sigmoid"><code class="docutils literal notranslate"><span class="pre">sigmoid()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.utils.choosers_feature_encoding_tools.html">feature encoding tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.html">cythonized feature encoding tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.utils.gzip_tools.html">gzip tools</a></li>
@@ -91,7 +104,7 @@
            <div itemprop="articleBody">
              
   <section id="module-improveai.utils.general_purpose_tools">
-<span id="general-purpose-tools-py-module"></span><h1>general_purpose_tools.py module<a class="headerlink" href="#module-improveai.utils.general_purpose_tools" title="Permalink to this headline"></a></h1>
+<span id="general-purpose-tools-py-module"></span><h1>general_purpose_tools.py module<a class="headerlink" href="#module-improveai.utils.general_purpose_tools" title="Permalink to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="improveai.utils.general_purpose_tools.append_prefix_to_dict_keys">
 <span class="sig-name descname"><span class="pre">append_prefix_to_dict_keys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prfx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.utils.general_purpose_tools.append_prefix_to_dict_keys" title="Permalink to this definition"></a></dt>
@@ -122,23 +135,6 @@
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="improveai.utils.general_purpose_tools.constant">
-<span class="sig-name descname"><span class="pre">constant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.utils.general_purpose_tools.constant" title="Permalink to this definition"></a></dt>
-<dd><p>Constant decorator raising error on attempt to set decorated value</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>f</strong> (<em>callable</em>) – decorated object</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>constant property</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>property</p>
 </dd>
 </dl>
 </dd></dl>
@@ -179,6 +175,23 @@
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="improveai.utils.general_purpose_tools.is_object_numpy_type">
+<span class="sig-name descname"><span class="pre">is_object_numpy_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checked_object</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.utils.general_purpose_tools.is_object_numpy_type" title="Permalink to this definition"></a></dt>
+<dd><p>Check if a passed input object is a numpy type or not</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>checked_object</strong> (<em>object</em>) – object to be checked for numpy type</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if object is of a nupy type False otherwise</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="improveai.utils.general_purpose_tools.is_valid_ksuid">
 <span class="sig-name descname"><span class="pre">is_valid_ksuid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id_</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.utils.general_purpose_tools.is_valid_ksuid" title="Permalink to this definition"></a></dt>
 <dd><p>Checks if input value is a valid Ksuid string</p>
@@ -197,6 +210,11 @@
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="improveai.utils.general_purpose_tools.is_valid_variants_type">
+<span class="sig-name descname"><span class="pre">is_valid_variants_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variants</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.utils.general_purpose_tools.is_valid_variants_type" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="improveai.utils.general_purpose_tools.read_jsonstring_from_file">

@@ -222,7 +222,6 @@ class FeatureEncoder:
             self, variants: Iterable, multiple_givens: Iterable,
             multiple_extra_features: Iterable, feature_names: Iterable,
             noise: float) -> np.ndarray:
-
         """
         Provided list of variants and corresponding lists of givens and extra
         features encodes variants completely and converts to numpy array

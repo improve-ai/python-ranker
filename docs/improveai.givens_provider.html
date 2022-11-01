@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>givens_provider.py module &mdash; improveai 7.0.3 documentation</title>
+  <title>givens_provider.py module &mdash; improveai 7.2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
@@ -15,7 +15,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -31,7 +33,7 @@
             <a href="index.html" class="icon icon-home"> improveai
           </a>
               <div class="version">
-                7.0.3
+                7.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -53,7 +55,13 @@
 <li class="toctree-l1"><a class="reference internal" href="improveai.decision_tracker.html">DecisionTracker</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.feature_encoder.html">FeatureEncoder</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html">CythonizedFeatureEncoder</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">GivensProvider</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">GivensProvider</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.givens_provider.GivensProvider"><code class="docutils literal notranslate"><span class="pre">GivensProvider</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.givens_provider.GivensProvider.givens"><code class="docutils literal notranslate"><span class="pre">GivensProvider.givens()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.chooser.html">Chooser</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Utils:</span></p>
@@ -91,14 +99,14 @@
            <div itemprop="articleBody">
              
   <section id="module-improveai.givens_provider">
-<span id="givens-provider-py-module"></span><h1>givens_provider.py module<a class="headerlink" href="#module-improveai.givens_provider" title="Permalink to this headline"></a></h1>
+<span id="givens-provider-py-module"></span><h1>givens_provider.py module<a class="headerlink" href="#module-improveai.givens_provider" title="Permalink to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="improveai.givens_provider.GivensProvider">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">GivensProvider</span></span><a class="headerlink" href="#improveai.givens_provider.GivensProvider" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="improveai.givens_provider.GivensProvider.givens">
-<span class="sig-name descname"><span class="pre">givens</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">for_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">givens</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.givens_provider.GivensProvider.givens" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">givens</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">for_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">givens</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.givens_provider.GivensProvider.givens" title="Permalink to this definition"></a></dt>
 <dd><p>Provides givens for input <cite>for_model</cite>. Input <cite>givens</cite> are included in
 returned value</p>
 <dl class="field-list simple">

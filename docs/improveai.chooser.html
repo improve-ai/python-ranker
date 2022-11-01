@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>chooser.py module &mdash; improveai 7.0.3 documentation</title>
+  <title>chooser.py module &mdash; improveai 7.2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
@@ -15,7 +15,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -31,7 +33,7 @@
             <a href="index.html" class="icon icon-home"> improveai
           </a>
               <div class="version">
-                7.0.3
+                7.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -54,7 +56,40 @@
 <li class="toctree-l1"><a class="reference internal" href="improveai.feature_encoder.html">FeatureEncoder</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html">CythonizedFeatureEncoder</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.givens_provider.html">GivensProvider</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Chooser</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Chooser</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.chooser.XGBChooser"><code class="docutils literal notranslate"><span class="pre">XGBChooser</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.chooser.XGBChooser.IMPROVEAI_VERSION_KEY"><code class="docutils literal notranslate"><span class="pre">XGBChooser.IMPROVEAI_VERSION_KEY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.chooser.XGBChooser.IMPROVE_AI_ALLOWED_MAJOR_VERSION"><code class="docutils literal notranslate"><span class="pre">XGBChooser.IMPROVE_AI_ALLOWED_MAJOR_VERSION</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.chooser.XGBChooser.MODEL_FEATURE_NAMES_KEY"><code class="docutils literal notranslate"><span class="pre">XGBChooser.MODEL_FEATURE_NAMES_KEY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.chooser.XGBChooser.MODEL_METADATA_KEY"><code class="docutils literal notranslate"><span class="pre">XGBChooser.MODEL_METADATA_KEY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.chooser.XGBChooser.MODEL_NAME_KEY"><code class="docutils literal notranslate"><span class="pre">XGBChooser.MODEL_NAME_KEY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.chooser.XGBChooser.MODEL_NAME_REGEXP"><code class="docutils literal notranslate"><span class="pre">XGBChooser.MODEL_NAME_REGEXP</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.chooser.XGBChooser.MODEL_SEED_KEY"><code class="docutils literal notranslate"><span class="pre">XGBChooser.MODEL_SEED_KEY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.chooser.XGBChooser.__init__"><code class="docutils literal notranslate"><span class="pre">XGBChooser.__init__()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.chooser.XGBChooser.calculate_predictions"><code class="docutils literal notranslate"><span class="pre">XGBChooser.calculate_predictions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.chooser.XGBChooser.current_noise"><code class="docutils literal notranslate"><span class="pre">XGBChooser.current_noise</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.chooser.XGBChooser.encode_variants_single_givens"><code class="docutils literal notranslate"><span class="pre">XGBChooser.encode_variants_single_givens()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.chooser.XGBChooser.feature_encoder"><code class="docutils literal notranslate"><span class="pre">XGBChooser.feature_encoder</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.chooser.XGBChooser.fill_missing_features"><code class="docutils literal notranslate"><span class="pre">XGBChooser.fill_missing_features()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.chooser.XGBChooser.get_model_src"><code class="docutils literal notranslate"><span class="pre">XGBChooser.get_model_src()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.chooser.XGBChooser.imposed_noise"><code class="docutils literal notranslate"><span class="pre">XGBChooser.imposed_noise</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.chooser.XGBChooser.improveai_major_version_from_metadata"><code class="docutils literal notranslate"><span class="pre">XGBChooser.improveai_major_version_from_metadata</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.chooser.XGBChooser.load_model"><code class="docutils literal notranslate"><span class="pre">XGBChooser.load_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.chooser.XGBChooser.model"><code class="docutils literal notranslate"><span class="pre">XGBChooser.model</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.chooser.XGBChooser.model_feature_names"><code class="docutils literal notranslate"><span class="pre">XGBChooser.model_feature_names</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.chooser.XGBChooser.model_feature_names_key"><code class="docutils literal notranslate"><span class="pre">XGBChooser.model_feature_names_key</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.chooser.XGBChooser.model_metadata"><code class="docutils literal notranslate"><span class="pre">XGBChooser.model_metadata</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.chooser.XGBChooser.model_metadata_key"><code class="docutils literal notranslate"><span class="pre">XGBChooser.model_metadata_key</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.chooser.XGBChooser.model_name"><code class="docutils literal notranslate"><span class="pre">XGBChooser.model_name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.chooser.XGBChooser.model_name_key"><code class="docutils literal notranslate"><span class="pre">XGBChooser.model_name_key</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.chooser.XGBChooser.model_seed"><code class="docutils literal notranslate"><span class="pre">XGBChooser.model_seed</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.chooser.XGBChooser.model_seed_key"><code class="docutils literal notranslate"><span class="pre">XGBChooser.model_seed_key</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.chooser.XGBChooser.score"><code class="docutils literal notranslate"><span class="pre">XGBChooser.score()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.chooser.XGBChooser.sort"><code class="docutils literal notranslate"><span class="pre">XGBChooser.sort()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Utils:</span></p>
 <ul>
@@ -91,28 +126,114 @@
            <div itemprop="articleBody">
              
   <section id="module-improveai.chooser">
-<span id="chooser-py-module"></span><h1>chooser.py module<a class="headerlink" href="#module-improveai.chooser" title="Permalink to this headline"></a></h1>
+<span id="chooser-py-module"></span><h1>chooser.py module<a class="headerlink" href="#module-improveai.chooser" title="Permalink to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="improveai.chooser.XGBChooser">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">XGBChooser</span></span><a class="headerlink" href="#improveai.chooser.XGBChooser" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py property">
+<dt class="sig sig-object py" id="improveai.chooser.XGBChooser.IMPROVEAI_VERSION_KEY">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">IMPROVEAI_VERSION_KEY</span></span><a class="headerlink" href="#improveai.chooser.XGBChooser.IMPROVEAI_VERSION_KEY" title="Permalink to this definition"></a></dt>
+<dd><p>model metadata key storing model version</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>‘ai.improve.version’</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="improveai.chooser.XGBChooser.IMPROVE_AI_ALLOWED_MAJOR_VERSION">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">IMPROVE_AI_ALLOWED_MAJOR_VERSION</span></span><a class="headerlink" href="#improveai.chooser.XGBChooser.IMPROVE_AI_ALLOWED_MAJOR_VERSION" title="Permalink to this definition"></a></dt>
+<dd><p>Latest supported major model version</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>7</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="improveai.chooser.XGBChooser.MODEL_FEATURE_NAMES_KEY">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MODEL_FEATURE_NAMES_KEY</span></span><a class="headerlink" href="#improveai.chooser.XGBChooser.MODEL_FEATURE_NAMES_KEY" title="Permalink to this definition"></a></dt>
+<dd><p>Key in model metadata storing feature names</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>‘feature_names’</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="improveai.chooser.XGBChooser.MODEL_METADATA_KEY">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MODEL_METADATA_KEY</span></span><a class="headerlink" href="#improveai.chooser.XGBChooser.MODEL_METADATA_KEY" title="Permalink to this definition"></a></dt>
+<dd><p>Key in booster.attr(‘user_defined_metadata’) storing model metadata</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>json string</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="improveai.chooser.XGBChooser.MODEL_NAME_KEY">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MODEL_NAME_KEY</span></span><a class="headerlink" href="#improveai.chooser.XGBChooser.MODEL_NAME_KEY" title="Permalink to this definition"></a></dt>
+<dd><p>Key in model metadata storing model name</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>‘model_name’</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="improveai.chooser.XGBChooser.MODEL_NAME_REGEXP">
 <span class="sig-name descname"><span class="pre">MODEL_NAME_REGEXP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'^[a-zA-Z0-9][\\w\\-.]{0,63}$'</span></em><a class="headerlink" href="#improveai.chooser.XGBChooser.MODEL_NAME_REGEXP" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Model name regexp used to verify all model names (both user provided and cached in boosters)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="improveai.chooser.XGBChooser.MODEL_SEED_KEY">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MODEL_SEED_KEY</span></span><a class="headerlink" href="#improveai.chooser.XGBChooser.MODEL_SEED_KEY" title="Permalink to this definition"></a></dt>
+<dd><p>Key in model metadata storing model seed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>‘model_seed’</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="improveai.chooser.XGBChooser.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_metadata_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'json'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_feature_names_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'feature_names'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_seed_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'model_seed'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'model_name'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.chooser.XGBChooser.__init__" title="Permalink to this definition"></a></dt>
-<dd><p>Init with params</p>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#improveai.chooser.XGBChooser.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Initialize chooser object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="improveai.chooser.XGBChooser.calculate_predictions">
+<span class="sig-name descname"><span class="pre">calculate_predictions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">features_matrix</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.chooser.XGBChooser.calculate_predictions" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates predictions on provided matrix with loaded model</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>model_metadata_key</strong> (<em>str</em>) – key storing ‘model metadata’ inside ‘user defined metadata’</p></li>
-<li><p><strong>model_feature_names_key</strong> (<em>str</em>) – key storing ‘feature names’ inside ‘model metadata’</p></li>
-<li><p><strong>model_seed_key</strong> (<em>str</em>) – key storing ‘seed’ inside ‘model metadata’</p></li>
-<li><p><strong>model_name_key</strong> (<em>str</em>) – key storing ‘model name’ inside ‘model metadata’</p></li>
-</ul>
+<dd class="field-odd"><p><strong>features_matrix</strong> (<em>np.ndarray</em>) – array to be a source for DMatrix</p>
 </dd>
 </dl>
 </dd></dl>
@@ -131,9 +252,31 @@
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="improveai.chooser.XGBChooser.encode_variants_single_givens">
+<span class="sig-name descname"><span class="pre">encode_variants_single_givens</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variants</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">givens</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.chooser.XGBChooser.encode_variants_single_givens" title="Permalink to this definition"></a></dt>
+<dd><p>Implemented as a XGBChooser helper method
+Cythonized loop over provided variants and a single givens dict.
+Returns array of encoded dicts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>variants</strong> (<em>list</em><em> or </em><em>tuple</em><em> or </em><em>np.ndarray</em>) – collection of input variants to be encoded</p></li>
+<li><p><strong>givens</strong> (<em>dict</em><em> or </em><em>None</em>) – context to be encoded with variants</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>array of encoded dicts</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="improveai.chooser.XGBChooser.feature_encoder">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">feature_encoder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="improveai.feature_encoder.html#improveai.feature_encoder.FeatureEncoder" title="improveai.feature_encoder.FeatureEncoder"><span class="pre">improveai.feature_encoder.FeatureEncoder</span></a></em><a class="headerlink" href="#improveai.chooser.XGBChooser.feature_encoder" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">feature_encoder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="improveai.feature_encoder.html#improveai.feature_encoder.FeatureEncoder" title="improveai.feature_encoder.FeatureEncoder"><span class="pre">FeatureEncoder</span></a></em><a class="headerlink" href="#improveai.chooser.XGBChooser.feature_encoder" title="Permalink to this definition"></a></dt>
 <dd><p>FeatureEncoder of this chooser</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -141,6 +284,23 @@
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder" title="improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder">FeatureEncoder</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="improveai.chooser.XGBChooser.fill_missing_features">
+<span class="sig-name descname"><span class="pre">fill_missing_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoded_variants</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.chooser.XGBChooser.fill_missing_features" title="Permalink to this definition"></a></dt>
+<dd><p>Fills missing features in encoded variants and packs them into 2D numpy array</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>encoded_variants</strong> (<em>list</em>) – a list of encoded variants (dicts)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>2D numpy array with all features for xgb model</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -176,6 +336,20 @@
 </dl>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="improveai.chooser.XGBChooser.improveai_major_version_from_metadata">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">improveai_major_version_from_metadata</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#improveai.chooser.XGBChooser.improveai_major_version_from_metadata" title="Permalink to this definition"></a></dt>
+<dd><p>Stores the Improve AI model version</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>string version of the Improve AI model or None</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str or None</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="improveai.chooser.XGBChooser.load_model">
 <span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_model_src</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.chooser.XGBChooser.load_model" title="Permalink to this definition"></a></dt>
@@ -198,7 +372,7 @@
 
 <dl class="py property">
 <dt class="sig sig-object py" id="improveai.chooser.XGBChooser.model">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">xgboost.core.Booster</span></em><a class="headerlink" href="#improveai.chooser.XGBChooser.model" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Booster</span></em><a class="headerlink" href="#improveai.chooser.XGBChooser.model" title="Permalink to this definition"></a></dt>
 <dd><p>xgboost’s booster used by this chooser</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>

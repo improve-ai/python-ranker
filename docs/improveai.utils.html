@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>improveai.utils package &mdash; improveai 7.0.3 documentation</title>
+  <title>improveai.utils package &mdash; improveai 7.2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
@@ -15,7 +15,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
@@ -29,7 +31,7 @@
             <a href="index.html" class="icon icon-home"> improveai
           </a>
               <div class="version">
-                7.0.3
+                7.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -89,20 +91,44 @@
            <div itemprop="articleBody">
              
   <section id="improveai-utils-package">
-<h1>improveai.utils package<a class="headerlink" href="#improveai-utils-package" title="Permalink to this headline"></a></h1>
+<h1>improveai.utils package<a class="headerlink" href="#improveai-utils-package" title="Permalink to this heading"></a></h1>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="improveai.utils.choosers_feature_encoding_tools.html">choosers_feature_encoding_tools.py module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.utils.general_purpose_tools.html">general_purpose_tools.py module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.utils.gzip_tools.html">gzip_tools.py module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.utils.url_tools.html">url_tools.py module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.utils.choosers_feature_encoding_tools.html">choosers_feature_encoding_tools.py module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="improveai.utils.choosers_feature_encoding_tools.html#improveai.utils.choosers_feature_encoding_tools.encoded_variant_to_np"><code class="docutils literal notranslate"><span class="pre">encoded_variant_to_np()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="improveai.utils.choosers_feature_encoding_tools.html#improveai.utils.choosers_feature_encoding_tools.encoded_variants_to_np"><code class="docutils literal notranslate"><span class="pre">encoded_variants_to_np()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.utils.general_purpose_tools.html">general_purpose_tools.py module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="improveai.utils.general_purpose_tools.html#improveai.utils.general_purpose_tools.append_prefix_to_dict_keys"><code class="docutils literal notranslate"><span class="pre">append_prefix_to_dict_keys()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="improveai.utils.general_purpose_tools.html#improveai.utils.general_purpose_tools.check_variants"><code class="docutils literal notranslate"><span class="pre">check_variants()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="improveai.utils.general_purpose_tools.html#improveai.utils.general_purpose_tools.get_variants_from_args"><code class="docutils literal notranslate"><span class="pre">get_variants_from_args()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="improveai.utils.general_purpose_tools.html#improveai.utils.general_purpose_tools.impute_missing_dict_keys"><code class="docutils literal notranslate"><span class="pre">impute_missing_dict_keys()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="improveai.utils.general_purpose_tools.html#improveai.utils.general_purpose_tools.is_object_numpy_type"><code class="docutils literal notranslate"><span class="pre">is_object_numpy_type()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="improveai.utils.general_purpose_tools.html#improveai.utils.general_purpose_tools.is_valid_ksuid"><code class="docutils literal notranslate"><span class="pre">is_valid_ksuid()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="improveai.utils.general_purpose_tools.html#improveai.utils.general_purpose_tools.is_valid_variants_type"><code class="docutils literal notranslate"><span class="pre">is_valid_variants_type()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="improveai.utils.general_purpose_tools.html#improveai.utils.general_purpose_tools.read_jsonstring_from_file"><code class="docutils literal notranslate"><span class="pre">read_jsonstring_from_file()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="improveai.utils.general_purpose_tools.html#improveai.utils.general_purpose_tools.sigmoid"><code class="docutils literal notranslate"><span class="pre">sigmoid()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.utils.gzip_tools.html">gzip_tools.py module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="improveai.utils.gzip_tools.html#improveai.utils.gzip_tools.check_and_get_unzipped_model"><code class="docutils literal notranslate"><span class="pre">check_and_get_unzipped_model()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="improveai.utils.gzip_tools.html#improveai.utils.gzip_tools.get_unzip_gz"><code class="docutils literal notranslate"><span class="pre">get_unzip_gz()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="improveai.utils.gzip_tools.html#improveai.utils.gzip_tools.is_gz_bytes"><code class="docutils literal notranslate"><span class="pre">is_gz_bytes()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.utils.url_tools.html">url_tools.py module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="improveai.utils.url_tools.html#improveai.utils.url_tools.get_model_bytes_from_url"><code class="docutils literal notranslate"><span class="pre">get_model_bytes_from_url()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="improveai.utils.url_tools.html#improveai.utils.url_tools.is_path_http_addr"><code class="docutils literal notranslate"><span class="pre">is_path_http_addr()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </div>
 </section>
 <section id="module-improveai.utils">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-improveai.utils" title="Permalink to this headline"></a></h2>
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-improveai.utils" title="Permalink to this heading"></a></h2>
 </section>
 </section>
 
