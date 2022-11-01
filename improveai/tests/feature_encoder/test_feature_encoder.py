@@ -13,7 +13,7 @@ sys.path.append(
 
 from improveai.feature_encoder import sprinkle, shrink, \
     reverse_sprinkle, _get_previous_value, _is_object_json_serializable, \
-    _has_top_level_string_keys, encode, warn_about_array_encoding, FeatureEncoder
+    _has_top_level_string_keys, encode, FeatureEncoder
 import improveai.settings as improve_settings
 from improveai.utils.general_purpose_tools import read_jsonstring_from_file
 from improveai.tests.test_utils import convert_values_to_float32
@@ -85,7 +85,6 @@ class TestEncoder(TestCase):
         # self.noise = np.random.rand()
 
         self._set_feature_names()
-        improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING = False
 
     def _set_feature_names(self):
         b = xgb.Booster()
@@ -1520,38 +1519,3 @@ class TestEncoder(TestCase):
 
         with raises(AssertionError) as aerr:
             encode(object_={'a': 1, 'b': 2, 'c': {'1': 1, 2: 2}}, seed=7335560060985733464, small_noise=0.0, features={})
-
-    def test_warn_about_array_encoding_warns_for_list(self):
-        with warns(UserWarning) as uw:
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is False
-            warn_about_array_encoding([1, 2, 3, 4])
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is True
-            assert len(uw) >= 1
-
-    def test_warn_about_array_encoding_warns_for_tuple(self):
-        with warns(UserWarning) as uw:
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is False
-            warn_about_array_encoding((1, 2, 3, 4))
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is True
-            assert len(uw) >= 1
-
-    def test_warn_about_array_encoding_warns_for_ndarray(self):
-        with warns(UserWarning) as uw:
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is False
-            warn_about_array_encoding(np.array([1, 2, 3, 4]))
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is True
-            assert len(uw) >= 1
-
-    def test_warn_about_array_encoding_warns_only_once(self):
-        with warns(UserWarning) as uw:
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is False
-            warn_about_array_encoding(np.array([1, 2, 3, 4]))
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is True
-            assert len(uw) >= 1
-
-        with catch_warnings(record=True) as w:
-            simplefilter("always")
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is True
-            warn_about_array_encoding(np.array([1, 2, 3, 4]))
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is True
-            assert len(w) == 0
