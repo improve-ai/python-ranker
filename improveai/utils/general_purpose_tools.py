@@ -7,30 +7,6 @@ import numpy as np
 ALLOWED_VARIANT_COLLECTION_TYPES = [list, tuple, np.ndarray]
 
 
-def constant(f) -> property:
-    """
-    Constant decorator raising error on attempt to set decorated value
-
-    Parameters
-    ----------
-    f: callable
-        decorated object
-
-    Returns
-    -------
-    property
-        constant property
-
-    """
-    def fset(self, value):
-        raise AttributeError
-
-    def fget(self):
-        return f()
-
-    return property(fget, fset)
-
-
 def append_prefix_to_dict_keys(input_dict: dict, prfx: str) -> dict:
     """
     Appends prefix to the input dict keys

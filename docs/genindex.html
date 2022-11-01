@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; improveai 7.0.3 documentation</title>
+  <title>Index &mdash; improveai 7.2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
@@ -14,7 +14,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="#" />
     <link rel="search" title="Search" href="search.html" /> 
@@ -28,7 +30,7 @@
             <a href="index.html" class="icon icon-home"> improveai
           </a>
               <div class="version">
-                7.0.3
+                7.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -102,6 +104,7 @@
  | <a href="#I"><strong>I</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
+ | <a href="#O"><strong>O</strong></a>
  | <a href="#P"><strong>P</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
@@ -170,6 +173,8 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="improveai.chooser.html#improveai.chooser.XGBChooser.calculate_predictions">calculate_predictions() (XGBChooser method)</a>
+</li>
       <li><a href="improveai.utils.gzip_tools.html#improveai.utils.gzip_tools.check_and_get_unzipped_model">check_and_get_unzipped_model() (in module improveai.utils.gzip_tools)</a>
 </li>
       <li><a href="improveai.utils.general_purpose_tools.html#improveai.utils.general_purpose_tools.check_variants">check_variants() (in module improveai.utils.general_purpose_tools)</a>
@@ -188,6 +193,12 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="improveai.decision_context.html#improveai.decision_context.DecisionContext.choose_multivariate">choose_multivariate() (DecisionContext method)</a>
+
+      <ul>
+        <li><a href="improveai.decision_model.html#improveai.decision_model.DecisionModel.choose_multivariate">(DecisionModel method)</a>
+</li>
+      </ul></li>
       <li><a href="improveai.decision_context.html#improveai.decision_context.DecisionContext.choose_random">choose_random() (DecisionContext method)</a>
 
       <ul>
@@ -196,11 +207,9 @@
       </ul></li>
       <li><a href="improveai.decision_model.html#improveai.decision_model.DecisionModel.chooser">chooser (DecisionModel property)</a>
 </li>
-      <li><a href="improveai.decision.html#improveai.decision.Decision.chosen">chosen (Decision property)</a>
-</li>
-      <li><a href="improveai.utils.general_purpose_tools.html#improveai.utils.general_purpose_tools.constant">constant() (in module improveai.utils.general_purpose_tools)</a>
-</li>
       <li><a href="improveai.chooser.html#improveai.chooser.XGBChooser.current_noise">current_noise (XGBChooser property)</a>
+</li>
+      <li><a href="improveai.settings.html#improveai.settings.CYTHON_BACKEND_AVAILABLE">CYTHON_BACKEND_AVAILABLE (in module improveai.settings)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -208,6 +217,14 @@
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="improveai.settings.html#improveai.settings.DEBUG">DEBUG (in module improveai.settings)</a>
+</li>
+      <li><a href="improveai.decision_context.html#improveai.decision_context.DecisionContext.decide">decide() (DecisionContext method)</a>
+
+      <ul>
+        <li><a href="improveai.decision_model.html#improveai.decision_model.DecisionModel.decide">(DecisionModel method)</a>
+</li>
+      </ul></li>
       <li><a href="improveai.decision.html#improveai.decision.Decision">Decision (class in improveai.decision)</a>
 </li>
       <li><a href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.DECISION_ID_KEY">DECISION_ID_KEY (DecisionTracker property)</a>
@@ -227,6 +244,8 @@
       <li><a href="improveai.decision_model.html#improveai.decision_model.DecisionModel">DecisionModel (class in improveai.decision_model)</a>
 </li>
       <li><a href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker">DecisionTracker (class in improveai.decision_tracker)</a>
+</li>
+      <li><a href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.do_post_improve_request">do_post_improve_request() (DecisionTracker method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -253,7 +272,11 @@
       <li><a href="improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.html#improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.encode_variants_multiple_givens">encode_variants_multiple_givens() (in module improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils)</a>
 </li>
       <li><a href="improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.html#improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.encode_variants_single_givens">encode_variants_single_givens() (in module improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils)</a>
+
+      <ul>
+        <li><a href="improveai.chooser.html#improveai.chooser.XGBChooser.encode_variants_single_givens">(XGBChooser method)</a>
 </li>
+      </ul></li>
       <li><a href="improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.html#improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.encoded_variant_into_np_row">encoded_variant_into_np_row() (in module improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils)</a>
 </li>
       <li><a href="improveai.utils.choosers_feature_encoding_tools.html#improveai.utils.choosers_feature_encoding_tools.encoded_variant_to_np">encoded_variant_to_np() (in module improveai.utils.choosers_feature_encoding_tools)</a>
@@ -280,12 +303,16 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="improveai.chooser.html#improveai.chooser.XGBChooser.fill_missing_features">fill_missing_features() (XGBChooser method)</a>
+</li>
       <li><a href="improveai.decision_context.html#improveai.decision_context.DecisionContext.first">first() (DecisionContext method)</a>
 
       <ul>
         <li><a href="improveai.decision_model.html#improveai.decision_model.DecisionModel.first">(DecisionModel method)</a>
 </li>
       </ul></li>
+      <li><a href="improveai.decision_model.html#improveai.decision_model.DecisionModel.full_factorial_variants">full_factorial_variants() (DecisionModel static method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -293,8 +320,6 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="improveai.settings.html#improveai.settings.gcc_and_py3_dev_installed">gcc_and_py3_dev_installed() (in module improveai.settings)</a>
-</li>
-      <li><a href="improveai.decision_model.html#improveai.decision_model.DecisionModel.generate_descending_gaussians">generate_descending_gaussians() (DecisionModel static method)</a>
 </li>
       <li><a href="improveai.decision.html#improveai.decision.Decision.get">get() (Decision method)</a>
 </li>
@@ -306,10 +331,10 @@
 </li>
       <li><a href="improveai.utils.gzip_tools.html#improveai.utils.gzip_tools.get_unzip_gz">get_unzip_gz() (in module improveai.utils.gzip_tools)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="improveai.utils.general_purpose_tools.html#improveai.utils.general_purpose_tools.get_variants_from_args">get_variants_from_args() (in module improveai.utils.general_purpose_tools)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="improveai.decision_model.html#improveai.decision_model.DecisionModel.given">given() (DecisionModel method)</a>
 </li>
       <li><a href="improveai.decision.html#improveai.decision.Decision.givens">givens (Decision property)</a>
@@ -347,6 +372,8 @@
       <li><a href="improveai.decision.html#improveai.decision.Decision.id_">id_ (Decision property)</a>
 </li>
       <li><a href="improveai.chooser.html#improveai.chooser.XGBChooser.imposed_noise">imposed_noise (XGBChooser property)</a>
+</li>
+      <li><a href="improveai.chooser.html#improveai.chooser.XGBChooser.IMPROVE_AI_ALLOWED_MAJOR_VERSION">IMPROVE_AI_ALLOWED_MAJOR_VERSION (XGBChooser property)</a>
 </li>
       <li>
     improveai
@@ -476,13 +503,21 @@
         <li><a href="improveai.utils.url_tools.html#module-improveai.utils.url_tools">module</a>
 </li>
       </ul></li>
+      <li><a href="improveai.chooser.html#improveai.chooser.XGBChooser.improveai_major_version_from_metadata">improveai_major_version_from_metadata (XGBChooser property)</a>
+</li>
+      <li><a href="improveai.chooser.html#improveai.chooser.XGBChooser.IMPROVEAI_VERSION_KEY">IMPROVEAI_VERSION_KEY (XGBChooser property)</a>
+</li>
       <li><a href="improveai.utils.general_purpose_tools.html#improveai.utils.general_purpose_tools.impute_missing_dict_keys">impute_missing_dict_keys() (in module improveai.utils.general_purpose_tools)</a>
 </li>
       <li><a href="improveai.utils.gzip_tools.html#improveai.utils.gzip_tools.is_gz_bytes">is_gz_bytes() (in module improveai.utils.gzip_tools)</a>
 </li>
+      <li><a href="improveai.utils.general_purpose_tools.html#improveai.utils.general_purpose_tools.is_object_numpy_type">is_object_numpy_type() (in module improveai.utils.general_purpose_tools)</a>
+</li>
       <li><a href="improveai.utils.url_tools.html#improveai.utils.url_tools.is_path_http_addr">is_path_http_addr() (in module improveai.utils.url_tools)</a>
 </li>
       <li><a href="improveai.utils.general_purpose_tools.html#improveai.utils.general_purpose_tools.is_valid_ksuid">is_valid_ksuid() (in module improveai.utils.general_purpose_tools)</a>
+</li>
+      <li><a href="improveai.utils.general_purpose_tools.html#improveai.utils.general_purpose_tools.is_valid_variants_type">is_valid_variants_type() (in module improveai.utils.general_purpose_tools)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -490,12 +525,18 @@
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="improveai.decision_model.html#improveai.decision_model.DecisionModel.last_decision_id">last_decision_id (DecisionModel property)</a>
+</li>
       <li><a href="improveai.decision_model.html#improveai.decision_model.DecisionModel.load">load() (DecisionModel method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="improveai.chooser.html#improveai.chooser.XGBChooser.load_model">load_model() (XGBChooser method)</a>
+      <li><a href="improveai.decision_model.html#improveai.decision_model.load_model">load_model() (in module improveai.decision_model)</a>
+
+      <ul>
+        <li><a href="improveai.chooser.html#improveai.chooser.XGBChooser.load_model">(XGBChooser method)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -506,15 +547,21 @@
 </li>
       <li><a href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.MESSAGE_ID_KEY">MESSAGE_ID_KEY (DecisionTracker property)</a>
 </li>
+      <li><a href="improveai.improve_model_cli.html#improveai.improve_model_cli.mockup_and_execute">mockup_and_execute() (in module improveai.improve_model_cli)</a>
+</li>
       <li><a href="improveai.chooser.html#improveai.chooser.XGBChooser.model">model (XGBChooser property)</a>
 </li>
       <li><a href="improveai.chooser.html#improveai.chooser.XGBChooser.model_feature_names">model_feature_names (XGBChooser property)</a>
+</li>
+      <li><a href="improveai.chooser.html#improveai.chooser.XGBChooser.MODEL_FEATURE_NAMES_KEY">MODEL_FEATURE_NAMES_KEY (XGBChooser property)</a>
 </li>
       <li><a href="improveai.chooser.html#improveai.chooser.XGBChooser.model_feature_names_key">model_feature_names_key (XGBChooser property)</a>
 </li>
       <li><a href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.MODEL_KEY">MODEL_KEY (DecisionTracker property)</a>
 </li>
       <li><a href="improveai.chooser.html#improveai.chooser.XGBChooser.model_metadata">model_metadata (XGBChooser property)</a>
+</li>
+      <li><a href="improveai.chooser.html#improveai.chooser.XGBChooser.MODEL_METADATA_KEY">MODEL_METADATA_KEY (XGBChooser property)</a>
 </li>
       <li><a href="improveai.chooser.html#improveai.chooser.XGBChooser.model_metadata_key">model_metadata_key (XGBChooser property)</a>
 </li>
@@ -524,6 +571,8 @@
         <li><a href="improveai.chooser.html#improveai.chooser.XGBChooser.model_name">(XGBChooser property)</a>
 </li>
       </ul></li>
+      <li><a href="improveai.chooser.html#improveai.chooser.XGBChooser.MODEL_NAME_KEY">MODEL_NAME_KEY (XGBChooser property)</a>
+</li>
       <li><a href="improveai.chooser.html#improveai.chooser.XGBChooser.model_name_key">model_name_key (XGBChooser property)</a>
 </li>
       <li><a href="improveai.decision_model.html#improveai.decision_model.DecisionModel.MODEL_NAME_REGEXP">MODEL_NAME_REGEXP (DecisionModel attribute)</a>
@@ -534,6 +583,10 @@
       </ul></li>
       <li><a href="improveai.chooser.html#improveai.chooser.XGBChooser.model_seed">model_seed (XGBChooser property)</a>
 </li>
+      <li><a href="improveai.chooser.html#improveai.chooser.XGBChooser.MODEL_SEED_KEY">MODEL_SEED_KEY (XGBChooser property)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="improveai.chooser.html#improveai.chooser.XGBChooser.model_seed_key">model_seed_key (XGBChooser property)</a>
 </li>
       <li>
@@ -580,6 +633,18 @@
   </ul></td>
 </tr></table>
 
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="improveai.decision_context.html#improveai.decision_context.DecisionContext.optimize">optimize() (DecisionContext method)</a>
+
+      <ul>
+        <li><a href="improveai.decision_model.html#improveai.decision_model.DecisionModel.optimize">(DecisionModel method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -603,9 +668,13 @@
         <li><a href="improveai.decision_model.html#improveai.decision_model.DecisionModel.random">(DecisionModel method)</a>
 </li>
       </ul></li>
-      <li><a href="improveai.decision_model.html#improveai.decision_model.DecisionModel.rank">rank() (DecisionModel static method)</a>
+      <li><a href="improveai.decision_context.html#improveai.decision_context.DecisionContext.rank">rank() (DecisionContext method)</a>
+
+      <ul>
+        <li><a href="improveai.decision_model.html#improveai.decision_model.DecisionModel.rank">(DecisionModel method)</a>
 </li>
-      <li><a href="improveai.decision.html#improveai.decision.Decision.ranked_variants">ranked_variants (Decision property)</a>
+      </ul></li>
+      <li><a href="improveai.decision.html#improveai.decision.Decision.ranked">ranked (Decision property)</a>
 </li>
       <li><a href="improveai.utils.general_purpose_tools.html#improveai.utils.general_purpose_tools.read_jsonstring_from_file">read_jsonstring_from_file() (in module improveai.utils.general_purpose_tools)</a>
 </li>
@@ -641,8 +710,6 @@
         <li><a href="improveai.chooser.html#improveai.chooser.XGBChooser.score">(XGBChooser method)</a>
 </li>
       </ul></li>
-      <li><a href="improveai.decision.html#improveai.decision.Decision.scores">scores (Decision property)</a>
-</li>
       <li><a href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.shrink">shrink() (in module improveai.cythonized_feature_encoding.cythonized_feature_encoder)</a>
 
       <ul>
@@ -671,20 +738,22 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="improveai.decision_model.html#improveai.decision_model.DecisionModel.TIEBREAKER_MULTIPLIER">TIEBREAKER_MULTIPLIER (DecisionModel property)</a>
 </li>
-      <li><a href="improveai.decision_model.html#improveai.decision_model.DecisionModel.top_scoring_variant">top_scoring_variant() (DecisionModel static method)</a>
+      <li><a href="improveai.decision.html#improveai.decision.Decision.track">track() (Decision method)</a>
+
+      <ul>
+        <li><a href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.track">(DecisionTracker method)</a>
 </li>
-      <li><a href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.track">track() (DecisionTracker method)</a>
+      </ul></li>
+      <li><a href="improveai.decision_model.html#improveai.decision_model.DecisionModel.track_api_key">track_api_key (DecisionModel property)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="improveai.decision_model.html#improveai.decision_model.DecisionModel.track_url">track_url (DecisionModel property)</a>
 
       <ul>
         <li><a href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.track_url">(DecisionTracker property)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="improveai.decision.html#improveai.decision.Decision.tracked">tracked (Decision property)</a>
-</li>
       <li><a href="improveai.decision_model.html#improveai.decision_model.DecisionModel.tracker">tracker (DecisionModel property)</a>
 </li>
       <li><a href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.TYPE_KEY">TYPE_KEY (DecisionTracker property)</a>
@@ -697,11 +766,9 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.VARIANT_KEY">VARIANT_KEY (DecisionTracker property)</a>
 </li>
-      <li><a href="improveai.feature_encoder.html#improveai.feature_encoder.FeatureEncoder.VARIANT_METADATA_PARAMETER_NAME">VARIANT_METADATA_PARAMETER_NAME (FeatureEncoder attribute)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="improveai.decision.html#improveai.decision.Decision.variants">variants (Decision property)</a>
+      <li><a href="improveai.feature_encoder.html#improveai.feature_encoder.FeatureEncoder.VARIANT_METADATA_PARAMETER_NAME">VARIANT_METADATA_PARAMETER_NAME (FeatureEncoder attribute)</a>
 </li>
       <li><a href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.VARIANTS_COUNT_KEY">VARIANTS_COUNT_KEY (DecisionTracker property)</a>
 </li>
@@ -717,12 +784,18 @@
         <li><a href="improveai.feature_encoder.html#improveai.feature_encoder.warn_about_array_encoding">(in module improveai.feature_encoder)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="improveai.decision_context.html#improveai.decision_context.DecisionContext.which">which() (DecisionContext method)</a>
 
       <ul>
         <li><a href="improveai.decision_model.html#improveai.decision_model.DecisionModel.which">(DecisionModel method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="improveai.decision_context.html#improveai.decision_context.DecisionContext.which_from">which_from() (DecisionContext method)</a>
+
+      <ul>
+        <li><a href="improveai.decision_model.html#improveai.decision_model.DecisionModel.which_from">(DecisionModel method)</a>
 </li>
       </ul></li>
   </ul></td>

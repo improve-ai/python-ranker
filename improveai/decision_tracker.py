@@ -10,13 +10,13 @@ from ksuid import Ksuid
 
 import improveai
 from improveai.chooser import XGBChooser
-from improveai.utils.general_purpose_tools import constant, check_variants, is_valid_ksuid
+from improveai.utils.general_purpose_tools import check_variants, is_valid_ksuid
 
 
 class DecisionTracker:
 
-    @constant
-    def MODEL_KEY() -> str:
+    @property
+    def MODEL_KEY(self) -> str:
         """
         Track request body key storing model name
 
@@ -28,8 +28,8 @@ class DecisionTracker:
         """
         return "model"
 
-    @constant
-    def MESSAGE_ID_KEY() -> str:
+    @property
+    def MESSAGE_ID_KEY(self) -> str:
         """
         Track request body key storing message ID
 
@@ -41,8 +41,8 @@ class DecisionTracker:
         """
         return "message_id"
 
-    @constant
-    def TYPE_KEY() -> str:
+    @property
+    def TYPE_KEY(self) -> str:
         """
         Track request body key storing request type (e.g. decision is a request type as well as reward)
 
@@ -54,8 +54,8 @@ class DecisionTracker:
         """
         return "type"
 
-    @constant
-    def VARIANT_KEY() -> str:
+    @property
+    def VARIANT_KEY(self) -> str:
         """
         Track request body key storing best variant
 
@@ -67,8 +67,8 @@ class DecisionTracker:
         """
         return "variant"
 
-    @constant
-    def GIVENS_KEY() -> str:
+    @property
+    def GIVENS_KEY(self) -> str:
         """
         Track request body key storing givens
 
@@ -80,8 +80,8 @@ class DecisionTracker:
         """
         return "givens"
 
-    @constant
-    def VARIANTS_COUNT_KEY() -> str:
+    @property
+    def VARIANTS_COUNT_KEY(self) -> str:
         """
         Track request body key storing variants count (from how many variants best was chosen)
 
@@ -93,8 +93,8 @@ class DecisionTracker:
         """
         return "count"
 
-    @constant
-    def REWARD_TYPE() -> str:
+    @property
+    def REWARD_TYPE(self) -> str:
         """
         If request is a reward this should be provided as `<request body>[<TYPE_KEY>]`
 
@@ -106,8 +106,8 @@ class DecisionTracker:
         """
         return 'reward'
 
-    @constant
-    def REWARD_KEY():
+    @property
+    def REWARD_KEY(self) -> str:
         """
         Track request body key storing reward value
 
@@ -119,8 +119,8 @@ class DecisionTracker:
         """
         return 'reward'
 
-    @constant
-    def DECISION_TYPE() -> str:
+    @property
+    def DECISION_TYPE(self) -> str:
         """
         If a request is a decision this should be provided as `<request body>[<TYPE_KEY>]`
 
@@ -133,8 +133,8 @@ class DecisionTracker:
 
         return "decision"
 
-    @constant
-    def DECISION_ID_KEY() -> str:
+    @property
+    def DECISION_ID_KEY(self) -> str:
         """
         Track request body key storing decision ID
 
@@ -146,8 +146,8 @@ class DecisionTracker:
         """
         return "decision_id"
 
-    @constant
-    def API_KEY_HEADER() -> str:
+    @property
+    def API_KEY_HEADER(self) -> str:
         """
         Track request headers key storing `API key`
 
@@ -160,8 +160,8 @@ class DecisionTracker:
 
         return "x-api-key"
 
-    @constant
-    def PAYLOAD_FOR_ERROR_KEY() -> str:
+    @property
+    def PAYLOAD_FOR_ERROR_KEY(self) -> str:
         """
         user info dict key storing track request body which caused an error
 
@@ -173,8 +173,8 @@ class DecisionTracker:
         """
         return 'ERROR_WITH_PAYLOAD'
 
-    @constant
-    def REQUEST_ERROR_CODE_KEY() -> str:
+    @property
+    def REQUEST_ERROR_CODE_KEY(self) -> str:
         """
         user info dict key storing track request error code
 
@@ -186,8 +186,8 @@ class DecisionTracker:
         """
         return 'REQUEST_ERROR_CODE'
 
-    @constant
-    def RUNNERS_UP_KEY() -> str:
+    @property
+    def RUNNERS_UP_KEY(self) -> str:
         """
         Track request headers key storing runners up
 
@@ -199,8 +199,8 @@ class DecisionTracker:
         """
         return 'runners_up'
 
-    @constant
-    def VARIANTS_COUNT_KEY() -> str:
+    @property
+    def VARIANTS_COUNT_KEY(self) -> str:
         """
         Track request headers key storing variants count
 
@@ -212,8 +212,8 @@ class DecisionTracker:
         """
         return 'count'
 
-    @constant
-    def SAMPLE_KEY() -> str:
+    @property
+    def SAMPLE_KEY(self) -> str:
         """
         Track request headers key storing sample
 
@@ -241,7 +241,6 @@ class DecisionTracker:
 
     @track_url.setter
     def track_url(self, new_val: str):
-        # TODO test that for tracker
         assert new_val is not None
         self._track_url = new_val
 

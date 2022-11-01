@@ -48,10 +48,10 @@ copyright = '2022, Improve AI'
 author = 'Improve AI'
 
 # The short X.Y version
-version = '7.0.3'
+version = '7.2.0'
 
 # The full version, including alpha/beta/rc tags
-release = '7.0.3'
+release = '7.2.0'
 
 
 # -- General configuration ---------------------------------------------------

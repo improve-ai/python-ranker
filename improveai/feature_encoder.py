@@ -343,10 +343,12 @@ def _has_top_level_string_keys(checked_dict) -> bool:
 def warn_about_array_encoding(object_):
     """
     If object is an array warning will be printed (only once so the encoding speed does not suffer)
+
     Parameters
     ----------
     object_: object
         encoded object
+
     Returns
     -------
     None

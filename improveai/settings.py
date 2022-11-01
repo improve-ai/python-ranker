@@ -16,8 +16,17 @@ def gcc_and_py3_dev_installed() -> bool:
     return gcc_installed and py3_dev_installed
 
 
+# docs for module level variables like CYTHON_BACKEND_AVAILABLE are placed below them
 CYTHON_BACKEND_AVAILABLE = gcc_and_py3_dev_installed()
+"""
+Indicates if cython backend is usable with python-SDK
+"""
+
+
 DEBUG = False
+"""
+Indicates if debug level messages should be shown
+"""
 
 IMPROVE_ABS_PATH = os.sep.join(__file__.split(os.sep)[:-1])
 MAX_TRACK_THREADS = 16

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>feature_encoder.py module &mdash; improveai 7.0.3 documentation</title>
+  <title>feature_encoder.py module &mdash; improveai 7.2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
@@ -15,7 +15,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -31,7 +33,7 @@
             <a href="index.html" class="icon icon-home"> improveai
           </a>
               <div class="version">
-                7.0.3
+                7.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -51,7 +53,25 @@
 <li class="toctree-l1"><a class="reference internal" href="improveai.decision_context.html">DecisionContext</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.decision.html">Decision</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.decision_tracker.html">DecisionTracker</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">FeatureEncoder</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">FeatureEncoder</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.feature_encoder.FeatureEncoder"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.feature_encoder.FeatureEncoder.VARIANT_METADATA_PARAMETER_NAME"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder.VARIANT_METADATA_PARAMETER_NAME</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.feature_encoder.FeatureEncoder.__init__"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder.__init__()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.feature_encoder.FeatureEncoder.add_extra_features"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder.add_extra_features()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.feature_encoder.FeatureEncoder.encode_feature_vector"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder.encode_feature_vector()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.feature_encoder.FeatureEncoder.encode_givens"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder.encode_givens()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.feature_encoder.FeatureEncoder.encode_to_np_matrix"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder.encode_to_np_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.feature_encoder.FeatureEncoder.encode_variant"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder.encode_variant()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.feature_encoder.encode"><code class="docutils literal notranslate"><span class="pre">encode()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.feature_encoder.hash_to_feature_name"><code class="docutils literal notranslate"><span class="pre">hash_to_feature_name()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.feature_encoder.reverse_sprinkle"><code class="docutils literal notranslate"><span class="pre">reverse_sprinkle()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.feature_encoder.shrink"><code class="docutils literal notranslate"><span class="pre">shrink()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.feature_encoder.sprinkle"><code class="docutils literal notranslate"><span class="pre">sprinkle()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.feature_encoder.warn_about_array_encoding"><code class="docutils literal notranslate"><span class="pre">warn_about_array_encoding()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html">CythonizedFeatureEncoder</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.givens_provider.html">GivensProvider</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.chooser.html">Chooser</a></li>
@@ -91,7 +111,7 @@
            <div itemprop="articleBody">
              
   <section id="module-improveai.feature_encoder">
-<span id="feature-encoder-py-module"></span><h1>feature_encoder.py module<a class="headerlink" href="#module-improveai.feature_encoder" title="Permalink to this headline"></a></h1>
+<span id="feature-encoder-py-module"></span><h1>feature_encoder.py module<a class="headerlink" href="#module-improveai.feature_encoder" title="Permalink to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="improveai.feature_encoder.FeatureEncoder">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FeatureEncoder</span></span><a class="headerlink" href="#improveai.feature_encoder.FeatureEncoder" title="Permalink to this definition"></a></dt>

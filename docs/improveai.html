@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>improveai package &mdash; improveai 7.0.3 documentation</title>
+  <title>improveai package &mdash; improveai 7.2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
@@ -15,7 +15,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
@@ -29,7 +31,7 @@
             <a href="index.html" class="icon icon-home"> improveai
           </a>
               <div class="version">
-                7.0.3
+                7.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -89,15 +91,30 @@
            <div itemprop="articleBody">
              
   <section id="improveai-package">
-<h1>improveai package<a class="headerlink" href="#improveai-package" title="Permalink to this headline"></a></h1>
+<h1>improveai package<a class="headerlink" href="#improveai-package" title="Permalink to this heading"></a></h1>
 <section id="subpackages">
-<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline"></a></h2>
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading"></a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="improveai.cythonized_feature_encoding.html">improveai.cythonized_feature_encoding package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="improveai.cythonized_feature_encoding.html#submodules">Submodules</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html">cythonized_feature_encoder.pyx module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.html">cythonized_feature_encoding_utils.pyx module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html">cythonized_feature_encoder.pyx module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.encode"><code class="docutils literal notranslate"><span class="pre">encode()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.hash_to_feature_name"><code class="docutils literal notranslate"><span class="pre">hash_to_feature_name()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.reverse_sprinkle"><code class="docutils literal notranslate"><span class="pre">reverse_sprinkle()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.shrink"><code class="docutils literal notranslate"><span class="pre">shrink()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.sprinkle"><code class="docutils literal notranslate"><span class="pre">sprinkle()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.warn_about_array_encoding"><code class="docutils literal notranslate"><span class="pre">warn_about_array_encoding()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.html">cythonized_feature_encoding_utils.pyx module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.html#improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.encode_variants_multiple_givens"><code class="docutils literal notranslate"><span class="pre">encode_variants_multiple_givens()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.html#improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.encode_variants_single_givens"><code class="docutils literal notranslate"><span class="pre">encode_variants_single_givens()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.html#improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.encoded_variant_into_np_row"><code class="docutils literal notranslate"><span class="pre">encoded_variant_into_np_row()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.html#improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.encoded_variants_to_np"><code class="docutils literal notranslate"><span class="pre">encoded_variants_to_np()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="improveai.cythonized_feature_encoding.html#module-improveai.cythonized_feature_encoding">Module contents</a></li>
@@ -105,10 +122,34 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.utils.html">improveai.utils package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="improveai.utils.html#submodules">Submodules</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="improveai.utils.choosers_feature_encoding_tools.html">choosers_feature_encoding_tools.py module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="improveai.utils.general_purpose_tools.html">general_purpose_tools.py module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="improveai.utils.gzip_tools.html">gzip_tools.py module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="improveai.utils.url_tools.html">url_tools.py module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.utils.choosers_feature_encoding_tools.html">choosers_feature_encoding_tools.py module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="improveai.utils.choosers_feature_encoding_tools.html#improveai.utils.choosers_feature_encoding_tools.encoded_variant_to_np"><code class="docutils literal notranslate"><span class="pre">encoded_variant_to_np()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="improveai.utils.choosers_feature_encoding_tools.html#improveai.utils.choosers_feature_encoding_tools.encoded_variants_to_np"><code class="docutils literal notranslate"><span class="pre">encoded_variants_to_np()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.utils.general_purpose_tools.html">general_purpose_tools.py module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="improveai.utils.general_purpose_tools.html#improveai.utils.general_purpose_tools.append_prefix_to_dict_keys"><code class="docutils literal notranslate"><span class="pre">append_prefix_to_dict_keys()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="improveai.utils.general_purpose_tools.html#improveai.utils.general_purpose_tools.check_variants"><code class="docutils literal notranslate"><span class="pre">check_variants()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="improveai.utils.general_purpose_tools.html#improveai.utils.general_purpose_tools.get_variants_from_args"><code class="docutils literal notranslate"><span class="pre">get_variants_from_args()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="improveai.utils.general_purpose_tools.html#improveai.utils.general_purpose_tools.impute_missing_dict_keys"><code class="docutils literal notranslate"><span class="pre">impute_missing_dict_keys()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="improveai.utils.general_purpose_tools.html#improveai.utils.general_purpose_tools.is_object_numpy_type"><code class="docutils literal notranslate"><span class="pre">is_object_numpy_type()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="improveai.utils.general_purpose_tools.html#improveai.utils.general_purpose_tools.is_valid_ksuid"><code class="docutils literal notranslate"><span class="pre">is_valid_ksuid()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="improveai.utils.general_purpose_tools.html#improveai.utils.general_purpose_tools.is_valid_variants_type"><code class="docutils literal notranslate"><span class="pre">is_valid_variants_type()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="improveai.utils.general_purpose_tools.html#improveai.utils.general_purpose_tools.read_jsonstring_from_file"><code class="docutils literal notranslate"><span class="pre">read_jsonstring_from_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="improveai.utils.general_purpose_tools.html#improveai.utils.general_purpose_tools.sigmoid"><code class="docutils literal notranslate"><span class="pre">sigmoid()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.utils.gzip_tools.html">gzip_tools.py module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="improveai.utils.gzip_tools.html#improveai.utils.gzip_tools.check_and_get_unzipped_model"><code class="docutils literal notranslate"><span class="pre">check_and_get_unzipped_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="improveai.utils.gzip_tools.html#improveai.utils.gzip_tools.get_unzip_gz"><code class="docutils literal notranslate"><span class="pre">get_unzip_gz()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="improveai.utils.gzip_tools.html#improveai.utils.gzip_tools.is_gz_bytes"><code class="docutils literal notranslate"><span class="pre">is_gz_bytes()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.utils.url_tools.html">url_tools.py module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="improveai.utils.url_tools.html#improveai.utils.url_tools.get_model_bytes_from_url"><code class="docutils literal notranslate"><span class="pre">get_model_bytes_from_url()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="improveai.utils.url_tools.html#improveai.utils.url_tools.is_path_http_addr"><code class="docutils literal notranslate"><span class="pre">is_path_http_addr()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="improveai.utils.html#module-improveai.utils">Module contents</a></li>
@@ -118,23 +159,185 @@
 </div>
 </section>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="improveai.chooser.html">chooser.py module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.decision.html">decision.py module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.decision_context.html">decision_context.py module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.decision_model.html">decision_model.py module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.decision_tracker.html">decision_tracker.py module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.feature_encoder.html">feature_encoder.py module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.givens_provider.html">givens_provider.py module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.improve_model_cli.html">improve_model_cli.py module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.settings.html">settings.py module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.chooser.html">chooser.py module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser"><code class="docutils literal notranslate"><span class="pre">XGBChooser</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser.IMPROVEAI_VERSION_KEY"><code class="docutils literal notranslate"><span class="pre">XGBChooser.IMPROVEAI_VERSION_KEY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser.IMPROVE_AI_ALLOWED_MAJOR_VERSION"><code class="docutils literal notranslate"><span class="pre">XGBChooser.IMPROVE_AI_ALLOWED_MAJOR_VERSION</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser.MODEL_FEATURE_NAMES_KEY"><code class="docutils literal notranslate"><span class="pre">XGBChooser.MODEL_FEATURE_NAMES_KEY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser.MODEL_METADATA_KEY"><code class="docutils literal notranslate"><span class="pre">XGBChooser.MODEL_METADATA_KEY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser.MODEL_NAME_KEY"><code class="docutils literal notranslate"><span class="pre">XGBChooser.MODEL_NAME_KEY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser.MODEL_NAME_REGEXP"><code class="docutils literal notranslate"><span class="pre">XGBChooser.MODEL_NAME_REGEXP</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser.MODEL_SEED_KEY"><code class="docutils literal notranslate"><span class="pre">XGBChooser.MODEL_SEED_KEY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser.__init__"><code class="docutils literal notranslate"><span class="pre">XGBChooser.__init__()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser.calculate_predictions"><code class="docutils literal notranslate"><span class="pre">XGBChooser.calculate_predictions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser.current_noise"><code class="docutils literal notranslate"><span class="pre">XGBChooser.current_noise</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser.encode_variants_single_givens"><code class="docutils literal notranslate"><span class="pre">XGBChooser.encode_variants_single_givens()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser.feature_encoder"><code class="docutils literal notranslate"><span class="pre">XGBChooser.feature_encoder</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser.fill_missing_features"><code class="docutils literal notranslate"><span class="pre">XGBChooser.fill_missing_features()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser.get_model_src"><code class="docutils literal notranslate"><span class="pre">XGBChooser.get_model_src()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser.imposed_noise"><code class="docutils literal notranslate"><span class="pre">XGBChooser.imposed_noise</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser.improveai_major_version_from_metadata"><code class="docutils literal notranslate"><span class="pre">XGBChooser.improveai_major_version_from_metadata</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser.load_model"><code class="docutils literal notranslate"><span class="pre">XGBChooser.load_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser.model"><code class="docutils literal notranslate"><span class="pre">XGBChooser.model</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser.model_feature_names"><code class="docutils literal notranslate"><span class="pre">XGBChooser.model_feature_names</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser.model_feature_names_key"><code class="docutils literal notranslate"><span class="pre">XGBChooser.model_feature_names_key</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser.model_metadata"><code class="docutils literal notranslate"><span class="pre">XGBChooser.model_metadata</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser.model_metadata_key"><code class="docutils literal notranslate"><span class="pre">XGBChooser.model_metadata_key</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser.model_name"><code class="docutils literal notranslate"><span class="pre">XGBChooser.model_name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser.model_name_key"><code class="docutils literal notranslate"><span class="pre">XGBChooser.model_name_key</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser.model_seed"><code class="docutils literal notranslate"><span class="pre">XGBChooser.model_seed</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser.model_seed_key"><code class="docutils literal notranslate"><span class="pre">XGBChooser.model_seed_key</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser.score"><code class="docutils literal notranslate"><span class="pre">XGBChooser.score()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser.sort"><code class="docutils literal notranslate"><span class="pre">XGBChooser.sort()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.decision.html">decision.py module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="improveai.decision.html#improveai.decision.Decision"><code class="docutils literal notranslate"><span class="pre">Decision</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision.html#improveai.decision.Decision.__init__"><code class="docutils literal notranslate"><span class="pre">Decision.__init__()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision.html#improveai.decision.Decision.add_reward"><code class="docutils literal notranslate"><span class="pre">Decision.add_reward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision.html#improveai.decision.Decision.best"><code class="docutils literal notranslate"><span class="pre">Decision.best</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision.html#improveai.decision.Decision.decision_model"><code class="docutils literal notranslate"><span class="pre">Decision.decision_model</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision.html#improveai.decision.Decision.get"><code class="docutils literal notranslate"><span class="pre">Decision.get()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision.html#improveai.decision.Decision.givens"><code class="docutils literal notranslate"><span class="pre">Decision.givens</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision.html#improveai.decision.Decision.id_"><code class="docutils literal notranslate"><span class="pre">Decision.id_</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision.html#improveai.decision.Decision.peek"><code class="docutils literal notranslate"><span class="pre">Decision.peek()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision.html#improveai.decision.Decision.ranked"><code class="docutils literal notranslate"><span class="pre">Decision.ranked</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision.html#improveai.decision.Decision.track"><code class="docutils literal notranslate"><span class="pre">Decision.track()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.decision_context.html">decision_context.py module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="improveai.decision_context.html#improveai.decision_context.DecisionContext"><code class="docutils literal notranslate"><span class="pre">DecisionContext</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_context.html#improveai.decision_context.DecisionContext.__init__"><code class="docutils literal notranslate"><span class="pre">DecisionContext.__init__()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_context.html#improveai.decision_context.DecisionContext.choose_first"><code class="docutils literal notranslate"><span class="pre">DecisionContext.choose_first()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_context.html#improveai.decision_context.DecisionContext.choose_from"><code class="docutils literal notranslate"><span class="pre">DecisionContext.choose_from()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_context.html#improveai.decision_context.DecisionContext.choose_multivariate"><code class="docutils literal notranslate"><span class="pre">DecisionContext.choose_multivariate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_context.html#improveai.decision_context.DecisionContext.choose_random"><code class="docutils literal notranslate"><span class="pre">DecisionContext.choose_random()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_context.html#improveai.decision_context.DecisionContext.decide"><code class="docutils literal notranslate"><span class="pre">DecisionContext.decide()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_context.html#improveai.decision_context.DecisionContext.decision_model"><code class="docutils literal notranslate"><span class="pre">DecisionContext.decision_model</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_context.html#improveai.decision_context.DecisionContext.first"><code class="docutils literal notranslate"><span class="pre">DecisionContext.first()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_context.html#improveai.decision_context.DecisionContext.givens"><code class="docutils literal notranslate"><span class="pre">DecisionContext.givens</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_context.html#improveai.decision_context.DecisionContext.optimize"><code class="docutils literal notranslate"><span class="pre">DecisionContext.optimize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_context.html#improveai.decision_context.DecisionContext.random"><code class="docutils literal notranslate"><span class="pre">DecisionContext.random()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_context.html#improveai.decision_context.DecisionContext.rank"><code class="docutils literal notranslate"><span class="pre">DecisionContext.rank()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_context.html#improveai.decision_context.DecisionContext.score"><code class="docutils literal notranslate"><span class="pre">DecisionContext.score()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_context.html#improveai.decision_context.DecisionContext.which"><code class="docutils literal notranslate"><span class="pre">DecisionContext.which()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_context.html#improveai.decision_context.DecisionContext.which_from"><code class="docutils literal notranslate"><span class="pre">DecisionContext.which_from()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.decision_model.html">decision_model.py module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.DecisionModel"><code class="docutils literal notranslate"><span class="pre">DecisionModel</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.DecisionModel.MODEL_NAME_REGEXP"><code class="docutils literal notranslate"><span class="pre">DecisionModel.MODEL_NAME_REGEXP</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.DecisionModel.SUPPORTED_CALLS"><code class="docutils literal notranslate"><span class="pre">DecisionModel.SUPPORTED_CALLS</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.DecisionModel.TIEBREAKER_MULTIPLIER"><code class="docutils literal notranslate"><span class="pre">DecisionModel.TIEBREAKER_MULTIPLIER</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.DecisionModel.__init__"><code class="docutils literal notranslate"><span class="pre">DecisionModel.__init__()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.DecisionModel.add_reward"><code class="docutils literal notranslate"><span class="pre">DecisionModel.add_reward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.DecisionModel.choose_first"><code class="docutils literal notranslate"><span class="pre">DecisionModel.choose_first()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.DecisionModel.choose_from"><code class="docutils literal notranslate"><span class="pre">DecisionModel.choose_from()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.DecisionModel.choose_multivariate"><code class="docutils literal notranslate"><span class="pre">DecisionModel.choose_multivariate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.DecisionModel.choose_random"><code class="docutils literal notranslate"><span class="pre">DecisionModel.choose_random()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.DecisionModel.chooser"><code class="docutils literal notranslate"><span class="pre">DecisionModel.chooser</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.DecisionModel.decide"><code class="docutils literal notranslate"><span class="pre">DecisionModel.decide()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.DecisionModel.first"><code class="docutils literal notranslate"><span class="pre">DecisionModel.first()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.DecisionModel.full_factorial_variants"><code class="docutils literal notranslate"><span class="pre">DecisionModel.full_factorial_variants()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.DecisionModel.given"><code class="docutils literal notranslate"><span class="pre">DecisionModel.given()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.DecisionModel.givens_provider"><code class="docutils literal notranslate"><span class="pre">DecisionModel.givens_provider</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.DecisionModel.last_decision_id"><code class="docutils literal notranslate"><span class="pre">DecisionModel.last_decision_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.DecisionModel.load"><code class="docutils literal notranslate"><span class="pre">DecisionModel.load()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.DecisionModel.model_name"><code class="docutils literal notranslate"><span class="pre">DecisionModel.model_name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.DecisionModel.optimize"><code class="docutils literal notranslate"><span class="pre">DecisionModel.optimize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.DecisionModel.random"><code class="docutils literal notranslate"><span class="pre">DecisionModel.random()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.DecisionModel.rank"><code class="docutils literal notranslate"><span class="pre">DecisionModel.rank()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.DecisionModel.score"><code class="docutils literal notranslate"><span class="pre">DecisionModel.score()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.DecisionModel.track_api_key"><code class="docutils literal notranslate"><span class="pre">DecisionModel.track_api_key</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.DecisionModel.track_url"><code class="docutils literal notranslate"><span class="pre">DecisionModel.track_url</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.DecisionModel.tracker"><code class="docutils literal notranslate"><span class="pre">DecisionModel.tracker</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.DecisionModel.which"><code class="docutils literal notranslate"><span class="pre">DecisionModel.which()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.DecisionModel.which_from"><code class="docutils literal notranslate"><span class="pre">DecisionModel.which_from()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="improveai.decision_model.html#improveai.decision_model.load_model"><code class="docutils literal notranslate"><span class="pre">load_model()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.decision_tracker.html">decision_tracker.py module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker"><code class="docutils literal notranslate"><span class="pre">DecisionTracker</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.API_KEY_HEADER"><code class="docutils literal notranslate"><span class="pre">DecisionTracker.API_KEY_HEADER</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.DECISION_ID_KEY"><code class="docutils literal notranslate"><span class="pre">DecisionTracker.DECISION_ID_KEY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.DECISION_TYPE"><code class="docutils literal notranslate"><span class="pre">DecisionTracker.DECISION_TYPE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.GIVENS_KEY"><code class="docutils literal notranslate"><span class="pre">DecisionTracker.GIVENS_KEY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.MESSAGE_ID_KEY"><code class="docutils literal notranslate"><span class="pre">DecisionTracker.MESSAGE_ID_KEY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.MODEL_KEY"><code class="docutils literal notranslate"><span class="pre">DecisionTracker.MODEL_KEY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.PAYLOAD_FOR_ERROR_KEY"><code class="docutils literal notranslate"><span class="pre">DecisionTracker.PAYLOAD_FOR_ERROR_KEY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.REQUEST_ERROR_CODE_KEY"><code class="docutils literal notranslate"><span class="pre">DecisionTracker.REQUEST_ERROR_CODE_KEY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.REWARD_KEY"><code class="docutils literal notranslate"><span class="pre">DecisionTracker.REWARD_KEY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.REWARD_TYPE"><code class="docutils literal notranslate"><span class="pre">DecisionTracker.REWARD_TYPE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.RUNNERS_UP_KEY"><code class="docutils literal notranslate"><span class="pre">DecisionTracker.RUNNERS_UP_KEY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.SAMPLE_KEY"><code class="docutils literal notranslate"><span class="pre">DecisionTracker.SAMPLE_KEY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.TYPE_KEY"><code class="docutils literal notranslate"><span class="pre">DecisionTracker.TYPE_KEY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.VARIANTS_COUNT_KEY"><code class="docutils literal notranslate"><span class="pre">DecisionTracker.VARIANTS_COUNT_KEY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.VARIANT_KEY"><code class="docutils literal notranslate"><span class="pre">DecisionTracker.VARIANT_KEY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.__init__"><code class="docutils literal notranslate"><span class="pre">DecisionTracker.__init__()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.add_reward"><code class="docutils literal notranslate"><span class="pre">DecisionTracker.add_reward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.api_key"><code class="docutils literal notranslate"><span class="pre">DecisionTracker.api_key</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.do_post_improve_request"><code class="docutils literal notranslate"><span class="pre">DecisionTracker.do_post_improve_request()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.get_sample"><code class="docutils literal notranslate"><span class="pre">DecisionTracker.get_sample()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.max_runners_up"><code class="docutils literal notranslate"><span class="pre">DecisionTracker.max_runners_up</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.post_improve_request"><code class="docutils literal notranslate"><span class="pre">DecisionTracker.post_improve_request()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.track"><code class="docutils literal notranslate"><span class="pre">DecisionTracker.track()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker.track_url"><code class="docutils literal notranslate"><span class="pre">DecisionTracker.track_url</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.feature_encoder.html">feature_encoder.py module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="improveai.feature_encoder.html#improveai.feature_encoder.FeatureEncoder"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="improveai.feature_encoder.html#improveai.feature_encoder.FeatureEncoder.VARIANT_METADATA_PARAMETER_NAME"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder.VARIANT_METADATA_PARAMETER_NAME</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.feature_encoder.html#improveai.feature_encoder.FeatureEncoder.__init__"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder.__init__()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.feature_encoder.html#improveai.feature_encoder.FeatureEncoder.add_extra_features"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder.add_extra_features()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.feature_encoder.html#improveai.feature_encoder.FeatureEncoder.encode_feature_vector"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder.encode_feature_vector()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.feature_encoder.html#improveai.feature_encoder.FeatureEncoder.encode_givens"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder.encode_givens()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.feature_encoder.html#improveai.feature_encoder.FeatureEncoder.encode_to_np_matrix"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder.encode_to_np_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.feature_encoder.html#improveai.feature_encoder.FeatureEncoder.encode_variant"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder.encode_variant()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="improveai.feature_encoder.html#improveai.feature_encoder.encode"><code class="docutils literal notranslate"><span class="pre">encode()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="improveai.feature_encoder.html#improveai.feature_encoder.hash_to_feature_name"><code class="docutils literal notranslate"><span class="pre">hash_to_feature_name()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="improveai.feature_encoder.html#improveai.feature_encoder.reverse_sprinkle"><code class="docutils literal notranslate"><span class="pre">reverse_sprinkle()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="improveai.feature_encoder.html#improveai.feature_encoder.shrink"><code class="docutils literal notranslate"><span class="pre">shrink()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="improveai.feature_encoder.html#improveai.feature_encoder.sprinkle"><code class="docutils literal notranslate"><span class="pre">sprinkle()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="improveai.feature_encoder.html#improveai.feature_encoder.warn_about_array_encoding"><code class="docutils literal notranslate"><span class="pre">warn_about_array_encoding()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.givens_provider.html">givens_provider.py module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="improveai.givens_provider.html#improveai.givens_provider.GivensProvider"><code class="docutils literal notranslate"><span class="pre">GivensProvider</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="improveai.givens_provider.html#improveai.givens_provider.GivensProvider.givens"><code class="docutils literal notranslate"><span class="pre">GivensProvider.givens()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.improve_model_cli.html">improve_model_cli.py module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="improveai.improve_model_cli.html#improveai.improve_model_cli.mockup_and_execute"><code class="docutils literal notranslate"><span class="pre">mockup_and_execute()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.settings.html">settings.py module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="improveai.settings.html#improveai.settings.CYTHON_BACKEND_AVAILABLE"><code class="docutils literal notranslate"><span class="pre">CYTHON_BACKEND_AVAILABLE</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="improveai.settings.html#improveai.settings.DEBUG"><code class="docutils literal notranslate"><span class="pre">DEBUG</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="improveai.settings.html#improveai.settings.gcc_and_py3_dev_installed"><code class="docutils literal notranslate"><span class="pre">gcc_and_py3_dev_installed()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </div>
 </section>
 <section id="module-improveai">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-improveai" title="Permalink to this headline"></a></h2>
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-improveai" title="Permalink to this heading"></a></h2>
 </section>
 </section>
 

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>decision_model.py module &mdash; improveai 7.0.3 documentation</title>
+  <title>decision_model.py module &mdash; improveai 7.2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
@@ -15,7 +15,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -31,7 +33,7 @@
             <a href="index.html" class="icon icon-home"> improveai
           </a>
               <div class="version">
-                7.0.3
+                7.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -47,7 +49,40 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Classes:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">DecisionModel</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">DecisionModel</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.decision_model.DecisionModel"><code class="docutils literal notranslate"><span class="pre">DecisionModel</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.decision_model.DecisionModel.MODEL_NAME_REGEXP"><code class="docutils literal notranslate"><span class="pre">DecisionModel.MODEL_NAME_REGEXP</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.decision_model.DecisionModel.SUPPORTED_CALLS"><code class="docutils literal notranslate"><span class="pre">DecisionModel.SUPPORTED_CALLS</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.decision_model.DecisionModel.TIEBREAKER_MULTIPLIER"><code class="docutils literal notranslate"><span class="pre">DecisionModel.TIEBREAKER_MULTIPLIER</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.decision_model.DecisionModel.__init__"><code class="docutils literal notranslate"><span class="pre">DecisionModel.__init__()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.decision_model.DecisionModel.add_reward"><code class="docutils literal notranslate"><span class="pre">DecisionModel.add_reward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.decision_model.DecisionModel.choose_first"><code class="docutils literal notranslate"><span class="pre">DecisionModel.choose_first()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.decision_model.DecisionModel.choose_from"><code class="docutils literal notranslate"><span class="pre">DecisionModel.choose_from()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.decision_model.DecisionModel.choose_multivariate"><code class="docutils literal notranslate"><span class="pre">DecisionModel.choose_multivariate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.decision_model.DecisionModel.choose_random"><code class="docutils literal notranslate"><span class="pre">DecisionModel.choose_random()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.decision_model.DecisionModel.chooser"><code class="docutils literal notranslate"><span class="pre">DecisionModel.chooser</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.decision_model.DecisionModel.decide"><code class="docutils literal notranslate"><span class="pre">DecisionModel.decide()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.decision_model.DecisionModel.first"><code class="docutils literal notranslate"><span class="pre">DecisionModel.first()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.decision_model.DecisionModel.full_factorial_variants"><code class="docutils literal notranslate"><span class="pre">DecisionModel.full_factorial_variants()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.decision_model.DecisionModel.given"><code class="docutils literal notranslate"><span class="pre">DecisionModel.given()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.decision_model.DecisionModel.givens_provider"><code class="docutils literal notranslate"><span class="pre">DecisionModel.givens_provider</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.decision_model.DecisionModel.last_decision_id"><code class="docutils literal notranslate"><span class="pre">DecisionModel.last_decision_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.decision_model.DecisionModel.load"><code class="docutils literal notranslate"><span class="pre">DecisionModel.load()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.decision_model.DecisionModel.model_name"><code class="docutils literal notranslate"><span class="pre">DecisionModel.model_name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.decision_model.DecisionModel.optimize"><code class="docutils literal notranslate"><span class="pre">DecisionModel.optimize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.decision_model.DecisionModel.random"><code class="docutils literal notranslate"><span class="pre">DecisionModel.random()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.decision_model.DecisionModel.rank"><code class="docutils literal notranslate"><span class="pre">DecisionModel.rank()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.decision_model.DecisionModel.score"><code class="docutils literal notranslate"><span class="pre">DecisionModel.score()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.decision_model.DecisionModel.track_api_key"><code class="docutils literal notranslate"><span class="pre">DecisionModel.track_api_key</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.decision_model.DecisionModel.track_url"><code class="docutils literal notranslate"><span class="pre">DecisionModel.track_url</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.decision_model.DecisionModel.tracker"><code class="docutils literal notranslate"><span class="pre">DecisionModel.tracker</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.decision_model.DecisionModel.which"><code class="docutils literal notranslate"><span class="pre">DecisionModel.which()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.decision_model.DecisionModel.which_from"><code class="docutils literal notranslate"><span class="pre">DecisionModel.which_from()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.decision_model.load_model"><code class="docutils literal notranslate"><span class="pre">load_model()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.decision_context.html">DecisionContext</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.decision.html">Decision</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.decision_tracker.html">DecisionTracker</a></li>
@@ -91,7 +126,7 @@
            <div itemprop="articleBody">
              
   <section id="module-improveai.decision_model">
-<span id="decision-model-py-module"></span><h1>decision_model.py module<a class="headerlink" href="#module-improveai.decision_model" title="Permalink to this headline"></a></h1>
+<span id="decision-model-py-module"></span><h1>decision_model.py module<a class="headerlink" href="#module-improveai.decision_model" title="Permalink to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="improveai.decision_model.DecisionModel">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DecisionModel</span></span><a class="headerlink" href="#improveai.decision_model.DecisionModel" title="Permalink to this definition"></a></dt>
@@ -99,17 +134,28 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="improveai.decision_model.DecisionModel.MODEL_NAME_REGEXP">
 <span class="sig-name descname"><span class="pre">MODEL_NAME_REGEXP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'^[a-zA-Z0-9][\\w\\-.]{0,63}$'</span></em><a class="headerlink" href="#improveai.decision_model.DecisionModel.MODEL_NAME_REGEXP" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Model name regexp used to verify all model names (both user provided and cached in boosters)</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="improveai.decision_model.DecisionModel.SUPPORTED_CALLS">
-<span class="sig-name descname"><span class="pre">SUPPORTED_CALLS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['score',</span> <span class="pre">'top_scoring_variant',</span> <span class="pre">'rank',</span> <span class="pre">'get']</span></em><a class="headerlink" href="#improveai.decision_model.DecisionModel.SUPPORTED_CALLS" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">SUPPORTED_CALLS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['score',</span> <span class="pre">'rank',</span> <span class="pre">'get',</span> <span class="pre">'which_from',</span> <span class="pre">'optimize']</span></em><a class="headerlink" href="#improveai.decision_model.DecisionModel.SUPPORTED_CALLS" title="Permalink to this definition"></a></dt>
+<dd><p>Method calls supported by Improve model CLI</p>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="improveai.decision_model.DecisionModel.TIEBREAKER_MULTIPLIER">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TIEBREAKER_MULTIPLIER</span></span><a class="headerlink" href="#improveai.decision_model.DecisionModel.TIEBREAKER_MULTIPLIER" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TIEBREAKER_MULTIPLIER</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#improveai.decision_model.DecisionModel.TIEBREAKER_MULTIPLIER" title="Permalink to this definition"></a></dt>
+<dd><p>Small value randomized and added to model’s scores</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Small value randomized and added to model’s scores</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="improveai.decision_model.DecisionModel.__init__">
@@ -159,7 +205,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="improveai.decision_model.DecisionModel.choose_from">
-<span class="sig-name descname"><span class="pre">choose_from</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variants</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scores</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.decision_model.DecisionModel.choose_from" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">choose_from</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variants</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scores</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.decision_model.DecisionModel.choose_from" title="Permalink to this definition"></a></dt>
 <dd><p>Wrapper for chaining</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -178,15 +224,29 @@
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="improveai.decision_model.DecisionModel.choose_multivariate">
+<span class="sig-name descname"><span class="pre">choose_multivariate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variant_map</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.decision_model.DecisionModel.choose_multivariate" title="Permalink to this definition"></a></dt>
+<dd><p>Chooses the best configuration from full factorial of input variants map</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>variant_map</strong> (<em>dict</em>) – map of key -&gt; variants set</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>combination of the best variants in a dict</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="improveai.decision_model.DecisionModel.choose_random">
 <span class="sig-name descname"><span class="pre">choose_random</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variants</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.decision_model.DecisionModel.choose_random" title="Permalink to this definition"></a></dt>
 <dd><p>Shuffles variants to return Decision with gaussian scores and random best variant</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>*variants</strong> (<em>list</em><em> or </em><em>tuple</em><em> or </em><em>np.ndarray</em>) – collection of variants of which random will be chosen</p></li>
-<li><p><strong>variants</strong> (<em>list</em>) – </p></li>
-</ul>
+<dd class="field-odd"><p><strong>*variants</strong> (<em>list</em><em> or </em><em>tuple</em><em> or </em><em>np.ndarray</em>) – collection of variants of which random will be chosen</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Decision with randomly chosen best variant</p>
@@ -199,7 +259,7 @@
 
 <dl class="py property">
 <dt class="sig sig-object py" id="improveai.decision_model.DecisionModel.chooser">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">chooser</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser" title="improveai.chooser.XGBChooser"><span class="pre">improveai.chooser.XGBChooser</span></a></em><a class="headerlink" href="#improveai.decision_model.DecisionModel.chooser" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">chooser</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="improveai.chooser.html#improveai.chooser.XGBChooser" title="improveai.chooser.XGBChooser"><span class="pre">XGBChooser</span></a></em><a class="headerlink" href="#improveai.decision_model.DecisionModel.chooser" title="Permalink to this definition"></a></dt>
 <dd><p>Chooser used by current DecisionModel. Currently only XGBChooser is supported.
 If not set will return None</p>
 <dl class="field-list simple">
@@ -213,16 +273,37 @@ If not set will return None</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="improveai.decision_model.DecisionModel.decide">
+<span class="sig-name descname"><span class="pre">decide</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variants</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scores</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ordered</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.decision_model.DecisionModel.decide" title="Permalink to this definition"></a></dt>
+<dd><p>Creates decision but does not track it by default.
+If not scores are provided and input variants are not ranked performs
+scoring and ranking. If scores are provided but variants are not ordered
+ranks variants before making a decision</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>variants</strong> (<em>list</em><em> or </em><em>np.ndarray</em>) – variants used to make decision</p></li>
+<li><p><strong>scores</strong> (<em>list</em><em> or </em><em>np.ndarray</em>) – scores for variants</p></li>
+<li><p><strong>ordered</strong> (<em>bool</em>) – are variants ordered from best to worst</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>decision object with provided input</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>d.Decision</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="improveai.decision_model.DecisionModel.first">
 <span class="sig-name descname"><span class="pre">first</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">variants</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.decision_model.DecisionModel.first" title="Permalink to this definition"></a></dt>
 <dd><p>Makes decision using first variant as best and tracks it.
 Accepts variants as pythonic args</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>*variants</strong> (<em>list</em><em> or </em><em>tuple</em><em> or </em><em>np.ndarray</em>) – collection of variants of which first will be chosen</p></li>
-<li><p><strong>variants</strong> (<em>list</em>) – </p></li>
-</ul>
+<dd class="field-odd"><p><strong>*variants</strong> (<em>list</em><em> or </em><em>tuple</em><em> or </em><em>np.ndarray</em>) – collection of variants of which first will be chosen</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>tuple with (&lt;first variant&gt;, &lt;decision id&gt;)</p>
@@ -234,18 +315,30 @@ Accepts variants as pythonic args</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="improveai.decision_model.DecisionModel.generate_descending_gaussians">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_descending_gaussians</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">count</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.decision_model.DecisionModel.generate_descending_gaussians" title="Permalink to this definition"></a></dt>
-<dd><p>Generates random floats and sorts in a descending fashion</p>
+<dt class="sig sig-object py" id="improveai.decision_model.DecisionModel.full_factorial_variants">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">full_factorial_variants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variant_map</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.decision_model.DecisionModel.full_factorial_variants" title="Permalink to this definition"></a></dt>
+<dd><p>Creates full factorial from input variants map, i.e. for variants_map
+{
+‘variants_0’: [‘01’, ‘02’],
+‘variants_1’: [‘11’, ‘12’, ‘13’]}</p>
+<p>it creates a list of dicts:
+[
+{‘variants_0’: ‘01’, ‘variants_1’: ‘11’},
+{‘variants_0’: ‘02’, ‘variants_1’: ‘11’},
+{‘variants_0’: ‘01’, ‘variants_1’: ‘12’},
+{‘variants_0’: ‘02’, ‘variants_1’: ‘22’},
+{‘variants_0’: ‘01’, ‘variants_1’: ‘13’},
+{‘variants_0’: ‘02’, ‘variants_1’: ‘23’},
+]</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>count</strong> (<em>int</em>) – number of floats to generate</p>
+<dd class="field-odd"><p><strong>variant_map</strong> (<em>dict</em>) – map of key -&gt; variants set</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>array of sorted floats</p>
+<dd class="field-even"><p>list of ‘fully factorial variants’ dicts</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p>list</p>
 </dd>
 </dl>
 </dd></dl>
@@ -269,7 +362,7 @@ Accepts variants as pythonic args</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="improveai.decision_model.DecisionModel.givens_provider">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">givens_provider</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="improveai.givens_provider.html#improveai.givens_provider.GivensProvider" title="improveai.givens_provider.GivensProvider"><span class="pre">improveai.givens_provider.GivensProvider</span></a></em><a class="headerlink" href="#improveai.decision_model.DecisionModel.givens_provider" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">givens_provider</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="improveai.givens_provider.html#improveai.givens_provider.GivensProvider" title="improveai.givens_provider.GivensProvider"><span class="pre">GivensProvider</span></a></em><a class="headerlink" href="#improveai.decision_model.DecisionModel.givens_provider" title="Permalink to this definition"></a></dt>
 <dd><p>GivensProvider used by this DecisionModel</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -277,6 +370,20 @@ Accepts variants as pythonic args</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><a class="reference internal" href="improveai.givens_provider.html#improveai.givens_provider.GivensProvider" title="improveai.givens_provider.GivensProvider">GivensProvider</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="improveai.decision_model.DecisionModel.last_decision_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">last_decision_id</span></span><a class="headerlink" href="#improveai.decision_model.DecisionModel.last_decision_id" title="Permalink to this definition"></a></dt>
+<dd><p>DecisionModel persists last tracked decision ID in <cite>last_decision_id</cite> property</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Ksuid as string</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
 </dd>
 </dl>
 </dd></dl>
@@ -302,13 +409,31 @@ of DecisionModel and returns it</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="improveai.decision_model.DecisionModel.model_name">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#improveai.decision_model.DecisionModel.model_name" title="Permalink to this definition"></a></dt>
-<dd><p>Name of DecisionModel. None value is allowed but otherwise value must be a string and pass <cite>MODEL_NAME_REGEXP</cite> check</p>
+<dd><p>Name of DecisionModel. None value is allowed but otherwise value must be
+a string and pass <cite>MODEL_NAME_REGEXP</cite> check</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p><cite>model_name</cite> of this DecisionModel</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>str of None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="improveai.decision_model.DecisionModel.optimize">
+<span class="sig-name descname"><span class="pre">optimize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variant_map</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.decision_model.DecisionModel.optimize" title="Permalink to this definition"></a></dt>
+<dd><p>Get the best configuration for a given variants map</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>variant_map</strong> (<em>dict</em>) – mapping variants name -&gt; variants list</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>best variant and a decision ID</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>object, str</p>
 </dd>
 </dl>
 </dd></dl>
@@ -333,21 +458,17 @@ Accepts variants as pythonic args</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="improveai.decision_model.DecisionModel.rank">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rank</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variants</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scores</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.decision_model.DecisionModel.rank" title="Permalink to this definition"></a></dt>
-<dd><p>Return a list of the variants ranked from best to worst.
-DO NOT USE THIS METHOD - WILL LIKELY CHANGE SOON</p>
+<span class="sig-name descname"><span class="pre">rank</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variants</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.decision_model.DecisionModel.rank" title="Permalink to this definition"></a></dt>
+<dd><p>Ranks provided variants from best to worst and creates decision from them</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>variants</strong> (<em>np.ndarray</em>) – collection of variants to be ranked</p></li>
-<li><p><strong>scores</strong> (<em>np.ndarray</em>) – collection of scores used for ranking</p></li>
-</ul>
+<dd class="field-odd"><p><strong>variants</strong> (<em>list</em><em> or </em><em>np.ndarray</em>) – variants to be ranked</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>sorted variants</p>
+<dd class="field-even"><p>best to worst ranked variants</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p>list or np.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -369,22 +490,16 @@ DO NOT USE THIS METHOD - WILL LIKELY CHANGE SOON</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="improveai.decision_model.DecisionModel.top_scoring_variant">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">top_scoring_variant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variants</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scores</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.decision_model.DecisionModel.top_scoring_variant" title="Permalink to this definition"></a></dt>
-<dd><p>Gets best variant considering provided scores</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="improveai.decision_model.DecisionModel.track_api_key">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">track_api_key</span></span><a class="headerlink" href="#improveai.decision_model.DecisionModel.track_api_key" title="Permalink to this definition"></a></dt>
+<dd><p>track API key to be sent as the x-api-key HTTP header on track requests. Omit header if null</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>variants</strong> (<em>np.ndarray</em>) – collection of variants to be ranked</p></li>
-<li><p><strong>scores</strong> (<em>np.ndarray</em>) – collection of scores used for ranking</p></li>
-</ul>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>current track API key</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>best variant</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>object</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
 </dd>
 </dl>
 </dd></dl>
@@ -405,7 +520,7 @@ DO NOT USE THIS METHOD - WILL LIKELY CHANGE SOON</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="improveai.decision_model.DecisionModel.tracker">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">tracker</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker" title="improveai.decision_tracker.DecisionTracker"><span class="pre">improveai.decision_tracker.DecisionTracker</span></a></em><a class="headerlink" href="#improveai.decision_model.DecisionModel.tracker" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">tracker</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="improveai.decision_tracker.html#improveai.decision_tracker.DecisionTracker" title="improveai.decision_tracker.DecisionTracker"><span class="pre">DecisionTracker</span></a></em><a class="headerlink" href="#improveai.decision_model.DecisionModel.tracker" title="Permalink to this definition"></a></dt>
 <dd><p>DecisionTracker of this DecisionModel</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -439,6 +554,43 @@ through DecisionModel.addReward</p>
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="improveai.decision_model.DecisionModel.which_from">
+<span class="sig-name descname"><span class="pre">which_from</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variants</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.decision_model.DecisionModel.which_from" title="Permalink to this definition"></a></dt>
+<dd><p>Makes a decision for provided variants and DecisionContext givens.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>variants</strong> (<em>list</em><em> or </em><em>np.ndarray</em>) – variants from which best will be chosen</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a tuple of (&lt;best variant&gt;, &lt;decision id&gt;)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>object, str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="improveai.decision_model.load_model">
+<span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">track_url</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.decision_model.load_model" title="Permalink to this definition"></a></dt>
+<dd><p>Creates DecisionModel for provided model URL and track URL</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_url</strong> (<em>str</em>) – url to improve.ai model</p></li>
+<li><p><strong>track_url</strong> (<em>str</em>) – url to improve.ai track endpoint</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>DecisionModel with Improve AI model and desired track_url</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#improveai.decision_model.DecisionModel" title="improveai.decision_model.DecisionModel">DecisionModel</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>

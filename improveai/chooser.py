@@ -12,7 +12,6 @@ from xgboost.core import XGBoostError
 from improveai.feature_encoder import FeatureEncoder
 from improveai.settings import CYTHON_BACKEND_AVAILABLE
 from improveai.utils.choosers_feature_encoding_tools import encoded_variants_to_np
-from improveai.utils.general_purpose_tools import constant
 from improveai.utils.gzip_tools import check_and_get_unzipped_model
 from improveai.utils.url_tools import is_path_http_addr, get_model_bytes_from_url
 
@@ -28,6 +27,9 @@ else:
 
 class XGBChooser:
     MODEL_NAME_REGEXP = "^[a-zA-Z0-9][\w\-.]{0,63}$"
+    """
+    Model name regexp used to verify all model names (both user provided and cached in boosters)
+    """
 
     @property
     def model(self) -> Booster:
@@ -258,28 +260,82 @@ class XGBChooser:
     def improveai_major_version_from_metadata(self, value):
         self._improveai_model_version = value
 
-    @constant
-    def MODEL_METADATA_KEY():
+    @property
+    def MODEL_METADATA_KEY(self):
+        """
+        Key in booster.attr('user_defined_metadata') storing model metadata
+
+        Returns
+        -------
+        str
+            json string
+
+        """
         return 'json'
 
-    @constant
-    def MODEL_FEATURE_NAMES_KEY():
+    @property
+    def MODEL_FEATURE_NAMES_KEY(self):
+        """
+        Key in model metadata storing feature names
+
+        Returns
+        -------
+        str
+            'feature_names'
+
+        """
         return 'feature_names'
 
-    @constant
-    def MODEL_SEED_KEY():
+    @property
+    def MODEL_SEED_KEY(self):
+        """
+        Key in model metadata storing model seed
+
+        Returns
+        -------
+        str
+            'model_seed'
+
+        """
         return 'model_seed'
 
-    @constant
-    def MODEL_NAME_KEY():
+    @property
+    def MODEL_NAME_KEY(self):
+        """
+        Key in model metadata storing model name
+
+        Returns
+        -------
+        str
+            'model_name'
+
+        """
         return 'model_name'
 
-    @constant
-    def IMPROVE_AI_ALLOWED_MAJOR_VERSION():
+    @property
+    def IMPROVE_AI_ALLOWED_MAJOR_VERSION(self):
+        """
+        Latest supported major model version
+
+        Returns
+        -------
+        int
+            7
+
+        """
         return 7
 
-    @constant
-    def IMPROVEAI_VERSION_KEY():
+    @property
+    def IMPROVEAI_VERSION_KEY(self):
+        """
+        model metadata key storing model version
+
+        Returns
+        -------
+        str
+            'ai.improve.version'
+
+        """
         return 'ai.improve.version'
 
     def __init__(self):
@@ -351,7 +407,6 @@ class XGBChooser:
         self.model_name = self._get_model_name(model_metadata=model_metadata)
         self.model_feature_names = \
             self._get_model_feature_names(model_metadata=model_metadata)
-        # TODO test this
         self.improveai_major_version_from_metadata = \
             self._get_improveai_major_version(model_metadata=model_metadata)
 

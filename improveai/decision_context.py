@@ -58,6 +58,7 @@ class DecisionContext:
             decision model for this DecisionContext
         givens: dict
             givens for this DecisionContext
+
         """
         self.decision_model = decision_model
         self.givens = givens
@@ -151,13 +152,12 @@ class DecisionContext:
             decision object created for input data
 
         """
-        # TODO test with scores == None and scores != None
         # get givens via GivensProvider
         givens = self.decision_model.givens_provider.givens(for_model=self.decision_model, givens=self.givens)
         # rank variants if they are not ordered
         assert isinstance(ordered, bool)
         if scores is not None and ordered is True:
-            raise ValueError('Both `scores` and `ordered` are not None. One of them must be None (please check docs).')
+            raise ValueError('Both "scores" and "ordered" are not None. One of them must be None (please check docs).')
 
         if not ordered:
             # if variants are not ordered scoring or ranking must be performed
