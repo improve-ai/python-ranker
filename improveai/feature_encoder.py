@@ -1,11 +1,13 @@
 from collections.abc import Iterable
 import math
 import numpy as np
+import warnings
 import xxhash
 
 
 xxhash3 = xxhash.xxh3_64_intdigest
 JSON_SERIALIZABLE_TYPES = {int, float, str, bool, list, tuple, dict, type(None)}
+WARNED_ABOUT_ARRAY_ENCODING = False
 
 
 class FeatureEncoder:
@@ -56,6 +58,7 @@ class FeatureEncoder:
         self.variant_seed = xxhash3("variant", seed=model_seed)
         self.value_seed = xxhash3("$value", seed=self.variant_seed)
         self.givens_seed = xxhash3("givens", seed=model_seed)
+        self.__user_warned_about_array_encoding = False
 
     def _check_noise_value(self, noise: float):
         """
@@ -337,6 +340,26 @@ def _has_top_level_string_keys(checked_dict) -> bool:
     return all(isinstance(k, str) for k in checked_dict.keys())
 
 
+def warn_about_array_encoding(object_):
+    """
+    If object is an array warning will be printed (only once so the encoding speed does not suffer)
+    Parameters
+    ----------
+    object_: object
+        encoded object
+    Returns
+    -------
+    None
+        None
+    """
+    global WARNED_ABOUT_ARRAY_ENCODING
+
+    if not WARNED_ABOUT_ARRAY_ENCODING and \
+            (isinstance(object_, list) or isinstance(object_, tuple) or isinstance(object_, np.ndarray)):
+        warnings.warn('Array encoding may change in the near future')
+        WARNED_ABOUT_ARRAY_ENCODING = True
+
+
 def encode(object_, seed, small_noise, features):
     """
     Encodes a JSON serializable object to  a flat key - value pair(s) structure / dict
@@ -375,6 +398,7 @@ def encode(object_, seed, small_noise, features):
     """
 
     assert _is_object_json_serializable(object_)
+    warn_about_array_encoding(object_=object_)
 
     if isinstance(object_, (int, float)):  # bool is an instanceof int
         if math.isnan(object_):  # nan is treated as missing feature, return
