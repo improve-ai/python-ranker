@@ -1570,9 +1570,25 @@ class TestEncoder(TestCase):
 
     def test_foo_bar_list(self):
         self._generic_test_encode_record_from_json_data(
-            test_case_filename=os.getenv("FEATURE_ENCODER_TEST_SIMPLE_FOO_BARL_LIST_JSON"))
+            test_case_filename=os.getenv("FEATURE_ENCODER_TEST_SIMPLE_FOO_BAR_LIST_JSON"))
 
     def test_same_output_simple_float_and_simple_float_list(self):
         self._generic_test_encode_record_for_same_output_from_json_data(
             first_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_SINGLE_FLOAT_JSON'),
             second_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_SINGLE_FLOAT_LIST_JSON'))
+
+    def test_nested_float_list(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv("FEATURE_ENCODER_TEST_NESTED_FLOAT_LIST_JSON"))
+
+    def test_nested_str_list(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv("FEATURE_ENCODER_TEST_NESTED_STR_LIST_JSON"))
+
+    def test_nested_bool_list(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv("FEATURE_ENCODER_TEST_NESTED_BOOL_LIST_JSON"))
+
+    def test_nested_foo_bar_list(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv("FEATURE_ENCODER_TEST_NESTED_FOO_BAR_LIST_JSON"))
