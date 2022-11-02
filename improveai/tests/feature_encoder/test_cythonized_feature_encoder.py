@@ -1592,3 +1592,47 @@ class TestEncoder(TestCase):
     def test_nested_foo_bar_list(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv("FEATURE_ENCODER_TEST_NESTED_FOO_BAR_LIST_JSON"))
+
+    def test_hash_to_feature_name_overflow(self):
+        hash_ = sum([2 ** exponent for exponent in range(64)])
+        offset = 0
+        feature_name_no_offset = cfe.hash_to_feature_name(hash_, offset=offset)
+        assert feature_name_no_offset == 'ffffffff'
+
+        offset = 1
+        feature_name_offset_1 = cfe.hash_to_feature_name(hash_, offset=offset)
+        assert feature_name_offset_1 == '00000000'
+
+        offset = 2
+        feature_name_offset_1 = cfe.hash_to_feature_name(hash_, offset=offset)
+        assert feature_name_offset_1 == '00000001'
+
+        offset = 2 ** 32
+        # 0000000000000000000000000000000100000000000000000000000000000000
+        feature_name_offset_2 = cfe.hash_to_feature_name(hash_, offset=offset)
+        assert feature_name_offset_2 == 'ffffffff'
+
+        offset = 2 ** 32 + 1
+        # 0000000000000000000000000000000100000000000000000000000000000000
+        feature_name_offset_3 = cfe.hash_to_feature_name(hash_, offset=offset)
+        assert feature_name_offset_3 == '00000000'
+
+        offset = 2 ** 32 + 2
+        # 0000000000000000000000000000000100000000000000000000000000000000
+        feature_name_offset_4 = cfe.hash_to_feature_name(hash_, offset=offset)
+        assert feature_name_offset_4 == '00000001'
+
+        offset = 3 * 2 ** 32
+        # 0000000000000000000000000000000100000000000000000000000000000000
+        feature_name_offset_5 = cfe.hash_to_feature_name(hash_, offset=offset)
+        assert feature_name_offset_5 == 'ffffffff'
+
+        offset = 3 * 2 ** 32 + 1
+        # 0000000000000000000000000000000100000000000000000000000000000000
+        feature_name_offset_6 = cfe.hash_to_feature_name(hash_, offset=offset)
+        assert feature_name_offset_6 == '00000000'
+
+        offset = 3 * 2 ** 32 + 2
+        # 0000000000000000000000000000000100000000000000000000000000000000
+        feature_name_offset_7 = cfe.hash_to_feature_name(hash_, offset=offset)
+        assert feature_name_offset_7 == '00000001'
