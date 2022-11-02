@@ -1547,3 +1547,16 @@ class TestEncoder(TestCase):
 
         with raises(AssertionError) as aerr:
             cfe.encode(object_={'a': 1, 'b': 2, 'c': {'1': 1, 2: 2}}, seed=7335560060985733464, small_noise=0.0, features={})
+
+    def test_simple_float(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv("FEATURE_ENCODER_TEST_SIMPLE_FLOAT_JSON"))
+
+    def test_simple_float_list(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv("FEATURE_ENCODER_TEST_SIMPLE_FLOAT_LIST_JSON"))
+
+    def test_same_output_simple_float_and_simple_float_list(self):
+        self._generic_test_encode_record_for_same_output_from_json_data(
+            first_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_SIMPLE_FLOAT_JSON'),
+            second_test_case_filename=os.getenv('FEATURE_ENCODER_TEST_SIMPLE_FLOAT_LIST_JSON'))
