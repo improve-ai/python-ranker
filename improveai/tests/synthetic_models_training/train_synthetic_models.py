@@ -1,9 +1,10 @@
 import docker
 import json
+from ksuid import Ksuid
 import numpy as np
 import os
 import requests_mock as rqm
-import simplejson
+from uuid import uuid4
 
 
 from synthetic_models_config import SYNTHETIC_TRACKER_URL, CONFIG_DIR, \
@@ -35,7 +36,7 @@ def prepare_synthetic_model_dirs(epochs, case_id):
     print('### PURGING DATA DIRECTORY ###')
     os.system('rm -rf input/data_{}'.format(case_id))
     print('### RECREATING DATA DIRECTORY ###')
-    os.system('mkdir -p input/data_{}'.format(case_id))
+    os.system('mkdir -p input/data_{}/decisions'.format(case_id))
     print('### PURGING MODEL DIRECTORY ###')
     os.system('rm -rf {}_{}'.format(MODELS_DIR, case_id))
     print('### PREPARING MODEL DIRECTORIES ###')
@@ -44,16 +45,16 @@ def prepare_synthetic_model_dirs(epochs, case_id):
 
 
 def get_decision_model(
-        epoch_index: int, tracker: DecisionTracker, dataset_name: str, case_id):
-    dm = DecisionModel(model_name='{}-{}'.format(dataset_name.replace('_', '-'), epoch_index - 1)[:64])
+        epoch_index: int, track_url, dataset_name: str, case_id):
+    dm = DecisionModel(
+        model_name='{}-{}'.format(dataset_name.replace('_', '-'), epoch_index - 1)[:64], track_url=track_url)
 
     if epoch_index != 0:
         model_path = \
             os.sep.join([MODELS_DIR + '_{}'.format(case_id), 'epoch_{}/model.xgb'.format(epoch_index - 1)])
-        dm = DecisionModel(model_name=None).load(model_path)
+        print('### model_path ###')
         print(model_path)
-
-    dm.track_with(tracker=tracker)
+        dm = DecisionModel(model_name=None, track_url=track_url).load(model_path)
 
     return dm
 
@@ -84,18 +85,13 @@ def train_model(epoch: int, dataset_name: str, case_id):
     }
 
     container = \
-        dc.containers.run(
-            IMAGE_NAME, detach=True, volumes=volumes, environment=environment)
+        dc.containers.run(IMAGE_NAME, detach=True, volumes=volumes, environment=environment, entrypoint='python3 train')
     print('### Waiting for the model to train ###')
     container.wait()
 
 
 def run_single_synthetic_training(
         data_definition_json_path: str, target_model_directory: str, case_id):
-
-    synthetic_data_tracker = \
-        DecisionTracker(
-            track_url=SYNTHETIC_TRACKER_URL)
 
     data_generator = \
         BasicSemiRandomDataGenerator(
@@ -109,30 +105,19 @@ def run_single_synthetic_training(
     for epoch_index in range(data_generator.epochs):
         print('\n### PROCESSING EPOCH: {}/{} ###'.format(epoch_index + 1, data_generator.epochs))
         # create decision model
-        dm = None
-        dm = \
-            get_decision_model(
-                epoch_index=epoch_index, tracker=synthetic_data_tracker,
-                dataset_name=data_set_name, case_id=case_id)
+        dm = get_decision_model(
+            epoch_index=epoch_index, track_url=SYNTHETIC_TRACKER_URL, dataset_name=data_set_name, case_id=case_id)
 
         # generate data
-        records = \
-            data_generator.make_decision_for_epoch(
-                epoch_index=epoch_index, decision_model=dm)
+        records = data_generator.make_decision_for_epoch(epoch_index=epoch_index, decision_model=dm)
 
         # dump currently generated data to decision_{epoch_index}
         # data: list, path: str, mode='w'
+        # 20220621T235958Z-20220621T000000Z-6010-e9206500-e598-4720-9ac7-35159faca80e.parquet
         current_epoch_data_path = \
-            '{}_{}'.format(DATA_DIR, case_id) + os.sep + '{}_{}'.format(INPUT_CHANNEL_NAME, epoch_index)
-        data_generator.dump_data(
-            data=records, path=current_epoch_data_path, mode='w')
-
-        # dump all data (along with previous records) to decision_0
-        if epoch_index != 0:
-            decision_channel_path = \
-                '{}_{}'.format(DATA_DIR, case_id) + os.sep + '{}_0'.format(INPUT_CHANNEL_NAME)
-            data_generator.dump_data(
-                data=records, path=decision_channel_path, mode='a')
+            '{}_{}/decisions'.format(DATA_DIR, case_id) + os.sep + \
+            f'20220621T235958Z-20220621T000000Z-{len(records)}-{str(uuid4())}.parquet'  # .format(INPUT_CHANNEL_NAME, epoch_index)
+        data_generator.dump_data(records=records, path=current_epoch_data_path)
         # train model -  run container
         train_model(epoch=epoch_index, dataset_name=data_set_name, case_id=case_id)
 
@@ -173,8 +158,7 @@ def create_synthetic_model_test_json(
     # load model to extract model seed and noise (?)
     abs_model_directory = os.sep.join([IMPROVE_ABS_PATH, model_directory])
     model_path = os.sep.join([abs_model_directory, data_generator.dataset_name, 'model.xgb.gz'])
-    dm = DecisionModel(model_name=None).load(model_path)
-    dm.track_with(DecisionTracker(data_generator.track_url))
+    dm = DecisionModel(model_name=None, track_url=data_generator.track_url).load(model_path)
     # extract all variants, givens and variants <-> givens mapping from data def
     all_givens = {} if data_generator.all_givens is None else data_generator.all_givens.copy()
     if data_generator.givens_fraction < 1 and None not in all_givens:
@@ -223,22 +207,18 @@ def create_synthetic_model_test_json(
     for givens in all_givens:
         with rqm.Mocker() as m:
             m.post(data_generator.track_url, text='success')
-            # create a decision object
-            decision = \
-                Decision(decision_model=dm).choose_from(data_generator.variants)\
-                .given(givens)
-
             # fix seed to get reproducible results
             np.random.seed(noise_seed)
             dm.chooser.imposed_noise = noise
-            # get best variant
-            best_variant = decision.get()
+            scores = dm._score(variants=data_generator.variants, givens=givens).tolist()
+            ranked_variants = dm._rank(variants=data_generator.variants, scores=scores)
+            # create a decision object
             # get encoding noise
             # encoding_noise = dm.chooser.current_noise
 
             decision_output = {
-                "variant": best_variant,
-                "scores": list(decision.scores)
+                "variant": ranked_variants[0],
+                "scores": scores
             }
 
             # append new values
@@ -268,18 +248,18 @@ def create_synthetic_model_test_json(
 
 if __name__ == '__main__':
 
-    paths = get_test_data_definitions(SYNTHETIC_DATA_DEFINITIONS_DIRECTORY)
-
-    first_batch = [p for p in paths if '/2_' in p or '/0_' in p or '/happy_sunday_' in p]
-    second_batch = [p for p in paths if '/1000_' in p]
-
-    paths = first_batch + second_batch
-
-    trained_models_dir = os.sep.join([IMPROVE_ABS_PATH, SYNTHETIC_MODELS_TEST_CASES_DIR])
-    already_trained_models = os.listdir(trained_models_dir)
+    # paths = get_test_data_definitions(SYNTHETIC_DATA_DEFINITIONS_DIRECTORY)
+    # first_batch = [p for p in paths if '/2_' in p or '/0_' in p or '/happy_sunday_' in p]
+    # second_batch = [p for p in paths if '/1000_' in p]
+    #
+    # paths = first_batch + second_batch
+    # trained_models_dir = os.sep.join([IMPROVE_ABS_PATH, SYNTHETIC_MODELS_TEST_CASES_DIR])
+    # already_trained_models = os.listdir(trained_models_dir)
+    already_trained_models = []
 
     # paths = [SYNTHETIC_DATA_DEFINITIONS_DIRECTORY + '/happy_sunday.json']
-    paths = [SYNTHETIC_DATA_DEFINITIONS_DIRECTORY + '/a_z_model.json']
+    # paths = [SYNTHETIC_DATA_DEFINITIONS_DIRECTORY + '/a_z_model.json']
+    paths = [SYNTHETIC_DATA_DEFINITIONS_DIRECTORY + '/1000_list_of_numeric_variants_20_same_nested_givens_binary_reward.json']
 
     # recalc_paths = ['0_and_nan.json']
     # paths = [SYNTHETIC_DATA_DEFINITIONS_DIRECTORY + os.sep + path for path in recalc_paths]

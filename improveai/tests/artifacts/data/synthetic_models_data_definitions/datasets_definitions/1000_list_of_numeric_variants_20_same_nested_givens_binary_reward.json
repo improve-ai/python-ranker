@@ -29,12 +29,12 @@
         "distribution_name": "#uniform#"
     },
     "variants_to_givens_mapping": null,
-    "givens_fraction": 0.2,
+    "givens_fraction": 1.0,
     "reward_mapping": {
         "0|0": 1
     },
     "max_allowed_regret_ratio": 0.9,
-    "records_per_epoch": 10000,
+    "records_per_epoch": 2000,
     "epochs": 5,
     "data_seed": 0
 }

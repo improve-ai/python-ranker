@@ -2,13 +2,15 @@ from copy import deepcopy
 import numpy as np
 import json
 from ksuid import Ksuid
+import orjson
 import pandas as pd
 from scipy import stats
 import string
 from tqdm import tqdm
 from warnings import warn
 
-from improveai import DecisionModel, DecisionTracker
+from improveai import DecisionModel
+from improveai.decision_tracker import DecisionTracker
 
 LETTERS = [letter for letter in string.ascii_letters]
 DIGITS = [digit for digit in string.digits]
@@ -321,8 +323,8 @@ class BasicSemiRandomDataGenerator:
         # history_ids = self._get_history_ids()
 
         # get epoch's timestamps
-        epoch_timestamps = \
-            self._generate_record_timestamps_for_epoch(epoch_index=epoch_index)
+        epoch_timestamps = self._generate_record_timestamps_for_epoch(epoch_index=epoch_index)
+        epoch_ksuids = [str(Ksuid(datetime=pd.to_datetime(dt).tz_localize('UTC'))) for dt in epoch_timestamps]
 
         print('\n### GENERATING RECORDS ###')
         # for each timestamp:
@@ -331,7 +333,8 @@ class BasicSemiRandomDataGenerator:
         min_reward = 0
         achieved_reward = 0
 
-        for record_timestamp in tqdm(epoch_timestamps):
+        # for record_timestamp in tqdm(epoch_timestamps):
+        for decision_id in tqdm(epoch_ksuids):
             #  - choose givens randomly or according to strategy defined in json if
             #    givens are provided; should variants be 'trimmed' only to those
             #    which can occur with provided givens?4
@@ -382,8 +385,7 @@ class BasicSemiRandomDataGenerator:
             scores = decision_model._score(variants=variants, givens=givens)
             chosen_variant = variants[np.argmax(scores)]
 
-            reward = self._get_record_reward_from_dict(
-                self.variants.index(chosen_variant), givens_index=givens_index)
+            reward = self._get_record_reward_from_dict(self.variants.index(chosen_variant), givens_index=givens_index)
 
             # {'timestamp': '2021-01-01T00:00:00.000000000',
             # 'history_id': 'dummy-history',
@@ -396,32 +398,29 @@ class BasicSemiRandomDataGenerator:
             # 'reward': 0.0}
 
             record = {
-                'timestamp': str(np.datetime_as_string(record_timestamp.to_datetime64())),
-                'history_id': "dummy - history",
-                'message_id': str(Ksuid()),  # str(uuid4()),
+                'decision_id': decision_id,
                 'type': 'decision',
                 'model': decision_model.model_name,
-                'variant': chosen_variant,
+                'variant': orjson.dumps(chosen_variant).decode('utf-8'),
                 'count': len(variants)}
 
             if givens is not None:
-                record['givens'] = givens
+                record['givens'] = orjson.dumps(givens).decode('utf-8')
 
             track_runners_up = decision_model.tracker._should_track_runners_up(len(variants))
 
             runners_up = None
-            ranked_variants = decision_model.rank(variants=variants, scores=scores).tolist()
+            ranked_variants = decision_model.rank(variants=variants)
             if track_runners_up:
                 runners_up = decision_model.tracker._top_runners_up(ranked_variants)
-                record['runners_up'] = runners_up
+                record['runners_up'] = orjson.dumps(runners_up).decode('utf-8')
 
             if decision_model.tracker._is_sample_available(
-                    variants=ranked_variants, runners_up=runners_up):
+                    ranked_variants=ranked_variants, runners_up=runners_up):
                 sample = decision_model.tracker.get_sample(
-                    variant=chosen_variant, variants=ranked_variants,
-                    track_runners_up=track_runners_up)
+                    ranked_variants=ranked_variants, track_runners_up=track_runners_up)
 
-                record['sample'] = sample
+                record['sample'] = orjson.dumps(sample).decode('utf-8')
 
             record['reward'] = reward
 
@@ -688,11 +687,8 @@ class BasicSemiRandomDataGenerator:
         # this will allow to call np.random.choice(rewards_w_probas[:, 0], p=rewards_w_probas[:, 1])
         pass
 
-    def dump_data(self, data: list, path: str, mode='w'):
-        with open(path, mode) as f:
-
-            json_lines = [json.dumps(line) + '\n' for line in data]
-            f.writelines(json_lines)
+    def dump_data(self, records: list, path: str):
+        pd.DataFrame(records).to_parquet(path, index=False)
 
 
 if __name__ == '__main__':
@@ -711,9 +707,7 @@ if __name__ == '__main__':
     # ts = q._generate_record_timestamps_for_epoch(24)
     # print(ts[-3:])
 
-    dt = DecisionTracker(track_url=track_url, history_id='dummy-history')
-    dm = DecisionModel('test-model')
-    dm.track_with(dt)
+    dm = DecisionModel('test-model', track_url=track_url)
 
     records_00 = q.make_decision_for_epoch(0, dm)
     q.dump_data(records_00, 'dummy_decisions_00_new')
