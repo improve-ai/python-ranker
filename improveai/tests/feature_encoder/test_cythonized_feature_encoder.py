@@ -1548,13 +1548,29 @@ class TestEncoder(TestCase):
         with raises(AssertionError) as aerr:
             cfe.encode(object_={'a': 1, 'b': 2, 'c': {'1': 1, 2: 2}}, seed=7335560060985733464, small_noise=0.0, features={})
 
-    def test_simple_float(self):
+    def test_single_float(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv("FEATURE_ENCODER_TEST_SINGLE_FLOAT_JSON"))
 
-    def test_simple_float_list(self):
+    def test_single_float_list(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv("FEATURE_ENCODER_TEST_SINGLE_FLOAT_LIST_JSON"))
+
+    def test_simple_float_list(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv("FEATURE_ENCODER_TEST_SIMPLE_FLOAT_LIST_JSON"))
+
+    def test_simple_str_list(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv("FEATURE_ENCODER_TEST_SIMPLE_STR_LIST_JSON"))
+
+    def test_simple_bool_list(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv("FEATURE_ENCODER_TEST_SIMPLE_BOOL_LIST_JSON"))
+
+    def test_foo_bar_list(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv("FEATURE_ENCODER_TEST_SIMPLE_FOO_BARL_LIST_JSON"))
 
     def test_same_output_simple_float_and_simple_float_list(self):
         self._generic_test_encode_record_for_same_output_from_json_data(
