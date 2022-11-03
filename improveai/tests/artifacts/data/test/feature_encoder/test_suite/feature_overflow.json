@@ -10,7 +10,7 @@
 
     "model_seed": null,
     "noise": 0.8928601514360016,
-    "variant_seed": 2675988294294598568,
+    "variant_seed": null,
     "value_seed": 18446744073709551615,
-    "givens_seed": 12461487462738526788
+    "givens_seed": null
 }
