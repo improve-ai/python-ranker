@@ -460,7 +460,6 @@ def _get_previous_value(
         return reverse_sprinkle(into[feature_name], small_noise)
 
 
-# TODO handle overflows properly
 def hash_to_feature_name(hash_: int, offset: int = 0):
     """
     Converts a hash to string which will become a feature name

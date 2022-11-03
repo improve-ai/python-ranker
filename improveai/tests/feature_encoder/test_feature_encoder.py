@@ -1607,3 +1607,39 @@ class TestEncoder(TestCase):
         # 0000000000000000000000000000000100000000000000000000000000000000
         feature_name_offset_7 = hash_to_feature_name(hash_, offset=offset)
         assert feature_name_offset_7 == '00000001'
+
+    def test_feature_overflow(self):
+        # TODO this should be manual json load
+        # read json test case
+        test_case_path = os.sep.join(
+            [self.v6_test_suite_data_directory,
+             os.getenv("FEATURE_ENCODER_TEST_FEATURE_OVERFLOW_JSON")])
+        test_case = self._get_test_data(path_to_test_json=test_case_path)
+
+        test_input = test_case.get('test_case', None)
+        assert test_input is not None
+        variant_input = test_input.get('variant', None)
+        assert variant_input is not None
+
+        expected_output = test_case.get('test_output', None)
+        assert expected_output is not None
+
+        value_seed = test_case.get('value_seed', None)
+        assert value_seed is not None
+
+        noise = test_case.get('noise', None)
+        assert noise is not None
+
+        # for this test dase mode seed is not important -> value seed will be set manually
+        fe = FeatureEncoder(model_seed=0)
+        fe.value_seed = value_seed
+        # encode variant
+        into = {}
+        # variant: object, noise: float = 0.0, into: dict = None
+        fe.encode_variant(variant=variant_input, noise=noise, into=into)
+
+        encoded_variant_float32 = \
+            convert_values_to_float32(into)
+
+        expected_output_float32 = convert_values_to_float32(expected_output)
+        assert expected_output_float32 == encoded_variant_float32
