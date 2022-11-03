@@ -1609,8 +1609,6 @@ class TestEncoder(TestCase):
         assert feature_name_offset_7 == '00000001'
 
     def test_feature_overflow(self):
-        # TODO this should be manual json load
-        # read json test case
         test_case_path = os.sep.join(
             [self.v6_test_suite_data_directory,
              os.getenv("FEATURE_ENCODER_TEST_FEATURE_OVERFLOW_JSON")])

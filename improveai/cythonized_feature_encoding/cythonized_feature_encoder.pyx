@@ -308,9 +308,56 @@ cdef class FeatureEncoder:
 
     """
 
-    cdef unsigned long long variant_seed
-    cdef unsigned long long value_seed
-    cdef unsigned long long givens_seed
+    cdef unsigned long long _variant_seed
+    """
+    Internal placeholder for variant seed
+    """
+
+    property variant_seed:
+        """
+        FeatureEncoder's variant seed obtained with xxhash3
+        """
+        def __get__(self):
+            # This is called when the property is read.
+            return self._variant_seed
+
+        def __set__(self, value):
+            assert isinstance(value, int)
+            self._variant_seed = value
+
+    cdef unsigned long long _value_seed
+    """
+    Internal placeholder for value seed
+    """
+
+    property value_seed:
+        """
+        FeatureEncoder's value seed obtained with xxhash3
+        """
+
+        def __get__(self):
+            # This is called when the property is read.
+            return self._value_seed
+
+        def __set__(self, value):
+            assert isinstance(value, int)
+            self._value_seed = value
+
+    cdef unsigned long long _givens_seed
+
+    property givens_seed:
+        """
+        FeatureEncoder's givens seed obtained with xxhash3
+        """
+
+        def __get__(self):
+            # This is called when the property is read.
+            return self._givens_seed
+
+        def __set__(self, value):
+            assert isinstance(value, int)
+            self._givens_seed = value
+
 
     def __init__(self, long long model_seed):
         """
@@ -551,3 +598,5 @@ cdef class FeatureEncoder:
          if single_extra_features is not None else encoded_variant
          for encoded_variant, single_extra_features in
          zip(encoded_variants, extra_features)]
+
+    # cpdef void _set_value_seed(self, unsigned long long new_value_seed):
