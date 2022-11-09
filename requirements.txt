@@ -3,7 +3,7 @@ xxhash
 requests>=2.24.0
 numpy
 # highest xgboost version currently supported by coremltools in the trainer
-xgboost==1.4.2
+xgboost==1.7.1
 # orjson properly encodes nan / np.nan value to null as opposed to json package which encodes nan / np.nan to NaN
 orjson
 svix-ksuid
