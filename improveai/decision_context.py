@@ -1,4 +1,4 @@
-from copy import deepcopy
+from copy import copy
 
 import numpy as np
 
@@ -172,7 +172,7 @@ class DecisionContext:
             ranked_variants = self.decision_model._rank(variants=variants, scores=scores)
         else:
             # variants are already ordered
-            ranked_variants = deepcopy(variants)
+            ranked_variants = copy(variants)
 
         decision = d.Decision(
             decision_model=self.decision_model, ranked=ranked_variants, givens=givens)

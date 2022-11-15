@@ -368,7 +368,7 @@ class DecisionModel:
 
         return scores.astype(np.float64)
 
-    def _rank(self, variants: list or np.ndarray, scores: list or np.ndarray) -> np.ndarray:
+    def _rank(self, variants: list or np.ndarray, scores: list or np.ndarray) -> list or np.ndarray:
         """
         Helper method to rank variants. Returns a numpy array with variants ranked from best to worst
 
@@ -381,7 +381,7 @@ class DecisionModel:
 
         Returns
         -------
-        np.ndarray
+        list or np.ndarray
             sorted variants
 
         """
@@ -392,9 +392,11 @@ class DecisionModel:
         assert len(variants) == len(scores)
 
         # convert variants to numpy array for faster sorting
-        variants_np = variants if isinstance(variants, np.ndarray) else np.array(variants)
+        best_to_worse_scores = np.argsort(scores)[::-1]
         # return descending sorted variants
-        return variants_np[np.argsort(scores)][::-1].tolist()
+        if isinstance(variants, np.ndarray):
+            return variants[best_to_worse_scores]
+        return [variants[i] for i in best_to_worse_scores]
 
     def rank(self, variants: list or np.ndarray) -> list:
         """
@@ -428,7 +430,6 @@ class DecisionModel:
 
         """
 
-        # assert givens is not None
         return dc.DecisionContext(decision_model=self, givens=givens)
 
     def which(self, *variants) -> tuple:
