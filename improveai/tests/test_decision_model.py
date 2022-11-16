@@ -387,11 +387,26 @@ class TestDecisionModel(TestCase):
 
         np.random.seed(score_seed)
 
-        if evaluated_method_name == 'rank':
+        if evaluated_method_name == '_rank':
             calculated_ranked_variants = decision_model._rank(variants=variants, scores=calculated_scores)
+            print(calculated_ranked_variants)
             expected_ranked_variants = expected_output.get('ranked_variants', None)
-            np.testing.assert_array_equal(
-                expected_ranked_variants, calculated_ranked_variants)
+            np.testing.assert_array_equal(expected_ranked_variants, calculated_ranked_variants)
+
+            # check that copy of variants is returned
+            assert id(variants) != id(calculated_ranked_variants)
+
+            # check that input and output is of the same type
+            assert isinstance(calculated_ranked_variants, type(variants))
+
+            # make sure variants are the same objects
+            sorted_calculated_variants_ids = sorted([id(cv) for cv in calculated_ranked_variants])
+            sorted_input_variants_ids = sorted([id(iv) for iv in variants])
+            np.testing.assert_array_equal(sorted_calculated_variants_ids, sorted_input_variants_ids)
+
+            # pop input and make sure output's length does not change
+            variants.pop()
+            assert len(variants) == len(calculated_ranked_variants) - 1
         elif evaluated_method_name == 'choose_first':
             # get decision object
             decision = decision_model.choose_first(variants=variants)
@@ -575,11 +590,10 @@ class TestDecisionModel(TestCase):
 
         np.random.seed(score_seed)
 
-        if evaluated_method_name == 'rank':
+        if evaluated_method_name == '_rank':
             calculated_ranked_variants = decision_model._rank(variants=variants, scores=calculated_scores)
             expected_ranked_variants = expected_output.get('ranked_variants', None)
-            np.testing.assert_array_equal(
-                expected_ranked_variants, calculated_ranked_variants)
+            np.testing.assert_array_equal(expected_ranked_variants, calculated_ranked_variants)
         elif evaluated_method_name == 'choose_first':
             # get decision object
             np.random.seed(score_seed)
@@ -752,19 +766,11 @@ class TestDecisionModel(TestCase):
         decision_model = dm.DecisionModel(model_name='test-model')
         decision_model.score(variants=variants)
 
-    def test_rank_no_model(self):
+    def test__rank_no_model(self):
         self._generic_desired_decision_model_method_call_no_model(
             test_data_filename=os.getenv(
-                'DECISION_MODEL_TEST_RANK_NATIVE_NO_MODEL_JSON'),
-            evaluated_method_name='rank')
-
-    def test_rank(self):
-        self._generic_desired_decision_model_method_call(
-            test_data_filename=os.getenv(
-                'DECISION_MODEL_TEST_RANK_NATIVE_JSON'),
-            evaluated_method_name='rank',
-            empty_callable_kwargs={
-                'variants': None, 'givens': None, 'scores': None})
+                'DECISION_MODEL_TEST__RANK_NATIVE_NO_MODEL_JSON'),
+            evaluated_method_name='_rank')
 
     def test_rank_no_track_url(self):
         model = dm.DecisionModel('test-model')
@@ -772,6 +778,125 @@ class TestDecisionModel(TestCase):
         # make sure call was not tracked
         assert model.last_decision_id is None
         np.testing.assert_array_equal(ranked_variants, [1, 2, 3, 4])
+
+    def test__rank_dict_variants(self):
+        self._generic_desired_decision_model_method_call(
+            test_data_filename=os.getenv(
+                'DECISION_MODEL_TEST__RANK_DICT_VARIANTS_NATIVE_JSON'),
+            evaluated_method_name='_rank',
+            empty_callable_kwargs={
+                'variants': None, 'givens': None, 'scores': None})
+
+    def test__rank_int_variants(self):
+        self._generic_desired_decision_model_method_call(
+            test_data_filename=os.getenv(
+                'DECISION_MODEL_TEST__RANK_INT_VARIANTS_NATIVE_JSON'),
+            evaluated_method_name='_rank',
+            empty_callable_kwargs={
+                'variants': None, 'givens': None, 'scores': None})
+
+    def test__rank_float_variants(self):
+        self._generic_desired_decision_model_method_call(
+            test_data_filename=os.getenv(
+                'DECISION_MODEL_TEST__RANK_FLOAT_VARIANTS_NATIVE_JSON'),
+            evaluated_method_name='_rank',
+            empty_callable_kwargs={
+                'variants': None, 'givens': None, 'scores': None})
+
+    def test__rank_string_variants(self):
+        self._generic_desired_decision_model_method_call(
+            test_data_filename=os.getenv(
+                'DECISION_MODEL_TEST__RANK_STRING_VARIANTS_NATIVE_JSON'),
+            evaluated_method_name='_rank',
+            empty_callable_kwargs={
+                'variants': None, 'givens': None, 'scores': None})
+
+    def test__rank_bool_variants(self):
+        self._generic_desired_decision_model_method_call(
+            test_data_filename=os.getenv(
+                'DECISION_MODEL_TEST__RANK_BOOL_VARIANTS_NATIVE_JSON'),
+            evaluated_method_name='_rank',
+            empty_callable_kwargs={
+                'variants': None, 'givens': None, 'scores': None})
+
+    def test__rank_lists_variants(self):
+        self._generic_desired_decision_model_method_call(
+            test_data_filename=os.getenv(
+                'DECISION_MODEL_TEST__RANK_BOOL_VARIANTS_NATIVE_JSON'),
+            evaluated_method_name='_rank',
+            empty_callable_kwargs={
+                'variants': None, 'givens': None, 'scores': None})
+
+    def test__rank_tuples_variants(self):
+        test_data_filename = os.getenv('DECISION_MODEL_TEST__RANK_LISTS_VARIANTS_NATIVE_JSON', None)
+        assert test_data_filename is not None
+
+        path_to_test_json = \
+            ('{}' + os.sep + '{}').format(
+                self.test_cases_directory, test_data_filename)
+
+        test_data = get_test_data(path_to_test_json=path_to_test_json, method='read')
+
+        test_case = test_data.get("test_case", None)
+        assert test_case is not None
+
+        variants = test_case.get("variants", None)
+        assert variants is not None
+        variants = [tuple(variant) for variant in variants]
+
+        givens = test_case.get("givens", None)
+        assert givens is not None
+
+        predictor_filename = test_case.get("model_filename", None)
+        assert predictor_filename is not None
+
+        model_url = \
+            ('{}' + os.sep + '{}').format(
+                self.predictors_fs_directory, predictor_filename)
+
+        decision_model = \
+            dm.DecisionModel(model_name=None).load(model_url=model_url)
+
+        score_seed = test_data.get("scores_seed", None)
+        assert score_seed is not None
+        score_seed = int(score_seed)
+
+        np.random.seed(score_seed)
+        calculated_scores = \
+            decision_model._score(variants=variants, givens=givens)
+
+        calculated_ranked_variants = \
+            decision_model._rank(variants=variants, scores=calculated_scores)
+
+        expected_output = test_data.get("test_output", None)
+        assert expected_output is not None
+
+        expected_ranked_variants = expected_output.get('ranked_variants', None)
+        assert expected_ranked_variants is not None
+        expected_ranked_variants = [tuple(variant) for variant in expected_ranked_variants]
+
+        print(calculated_ranked_variants)
+
+        np.testing.assert_array_equal(expected_ranked_variants,
+                                      calculated_ranked_variants)
+
+        # check that copy of variants is returned
+        assert id(variants) != id(calculated_ranked_variants)
+
+        # check that input and output is of the same type
+        assert isinstance(calculated_ranked_variants, type(variants))
+
+        # make sure variants are the same objects
+        sorted_calculated_variants_ids = sorted(
+            [id(cv) for cv in calculated_ranked_variants])
+        sorted_input_variants_ids = sorted([id(iv) for iv in variants])
+        np.testing.assert_array_equal(sorted_calculated_variants_ids,
+                                      sorted_input_variants_ids)
+
+        # pop input and make sure output's length does not change
+        variants.pop()
+        assert len(variants) == len(calculated_ranked_variants) - 1
+
 
     def test_generate_descending_gaussians(self):
         path_to_test_json = \

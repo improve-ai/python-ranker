@@ -1,0 +1,21 @@
+{
+    "test_case": {
+        "model_filename": "dummy_v6.xgb",
+        "variants": [true, false],
+        "givens": {
+            "device_manufacturer": "Apple",
+            "version_name": "4.3",
+            "os_name": "ios",
+            "day": 0,
+            "language": "English",
+            "page": 0,
+            "os_version": "12.1.2",
+            "country": "United States",
+            "carrier": "AT&T",
+            "device_model": "iPhone 7 Plus"
+        }
+    },
+    "test_output": {"ranked_variants": [true, false]},
+    "model_seed": 1,
+    "scores_seed": 1
+}

@@ -1,0 +1,42 @@
+{
+    "test_case": {
+        "model_filename": "dummy_v6.xgb",
+        "variants": [
+            "lovely corgi",
+            "lively swan",
+            "uptight wine cow of kindness",
+            "mindful jerboa of infinite kindness",
+            "lively monkey of artistry",
+            "great kind manatee",
+            "caped olive crocodile of diversity",
+            "knowing optimal jerboa",
+            "olive pronghorn",
+            "knowing fennec"
+        ],
+        "givens": {
+            "device_manufacturer": "Apple",
+            "version_name": "4.3",
+            "os_name": "ios",
+            "day": 0,
+            "language": "English",
+            "page": 0,
+            "os_version": "12.1.2",
+            "country": "United States",
+            "carrier": "AT&T",
+            "device_model": "iPhone 7 Plus"
+        }
+    },
+    "test_output": {"ranked_variants": [
+      "lovely corgi",
+      "olive pronghorn",
+      "knowing fennec",
+      "knowing optimal jerboa",
+      "caped olive crocodile of diversity",
+      "uptight wine cow of kindness",
+      "great kind manatee",
+      "mindful jerboa of infinite kindness",
+      "lively monkey of artistry",
+      "lively swan"]},
+    "model_seed": 1,
+    "scores_seed": 1
+}
