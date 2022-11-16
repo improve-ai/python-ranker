@@ -396,7 +396,10 @@ class DecisionModel:
         # return descending sorted variants
         if isinstance(variants, np.ndarray):
             return variants[best_to_worse_scores]
-        return [variants[i] for i in best_to_worse_scores]
+        elif isinstance(variants, tuple):
+            return tuple(variants[i] for i in best_to_worse_scores)
+        else:
+            return [variants[i] for i in best_to_worse_scores]
 
     def rank(self, variants: list or np.ndarray) -> list:
         """
