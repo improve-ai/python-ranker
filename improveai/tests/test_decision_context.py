@@ -428,6 +428,22 @@ class TestDecisionContext(TestCase):
                     calculated_ranked = decision_context.rank(variants=variants)
                     assert decision_context.decision_model.last_decision_id is None
                     np.testing.assert_array_equal(calculated_ranked, expected_ranked)
+
+                    # check that copy of variants is returned
+                    assert id(variants) != id(calculated_ranked)
+
+                    # check that input and output is of the same type
+                    assert isinstance(calculated_ranked, type(variants))
+
+                    # make sure variants are the same objects
+                    sorted_calculated_variants_ids = sorted([id(cv) for cv in calculated_ranked])
+                    sorted_input_variants_ids = sorted([id(iv) for iv in variants])
+                    np.testing.assert_array_equal(sorted_calculated_variants_ids, sorted_input_variants_ids)
+
+                    # pop input and make sure output's length does not change
+                    variants.pop()
+                    assert len(variants) == len(calculated_ranked) - 1
+
                     time.sleep(0.175)
                     assert len(w) == 0
 

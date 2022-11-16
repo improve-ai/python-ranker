@@ -897,7 +897,6 @@ class TestDecisionModel(TestCase):
         variants.pop()
         assert len(variants) == len(calculated_ranked_variants) - 1
 
-
     def test_generate_descending_gaussians(self):
         path_to_test_json = \
             ('{}' + os.sep + '{}').format(
