@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>cythonized_feature_encoding_utils.pyx module &mdash; improveai 7.2.0 documentation</title>
+  <title>cythonized_feature_encoding_utils.pyx module &mdash; improveai 7.2.2 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
@@ -33,7 +33,7 @@
             <a href="index.html" class="icon icon-home"> improveai
           </a>
               <div class="version">
-                7.2.0
+                7.2.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -87,8 +87,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>cythonized_feature_encoding_utils.pyx module</li>
+      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">cythonized_feature_encoding_utils.pyx module</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -103,49 +103,12 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.encode_variants_multiple_givens">
 <span class="sig-name descname"><span class="pre">encode_variants_multiple_givens</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.encode_variants_multiple_givens" title="Permalink to this definition"></a></dt>
-<dd><p>Encode each variant with corresponding givens</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>variants</strong> (<em>list</em>) – list of variants to be encoded</p></li>
-<li><p><strong>multiple_givens</strong> (<em>list</em>) – list of givens - each element corresponds to a single variant which</p></li>
-<li><p><strong>multiple_extra_features</strong> (<em>list</em>) – list of extra features  - each element is a set of extra features for a single variant - givens pair</p></li>
-<li><p><strong>noise</strong> (<em>float</em>) – value within 0 - 1 range which will be ‘shrunk’ and added to feature value</p></li>
-<li><p><strong>variants_encoder</strong> (<em>callable</em>) – a callable to be used as a variants encoder</p></li>
-<li><p><strong>givens_encoder</strong> (<em>callable</em>) – a callable to be used as a givens encoder</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>2D array with encoded variants; missing values are filled with np.nan</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>np.ndarray</p>
-</dd>
-</dl>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.encode_variants_single_givens">
 <span class="sig-name descname"><span class="pre">encode_variants_single_givens</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.encode_variants_single_givens" title="Permalink to this definition"></a></dt>
-<dd><p>Encodes provided variants to a 2D array with single givens</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>variants</strong> (<em>list</em>) – list of encoded variants</p></li>
-<li><p><strong>givens</strong> (<em>dict</em>) – givens to be encoded with each variant</p></li>
-<li><p><strong>noise</strong> (<em>float</em>) – value within 0 - 1 range which will be ‘shrunk’ and added to feature value</p></li>
-<li><p><strong>variants_encoder</strong> (<em>callable</em>) – a callable to be used as a variants encoder</p></li>
-<li><p><strong>givens_encoder</strong> (<em>callable</em>) – a callable to be used as a givens encoder</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>2D array with encoded variants; missing values are filled with np.nan</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>np.ndarray</p>
-</dd>
-</dl>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.encoded_variant_into_np_row">
@@ -171,23 +134,7 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.encoded_variants_to_np">
 <span class="sig-name descname"><span class="pre">encoded_variants_to_np</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.encoded_variants_to_np" title="Permalink to this definition"></a></dt>
-<dd><p>For each of <cite>encoded_variants</cite> selects features overlapping with <cite>feature_names</cite>,
-fill missing features with np.nan and returns 2D array with all variants</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>encoded_variants</strong> (<em>np.ndarray</em>) – as array with all variants to be encoded</p></li>
-<li><p><strong>feature_names</strong> (<em>list</em>) – list of desires feature names</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>a 2D array with all encoded variants</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>np.ndarray</p>
-</dd>
-</dl>
-</dd></dl>
+<dd></dd></dl>
 
 </section>
 
