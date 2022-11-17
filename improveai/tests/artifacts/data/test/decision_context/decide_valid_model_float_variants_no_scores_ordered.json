@@ -1,0 +1,24 @@
+{
+    "test_case": {
+        "model_filename": "dummy_v6.xgb",
+        "ordered": true,
+        "variants": [1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8, 9.9, 10.1],
+        "givens": {
+            "device_manufacturer": "Apple",
+            "version_name": "4.3",
+            "os_name": "ios",
+            "day": 0,
+            "language": "English",
+            "page": 0,
+            "os_version": "12.1.2",
+            "country": "United States",
+            "carrier": "AT&T",
+            "device_model": "iPhone 7 Plus"
+        }
+    },
+    "test_output": {
+        "best": 1.1,
+        "ranked": [1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8, 9.9, 10.1]},
+    "model_seed": 1,
+    "scores_seed": 1
+}
