@@ -1559,7 +1559,6 @@ class TestDecisionContext(TestCase):
         test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_NO_MODEL_VALID_GIVENS_SCORES_NOT_ORDERED_JSON')
         self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
 
-
     def test_decide_valid_model_bool_variants_no_scores_not_ordered(self):
         test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_BOOL_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_NOT_ORDERED_JSON')
         self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
@@ -1571,7 +1570,6 @@ class TestDecisionContext(TestCase):
     def test_decide_valid_model_bool_variants_scores_not_ordered(self):
         test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_BOOL_VARIANTS_VALID_MODEL_VALID_GIVENS_SCORES_NOT_ORDERED_JSON')
         self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
-
 
     def test_decide_valid_model_dict_variants_no_scores_not_ordered(self):
         test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_DICT_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_NOT_ORDERED_JSON')
@@ -1585,7 +1583,6 @@ class TestDecisionContext(TestCase):
         test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_DICT_VARIANTS_VALID_MODEL_VALID_GIVENS_SCORES_NOT_ORDERED_JSON')
         self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
 
-
     def test_decide_valid_model_float_variants_no_scores_not_ordered(self):
         test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_FLOAT_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_NOT_ORDERED_JSON')
         self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
@@ -1597,7 +1594,6 @@ class TestDecisionContext(TestCase):
     def test_decide_valid_model_float_variants_scores_not_ordered(self):
         test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_FLOAT_VARIANTS_VALID_MODEL_VALID_GIVENS_SCORES_NOT_ORDERED_JSON')
         self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
-
 
     def test_decide_valid_model_int_variants_no_scores_not_ordered(self):
         test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_INT_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_NOT_ORDERED_JSON')
@@ -1611,7 +1607,6 @@ class TestDecisionContext(TestCase):
         test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_INT_VARIANTS_VALID_MODEL_VALID_GIVENS_SCORES_NOT_ORDERED_JSON')
         self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
 
-
     def test_decide_valid_model_lists_variants_no_scores_not_ordered(self):
         test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_LISTS_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_NOT_ORDERED_JSON')
         self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
@@ -1623,7 +1618,6 @@ class TestDecisionContext(TestCase):
     def test_decide_valid_model_lists_variants_scores_not_ordered(self):
         test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_LISTS_VARIANTS_VALID_MODEL_VALID_GIVENS_SCORES_NOT_ORDERED_JSON')
         self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
-
 
     def test_decide_valid_model_string_variants_no_scores_not_ordered(self):
         test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_STRING_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_NOT_ORDERED_JSON')
@@ -1637,6 +1631,116 @@ class TestDecisionContext(TestCase):
         test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_STRING_VARIANTS_VALID_MODEL_VALID_GIVENS_SCORES_NOT_ORDERED_JSON')
         self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
 
+    def _generic_test_decide_valid_model_tuple_variants(self, test_case_json_name):
+
+        path_to_test_json = \
+            os.sep.join(
+                [self.decision_context_test_cases_dir, test_case_json_name])
+
+        test_case_json = get_test_data(path_to_test_json)
+
+        test_case = test_case_json.get('test_case', None)
+        assert test_case is not None
+
+        predictor_filename = test_case.get('model_filename', None)
+        assert predictor_filename is not None
+
+        if predictor_filename is not None:
+            # load model
+            model_url = ('{}' + os.sep + '{}').format(self.test_models_dir,
+                                                      predictor_filename)
+            self.test_decision_model.load(model_url=model_url)
+            self.test_decision_model_no_track_url.load(model_url=model_url)
+
+        # get test variants
+        variants = test_case.get('variants', None)
+        assert variants is not None
+        variants = [tuple(variant) for variant in variants]
+        print('### variants ###')
+        print(variants)
+
+        givens = test_case.get('givens', None)
+
+        scores_seed = test_case_json.get('scores_seed', None)
+        assert scores_seed is not None
+
+        expected_output = test_case_json.get('test_output', None)
+        assert expected_output is not None
+
+        expected_best = expected_output.get('best', None)
+        assert expected_best is not None
+        expected_best = tuple(expected_best)
+
+        decision_context = dc.DecisionContext(
+            decision_model=self.test_decision_model, givens=givens)
+
+        scores = test_case.get("scores", None)
+        ordered = test_case.get("ordered", None)
+
+        if ordered is True:
+            calculated_decision = decision_context.decide(variants=variants,
+                                                          ordered=ordered)
+        elif scores is not None:
+            calculated_decision = decision_context.decide(variants=variants,
+                                                          scores=scores)
+        else:
+            np.random.seed(scores_seed)
+            calculated_decision = decision_context.decide(variants=variants)
+
+        print('### calculated decision ranked ###')
+        for v in calculated_decision.ranked:
+            print(v)
+
+        test_output = test_case_json.get('test_output', None)
+        assert test_output is not None
+
+        expected_ranked_variants = test_output.get('ranked', None)
+        assert expected_ranked_variants is not None
+
+        expected_ranked_variants = [tuple(variant) for variant in
+                                    expected_ranked_variants]
+        print('### expected_ranked_variants ###')
+        print(expected_ranked_variants)
+
+        # check that copy of variants is returned
+        assert id(variants) != id(calculated_decision.ranked)
+
+        # check that input and output is of the same type
+        assert isinstance(calculated_decision.ranked, type(variants))
+
+        # make sure variants are the same objects
+        sorted_calculated_variants_ids = sorted(
+            [id(cv) for cv in calculated_decision.ranked])
+
+        sorted_input_variants_ids = sorted([id(iv) for iv in variants])
+        np.testing.assert_array_equal(sorted_calculated_variants_ids,
+                                      sorted_input_variants_ids)
+
+        # pop input and make sure output's length does not change
+        variants.pop()
+        assert len(variants) == len(calculated_decision.ranked) - 1
+
+        np.testing.assert_array_equal(calculated_decision.ranked,
+                                      expected_ranked_variants)
+        assert calculated_decision.best == expected_best
+
+    # TODO test with tuple variants
+    def test_decide_valid_model_tuple_variants_no_scores_not_ordered(self):
+        test_case_json_name = os.getenv('DECISION_CONTEXT_TEST_DECIDE_LISTS_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_NOT_ORDERED_JSON', None)
+        assert test_case_json_name is not None
+        self._generic_test_decide_valid_model_tuple_variants(test_case_json_name)
+
+    def test_decide_valid_model_tuple_variants_no_scores_ordered(self):
+        test_case_json_name = os.getenv(
+            'DECISION_CONTEXT_TEST_DECIDE_LISTS_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_ORDERED_JSON', None)
+        assert test_case_json_name is not None
+        self._generic_test_decide_valid_model_tuple_variants(test_case_json_name)
+
+    def test_decide_valid_model_tuple_variants_scores_not_ordered(self):
+        test_case_json_name = os.getenv(
+            'DECISION_CONTEXT_TEST_DECIDE_LISTS_VARIANTS_VALID_MODEL_VALID_GIVENS_SCORES_NOT_ORDERED_JSON', None)
+        assert test_case_json_name is not None
+        self._generic_test_decide_valid_model_tuple_variants(test_case_json_name)
 
     def test_decide_raises_for_variants_and_scores_different_length(self):
         context = dc.DecisionContext(decision_model=self.test_decision_model_no_track_url, givens={})
