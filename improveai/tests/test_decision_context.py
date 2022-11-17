@@ -520,6 +520,24 @@ class TestDecisionContext(TestCase):
             expected_ranked_variants = test_output.get('ranked', None)
             assert expected_ranked_variants is not None
 
+            # check that copy of variants is returned
+            assert id(variants) != id(calculated_decision.ranked)
+
+            # check that input and output is of the same type
+            assert isinstance(calculated_decision.ranked, type(variants))
+
+            # make sure variants are the same objects
+            sorted_calculated_variants_ids = sorted(
+                [id(cv) for cv in calculated_decision.ranked])
+
+            sorted_input_variants_ids = sorted([id(iv) for iv in variants])
+            np.testing.assert_array_equal(sorted_calculated_variants_ids,
+                                          sorted_input_variants_ids)
+
+            # pop input and make sure output's length does not change
+            variants.pop()
+            assert len(variants) == len(calculated_decision.ranked) - 1
+
             np.testing.assert_array_equal(calculated_decision.ranked, expected_ranked_variants)
             assert calculated_decision.best == expected_best
         else:
@@ -1540,6 +1558,85 @@ class TestDecisionContext(TestCase):
     def test_decide_no_model_scores_not_ordered_valid_givens(self):
         test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_NO_MODEL_VALID_GIVENS_SCORES_NOT_ORDERED_JSON')
         self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+
+    def test_decide_valid_model_bool_variants_no_scores_not_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_BOOL_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_bool_variants_no_scores_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_BOOL_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_bool_variants_scores_not_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_BOOL_VARIANTS_VALID_MODEL_VALID_GIVENS_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+
+    def test_decide_valid_model_dict_variants_no_scores_not_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_DICT_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_dict_variants_no_scores_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_DICT_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_dict_variants_scores_not_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_DICT_VARIANTS_VALID_MODEL_VALID_GIVENS_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+
+    def test_decide_valid_model_float_variants_no_scores_not_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_FLOAT_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_float_variants_no_scores_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_FLOAT_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_float_variants_scores_not_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_FLOAT_VARIANTS_VALID_MODEL_VALID_GIVENS_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+
+    def test_decide_valid_model_int_variants_no_scores_not_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_INT_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_int_variants_no_scores_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_INT_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_int_variants_scores_not_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_INT_VARIANTS_VALID_MODEL_VALID_GIVENS_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+
+    def test_decide_valid_model_lists_variants_no_scores_not_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_LISTS_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_lists_variants_no_scores_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_LISTS_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_lists_variants_scores_not_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_LISTS_VARIANTS_VALID_MODEL_VALID_GIVENS_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+
+    def test_decide_valid_model_string_variants_no_scores_not_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_STRING_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_string_variants_no_scores_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_STRING_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_string_variants_scores_not_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_STRING_VARIANTS_VALID_MODEL_VALID_GIVENS_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
 
     def test_decide_raises_for_variants_and_scores_different_length(self):
         context = dc.DecisionContext(decision_model=self.test_decision_model_no_track_url, givens={})
