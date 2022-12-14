@@ -398,8 +398,7 @@ class XGBChooser:
         model_metadata = self._get_model_metadata()
         self.model_seed = self._get_model_seed(model_metadata=model_metadata)
         self.model_name = self._get_model_name(model_metadata=model_metadata)
-        self.model_feature_names = \
-            self._get_model_feature_names(model_metadata=model_metadata)
+        self.model_feature_names = self._get_model_feature_names(model_metadata=model_metadata)
         self.improveai_major_version_from_metadata = \
             self._get_improveai_major_version(model_metadata=model_metadata)
 
@@ -451,6 +450,9 @@ class XGBChooser:
 
         user_defined_metadata_str = self.model.attr(USER_DEFINED_METADATA_KEY)
         user_defined_metadata = json.loads(user_defined_metadata_str)
+
+        if not user_defined_metadata:
+            raise IOError('Model metadata is either None or empty')
 
         loaded_metadata_keys = set(user_defined_metadata.keys())
 
@@ -648,13 +650,13 @@ class XGBChooser:
 
         """
 
-        if not model_metadata:
-            raise ValueError('Model metadata empty or None!')
-
         feature_names = model_metadata.get(self.FEATURE_NAMES_METADATA_KEY, None)
 
         if not feature_names:
-            raise ValueError('Feature names not in model metadata!')
+            raise IOError('Feature names can`t be None or empty collection')
+
+        if not all(isinstance(fn, str) for fn in feature_names):
+            raise IOError('All feature names must be strings')
 
         return feature_names
 
@@ -674,13 +676,10 @@ class XGBChooser:
             model seed
 
         """
-        if not model_metadata:
-            raise ValueError('Model metadata empty or None!')
-
         model_seed = model_metadata.get(self.MODEL_SEED_METADATA_KEY, None)
 
-        if not model_seed:
-            raise ValueError('Feature names not in model metadata!')
+        if not model_seed or not isinstance(model_seed, int):
+            raise IOError(f'Wrong {MODEL_SEED_METADATA_KEY}: {model_seed} (type: {type(model_seed)}).')
 
         return model_seed
 
@@ -699,13 +698,13 @@ class XGBChooser:
             Improve AI model name
 
         """
-        if not model_metadata:
-            raise ValueError('Model metadata empty or None!')
-
         model_name = model_metadata.get(self.MODEL_NAME_METADATA_KEY, None)
 
         if not model_name:
-            raise ValueError('Feature names not in model metadata!')
+            raise IOError('Model name empty or None!')
+
+        if not model_name or not isinstance(model_name, str):
+            raise IOError(f'Wrong {MODEL_NAME_METADATA_KEY}: {model_name} (type: {type(model_name)}).')
 
         return model_name
 
