@@ -1,0 +1,57 @@
+{
+    "test_case": {
+        "model_filename": "dummy_v6.xgb",
+        "ordered": false,
+        "variants": [
+            ["lovely corgi", 12, 2],
+            ["lively swan", 11, 2],
+            ["uptight wine cow of kindness", 28, 4],
+            ["mindful jerboa of infinite kindness", 35, 4],
+            ["lively monkey of artistry", 25, 3],
+            ["great kind manatee", 18, 3],
+            ["caped olive crocodile of diversity", 34, 4],
+            ["knowing optimal jerboa", 22, 3],
+            ["olive pronghorn", 15, 2],
+            ["knowing fennec", 14, 2]
+        ],
+        "scores": [
+            0.24491243,
+            0.040346462,
+            0.044330847,
+            0.044330828,
+            0.061234303,
+            0.045880016,
+            0.082680695,
+            0.055200752,
+            0.061234355,
+            0.06123434],
+        "givens": {
+            "device_manufacturer": "Apple",
+            "version_name": "4.3",
+            "os_name": "ios",
+            "day": 0,
+            "language": "English",
+            "page": 0,
+            "os_version": "12.1.2",
+            "country": "United States",
+            "carrier": "AT&T",
+            "device_model": "iPhone 7 Plus"
+        }
+    },
+    "test_output": {
+        "best": ["lovely corgi", 12, 2],
+        "ranked":  [
+            ["lovely corgi", 12, 2],
+            ["caped olive crocodile of diversity", 34, 4],
+            ["olive pronghorn", 15, 2],
+            ["knowing fennec", 14, 2],
+            ["lively monkey of artistry", 25, 3],
+            ["knowing optimal jerboa", 22, 3],
+            ["great kind manatee", 18, 3],
+            ["uptight wine cow of kindness", 28, 4],
+            ["mindful jerboa of infinite kindness", 35, 4],
+            ["lively swan", 11, 2]
+        ]},
+    "model_seed": 1,
+    "scores_seed": 1
+}

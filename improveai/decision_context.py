@@ -1,4 +1,4 @@
-from copy import deepcopy
+from copy import copy
 
 import numpy as np
 
@@ -58,6 +58,7 @@ class DecisionContext:
             decision model for this DecisionContext
         givens: dict
             givens for this DecisionContext
+
         """
         self.decision_model = decision_model
         self.context = context
@@ -151,13 +152,12 @@ class DecisionContext:
             decision object created for input data
 
         """
-        # TODO test with scores == None and scores != None
         # get givens via GivensProvider
         givens = self.decision_model.givens_provider.givens(for_model=self.decision_model, context=self.context)
         # rank variants if they are not ordered
         assert isinstance(ordered, bool)
         if scores is not None and ordered is True:
-            raise ValueError('Both `scores` and `ordered` are not None. One of them must be None (please check docs).')
+            raise ValueError('Both "scores" and "ordered" are not None. One of them must be None (please check docs).')
 
         if not ordered:
             # if variants are not ordered scoring or ranking must be performed
@@ -172,7 +172,7 @@ class DecisionContext:
             ranked_variants = self.decision_model._rank(variants=variants, scores=scores)
         else:
             # variants are already ordered
-            ranked_variants = deepcopy(variants)
+            ranked_variants = copy(variants)
 
         decision = d.Decision(
             decision_model=self.decision_model, ranked=ranked_variants, givens=givens)

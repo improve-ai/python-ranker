@@ -602,7 +602,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=[None],
                     givens=None, model_name=self.dummy_model_name)
-                time.sleep(0.125)
+                time.sleep(0.175)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -649,7 +649,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=variants,
                     givens=None, model_name=self.dummy_model_name)
-                time.sleep(0.125)
+                time.sleep(0.175)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -697,7 +697,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=variants,
                     givens=None, model_name=self.dummy_model_name)
-                time.sleep(0.125)
+                time.sleep(0.175)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -745,7 +745,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=variants,
                     givens=None, model_name=self.dummy_model_name)
-                time.sleep(0.125)
+                time.sleep(0.175)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -795,7 +795,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=variants,
                     givens=None, model_name=self.dummy_model_name)
-                time.sleep(0.125)
+                time.sleep(0.175)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -843,7 +843,7 @@ class TestDecisionTracker:
                 decision_tracker.track(
                     ranked_variants=variants,
                     givens=None, model_name=self.dummy_model_name)
-                time.sleep(0.125)
+                time.sleep(0.175)
                 assert len(w) == 0
 
     def test_track_2_variants_zero_max_runners_up(self):
@@ -890,7 +890,7 @@ class TestDecisionTracker:
                 np.random.seed(self.sample_seed)
                 decision_tracker.track(
                     ranked_variants=variants, givens=None, model_name=self.dummy_model_name)
-                time.sleep(0.125)
+                time.sleep(0.175)
                 assert len(w) == 0
 
     def test_track(self):
@@ -939,7 +939,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=variants,
                     givens=givens, model_name=self.dummy_model_name)
-                time.sleep(0.125)
+                time.sleep(0.175)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -988,7 +988,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=np.array(variants),
                     givens=givens, model_name=self.dummy_model_name)
-            time.sleep(0.125)
+            time.sleep(0.175)
             assert len(w) == 0
 
         assert is_valid_ksuid(decision_id)
@@ -1035,7 +1035,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=variants,
                     givens=None, model_name=self.dummy_model_name)
-                time.sleep(0.125)
+                time.sleep(0.175)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1084,7 +1084,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=variants,
                     givens=None, model_name=self.dummy_model_name)
-                time.sleep(0.125)
+                time.sleep(0.175)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1151,7 +1151,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=variants,
                     givens=None, model_name=self.dummy_model_name)
-                time.sleep(0.125)
+                time.sleep(0.175)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1198,7 +1198,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=variants,
                     givens=None, model_name=self.dummy_model_name)
-                time.sleep(0.125)
+                time.sleep(0.175)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1238,7 +1238,7 @@ class TestDecisionTracker:
                 simplefilter("always")
                 decision_tracker.add_reward(
                     reward=reward, model_name=self.dummy_model_name, decision_id=decision_id)
-                time.sleep(0.125)
+                time.sleep(0.175)
                 assert len(w) == 0
 
     def test_add_int_reward(self):
@@ -1257,7 +1257,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=variants,
                     givens=None, model_name=self.dummy_model_name)
-                time.sleep(0.125)
+                time.sleep(0.175)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1299,7 +1299,7 @@ class TestDecisionTracker:
                 print(f'Decision ID: {decision_id is None}')
                 decision_tracker.add_reward(
                     reward=reward, model_name=self.dummy_model_name, decision_id=decision_id)
-                time.sleep(0.125)
+                time.sleep(0.175)
                 assert len(w) == 0
 
     def test_add_reward_bad_reward_type(self):
@@ -1326,7 +1326,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=variants,
                     givens=None, model_name=self.dummy_model_name)
-                time.sleep(0.125)
+                time.sleep(0.175)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1365,7 +1365,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=variants,
                     givens=None, model_name=self.dummy_model_name)
-                time.sleep(0.125)
+                time.sleep(0.175)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1414,7 +1414,7 @@ class TestDecisionTracker:
                 decision_id = decision_tracker.track(
                     ranked_variants=variants,
                     givens=None, model_name=self.dummy_model_name)
-                time.sleep(0.125)
+                time.sleep(0.175)
                 assert len(w) == 0
 
             assert is_valid_ksuid(decision_id)
@@ -1488,7 +1488,7 @@ class TestDecisionTracker:
             m.post(self.track_url, text='success', additional_matcher=cache_headers)
 
             decision_id = decision_tracker.post_improve_request(body_values=mockup_body)
-            time.sleep(0.125)
+            time.sleep(0.175)
 
             assert is_valid_ksuid(decision_id)
 
@@ -1503,7 +1503,7 @@ class TestDecisionTracker:
             # ranked_variants: list or np.ndarray, givens: dict, model_name: str
             decision_id = decision_tracker.track(ranked_variants=[0, 1, 2], givens={}, model_name=None)
             assert decision_id is None
-            time.sleep(0.125)
+            time.sleep(0.175)
 
     def test_track_returns_none_for_bad_model_name(self):
         decision_tracker = dtr.DecisionTracker(track_url=self.track_url)
@@ -1513,7 +1513,7 @@ class TestDecisionTracker:
             # ranked_variants: list or np.ndarray, givens: dict, model_name: str
             decision_id = decision_tracker.track(ranked_variants=[0, 1, 2], givens={}, model_name=bad_model_name)
             assert decision_id is None
-            time.sleep(0.125)
+            time.sleep(0.175)
 
     def test_post_improve_request_does_not_block_io(self):
         # make multiple requests and check that:
@@ -1529,7 +1529,6 @@ class TestDecisionTracker:
         requests_attempts = 500
 
         msg_ids = [None] * requests_attempts
-        tasks_in_queue = [None] * requests_attempts
         executor_threads = [None] * requests_attempts
 
         with rqm.Mocker() as m:
@@ -1537,10 +1536,7 @@ class TestDecisionTracker:
             for request_index in range(requests_attempts):
                 msg_ids[request_index] = decision_tracker.post_improve_request(body_values=dummy_body)
                 # assert that each time at most <= MAX_TRACK_THREADS tasks are in queue
-                tasks_in_queue[request_index] = improveai.track_improve_executor._work_queue.qsize()
                 executor_threads[request_index] = len(improveai.track_improve_executor._threads)
-                print('## CURRENT THREADS ##')
-                print(executor_threads[request_index])
 
             # wait for all threads to finish
             time.sleep(3)
@@ -1550,11 +1546,8 @@ class TestDecisionTracker:
         assert improveai.track_improve_executor._work_queue.qsize() == 0
 
         assert all([el is not None for el in msg_ids])
-        assert all([el is not None for el in tasks_in_queue])
         assert all([el is not None for el in executor_threads])
 
-        assert max(tasks_in_queue) <= MAX_TRACK_THREADS
         assert max(executor_threads) <= MAX_TRACK_THREADS
 
-        assert 1 < np.mean(tasks_in_queue) <= MAX_TRACK_THREADS
         assert 1 < np.mean(executor_threads) <= MAX_TRACK_THREADS

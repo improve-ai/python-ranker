@@ -4,6 +4,7 @@ from ksuid import Ksuid
 import numpy as np
 import math
 import os
+from pathlib import Path
 from pytest import fixture, raises
 import requests_mock as rqm
 import string
@@ -386,11 +387,26 @@ class TestDecisionModel(TestCase):
 
         np.random.seed(score_seed)
 
-        if evaluated_method_name == 'rank':
+        if evaluated_method_name == '_rank':
             calculated_ranked_variants = decision_model._rank(variants=variants, scores=calculated_scores)
+            print(calculated_ranked_variants)
             expected_ranked_variants = expected_output.get('ranked_variants', None)
-            np.testing.assert_array_equal(
-                expected_ranked_variants, calculated_ranked_variants)
+            np.testing.assert_array_equal(expected_ranked_variants, calculated_ranked_variants)
+
+            # check that copy of variants is returned
+            assert id(variants) != id(calculated_ranked_variants)
+
+            # check that input and output is of the same type
+            assert isinstance(calculated_ranked_variants, type(variants))
+
+            # make sure variants are the same objects
+            sorted_calculated_variants_ids = sorted([id(cv) for cv in calculated_ranked_variants])
+            sorted_input_variants_ids = sorted([id(iv) for iv in variants])
+            np.testing.assert_array_equal(sorted_calculated_variants_ids, sorted_input_variants_ids)
+
+            # pop input and make sure output's length does not change
+            variants.pop()
+            assert len(variants) == len(calculated_ranked_variants) - 1
         elif evaluated_method_name == 'choose_first':
             # get decision object
             decision = decision_model.choose_first(variants=variants)
@@ -488,7 +504,7 @@ class TestDecisionModel(TestCase):
                 assert calculated_best == expected_best
                 assert decision_id is not None
                 assert is_valid_ksuid(decision_id)
-                time.sleep(0.125)
+                time.sleep(0.175)
 
             # test with track url == None
             np.random.seed(scores_seed)
@@ -574,11 +590,10 @@ class TestDecisionModel(TestCase):
 
         np.random.seed(score_seed)
 
-        if evaluated_method_name == 'rank':
+        if evaluated_method_name == '_rank':
             calculated_ranked_variants = decision_model._rank(variants=variants, scores=calculated_scores)
             expected_ranked_variants = expected_output.get('ranked_variants', None)
-            np.testing.assert_array_equal(
-                expected_ranked_variants, calculated_ranked_variants)
+            np.testing.assert_array_equal(expected_ranked_variants, calculated_ranked_variants)
         elif evaluated_method_name == 'choose_first':
             # get decision object
             np.random.seed(score_seed)
@@ -613,7 +628,7 @@ class TestDecisionModel(TestCase):
 
                 assert best_variant == expected_best
                 assert is_valid_ksuid(decision_id)
-                time.sleep(0.125)
+                time.sleep(0.175)
 
         elif evaluated_method_name == 'choose_random':
             np.random.seed(score_seed)
@@ -656,7 +671,7 @@ class TestDecisionModel(TestCase):
 
                 assert best_variant == expected_best
                 assert is_valid_ksuid(decision_id)
-                time.sleep(0.125)
+                time.sleep(0.175)
         elif evaluated_method_name == 'choose_multivariate':
             scores_seed = test_data.get('scores_seed', None)
             assert scores_seed is not None
@@ -692,7 +707,7 @@ class TestDecisionModel(TestCase):
                 assert calculated_best == expected_best
                 assert decision_id is not None
                 assert is_valid_ksuid(decision_id)
-                time.sleep(0.125)
+                time.sleep(0.175)
 
             # test with track url == None
             np.random.seed(scores_seed)
@@ -751,19 +766,11 @@ class TestDecisionModel(TestCase):
         decision_model = dm.DecisionModel(model_name='test-model')
         decision_model.score(variants=variants)
 
-    def test_rank_no_model(self):
+    def test__rank_no_model(self):
         self._generic_desired_decision_model_method_call_no_model(
             test_data_filename=os.getenv(
-                'DECISION_MODEL_TEST_RANK_NATIVE_NO_MODEL_JSON'),
-            evaluated_method_name='rank')
-
-    def test_rank(self):
-        self._generic_desired_decision_model_method_call(
-            test_data_filename=os.getenv(
-                'DECISION_MODEL_TEST_RANK_NATIVE_JSON'),
-            evaluated_method_name='rank',
-            empty_callable_kwargs={
-                'variants': None, 'givens': None, 'scores': None})
+                'DECISION_MODEL_TEST__RANK_NATIVE_NO_MODEL_JSON'),
+            evaluated_method_name='_rank')
 
     def test_rank_no_track_url(self):
         model = dm.DecisionModel('test-model')
@@ -771,6 +778,124 @@ class TestDecisionModel(TestCase):
         # make sure call was not tracked
         assert model.last_decision_id is None
         np.testing.assert_array_equal(ranked_variants, [1, 2, 3, 4])
+
+    def test__rank_dict_variants(self):
+        self._generic_desired_decision_model_method_call(
+            test_data_filename=os.getenv(
+                'DECISION_MODEL_TEST__RANK_DICT_VARIANTS_NATIVE_JSON'),
+            evaluated_method_name='_rank',
+            empty_callable_kwargs={
+                'variants': None, 'givens': None, 'scores': None})
+
+    def test__rank_int_variants(self):
+        self._generic_desired_decision_model_method_call(
+            test_data_filename=os.getenv(
+                'DECISION_MODEL_TEST__RANK_INT_VARIANTS_NATIVE_JSON'),
+            evaluated_method_name='_rank',
+            empty_callable_kwargs={
+                'variants': None, 'givens': None, 'scores': None})
+
+    def test__rank_float_variants(self):
+        self._generic_desired_decision_model_method_call(
+            test_data_filename=os.getenv(
+                'DECISION_MODEL_TEST__RANK_FLOAT_VARIANTS_NATIVE_JSON'),
+            evaluated_method_name='_rank',
+            empty_callable_kwargs={
+                'variants': None, 'givens': None, 'scores': None})
+
+    def test__rank_string_variants(self):
+        self._generic_desired_decision_model_method_call(
+            test_data_filename=os.getenv(
+                'DECISION_MODEL_TEST__RANK_STRING_VARIANTS_NATIVE_JSON'),
+            evaluated_method_name='_rank',
+            empty_callable_kwargs={
+                'variants': None, 'givens': None, 'scores': None})
+
+    def test__rank_bool_variants(self):
+        self._generic_desired_decision_model_method_call(
+            test_data_filename=os.getenv(
+                'DECISION_MODEL_TEST__RANK_BOOL_VARIANTS_NATIVE_JSON'),
+            evaluated_method_name='_rank',
+            empty_callable_kwargs={
+                'variants': None, 'givens': None, 'scores': None})
+
+    def test__rank_lists_variants(self):
+        self._generic_desired_decision_model_method_call(
+            test_data_filename=os.getenv(
+                'DECISION_MODEL_TEST__RANK_BOOL_VARIANTS_NATIVE_JSON'),
+            evaluated_method_name='_rank',
+            empty_callable_kwargs={
+                'variants': None, 'givens': None, 'scores': None})
+
+    def test__rank_tuples_variants(self):
+        test_data_filename = os.getenv('DECISION_MODEL_TEST__RANK_LISTS_VARIANTS_NATIVE_JSON', None)
+        assert test_data_filename is not None
+
+        path_to_test_json = \
+            ('{}' + os.sep + '{}').format(
+                self.test_cases_directory, test_data_filename)
+
+        test_data = get_test_data(path_to_test_json=path_to_test_json, method='read')
+
+        test_case = test_data.get("test_case", None)
+        assert test_case is not None
+
+        variants = test_case.get("variants", None)
+        assert variants is not None
+        variants = [tuple(variant) for variant in variants]
+
+        givens = test_case.get("givens", None)
+        assert givens is not None
+
+        predictor_filename = test_case.get("model_filename", None)
+        assert predictor_filename is not None
+
+        model_url = \
+            ('{}' + os.sep + '{}').format(
+                self.predictors_fs_directory, predictor_filename)
+
+        decision_model = \
+            dm.DecisionModel(model_name=None).load(model_url=model_url)
+
+        score_seed = test_data.get("scores_seed", None)
+        assert score_seed is not None
+        score_seed = int(score_seed)
+
+        np.random.seed(score_seed)
+        calculated_scores = \
+            decision_model._score(variants=variants, givens=givens)
+
+        calculated_ranked_variants = \
+            decision_model._rank(variants=variants, scores=calculated_scores)
+
+        expected_output = test_data.get("test_output", None)
+        assert expected_output is not None
+
+        expected_ranked_variants = expected_output.get('ranked_variants', None)
+        assert expected_ranked_variants is not None
+        expected_ranked_variants = [tuple(variant) for variant in expected_ranked_variants]
+
+        print(calculated_ranked_variants)
+
+        np.testing.assert_array_equal(expected_ranked_variants,
+                                      calculated_ranked_variants)
+
+        # check that copy of variants is returned
+        assert id(variants) != id(calculated_ranked_variants)
+
+        # check that input and output is of the same type
+        assert isinstance(calculated_ranked_variants, type(variants))
+
+        # make sure variants are the same objects
+        sorted_calculated_variants_ids = sorted(
+            [id(cv) for cv in calculated_ranked_variants])
+        sorted_input_variants_ids = sorted([id(iv) for iv in variants])
+        np.testing.assert_array_equal(sorted_calculated_variants_ids,
+                                      sorted_input_variants_ids)
+
+        # pop input and make sure output's length does not change
+        variants.pop()
+        assert len(variants) == len(calculated_ranked_variants) - 1
 
     def test_generate_descending_gaussians(self):
         path_to_test_json = \
@@ -868,7 +993,7 @@ class TestDecisionModel(TestCase):
         assert expected_givens is not None
 
         decision_context = \
-            dm.DecisionModel(model_name='test_choose_from_model').given(givens=givens)
+            dm.DecisionModel(model_name='test_choose_from_model').given(context=givens)
 
         assert isinstance(decision_context, dc.DecisionContext)
         assert hasattr(decision_context, 'givens')
@@ -992,7 +1117,7 @@ class TestDecisionModel(TestCase):
             np.random.seed(scores_seed)
             best, decision_id = decision_model.which(variants)
             assert is_valid_ksuid(decision_id)
-            time.sleep(0.125)
+            time.sleep(0.175)
 
         assert best == expected_best
 
@@ -1030,7 +1155,7 @@ class TestDecisionModel(TestCase):
                 np.random.seed(scores_seed)
                 best, decision_id = decision_model.which(variants)
                 assert is_valid_ksuid(decision_id)
-                time.sleep(0.125)
+                time.sleep(0.175)
                 assert len(w) == 0
 
         assert best == expected_best
@@ -1105,7 +1230,7 @@ class TestDecisionModel(TestCase):
             best, decision_id = decision_model.which(variants)
             assert is_valid_ksuid(decision_id)
             assert best == expected_best
-            time.sleep(0.125)
+            time.sleep(0.175)
 
     def test_which_valid_ndarray_variants(self):
         path_to_test_json = \
@@ -1150,7 +1275,7 @@ class TestDecisionModel(TestCase):
             best, decision_id = decision_model.which(variants)
             assert is_valid_ksuid(decision_id)
             assert best == expected_best
-            time.sleep(0.125)
+            time.sleep(0.175)
 
     def test_which_invalid_variants(self):
         path_to_test_json = \
@@ -1391,7 +1516,7 @@ class TestDecisionModel(TestCase):
             np.random.seed(int(tracks_runners_up_seed))
             decision_id = decision.track()
             is_valid_ksuid(decision_id)
-            time.sleep(0.125)
+            time.sleep(0.175)
 
     def test_random_valid_variants_list(self):
         self._generic_desired_decision_model_method_call_no_model(
@@ -1452,7 +1577,7 @@ class TestDecisionModel(TestCase):
             m.post(self.track_url, text='success')
             decision = decision_model.choose_from(list(range(10)), scores=None)
             decision.track()
-            time.sleep(0.125)
+            time.sleep(0.175)
 
         reward = math.inf
 
@@ -1481,7 +1606,7 @@ class TestDecisionModel(TestCase):
             m.post(self.track_url, text='success')
             decision = decision_model.choose_from(list(range(10)), scores=None)
             decision.track()
-            time.sleep(0.125)
+            time.sleep(0.175)
 
         reward = None
 
@@ -1522,7 +1647,7 @@ class TestDecisionModel(TestCase):
             decision = decision_model.choose_from(list(range(10)), scores=None)
             decision_id = decision.track()
             assert decision_id == decision.id_
-            time.sleep(0.125)
+            time.sleep(0.175)
 
         expected_request_json = json.dumps(expected_add_reward_body, sort_keys=False)
 
@@ -1544,7 +1669,7 @@ class TestDecisionModel(TestCase):
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success', additional_matcher=custom_matcher)
             decision_model.add_reward(reward=reward, decision_id=decision.id_)
-            time.sleep(0.125)
+            time.sleep(0.175)
 
     def test_add_rewards_raises_for_none_model_name(self):
         model = dm.DecisionModel(model_name=None, track_url=self.track_url)
@@ -1879,7 +2004,7 @@ class TestDecisionModel(TestCase):
                 variant=variant, runners_up=runners_up, sample=sample,
                 sample_pool_size=sample_pool_size)
             is_valid_ksuid(decision_id)
-            time.sleep(0.125)
+            time.sleep(0.175)
 
     def test_track_no_runners_up(self):
         decision_model = dm.DecisionModel('dummy-model', track_url=self.track_url)
@@ -1929,7 +2054,7 @@ class TestDecisionModel(TestCase):
                     variant=variant, runners_up=runners_up, sample=sample,
                     sample_pool_size=sample_pool_size)
                 is_valid_ksuid(decision_id)
-                time.sleep(0.125)
+                time.sleep(0.175)
                 assert len(w) == 0
 
     def test_track_no_sample(self):
@@ -1980,7 +2105,7 @@ class TestDecisionModel(TestCase):
                     variant=variant, runners_up=runners_up, sample=sample,
                     sample_pool_size=sample_pool_size)
                 is_valid_ksuid(decision_id)
-                time.sleep(0.125)
+                time.sleep(0.175)
                 assert len(w) == 0
 
     def test_track_no_runners_up_no_sample(self):
@@ -2030,7 +2155,7 @@ class TestDecisionModel(TestCase):
                     variant=variant, runners_up=runners_up, sample=sample,
                     sample_pool_size=sample_pool_size)
                 is_valid_ksuid(decision_id)
-                time.sleep(0.125)
+                time.sleep(0.175)
                 assert len(w) == 0
 
     def test_track_raises_for_empty_runners_up(self):
@@ -2240,3 +2365,43 @@ class TestDecisionModel(TestCase):
         variant_map = 1
         with raises(AssertionError) as aerr:
             dm.DecisionModel.full_factorial_variants(variant_map=variant_map)
+
+    def test_load_model_with_valid_improveai_version(self):
+        decision_model = dm.DecisionModel('test-model')
+        model_path = os.getenv('DUMMY_MODEL_VALID_IMPROVEAI_VERSION_PATH', None)
+        assert model_path is not None
+        # loading should not raise an error
+        decision_model.load(model_path)
+        assert decision_model.chooser.improveai_major_version_from_metadata == 7
+
+    def test_load_model_with_improveai_version_none(self):
+        decision_model = dm.DecisionModel('test-model')
+        model_path = os.getenv('DUMMY_MODEL_NONE_IMPROVEAI_VERSION_PATH', None)
+        assert model_path is not None
+        # loading should not raise an error
+        with raises(AssertionError):
+            decision_model.load(model_path)
+
+    def test_load_model_with_invalid_improveai_version(self):
+        decision_model = dm.DecisionModel('test-model')
+        model_path = os.getenv('DUMMY_MODEL_INVALID_IMPROVEAI_VERSION_PATH', None)
+        assert model_path is not None
+        # loading should not raise an error
+        with raises(AssertionError):
+            decision_model.load(model_path)
+
+    def test_load_model_with_no_improveai_version(self):
+        decision_model = dm.DecisionModel('test-model')
+        model_path = os.getenv('DUMMY_MODEL_PATH', None)
+        assert model_path is not None
+        decision_model.load(model_path)
+        assert decision_model.chooser.improveai_major_version_from_metadata is None
+
+    def test_load_model_with_path(self):
+        decision_model = dm.DecisionModel('test-model')
+        model_path_str = os.getenv('DUMMY_MODEL_PATH', None)
+        assert model_path_str is not None
+        model_path = Path(model_path_str)
+        decision_model.load(model_path)
+        assert decision_model.chooser.improveai_major_version_from_metadata is None
+        pass

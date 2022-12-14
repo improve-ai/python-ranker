@@ -150,7 +150,7 @@ class TestDecisionContext(TestCase):
         invalid_test_givens = ['abc', ['a', 'b', 'c'], ('a', 'b', 'c'), 1234, 1234.1234]
         for ig in invalid_test_givens:
             with raises(AssertionError) as aerr:
-                dc.DecisionContext(decision_model=self.test_decision_model, givens=ig)
+                dc.DecisionContext(decision_model=self.test_decision_model, context=ig)
 
     # - invalid variants, valid givens
     def test_choose_from_invalid_variants_valid_givens(self):
@@ -158,7 +158,7 @@ class TestDecisionContext(TestCase):
         valid_givens = {'a': 1, 'b': [1, 2, 3]}
         for iv in invalid_test_variants:
             with raises(AssertionError) as aerr:
-                dc.DecisionContext(decision_model=self.test_decision_model, givens=valid_givens)\
+                dc.DecisionContext(decision_model=self.test_decision_model, context=valid_givens)\
                     .choose_from(variants=iv, scores=None)
 
     # test score
@@ -263,7 +263,7 @@ class TestDecisionContext(TestCase):
         valid_givens = {'a': 1, 'b': [1, 2, 3]}
         for iv in invalid_test_variants:
             with raises(AssertionError) as aerr:
-                dc.DecisionContext(decision_model=self.test_decision_model, givens=valid_givens).score(variants=iv)
+                dc.DecisionContext(decision_model=self.test_decision_model, context=valid_givens).score(variants=iv)
 
     def _generic_test_selected_method(
             self, test_case_json_name, tested_method_name, variants_converter=None):
@@ -304,7 +304,7 @@ class TestDecisionContext(TestCase):
             expected_best = expected_output.get('best', None)
             assert expected_best is not None
 
-        decision_context = dc.DecisionContext(decision_model=self.test_decision_model, givens=givens)
+        decision_context = dc.DecisionContext(decision_model=self.test_decision_model, context=givens)
 
         if tested_method_name == 'score':
             np.random.seed(scores_seed)
@@ -352,7 +352,7 @@ class TestDecisionContext(TestCase):
                     assert best == expected_best
                     assert is_valid_ksuid(decision_id)
 
-                    time.sleep(0.125)
+                    time.sleep(0.175)
                     assert len(w) == 0
 
         elif tested_method_name == 'choose_first':
@@ -382,7 +382,7 @@ class TestDecisionContext(TestCase):
                     best, decision_id = decision_context.first(variants)
                     assert best == expected_best
                     assert is_valid_ksuid(decision_id)
-                    time.sleep(0.125)
+                    time.sleep(0.175)
                     assert len(w) == 0
 
         elif tested_method_name == 'choose_random':
@@ -412,7 +412,7 @@ class TestDecisionContext(TestCase):
                     best, decision_id = decision_context.random(variants)
                     assert best == expected_best
                     assert is_valid_ksuid(decision_id)
-                    time.sleep(0.125)
+                    time.sleep(0.175)
                     assert len(w) == 0
 
         elif tested_method_name == 'rank':
@@ -428,7 +428,23 @@ class TestDecisionContext(TestCase):
                     calculated_ranked = decision_context.rank(variants=variants)
                     assert decision_context.decision_model.last_decision_id is None
                     np.testing.assert_array_equal(calculated_ranked, expected_ranked)
-                    time.sleep(0.125)
+
+                    # check that copy of variants is returned
+                    assert id(variants) != id(calculated_ranked)
+
+                    # check that input and output is of the same type
+                    assert isinstance(calculated_ranked, type(variants))
+
+                    # make sure variants are the same objects
+                    sorted_calculated_variants_ids = sorted([id(cv) for cv in calculated_ranked])
+                    sorted_input_variants_ids = sorted([id(iv) for iv in variants])
+                    np.testing.assert_array_equal(sorted_calculated_variants_ids, sorted_input_variants_ids)
+
+                    # pop input and make sure output's length does not change
+                    variants.pop()
+                    assert len(variants) == len(calculated_ranked) - 1
+
+                    time.sleep(0.175)
                     assert len(w) == 0
 
         elif tested_method_name == 'optimize':
@@ -442,19 +458,19 @@ class TestDecisionContext(TestCase):
                 with catch_warnings(record=True) as w:
                     simplefilter("always")
                     decision_context = dc.DecisionContext(
-                        decision_model=self.test_decision_model, givens=givens)
+                        decision_model=self.test_decision_model, context=givens)
                     np.random.seed(scores_seed)
                     calculated_best, decision_id = \
                         decision_context.optimize(variant_map=variant_map)
                     assert calculated_best == expected_best
                     assert decision_id is not None
                     assert is_valid_ksuid(decision_id)
-                    time.sleep(0.125)
+                    time.sleep(0.175)
                     assert len(w) == 0
 
             # test with track url == None
             decision_context = dc.DecisionContext(
-                decision_model=self.test_decision_model_no_track_url, givens=givens)
+                decision_model=self.test_decision_model_no_track_url, context=givens)
             np.random.seed(scores_seed)
             calculated_best, decision_id = \
                 decision_context.optimize(variant_map=variant_map)
@@ -503,6 +519,24 @@ class TestDecisionContext(TestCase):
 
             expected_ranked_variants = test_output.get('ranked', None)
             assert expected_ranked_variants is not None
+
+            # check that copy of variants is returned
+            assert id(variants) != id(calculated_decision.ranked)
+
+            # check that input and output is of the same type
+            assert isinstance(calculated_decision.ranked, type(variants))
+
+            # make sure variants are the same objects
+            sorted_calculated_variants_ids = sorted(
+                [id(cv) for cv in calculated_decision.ranked])
+
+            sorted_input_variants_ids = sorted([id(iv) for iv in variants])
+            np.testing.assert_array_equal(sorted_calculated_variants_ids,
+                                          sorted_input_variants_ids)
+
+            # pop input and make sure output's length does not change
+            variants.pop()
+            assert len(variants) == len(calculated_decision.ranked) - 1
 
             np.testing.assert_array_equal(calculated_decision.ranked, expected_ranked_variants)
             assert calculated_decision.best == expected_best
@@ -607,7 +641,7 @@ class TestDecisionContext(TestCase):
             with rqm.Mocker() as m:
                 m.post(self.test_track_url, text='success')
                 with raises(AssertionError) as aerr:
-                    dc.DecisionContext(decision_model=self.test_decision_model, givens=valid_givens).which(*[iv])
+                    dc.DecisionContext(decision_model=self.test_decision_model, context=valid_givens).which(*[iv])
 
     # - invalid variants, valid givens
     def test_which_empty_variants_valid_givens_raises(self):
@@ -617,18 +651,18 @@ class TestDecisionContext(TestCase):
             with rqm.Mocker() as m:
                 m.post(self.test_track_url, text='success')
                 with raises(AssertionError):
-                    dc.DecisionContext(decision_model=self.test_decision_model, givens=valid_givens).which(*iv)
+                    dc.DecisionContext(decision_model=self.test_decision_model, context=valid_givens).which(*iv)
 
     def test_which_none_track_url(self):
         model = dm.DecisionModel(model_name='dummy-model', track_url=None)
-        chosen_variant, decision_id = dc.DecisionContext(decision_model=model, givens=None).which(1, 2, 3, 4, 5)
+        chosen_variant, decision_id = dc.DecisionContext(decision_model=model, context=None).which(1, 2, 3, 4, 5)
         # make sure which did not track decision
         assert decision_id is None
         assert chosen_variant == 1
 
     def test_which_from_none_track_url(self):
         model = dm.DecisionModel(model_name='dummy-model', track_url=None)
-        chosen_variant, decision_id = dc.DecisionContext(decision_model=model, givens=None)\
+        chosen_variant, decision_id = dc.DecisionContext(decision_model=model, context=None)\
             .which_from(variants=[1, 2, 3, 4, 5])
 
         # make sure which did not track decision
@@ -753,7 +787,7 @@ class TestDecisionContext(TestCase):
             with rqm.Mocker() as m:
                 m.post(self.test_track_url, text='success')
                 with raises(AssertionError) as aerr:
-                    dc.DecisionContext(decision_model=self.test_decision_model, givens=valid_givens)\
+                    dc.DecisionContext(decision_model=self.test_decision_model, context=valid_givens)\
                         .choose_first(variants=iv)
 
     # - invalid variants, valid givens
@@ -764,7 +798,7 @@ class TestDecisionContext(TestCase):
             with rqm.Mocker() as m:
                 m.post(self.test_track_url, text='success')
                 with raises(AssertionError):
-                    dc.DecisionContext(decision_model=self.test_decision_model, givens=valid_givens)\
+                    dc.DecisionContext(decision_model=self.test_decision_model, context=valid_givens)\
                         .choose_first(variants=iv)
 
     def test_first_valid_list_variants_valid_givens(self):
@@ -866,7 +900,7 @@ class TestDecisionContext(TestCase):
             with rqm.Mocker() as m:
                 m.post(self.test_track_url, text='success')
                 with raises(AssertionError) as aerr:
-                    dc.DecisionContext(decision_model=self.test_decision_model, givens=valid_givens)\
+                    dc.DecisionContext(decision_model=self.test_decision_model, context=valid_givens)\
                         .first(*[iv])
 
     # - invalid variants, valid givens
@@ -877,7 +911,7 @@ class TestDecisionContext(TestCase):
             with rqm.Mocker() as m:
                 m.post(self.test_track_url, text='success')
                 with raises(AssertionError):
-                    dc.DecisionContext(decision_model=self.test_decision_model, givens=valid_givens)\
+                    dc.DecisionContext(decision_model=self.test_decision_model, context=valid_givens)\
                         .first(*[iv])
 
     def test_choose_random_valid_list_variants_valid_givens(self):
@@ -979,7 +1013,7 @@ class TestDecisionContext(TestCase):
             with rqm.Mocker() as m:
                 m.post(self.test_track_url, text='success')
                 with raises(AssertionError) as aerr:
-                    dc.DecisionContext(decision_model=self.test_decision_model, givens=valid_givens)\
+                    dc.DecisionContext(decision_model=self.test_decision_model, context=valid_givens)\
                         .choose_random(variants=iv)
 
     # - invalid variants, valid givens
@@ -990,7 +1024,7 @@ class TestDecisionContext(TestCase):
             with rqm.Mocker() as m:
                 m.post(self.test_track_url, text='success')
                 with raises(AssertionError):
-                    dc.DecisionContext(decision_model=self.test_decision_model, givens=valid_givens)\
+                    dc.DecisionContext(decision_model=self.test_decision_model, context=valid_givens)\
                         .choose_random(variants=iv)
 
     def test_random_valid_list_variants_valid_givens(self):
@@ -1092,7 +1126,7 @@ class TestDecisionContext(TestCase):
             with rqm.Mocker() as m:
                 m.post(self.test_track_url, text='success')
                 with raises(AssertionError) as aerr:
-                    dc.DecisionContext(decision_model=self.test_decision_model, givens=valid_givens).random(*[iv])
+                    dc.DecisionContext(decision_model=self.test_decision_model, context=valid_givens).random(*[iv])
 
     # - invalid variants, valid givens
     def test_random_empty_variants_valid_givens_raises(self):
@@ -1102,12 +1136,12 @@ class TestDecisionContext(TestCase):
             with rqm.Mocker() as m:
                 m.post(self.test_track_url, text='success')
                 with raises(AssertionError) as aerr:
-                    dc.DecisionContext(decision_model=self.test_decision_model, givens=valid_givens).random(*[iv])
+                    dc.DecisionContext(decision_model=self.test_decision_model, context=valid_givens).random(*[iv])
 
     def test_choose_random_orders_runners_up_randomly(self):
         variants = [1, 2, 3, 4, 5]
         decision_model = dm.DecisionModel('dummy-model', track_url=self.test_track_url)
-        decision_context = dc.DecisionContext(decision_model=decision_model, givens=None)
+        decision_context = dc.DecisionContext(decision_model=decision_model, context=None)
 
         np.random.seed(1)
         decision = decision_context.choose_random(variants=variants)
@@ -1156,14 +1190,14 @@ class TestDecisionContext(TestCase):
                 decision.track()
                 best = decision.get()
                 is_valid_ksuid(decision.id_)
-                time.sleep(0.125)
+                time.sleep(0.175)
                 assert best == 1
                 assert len(w) == 0
 
     def test_track(self):
         decision_model = dm.DecisionModel('dummy-model', track_url=self.test_track_url)
         decision_context = \
-            dc.DecisionContext(decision_model=decision_model, givens=self.dummy_test_givens)
+            dc.DecisionContext(decision_model=decision_model, context=self.dummy_test_givens)
         decision_tracker = decision_model.tracker
         decision_tracker.max_runners_up = 5
 
@@ -1212,13 +1246,13 @@ class TestDecisionContext(TestCase):
                     variant=variant, runners_up=runners_up, sample=sample,
                     sample_pool_size=sample_pool_size)
                 is_valid_ksuid(decision_id)
-                time.sleep(0.125)
+                time.sleep(0.175)
                 assert len(w) == 0
 
     def test_track_no_runners_up(self):
         decision_model = dm.DecisionModel('dummy-model', track_url=self.test_track_url)
         decision_context = \
-            dc.DecisionContext(decision_model=decision_model, givens=self.dummy_test_givens)
+            dc.DecisionContext(decision_model=decision_model, context=self.dummy_test_givens)
         decision_tracker = decision_model.tracker
         decision_tracker.max_runners_up = 0
 
@@ -1266,13 +1300,13 @@ class TestDecisionContext(TestCase):
                     variant=variant, runners_up=runners_up, sample=sample,
                     sample_pool_size=sample_pool_size)
                 is_valid_ksuid(decision_id)
-                time.sleep(0.125)
+                time.sleep(0.175)
                 assert len(w) == 0
 
     def test_track_no_sample(self):
         decision_model = dm.DecisionModel('dummy-model', track_url=self.test_track_url)
         decision_context = \
-            dc.DecisionContext(decision_model=decision_model, givens=self.dummy_test_givens)
+            dc.DecisionContext(decision_model=decision_model, context=self.dummy_test_givens)
         decision_tracker = decision_model.tracker
         decision_tracker.max_runners_up = 5
 
@@ -1320,13 +1354,13 @@ class TestDecisionContext(TestCase):
                     variant=variant, runners_up=runners_up, sample=sample,
                     sample_pool_size=sample_pool_size)
                 is_valid_ksuid(decision_id)
-                time.sleep(0.125)
+                time.sleep(0.175)
                 assert len(w) == 0
 
     def test_track_no_runners_up_no_sample(self):
         decision_model = dm.DecisionModel('dummy-model', track_url=self.test_track_url)
         decision_context = \
-            dc.DecisionContext(decision_model=decision_model, givens=self.dummy_test_givens)
+            dc.DecisionContext(decision_model=decision_model, context=self.dummy_test_givens)
         decision_tracker = decision_model.tracker
         decision_tracker.max_runners_up = 5
 
@@ -1373,13 +1407,13 @@ class TestDecisionContext(TestCase):
                     variant=variant, runners_up=runners_up, sample=sample,
                     sample_pool_size=sample_pool_size)
                 is_valid_ksuid(decision_id)
-                time.sleep(0.125)
+                time.sleep(0.175)
                 assert len(w) == 0
 
     def test_track_raises_for_empty_runners_up(self):
         decision_model = dm.DecisionModel('dummy-model', track_url=self.test_track_url)
         decision_context = \
-            dc.DecisionContext(decision_model=decision_model, givens=self.dummy_test_givens)
+            dc.DecisionContext(decision_model=decision_model, context=self.dummy_test_givens)
         with raises(AssertionError):
             decision_context._track(
                 variant=1, runners_up=[], sample=2, sample_pool_size=2)
@@ -1387,7 +1421,7 @@ class TestDecisionContext(TestCase):
     def test_track_raises_for_no_track_url(self):
         decision_model = dm.DecisionModel('dummy-model')
         decision_context = \
-            dc.DecisionContext(decision_model=decision_model, givens=self.dummy_test_givens)
+            dc.DecisionContext(decision_model=decision_model, context=self.dummy_test_givens)
         with raises(AssertionError) as aeerr:
             decision_context._track(
                 variant=1, runners_up=[1, 2, 3], sample=2, sample_pool_size=2)
@@ -1438,42 +1472,42 @@ class TestDecisionContext(TestCase):
             tested_method_name='optimize')
 
     def test_choose_multivariate_raises_for_empty_variant_map(self):
-        decision_context = dc.DecisionContext(decision_model=self.test_decision_model, givens=None)
+        decision_context = dc.DecisionContext(decision_model=self.test_decision_model, context=None)
         with raises(AssertionError) as aerr:
             decision_context.choose_multivariate({})
 
     def test_choose_multivariate_raises_for_none_variant_map(self):
-        decision_context = dc.DecisionContext(decision_model=self.test_decision_model, givens=None)
+        decision_context = dc.DecisionContext(decision_model=self.test_decision_model, context=None)
         with raises(AssertionError) as aerr:
             decision_context.choose_multivariate(None)
 
     def test_choose_multivariate_raises_for_wrong_variant_map_type(self):
-        decision_context = dc.DecisionContext(decision_model=self.test_decision_model, givens=None)
+        decision_context = dc.DecisionContext(decision_model=self.test_decision_model, context=None)
         with raises(AssertionError) as aerr:
             decision_context.choose_multivariate([1, 2, 3])
 
     def test_choose_multivariate_raises_for_one_empty_entry_in_variant_map(self):
-        decision_context = dc.DecisionContext(decision_model=self.test_decision_model, givens=None)
+        decision_context = dc.DecisionContext(decision_model=self.test_decision_model, context=None)
         with raises(AssertionError):
             decision_context.choose_multivariate({'a': [], 'b': [1, 2, 3]})
 
     def test_optimize_raises_for_empty_variant_map(self):
-        decision_context = dc.DecisionContext(decision_model=self.test_decision_model, givens=None)
+        decision_context = dc.DecisionContext(decision_model=self.test_decision_model, context=None)
         with raises(AssertionError) as aerr:
             decision_context.optimize({})
 
     def test_optimize_raises_for_none_variant_map(self):
-        decision_context = dc.DecisionContext(decision_model=self.test_decision_model, givens=None)
+        decision_context = dc.DecisionContext(decision_model=self.test_decision_model, context=None)
         with raises(AssertionError) as aerr:
             decision_context.optimize(None)
 
     def test_optimize_raises_for_wrong_variant_map_type(self):
-        decision_context = dc.DecisionContext(decision_model=self.test_decision_model, givens=None)
+        decision_context = dc.DecisionContext(decision_model=self.test_decision_model, context=None)
         with raises(AssertionError) as aerr:
             decision_context.optimize([1, 2, 3])
 
     def test_optimize_raises_for_one_empty_entry_in_variant_map(self):
-        decision_context = dc.DecisionContext(decision_model=self.test_decision_model, givens=None)
+        decision_context = dc.DecisionContext(decision_model=self.test_decision_model, context=None)
         with raises(AssertionError) as verr:
             decision_context.optimize({'a': [], 'b': [1, 2, 3]})
 
@@ -1525,8 +1559,191 @@ class TestDecisionContext(TestCase):
         test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_NO_MODEL_VALID_GIVENS_SCORES_NOT_ORDERED_JSON')
         self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
 
+    def test_decide_valid_model_bool_variants_no_scores_not_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_BOOL_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_bool_variants_no_scores_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_BOOL_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_bool_variants_scores_not_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_BOOL_VARIANTS_VALID_MODEL_VALID_GIVENS_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_dict_variants_no_scores_not_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_DICT_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_dict_variants_no_scores_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_DICT_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_dict_variants_scores_not_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_DICT_VARIANTS_VALID_MODEL_VALID_GIVENS_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_float_variants_no_scores_not_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_FLOAT_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_float_variants_no_scores_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_FLOAT_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_float_variants_scores_not_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_FLOAT_VARIANTS_VALID_MODEL_VALID_GIVENS_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_int_variants_no_scores_not_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_INT_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_int_variants_no_scores_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_INT_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_int_variants_scores_not_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_INT_VARIANTS_VALID_MODEL_VALID_GIVENS_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_lists_variants_no_scores_not_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_LISTS_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_lists_variants_no_scores_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_LISTS_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_lists_variants_scores_not_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_LISTS_VARIANTS_VALID_MODEL_VALID_GIVENS_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_string_variants_no_scores_not_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_STRING_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_string_variants_no_scores_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_STRING_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def test_decide_valid_model_string_variants_scores_not_ordered(self):
+        test_case_json_filename = os.getenv('DECISION_CONTEXT_TEST_DECIDE_STRING_VARIANTS_VALID_MODEL_VALID_GIVENS_SCORES_NOT_ORDERED_JSON')
+        self._generic_test_selected_method(test_case_json_filename, 'decide', variants_converter=None)
+
+    def _generic_test_decide_valid_model_tuple_variants(self, test_case_json_name):
+
+        path_to_test_json = \
+            os.sep.join(
+                [self.decision_context_test_cases_dir, test_case_json_name])
+
+        test_case_json = get_test_data(path_to_test_json)
+
+        test_case = test_case_json.get('test_case', None)
+        assert test_case is not None
+
+        predictor_filename = test_case.get('model_filename', None)
+        assert predictor_filename is not None
+
+        if predictor_filename is not None:
+            # load model
+            model_url = ('{}' + os.sep + '{}').format(self.test_models_dir,
+                                                      predictor_filename)
+            self.test_decision_model.load(model_url=model_url)
+            self.test_decision_model_no_track_url.load(model_url=model_url)
+
+        # get test variants
+        variants = test_case.get('variants', None)
+        assert variants is not None
+        variants = [tuple(variant) for variant in variants]
+        print('### variants ###')
+        print(variants)
+
+        givens = test_case.get('givens', None)
+
+        scores_seed = test_case_json.get('scores_seed', None)
+        assert scores_seed is not None
+
+        expected_output = test_case_json.get('test_output', None)
+        assert expected_output is not None
+
+        expected_best = expected_output.get('best', None)
+        assert expected_best is not None
+        expected_best = tuple(expected_best)
+
+        decision_context = dc.DecisionContext(
+            decision_model=self.test_decision_model, context=givens)
+
+        scores = test_case.get("scores", None)
+        ordered = test_case.get("ordered", None)
+
+        if ordered is True:
+            calculated_decision = decision_context.decide(variants=variants,
+                                                          ordered=ordered)
+        elif scores is not None:
+            calculated_decision = decision_context.decide(variants=variants,
+                                                          scores=scores)
+        else:
+            np.random.seed(scores_seed)
+            calculated_decision = decision_context.decide(variants=variants)
+
+        print('### calculated decision ranked ###')
+        for v in calculated_decision.ranked:
+            print(v)
+
+        test_output = test_case_json.get('test_output', None)
+        assert test_output is not None
+
+        expected_ranked_variants = test_output.get('ranked', None)
+        assert expected_ranked_variants is not None
+
+        expected_ranked_variants = [tuple(variant) for variant in
+                                    expected_ranked_variants]
+        print('### expected_ranked_variants ###')
+        print(expected_ranked_variants)
+
+        # check that copy of variants is returned
+        assert id(variants) != id(calculated_decision.ranked)
+
+        # check that input and output is of the same type
+        assert isinstance(calculated_decision.ranked, type(variants))
+
+        # make sure variants are the same objects
+        sorted_calculated_variants_ids = sorted(
+            [id(cv) for cv in calculated_decision.ranked])
+
+        sorted_input_variants_ids = sorted([id(iv) for iv in variants])
+        np.testing.assert_array_equal(sorted_calculated_variants_ids,
+                                      sorted_input_variants_ids)
+
+        # pop input and make sure output's length does not change
+        variants.pop()
+        assert len(variants) == len(calculated_decision.ranked) - 1
+
+        np.testing.assert_array_equal(calculated_decision.ranked,
+                                      expected_ranked_variants)
+        assert calculated_decision.best == expected_best
+
+    # TODO test with tuple variants
+    def test_decide_valid_model_tuple_variants_no_scores_not_ordered(self):
+        test_case_json_name = os.getenv('DECISION_CONTEXT_TEST_DECIDE_LISTS_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_NOT_ORDERED_JSON', None)
+        assert test_case_json_name is not None
+        self._generic_test_decide_valid_model_tuple_variants(test_case_json_name)
+
+    def test_decide_valid_model_tuple_variants_no_scores_ordered(self):
+        test_case_json_name = os.getenv(
+            'DECISION_CONTEXT_TEST_DECIDE_LISTS_VARIANTS_VALID_MODEL_VALID_GIVENS_NO_SCORES_ORDERED_JSON', None)
+        assert test_case_json_name is not None
+        self._generic_test_decide_valid_model_tuple_variants(test_case_json_name)
+
+    def test_decide_valid_model_tuple_variants_scores_not_ordered(self):
+        test_case_json_name = os.getenv(
+            'DECISION_CONTEXT_TEST_DECIDE_LISTS_VARIANTS_VALID_MODEL_VALID_GIVENS_SCORES_NOT_ORDERED_JSON', None)
+        assert test_case_json_name is not None
+        self._generic_test_decide_valid_model_tuple_variants(test_case_json_name)
+
     def test_decide_raises_for_variants_and_scores_different_length(self):
-        context = dc.DecisionContext(decision_model=self.test_decision_model_no_track_url, givens={})
+        context = dc.DecisionContext(decision_model=self.test_decision_model_no_track_url, context={})
         variants = [1, 2, 3]
         scores = [0.1, 0.2, 0.3, 0.4]
 
@@ -1535,7 +1752,7 @@ class TestDecisionContext(TestCase):
 
     def test_decide_raises_for_bad_ordered_type(self):
         model = dm.DecisionModel(model_name='dummy-model')
-        context = dc.DecisionContext(decision_model=self.test_decision_model_no_track_url, givens={})
+        context = dc.DecisionContext(decision_model=self.test_decision_model_no_track_url, context={})
         variants = [1, 2, 3]
 
         with raises(AssertionError) as aerr:
@@ -1551,7 +1768,7 @@ class TestDecisionContext(TestCase):
             context.decide(variants=variants, ordered=1.123)
 
     def test_decide_raises_for_bad_variants(self):
-        context = dc.DecisionContext(decision_model=self.test_decision_model_no_track_url, givens={})
+        context = dc.DecisionContext(decision_model=self.test_decision_model_no_track_url, context={})
 
         with raises(AssertionError) as aerr:
             variants = 1
@@ -1574,14 +1791,14 @@ class TestDecisionContext(TestCase):
             context.decide(variants=variants, ordered=None)
 
     def test_decide_with_ndarray_variants(self):
-        context = dc.DecisionContext(decision_model=self.test_decision_model_no_track_url, givens={})
+        context = dc.DecisionContext(decision_model=self.test_decision_model_no_track_url, context={})
         variants = np.array([1, 2, 3])
 
         decision = context.decide(variants=variants)
         np.testing.assert_array_equal(variants, decision.ranked)
 
     def test_decide_with_tuple_variants(self):
-        context = dc.DecisionContext(decision_model=self.test_decision_model_no_track_url, givens={})
+        context = dc.DecisionContext(decision_model=self.test_decision_model_no_track_url, context={})
         variants = (1, 2, 3)
 
         decision = context.decide(variants=variants)
@@ -1594,7 +1811,7 @@ class TestDecisionContext(TestCase):
             model.decide(variants=[1, 2, 3], scores=[1, 2, 3], ordered=True)
 
     def test_decide_input_variants_not_mutated_after_decision_creation_no_model(self):
-        context = dc.DecisionContext(decision_model=self.test_decision_model_no_track_url, givens={})
+        context = dc.DecisionContext(decision_model=self.test_decision_model_no_track_url, context={})
         variants = [1, 2, 3]
         expected_ranked_variants = list(reversed(variants))
         decision = context.decide(variants=variants, scores=[1, 2, 3])
@@ -1609,7 +1826,7 @@ class TestDecisionContext(TestCase):
 
         model.load(model_url=model_url)
 
-        context = dc.DecisionContext(decision_model=model, givens={})
+        context = dc.DecisionContext(decision_model=model, context={})
 
         variants = [{'text': 'lovely corgi'}, {'text': 'bad swan'}, {'text': 'fat hippo'}]
         np.random.seed(1)

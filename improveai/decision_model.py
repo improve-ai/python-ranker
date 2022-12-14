@@ -1,3 +1,4 @@
+from pathlib import Path
 import re
 import warnings
 
@@ -9,14 +10,21 @@ import improveai.decision_context as dc
 import improveai.decision_tracker as dt
 import improveai.givens_provider as gp
 from improveai.settings import DEBUG
-from improveai.utils.general_purpose_tools import constant, check_variants, \
-    get_variants_from_args, is_valid_ksuid, is_valid_variants_type, ALLOWED_VARIANT_TYPES
+from improveai.utils.general_purpose_tools import check_variants, \
+    get_variants_from_args, is_valid_ksuid, is_valid_variants_type, ALLOWED_VARIANT_COLLECTION_TYPES
 
 
 class DecisionModel:
 
     SUPPORTED_CALLS = ['score', 'rank', 'get', 'which_from', 'optimize']
+    """
+    Method calls supported by Improve model CLI
+    """
+
     MODEL_NAME_REGEXP = XGBChooser.MODEL_NAME_REGEXP
+    """
+    Model name regexp used to verify all model names (both user provided and cached in boosters)
+    """
 
     @property
     def model_name(self) -> str or None:
@@ -83,7 +91,6 @@ class DecisionModel:
 
     @track_url.setter
     def track_url(self, value: str or None):
-        # TODO make sure this is fully covered by tests
         self._track_url = value
 
         # cases:
@@ -164,8 +171,8 @@ class DecisionModel:
         is_valid_ksuid(value)
         self._last_decision_id = value
 
-    @constant
-    def TIEBREAKER_MULTIPLIER() -> float:
+    @property
+    def TIEBREAKER_MULTIPLIER(self) -> float:
         """
         Small value randomized and added to model's scores
 
@@ -222,7 +229,7 @@ class DecisionModel:
             assert re.search(DecisionModel.MODEL_NAME_REGEXP, model_name) is not None, \
                 f'Valid model name must pass regexpr: {DecisionModel.MODEL_NAME_REGEXP}'
 
-    def load(self, model_url: str):
+    def load(self, model_url: str or Path):
         """
         Synchronously loads XGBoost model from provided path, creates instance
         of DecisionModel and returns it
@@ -361,7 +368,7 @@ class DecisionModel:
 
         return scores.astype(np.float64)
 
-    def _rank(self, variants: list or np.ndarray, scores: list or np.ndarray) -> np.ndarray:
+    def _rank(self, variants: list or np.ndarray, scores: list or np.ndarray) -> list or np.ndarray:
         """
         Helper method to rank variants. Returns a numpy array with variants ranked from best to worst
 
@@ -374,7 +381,7 @@ class DecisionModel:
 
         Returns
         -------
-        np.ndarray
+        list or np.ndarray
             sorted variants
 
         """
@@ -385,9 +392,14 @@ class DecisionModel:
         assert len(variants) == len(scores)
 
         # convert variants to numpy array for faster sorting
-        variants_np = variants if isinstance(variants, np.ndarray) else np.array(variants)
+        best_to_worse_scores = np.argsort(scores)[::-1]
         # return descending sorted variants
-        return variants_np[np.argsort(scores)][::-1].tolist()
+        if isinstance(variants, np.ndarray):
+            return variants[best_to_worse_scores]
+        elif isinstance(variants, tuple):
+            return tuple(variants[i] for i in best_to_worse_scores)
+        else:
+            return [variants[i] for i in best_to_worse_scores]
 
     def rank(self, variants: list or np.ndarray) -> list:
         """
@@ -421,7 +433,6 @@ class DecisionModel:
 
         """
 
-        # assert givens is not None
         return dc.DecisionContext(decision_model=self, context=context)
 
     def which(self, *variants) -> tuple:
@@ -711,7 +722,6 @@ class DecisionModel:
 
     @staticmethod
     def full_factorial_variants(variant_map: dict):
-        # TODO add tests for full_factorial_variants
         """
         Creates full factorial from input variants map, i.e. for variants_map
         {'variants_0': ['01', '02'],
@@ -743,7 +753,7 @@ class DecisionModel:
         # make sure that each key stores not None value (variants == None is not allowed)
         assert all(vs is not None for vs in variant_map.values())
         # make sure that all collections in variant_map are not empty
-        assert all(len(vs) > 0 if type(vs) in ALLOWED_VARIANT_TYPES else True for vs in variant_map.values())
+        assert all(len(vs) > 0 if type(vs) in ALLOWED_VARIANT_COLLECTION_TYPES else True for vs in variant_map.values())
         # check if all entries in variants_map are lists or tuples or np.arrays
         variants_map_fixed = {
             variants_key: variants if is_valid_variants_type(variants) else [variants]

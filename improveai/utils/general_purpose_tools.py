@@ -4,31 +4,7 @@ import datetime
 from ksuid import Ksuid
 import numpy as np
 
-ALLOWED_VARIANT_TYPES = [list, tuple, np.ndarray]
-
-
-def constant(f) -> property:
-    """
-    Constant decorator raising error on attempt to set decorated value
-
-    Parameters
-    ----------
-    f: callable
-        decorated object
-
-    Returns
-    -------
-    property
-        constant property
-
-    """
-    def fset(self, value):
-        raise AttributeError
-
-    def fget(self):
-        return f()
-
-    return property(fget, fset)
+ALLOWED_VARIANT_COLLECTION_TYPES = [list, tuple, np.ndarray]
 
 
 def append_prefix_to_dict_keys(input_dict: dict, prfx: str) -> dict:
@@ -156,13 +132,13 @@ def check_variants(variants: list or tuple or np.ndarray) -> list or tuple or np
     """
     # following checks take only less than 0,001 ms
     assert variants is not None
-    assert type(variants) in ALLOWED_VARIANT_TYPES
+    assert type(variants) in ALLOWED_VARIANT_COLLECTION_TYPES
     # raise if variants are an empty list
     assert len(variants) > 0, '`variants` must not be an empty collection'
 
 
 def is_valid_variants_type(variants):
-    return type(variants) in ALLOWED_VARIANT_TYPES
+    return type(variants) in ALLOWED_VARIANT_COLLECTION_TYPES
 
 
 def get_variants_from_args(variants: list or tuple or np.ndarray) -> list or tuple or np.ndarray:

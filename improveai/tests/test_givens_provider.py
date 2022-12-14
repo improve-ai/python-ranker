@@ -30,11 +30,11 @@ class TestGivensProvider(TestCase):
         self.valid_test_givens = {'a': [1, 2, 3], 'b': {'c': 1, 'd': 'e'}}
 
     def test_givens_provider_none_givens(self):
-        givens = gp.GivensProvider().givens(for_model=self.test_decision_model, givens=None)
+        givens = gp.GivensProvider().givens(for_model=self.test_decision_model, context=None)
         assert givens is None
 
     def test_givens_provider_empty_givens(self):
-        givens = gp.GivensProvider().givens(for_model=self.test_decision_model, givens={})
+        givens = gp.GivensProvider().givens(for_model=self.test_decision_model, context={})
         assert givens == {}
 
     def test_givens_provider_no_givens(self):
@@ -42,7 +42,7 @@ class TestGivensProvider(TestCase):
         assert givens is None
 
     def test_givens_provider_good_givens(self):
-        givens = gp.GivensProvider().givens(for_model=self.test_decision_model, givens=self.valid_test_givens)
+        givens = gp.GivensProvider().givens(for_model=self.test_decision_model, context=self.valid_test_givens)
         assert givens == self.valid_test_givens
 
     def test_givens_provider_raises_for_bad_givens_types(self):
@@ -51,7 +51,7 @@ class TestGivensProvider(TestCase):
         bad_givens = ['abc', ['a', 'b', 'c'], ('a', 'b', 'c'), np.array(['a', 'b', 'c']), 1234, 1234.1234]
         for g in bad_givens:
             with raises(AssertionError) as aerr:
-                gp.GivensProvider().givens(for_model=self.test_decision_model, givens=g)
+                gp.GivensProvider().givens(for_model=self.test_decision_model, context=g)
                 assert str(aerr.value)
 
     def test_givens_provider_raises_for_bad_decision_model_types(self):

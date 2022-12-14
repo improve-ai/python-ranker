@@ -1,7 +1,7 @@
 #!/bin/bash
 PYPI_PACKAGE_NAME=${1:-'improveai'}
-MAJOR_VERSION=${2:-'7.0'}
-MINOR_VERSION=${3:-'0'}
+MAJOR_VERSION=${2:-'7.2'}
+MINOR_VERSION=${3:-'2'}
 
 echo "Building ${PYPI_PACKAGE_NAME} -> version ${MAJOR_VERSION}.${MINOR_VERSION}"
 # cleanup previous build

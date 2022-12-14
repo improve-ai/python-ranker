@@ -13,9 +13,9 @@ sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
 
 import improveai
-from improveai.feature_encoder import sprinkle, shrink, \
-    reverse_sprinkle, _get_previous_value, _is_object_json_serializable, \
-    _has_top_level_string_keys, encode, warn_about_array_encoding, FeatureEncoder
+# TODO test _encode
+from improveai.feature_encoder import sprinkle, FeatureEncoder
+# TODO what should be imported here ?
 import improveai.settings as improve_settings
 from improveai.utils.general_purpose_tools import read_jsonstring_from_file
 from improveai.tests.test_utils import convert_values_to_float32
@@ -87,8 +87,6 @@ class TestEncoder(TestCase):
         # self.noise = np.random.rand()
 
         self._set_feature_names()
-
-        improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING = False
 
     def _set_feature_names(self):
         b = xgb.Booster()
@@ -1261,28 +1259,6 @@ class TestEncoder(TestCase):
     #
     #     assert test_into_float32 == expected_output_float32
 
-    def test_reverse_sprinkle(self):
-
-        x, sprinkled_x, small_noise = \
-            self._get_sprinkled_value_and_noise()
-
-        unsprinkled_x = \
-            reverse_sprinkle(sprinkled_x=sprinkled_x, small_noise=small_noise)
-
-        assert unsprinkled_x == x
-
-    def test_get_previous_value(self):
-
-        x, sprinkled_x, small_noise = \
-            self._get_sprinkled_value_and_noise()
-
-        features = {'abc': sprinkled_x}
-
-        unsprinkled_x = _get_previous_value(
-            feature_name='abc', into=features, small_noise=small_noise)
-
-        assert unsprinkled_x == x
-
     def test_encode_feature_vector_raises_when_into_is_none(
             self, variant_key: str = 'variant', givens_key: str = 'givens',
             extra_features_key: str = 'extra_features',
@@ -1393,168 +1369,65 @@ class TestEncoder(TestCase):
             assert os.getenv("FEATURE_ENCODER_ENCODE_FEATURE_VECTOR_WRONG_TYPE_OF_EXTRA_FEATURES_TYPEERROR_MSG") \
                    in str(type_err.value)
 
-    def test_add_multiple_extra_features(self):
-
-        dummy_encoded_variants = [{'0': 1, '1': 1} for _ in range(3)]
-
-        dummy_extra_features = [{'3': 3} for _ in range(3)]
-        dummy_extra_features[1] = {}
-        dummy_extra_features[2] = None
-
-        fe = FeatureEncoder(model_seed=0)
-        fe.add_extra_features(
-            encoded_variants=dummy_encoded_variants,
-            extra_features=dummy_extra_features)
-
-        expected_result = [{'0': 1, '1': 1} for _ in range(3)]
-        expected_result[0] = {'0': 1, '1': 1, '3': 3}
-
-        assert expected_result == dummy_encoded_variants
-
-    def test_extra_features_raises(self):
-
-        dummy_variants_count = 3
-
-        dummy_encoded_variants_dict = {'0': 1, '1': 1}
-        dummy_encoded_variants_list = \
-            [dummy_encoded_variants_dict for _ in range(dummy_variants_count)]
-
-        dummy_extra_features_dict = {'3': 3}
-        dummy_extra_features_list = \
-            [dummy_extra_features_dict for _ in range(dummy_variants_count)]
-
-        fe = FeatureEncoder(model_seed=0)
-        with raises(TypeError) as terr:
-            fe.add_extra_features(
-                encoded_variants=dummy_encoded_variants_list,
-                extra_features=dummy_extra_features_dict)
-            assert terr.value
-
-        with raises(TypeError) as terr:
-            fe.add_extra_features(
-                encoded_variants=dummy_encoded_variants_dict,
-                extra_features=dummy_extra_features_list)
-            assert terr.value
-
-    def test_add_none_extra_features(self):
-
-        dummy_encoded_variants = [{'0': 1, '1': 1} for _ in range(3)]
-
-        dummy_extra_features = None
-
-        fe = FeatureEncoder(model_seed=0)
-        fe.add_extra_features(
-            encoded_variants=dummy_encoded_variants,
-            extra_features=dummy_extra_features)
-
-        expected_result = [{'0': 1, '1': 1} for _ in range(3)]
-
-        assert expected_result == dummy_encoded_variants
-
-    def test__is_object_json_serializable_valid_types(self):
-        valid_objects = \
-            [1, 1.123, True, False, 'abc', None, [1, 2, 3], {'1': 2, 3: '4'}, (1, 2, 3, 4)]
-        assert all(_is_object_json_serializable(object_) for object_ in valid_objects)
-
-    def test__is_object_json_serializable_raises_for_invalid_types(self):
-
-        # test for custom object
-        class CustomObject:
-            pass
-
-        # example types which are not JSON serializable
-        assert not _is_object_json_serializable(CustomObject())
-        assert not _is_object_json_serializable(np.array([1, 2, 3]))
-        assert not _is_object_json_serializable(object)
-
-    def test__has_top_level_string_keys_all_string_keys(self):
-        assert _has_top_level_string_keys({'a': 1, 'b': 2, 'c': {1: 2, 3: 4}})
-
-    def test__has_top_level_string_keys_raises_for_non_string_keys(self):
-
-        assert not _has_top_level_string_keys({1: 3, '2': 4})
-        assert not _has_top_level_string_keys({1.234: 3, '2': 4})
-        assert not _has_top_level_string_keys({True: 3, '2': 4})
-        assert not _has_top_level_string_keys({False: 3, '2': 4})
-        assert not _has_top_level_string_keys({None: 3, '2': 4})
-        assert not _has_top_level_string_keys({(1, 2, 3): 3, '2': 4})
-        assert not _has_top_level_string_keys({object: 3, '2': 4})
-
     def test_encode_valid_types(self):
+        fe = FeatureEncoder(
+            feature_names=['a', 'b', 'c'],
+            string_tables={'a': [], 'b': [], 'c': []},
+            model_seed=0)
         valid_objects = \
             [1, 1.123, True, False, 'abc', None, [1, 2, 3], {'1': 2, '3': '4'}, (1, 2, 3, 4)]
         for vo in valid_objects:
             # object_, seed, small_noise, features
-            encode(object_=vo, seed=7335560060985733464, small_noise=0.0, features={})
+            into = np.full((100,), np.nan, dtype=float)
+            fe._encode(obj=vo, path='a', into=into, noise_shift=0.0, noise_scale=1.0)
 
     def test_encode_raises_for_invalid_types(self):
+        # feature_names: list, string_tables: dict, model_seed: int
+        fe = FeatureEncoder(
+            feature_names=['a', 'b', 'c'],
+            string_tables={'a': [1, 2, 3, 4, 5],
+                           'b': [1, 2, 3, 4, 5],
+                           'c': [1, 2, 3, 4, 5]},
+            model_seed=0)
         # test for custom object
         class CustomObject:
             pass
 
         # example types which are not JSON serializable
-        with raises(AssertionError) as aerr:
-            encode(object_=CustomObject(), seed=7335560060985733464, small_noise=0.0, features={})
+        # obj: object, path: str, into: np.ndarray, noise_shift: float = 0.0, noise_scale: float = 1.0
+        with raises(ValueError) as aerr:
+            fe._encode(obj=CustomObject(), path='a', into=np.array([]), noise_shift=0.0, noise_scale=0.0)
 
-        with raises(AssertionError) as aerr:
-            encode(object_=np.array([1, 2, 3]), seed=7335560060985733464, small_noise=0.0, features={})
+        with raises(ValueError) as aerr:
+            fe._encode(obj=np.array([1, 2, 3]),  path='a', into=np.array([]), noise_shift=0.0, noise_scale=0.0)
 
-        with raises(AssertionError) as aerr:
-            encode(object_=object, seed=7335560060985733464, small_noise=0.0, features={})
+        with raises(ValueError) as aerr:
+            fe._encode(obj=object, path='a', into=np.array([]), noise_shift=0.0, noise_scale=0.0)
 
     def test_encode_raises_for_non_string_keys(self):
-        with raises(AssertionError) as aerr:
-            encode(object_={'a': 1, 'b': 2, 3: 3}, seed=7335560060985733464, small_noise=0.0, features={})
+        fe = FeatureEncoder(
+            feature_names=['a', 'b', 'c'],
+            string_tables={'a': [1, 2, 3, 4, 5],
+                           'b': [1, 2, 3, 4, 5],
+                           'c': [1, 2, 3, 4, 5]},
+            model_seed=0)
+        with raises(TypeError) as aerr:
+            fe._encode(obj={'a': 1, 'b': 2, 3: 3},  path='a', into=np.array([]), noise_shift=0.0, noise_scale=0.0)
 
-        with raises(AssertionError) as aerr:
-            encode(object_={'a': 1, 'b': 2, 3.3: 3}, seed=7335560060985733464, small_noise=0.0, features={})
+        with raises(TypeError) as aerr:
+            fe._encode(obj={'a': 1, 'b': 2, 3.3: 3},  path='a', into=np.array([]), noise_shift=0.0, noise_scale=0.0)
 
-        with raises(AssertionError) as aerr:
-            encode(object_={'a': 1, 'b': 2, True: 3}, seed=7335560060985733464, small_noise=0.0, features={})
+        with raises(TypeError) as aerr:
+            fe._encode(obj={'a': 1, 'b': 2, True: 3},  path='a', into=np.array([]), noise_shift=0.0, noise_scale=0.0)
 
-        with raises(AssertionError) as aerr:
-            encode(object_={'a': 1, 'b': 2, False: 3}, seed=7335560060985733464, small_noise=0.0, features={})
+        with raises(TypeError) as aerr:
+            fe._encode(obj={'a': 1, 'b': 2, False: 3},  path='a', into=np.array([]), noise_shift=0.0, noise_scale=0.0)
 
-        with raises(AssertionError) as aerr:
-            encode(object_={'a': 1, 'b': 2, None: 3}, seed=7335560060985733464, small_noise=0.0, features={})
+        with raises(TypeError) as aerr:
+            fe._encode(obj={'a': 1, 'b': 2, None: 3},  path='a', into=np.array([]), noise_shift=0.0, noise_scale=0.0)
 
-        with raises(AssertionError) as aerr:
-            encode(object_={'a': 1, 'b': 2, (1, 2, 3): 3}, seed=7335560060985733464, small_noise=0.0, features={})
+        with raises(TypeError) as aerr:
+            fe._encode(obj={'a': 1, 'b': 2, (1, 2, 3): 3},  path='a', into=np.array([]), noise_shift=0.0, noise_scale=0.0)
 
-        with raises(AssertionError) as aerr:
-            encode(object_={'a': 1, 'b': 2, 'c': {'1': 1, 2: 2}}, seed=7335560060985733464, small_noise=0.0, features={})
-
-    def test_warn_about_array_encoding_warns_for_list(self):
-        with warns(UserWarning) as uw:
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is False
-            warn_about_array_encoding([1, 2, 3, 4])
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is True
-            assert len(uw) >= 1
-
-    def test_warn_about_array_encoding_warns_for_tuple(self):
-        with warns(UserWarning) as uw:
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is False
-            warn_about_array_encoding((1, 2, 3, 4))
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is True
-            assert len(uw) >= 1
-
-    def test_warn_about_array_encoding_warns_for_ndarray(self):
-        with warns(UserWarning) as uw:
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is False
-            warn_about_array_encoding(np.array([1, 2, 3, 4]))
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is True
-            assert len(uw) >= 1
-
-    def test_warn_about_array_encoding_warns_only_once(self):
-        with warns(UserWarning) as uw:
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is False
-            warn_about_array_encoding(np.array([1, 2, 3, 4]))
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is True
-            assert len(uw) >= 1
-
-        with catch_warnings(record=True) as w:
-            simplefilter("always")
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is True
-            warn_about_array_encoding(np.array([1, 2, 3, 4]))
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is True
-            assert len(w) == 0
+        with raises(TypeError) as aerr:
+            fe._encode(obj={'a': 1, 'b': 2, 'c': {'1': 1, 2: 2}},  path='a', into=np.array([]), noise_shift=0.0, noise_scale=0.0)

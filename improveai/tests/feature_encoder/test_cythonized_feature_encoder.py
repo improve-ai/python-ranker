@@ -1291,28 +1291,6 @@ class TestEncoder(TestCase):
     #
     #     # assert test_into_float32 == expected_output
 
-    def test_reverse_sprinkle(self):
-
-        x, sprinkled_x, small_noise = \
-            self._get_sprinkled_value_and_noise()
-
-        unsprinkled_x = \
-            reverse_sprinkle(sprinkled_x=sprinkled_x, small_noise=small_noise)
-
-        assert unsprinkled_x == x
-
-    def test_get_previous_value(self):
-
-        x, sprinkled_x, small_noise = \
-            self._get_sprinkled_value_and_noise()
-
-        features = {'abc': sprinkled_x}
-
-        unsprinkled_x = _get_previous_value(
-            feature_name='abc', into=features, small_noise=small_noise)
-
-        assert unsprinkled_x == x
-
     def test_encode_feature_vector_raises_when_into_is_none(
             self, variant_key: str = 'variant', givens_key: str = 'givens',
             extra_features_key: str = 'extra_features',
@@ -1497,25 +1475,16 @@ class TestEncoder(TestCase):
         assert not cfe._is_object_json_serializable(np.array([1, 2, 3]))
         assert not cfe._is_object_json_serializable(object)
 
-    def test__has_top_level_string_keys_all_string_keys(self):
-        assert cfe._has_top_level_string_keys({'a': 1, 'b': 2, 'c': {1: 2, 3: 4}})
-
-    def test__has_top_level_string_keys_raises_for_non_string_keys(self):
-
-        assert not cfe._has_top_level_string_keys({1: 3, '2': 4})
-        assert not cfe._has_top_level_string_keys({1.234: 3, '2': 4})
-        assert not cfe._has_top_level_string_keys({True: 3, '2': 4})
-        assert not cfe._has_top_level_string_keys({False: 3, '2': 4})
-        assert not cfe._has_top_level_string_keys({None: 3, '2': 4})
-        assert not cfe._has_top_level_string_keys({(1, 2, 3): 3, '2': 4})
-        assert not cfe._has_top_level_string_keys({object: 3, '2': 4})
-
     def test_encode_valid_types(self):
+        fe = FeatureEncoder(feature_names=['a', 'b', 'c'],
+                            string_tables={'dummy': 'string', 'table': 1},
+                            model_seed=0)
         valid_objects = \
             [1, 1.123, True, False, 'abc', None, [1, 2, 3], {'1': 2, '3': '4'}, (1, 2, 3, 4)]
         for vo in valid_objects:
             # object_, seed, small_noise, features
-            cfe.encode(object_=vo, seed=7335560060985733464, small_noise=0.0, features={})
+            into = np.full((10,), np.nan, dtype=float)
+            fe._encode(obj=vo, path='a', into=into, noise_shift=0.0, noise_scale=1.0)
 
     def test_encode_raises_for_invalid_types(self):
         # test for custom object
@@ -1553,38 +1522,3 @@ class TestEncoder(TestCase):
 
         with raises(AssertionError) as aerr:
             cfe.encode(object_={'a': 1, 'b': 2, 'c': {'1': 1, 2: 2}}, seed=7335560060985733464, small_noise=0.0, features={})
-
-    def test_warn_about_array_encoding_warns_for_list(self):
-        with warns(UserWarning) as uw:
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is False
-            cfe.warn_about_array_encoding([1, 2, 3, 4])
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is True
-            assert len(uw) >= 1
-
-    def test_warn_about_array_encoding_warns_for_tuple(self):
-        with warns(UserWarning) as uw:
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is False
-            cfe.warn_about_array_encoding((1, 2, 3, 4))
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is True
-            assert len(uw) >= 1
-
-    def test_warn_about_array_encoding_warns_for_ndarray(self):
-        with warns(UserWarning) as uw:
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is False
-            cfe.warn_about_array_encoding(np.array([1, 2, 3, 4]))
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is True
-            assert len(uw) >= 1
-
-    def test_warn_about_array_encoding_warns_only_once(self):
-        with warns(UserWarning) as uw:
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is False
-            cfe.warn_about_array_encoding(np.array([1, 2, 3, 4]))
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is True
-            assert len(uw) >= 1
-
-        with catch_warnings(record=True) as w:
-            simplefilter("always")
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is True
-            cfe.warn_about_array_encoding(np.array([1, 2, 3, 4]))
-            assert improveai.feature_encoder.WARNED_ABOUT_ARRAY_ENCODING is True
-            assert len(w) == 0
