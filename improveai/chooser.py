@@ -426,13 +426,14 @@ class XGBChooser:
         if self.VERSION_METADATA_KEY in model_metadata.keys():
             improveai_version = model_metadata[self.VERSION_METADATA_KEY]
 
-            print('### improveai_version ###')
-            print(improveai_version)
-
-            assert improveai_version is not None and isinstance(improveai_version, str)
+            if improveai_version is None or not isinstance(improveai_version, str):
+                raise IOError(f'Improve AI version stored in metadata ({improveai_version}) is either None or not a string')
             # major version is the first chunk of version string
             improveai_major_version = int(improveai_version.split('.')[0])
-            assert improveai_major_version == self.IMPROVE_AI_ALLOWED_MAJOR_VERSION
+
+            if improveai_major_version != self.IMPROVE_AI_ALLOWED_MAJOR_VERSION:
+                raise IOError(f'Attempting to load model from unsupported Improve AI version: {improveai_major_version}.'
+                              f' Currently supported Improve AI major version is: {self.IMPROVE_AI_ALLOWED_MAJOR_VERSION}')
         return improveai_major_version
 
     def _get_model_metadata(self) -> dict:
