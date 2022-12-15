@@ -3,7 +3,7 @@ import improveai.decision_model as dm
 
 class GivensProvider:
 
-    def givens(self, for_model, context = None) -> tuple:
+    def givens(self, for_model, context=None) -> tuple:
         """
         Provides givens for input `for_model`. Input `context` are included in
         returned value
@@ -22,4 +22,4 @@ class GivensProvider:
 
         """
         assert isinstance(for_model, dm.DecisionModel)
-        return (context)
+        return context

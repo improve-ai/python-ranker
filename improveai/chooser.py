@@ -1,4 +1,3 @@
-from collections.abc import Iterable
 from copy import deepcopy
 import json
 import numpy as np
@@ -11,7 +10,6 @@ from xgboost.core import XGBoostError
 
 from improveai.feature_encoder import FeatureEncoder
 from improveai.settings import CYTHON_BACKEND_AVAILABLE
-from improveai.utils.choosers_feature_encoding_tools import encoded_variants_to_np
 from improveai.utils.gzip_tools import check_and_get_unzipped_model
 from improveai.utils.url_tools import is_path_http_addr, get_model_bytes_from_url
 
@@ -19,29 +17,15 @@ from improveai.utils.url_tools import is_path_http_addr, get_model_bytes_from_ur
 if CYTHON_BACKEND_AVAILABLE:
     from improveai.cythonized_feature_encoding import cfe, cfeu
     FastFeatureEncoder = cfe.FeatureEncoder
-    fast_encoded_variants_to_np = cfeu.encoded_variants_to_np
-    fast_encode_variants_single_givens = cfeu.encode_variants_single_givens
+    # fast_encoded_variants_to_np = cfeu.encoded_variants_to_np
+    # fast_encode_variants_single_givens = cfeu.encode_variants_single_givens
+    fast_encode_variants_to_matrix = cfeu.encode_variants_to_matrix
 else:
     FastFeatureEncoder = FeatureEncoder
 
-MODEL_NAME_METADATA_KEY = 'ai.improve.model'
-FEATURE_NAMES_METADATA_KEY = 'ai.improve.features'
-STRING_TABLES_METADATA_KEY = 'ai.improve.string_tables'
-MODEL_SEED_METADATA_KEY = 'ai.improve.seed'
-CREATED_AT_METADATA_KEY = 'ai.improve.created_at'
-VERSION_METADATA_KEY = 'ai.improve.version'
 
 USER_DEFINED_METADATA_KEY = 'user_defined_metadata'
-MLMODEL_REGRESSOR_MODE = 'regressor'
-
-# xgb_metadata = {
-#     MODEL_NAME_METADATA_KEY: model_name,
-#     FEATURE_NAMES_METADATA_KEY: feature_names,
-#     STRING_TABLES_METADATA_KEY: string_tables,
-#     MODEL_SEED_METADATA_KEY: model_seed,
-#     CREATED_AT_METADATA_KEY: created_at,
-#     VERSION_METADATA_KEY: VERSION
-# }
+FEATURE_NAMES_METADATA_KEY = 'ai.improve.features'
 
 
 class XGBChooser:
@@ -233,7 +217,7 @@ class XGBChooser:
             'ai.improve.features'
 
         """
-        return 'ai.improve.features'
+        return FEATURE_NAMES_METADATA_KEY
 
     @property
     def STRING_TABLES_METADATA_KEY(self):
@@ -324,7 +308,7 @@ class XGBChooser:
             'user_defined_metadata'
 
         """
-        return 'user_defined_metadata'
+        return USER_DEFINED_METADATA_KEY
 
     @property
     def REQUIRED_METADATA_KEYS(self):
@@ -420,9 +404,26 @@ class XGBChooser:
             self.feature_encoder = FastFeatureEncoder(
                 feature_names=self.feature_names, string_tables=self.string_tables, model_seed=self.model_seed)
         else:
-            # feature_names: list, string_tables: dict, model_seed: int
             self.feature_encoder = FeatureEncoder(
                 feature_names=self.feature_names, string_tables=self.string_tables, model_seed=self.model_seed)
+
+    def _get_noise(self):
+        if self.imposed_noise is None:
+            noise = np.random.rand()
+        else:
+            noise = self.imposed_noise
+
+        return noise
+
+    def encode_variants_to_matrix(
+            self, variants: list or tuple or np.ndarray, givens: dict or None, noise: float = 0.0):
+        into_matrix = np.full((len(variants), len(self.feature_encoder.feature_indexes)), np.nan)
+
+        for variant, into_row in zip(variants, into_matrix):
+            # variant: object, givens: object, extra_features: dict, into: np.ndarray, noise: float
+            self.feature_encoder.encode_feature_vector(
+                variant=variant, givens=givens, extra_features=None, into=into_row, noise=noise)
+        return into_matrix
 
     def score(self, variants: list or tuple or np.ndarray, givens: dict or None, **kwargs) -> np.ndarray:
         """
@@ -443,54 +444,16 @@ class XGBChooser:
             2D numpy array which contains (variant, score) pair in each row
         """
 
-        encoded_variants = \
+        encoded_variants_matrix = \
             self.encode_variants_single_givens(variants=variants, givens=givens)
-
-        encoded_variants_to_np_method = \
-            fast_encoded_variants_to_np if CYTHON_BACKEND_AVAILABLE \
-            else encoded_variants_to_np
-
-        missings_filled_v = \
-            encoded_variants_to_np_method(
-                encoded_variants=encoded_variants,
-                feature_names=self.feature_names)
-
-        if CYTHON_BACKEND_AVAILABLE:
-            missings_filled_v = np.asarray(missings_filled_v)
 
         scores = \
             self.model.predict(
                 DMatrix(
-                    missings_filled_v, feature_names=self.feature_names))\
+                    encoded_variants_matrix, feature_names=self.feature_names))\
             .astype('float64')
 
         return scores
-
-    def fill_missing_features(self, encoded_variants):
-        """
-        Fills missing features in encoded variants and packs them into 2D numpy array
-
-        Parameters
-        ----------
-        encoded_variants: list
-            a list of encoded variants (dicts)
-
-        Returns
-        -------
-        np.ndarray
-            2D numpy array with all features for xgb model
-
-        """
-        encoded_variants_to_np_method = \
-            fast_encoded_variants_to_np if CYTHON_BACKEND_AVAILABLE else encoded_variants_to_np
-
-        features_matrix = encoded_variants_to_np_method(
-            encoded_variants=encoded_variants, feature_names=self.feature_names)
-
-        if CYTHON_BACKEND_AVAILABLE:
-            features_matrix = np.asarray(features_matrix)
-
-        return features_matrix
 
     def calculate_predictions(self, features_matrix: np.ndarray):
         """
@@ -520,7 +483,7 @@ class XGBChooser:
         return scores
 
     def encode_variants_single_givens(
-            self, variants: list or tuple or np.ndarray, givens: dict or None) -> Iterable:
+            self, variants: list or tuple or np.ndarray, givens: dict or None) -> np.ndarray:
         """
         Implemented as a XGBChooser helper method
         Cythonized loop over provided variants and a single givens dict.
@@ -540,38 +503,14 @@ class XGBChooser:
         """
 
         if not (isinstance(givens, dict) or givens is None or givens is {}):
-            raise TypeError(
-                'Unsupported givens` type: {}'.format(type(givens)))
-
-        if self.imposed_noise is None:
-            noise = np.random.rand()
-        else:
-            noise = self.imposed_noise
+            raise TypeError('Unsupported givens` type: {}'.format(type(givens)))
 
         if CYTHON_BACKEND_AVAILABLE:
-            if isinstance(variants, list):
-                used_variants = variants
-            elif isinstance(variants, tuple) or isinstance(variants, np.ndarray):
-                used_variants = list(variants)
-            else:
-                raise TypeError(
-                    'Variants are of a wrong type: {}'.format(type(variants)))
-
-            return fast_encode_variants_single_givens(
-                variants=used_variants, givens=givens, noise=noise,
-                variants_encoder=self.feature_encoder.encode_variant,
-                givens_encoder=self.feature_encoder.encode_givens)
+            return \
+                np.asarray(fast_encode_variants_to_matrix(
+                    variants=variants, givens=givens, feature_encoder=self.feature_encoder, noise=self._get_noise()))
         else:
-            encoded_variants = np.empty(len(variants), dtype=object)
-
-            encoded_givens = self.feature_encoder.encode_givens(givens=givens, noise=noise)
-
-            encoded_variants[:] = [
-                self.feature_encoder.encode_variant(
-                    variant=variant, noise=noise, into=deepcopy(encoded_givens))
-                for variant in variants]
-
-            return encoded_variants
+            return self.encode_variants_to_matrix(variants=variants, givens=givens, noise=self._get_noise())
 
     @staticmethod
     def get_model_src(model_src: str or bytes) -> str or bytes:
@@ -637,7 +576,7 @@ class XGBChooser:
         if self.USER_DEFINED_METADATA_KEY not in self.model.attributes().keys():
             raise IOError(f'Improve AI booster has no: {self.USER_DEFINED_METADATA_KEY} attribute')
 
-        user_defined_metadata_str = self.model.attr(USER_DEFINED_METADATA_KEY)
+        user_defined_metadata_str = self.model.attr(self.USER_DEFINED_METADATA_KEY)
         user_defined_metadata = json.loads(user_defined_metadata_str)
 
         if not user_defined_metadata:

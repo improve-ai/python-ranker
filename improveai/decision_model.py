@@ -350,14 +350,12 @@ class DecisionModel:
             return DecisionModel._generate_descending_gaussians(count=len(variants))
 
         # encode variants with single givens
-        encoded_variants = \
+        encoded_variants_matrix = \
             self.chooser.encode_variants_single_givens(variants=variants, givens=givens)
-        # fill missing features and create numpy matrix for xgboost to predict on
-        features_matrix = self.chooser.fill_missing_features(encoded_variants=encoded_variants)
 
         try:
             # calculate predictions
-            scores = self.chooser.calculate_predictions(features_matrix=features_matrix) + \
+            scores = self.chooser.calculate_predictions(features_matrix=encoded_variants_matrix) + \
                      np.array(np.random.rand(len(variants)), dtype='float64') * \
                      self.TIEBREAKER_MULTIPLIER
         except Exception as exc:

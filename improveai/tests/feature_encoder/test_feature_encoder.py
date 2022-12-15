@@ -12,7 +12,6 @@ import xgboost as xgb
 sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
 
-import improveai
 from improveai.chooser import USER_DEFINED_METADATA_KEY, FEATURE_NAMES_METADATA_KEY
 # TODO test _encode
 from improveai.feature_encoder import sprinkle, FeatureEncoder

@@ -1402,38 +1402,53 @@ class TestEncoder(TestCase):
             fe._encode(obj=vo, path='a', into=into, noise_shift=0.0, noise_scale=1.0)
 
     def test_encode_raises_for_invalid_types(self):
+        # feature_names: list, string_tables: dict, model_seed: int
+        fe = FeatureEncoder(
+            feature_names=['a', 'b', 'c'],
+            string_tables={'a': [1, 2, 3, 4, 5],
+                           'b': [1, 2, 3, 4, 5],
+                           'c': [1, 2, 3, 4, 5]},
+            model_seed=0)
         # test for custom object
         class CustomObject:
             pass
 
         # example types which are not JSON serializable
         with raises(AssertionError) as aerr:
-            cfe.encode(object_=CustomObject(), seed=7335560060985733464, small_noise=0.0, features={})
+            fe._encode(object_=CustomObject(), seed=7335560060985733464, small_noise=0.0, features={})
 
         with raises(AssertionError) as aerr:
-            cfe.encode(object_=np.array([1, 2, 3]), seed=7335560060985733464, small_noise=0.0, features={})
+            fe._encode(object_=np.array([1, 2, 3]), seed=7335560060985733464, small_noise=0.0, features={})
 
         with raises(AssertionError) as aerr:
-            cfe.encode(object_=object, seed=7335560060985733464, small_noise=0.0, features={})
+            fe._encode(object_=object, seed=7335560060985733464, small_noise=0.0, features={})
 
     def test_encode_raises_for_non_string_keys(self):
-        with raises(AssertionError) as aerr:
-            cfe.encode(object_={'a': 1, 'b': 2, 3: 3}, seed=7335560060985733464, small_noise=0.0, features={})
+        # feature_names: list, string_tables: dict, model_seed: int
+        fe = FeatureEncoder(
+            feature_names=['a', 'b', 'c'],
+            string_tables={'a': [1, 2, 3, 4, 5],
+                           'b': [1, 2, 3, 4, 5],
+                           'c': [1, 2, 3, 4, 5]},
+            model_seed=0)
 
         with raises(AssertionError) as aerr:
-            cfe.encode(object_={'a': 1, 'b': 2, 3.3: 3}, seed=7335560060985733464, small_noise=0.0, features={})
+            fe._encode(object_={'a': 1, 'b': 2, 3: 3}, seed=7335560060985733464, small_noise=0.0, features={})
 
         with raises(AssertionError) as aerr:
-            cfe.encode(object_={'a': 1, 'b': 2, True: 3}, seed=7335560060985733464, small_noise=0.0, features={})
+            fe._encode(object_={'a': 1, 'b': 2, 3.3: 3}, seed=7335560060985733464, small_noise=0.0, features={})
 
         with raises(AssertionError) as aerr:
-            cfe.encode(object_={'a': 1, 'b': 2, False: 3}, seed=7335560060985733464, small_noise=0.0, features={})
+            fe._encode(object_={'a': 1, 'b': 2, True: 3}, seed=7335560060985733464, small_noise=0.0, features={})
 
         with raises(AssertionError) as aerr:
-            cfe.encode(object_={'a': 1, 'b': 2, None: 3}, seed=7335560060985733464, small_noise=0.0, features={})
+            fe._encode(object_={'a': 1, 'b': 2, False: 3}, seed=7335560060985733464, small_noise=0.0, features={})
 
         with raises(AssertionError) as aerr:
-            cfe.encode(object_={'a': 1, 'b': 2, (1, 2, 3): 3}, seed=7335560060985733464, small_noise=0.0, features={})
+            fe._encode(object_={'a': 1, 'b': 2, None: 3}, seed=7335560060985733464, small_noise=0.0, features={})
 
         with raises(AssertionError) as aerr:
-            cfe.encode(object_={'a': 1, 'b': 2, 'c': {'1': 1, 2: 2}}, seed=7335560060985733464, small_noise=0.0, features={})
+            fe._encode(object_={'a': 1, 'b': 2, (1, 2, 3): 3}, seed=7335560060985733464, small_noise=0.0, features={})
+
+        with raises(AssertionError) as aerr:
+            fe._encode(object_={'a': 1, 'b': 2, 'c': {'1': 1, 2: 2}}, seed=7335560060985733464, small_noise=0.0, features={})

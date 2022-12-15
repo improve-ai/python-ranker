@@ -56,7 +56,7 @@ class DecisionContext:
         ----------
         decision_model: DecisionModel
             decision model for this DecisionContext
-        givens: dict
+        context: dict
             givens for this DecisionContext
 
         """

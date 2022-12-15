@@ -705,7 +705,8 @@ class TestDecision(TestCase):
 
         with raises(AssertionError) as aerr:
             np.random.seed(1)
-            decision = self.decision_model_no_track_url.choose_from(variants=variants, scores=None)
+            decision = self.decision_model_no_track_url\
+                .decide(variants=variants, scores=None)
             decision.get()
 
     def test_consistent_encoding(self):

@@ -13,13 +13,6 @@ from improveai.feature_encoder import VARIANT_FEATURE_KEY, GIVENS_FEATURE_KEY
 
 cdef object xxh3 = xxhash.xxh3_64_intdigest
 
-import improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils as cfeu
-
-
-encoded_variant_into_np_row = cfeu.encoded_variant_into_np_row
-encode_variants_multiple_givens = cfeu.encode_variants_multiple_givens
-encoded_variants_to_np = cfeu.encoded_variants_to_np
-
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -43,10 +36,10 @@ cpdef unsigned long long get_mask(list string_table):
 
 cdef class StringTable:
 
-    cdef unsigned long long model_seed
-    cdef unsigned long mask
-    cdef double miss_width
-    cdef dict value_table
+    cdef public unsigned long long model_seed
+    cdef public unsigned long mask
+    cdef public double miss_width
+    cdef public dict value_table
 
 
     def __init__(self, list string_table, unsigned long long model_seed):
@@ -107,8 +100,8 @@ cdef class FeatureEncoder:
     Encodes JSON encodable objects into float vectors
     """
 
-    cdef dict feature_indexes
-    cdef list string_tables
+    cdef public dict feature_indexes
+    cdef public list string_tables
 
     def __init__(self, list feature_names, dict string_tables, long long model_seed):
         """
@@ -232,15 +225,15 @@ cdef class FeatureEncoder:
         None
         """
 
-        cdef unsigned long long feature_index
+        cdef object feature_index
         cdef StringTable string_table
-        # TODO this might not pass so the object type might be needed
-        # cdef object string_table
 
         if isinstance(obj, (int, float)):  # bool is an instanceof int
             if isnan(obj):  # nan is treated as missing feature, return
                 return
 
+            # TODO feature_index might be of an int type but .get() returns None
+            #  if path is not found in self.feature_indexes
             feature_index = self.feature_indexes.get(path)
             if feature_index is None:
                 return

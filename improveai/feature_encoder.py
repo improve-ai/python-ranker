@@ -1,5 +1,3 @@
-import math
-
 import numpy as np
 import xxhash
 
@@ -48,19 +46,15 @@ class FeatureEncoder:
         except KeyError as exc:
             raise ValueError("Bad model metadata") from exc
 
-
     def encode_variant(self, variant, into: np.ndarray, noise_shift: float = 0.0, noise_scale: float = 1.0):
         self._encode(variant, path=VARIANT_FEATURE_KEY, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
-
 
     def encode_givens(self, givens, into: np.ndarray, noise_shift: float = 0.0, noise_scale: float = 1.0):
         self._encode(givens, path=GIVENS_FEATURE_KEY, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
 
-
     def encode_extra_features(self, extra_features: dict, into: np.ndarray, noise_shift: float = 0.0, noise_scale: float = 1.0):
         for key, value in extra_features.items():
             self._encode(obj=value, path=key, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
-
 
     def encode_feature_vector(
             self, variant: object, givens: object,
@@ -99,7 +93,6 @@ class FeatureEncoder:
         if extra_features:
             self.encode_extra_features(extra_features, into, noise_shift, noise_scale)
 
-
     def _encode(self, obj: object, path: str, into: np.ndarray, noise_shift: float = 0.0, noise_scale: float = 1.0):
         """
         Encodes a JSON serializable object to a float vector
@@ -126,7 +119,7 @@ class FeatureEncoder:
         """
 
         if isinstance(obj, (int, float)):  # bool is an instanceof int
-            if math.isnan(obj):  # nan is treated as missing feature, return
+            if np.isnan(obj):  # nan is treated as missing feature, return
                 return
 
             feature_index = self.feature_indexes.get(path)
@@ -196,7 +189,6 @@ class StringTable:
             # a single entry gets a value of 1.0
             self.value_table[string_hash] = 1.0 if max_position == 0 else scale(index / max_position)
 
-
     def encode(self, string):
         string_hash = xxh3(string, seed=self.model_seed)
         value = self.value_table.get(string_hash & self.mask)
@@ -204,7 +196,6 @@ class StringTable:
             return value
 
         return self.encode_miss(string_hash)
-
 
     def encode_miss(self, string_hash):
         # hash to float in range [-miss_width/2, miss_width/2]
@@ -227,5 +218,5 @@ def get_mask(string_table):
         return 0
 
     # find the most significant bit in the table and create a mask
-    return (1 << int(math.log2(max_value) + 1)) - 1
+    return (1 << int(np.log2(max_value) + 1)) - 1
         
