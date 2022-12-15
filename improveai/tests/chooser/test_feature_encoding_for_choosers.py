@@ -166,7 +166,7 @@ class TestChooserFeatureEncoding(TestCase):
 
         missings_filled_array_float64 = encoded_variants_to_np(
             encoded_variants=encoded_variants,
-            feature_names=self.xgb_chooser.model_feature_names)
+            feature_names=self.xgb_chooser.feature_names)
 
         missings_filled_array_float32 = \
             convert_values_to_float32(val=missings_filled_array_float64)
@@ -203,7 +203,7 @@ class TestChooserFeatureEncoding(TestCase):
 
         missings_filled_array_float64 = encoded_variants_to_np(
             encoded_variants=encoded_variants,
-            feature_names=self.xgb_chooser.model_feature_names)
+            feature_names=self.xgb_chooser.feature_names)
 
         missings_filled_array_float32 = \
             convert_values_to_float32(val=missings_filled_array_float64)
@@ -246,7 +246,7 @@ class TestChooserFeatureEncoding(TestCase):
 
         missings_filled_array_float64 = encoded_variants_to_np(
             encoded_variants=encoded_variants,
-            feature_names=self.xgb_chooser.model_feature_names)
+            feature_names=self.xgb_chooser.feature_names)
 
         improve_settings.CYTHON_BACKEND_AVAILABLE = orig_use_cython_backend
 

@@ -1,6 +1,6 @@
 {
     "test_case": {
-      "model_filename": "dummy_v6.xgb",
+      "model_filename": "appconfig.xgb",
       "variant_map": {
         "a": [1, 2, 3, 4, 5, 6],
         "b": ["a", "b", "c", "d", "e", "f"],
