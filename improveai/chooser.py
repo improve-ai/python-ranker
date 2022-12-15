@@ -1,4 +1,3 @@
-from copy import deepcopy
 import json
 import numpy as np
 from pathlib import Path
@@ -15,11 +14,9 @@ from improveai.utils.url_tools import is_path_http_addr, get_model_bytes_from_ur
 
 
 if CYTHON_BACKEND_AVAILABLE:
-    from improveai.cythonized_feature_encoding import cfe, cfeu
+    from improveai.cythonized_feature_encoding import cfe
     FastFeatureEncoder = cfe.FeatureEncoder
-    # fast_encoded_variants_to_np = cfeu.encoded_variants_to_np
-    # fast_encode_variants_single_givens = cfeu.encode_variants_single_givens
-    fast_encode_variants_to_matrix = cfeu.encode_variants_to_matrix
+    fast_encode_variants_to_matrix = cfe.encode_variants_to_matrix
 else:
     FastFeatureEncoder = FeatureEncoder
 
