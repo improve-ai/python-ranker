@@ -13,6 +13,7 @@ sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
 
 import improveai
+from improveai.chooser import USER_DEFINED_METADATA_KEY, FEATURE_NAMES_METADATA_KEY
 # TODO test _encode
 from improveai.feature_encoder import sprinkle, FeatureEncoder
 # TODO what should be imported here ?
@@ -92,17 +93,8 @@ class TestEncoder(TestCase):
         b = xgb.Booster()
         b.load_model(os.getenv("DUMMY_MODEL_PATH"))
 
-        user_defined_metadata = json.loads(b.attr('user_defined_metadata'))[
-            'json']
-        self.feature_names = user_defined_metadata['feature_names']
-
-    def _get_sprinkled_value_and_noise(self):
-        x = 1.0
-        noise = 0.1
-        small_noise = shrink(noise=noise)
-
-        sprinkled_x = sprinkle(x, small_noise=small_noise)
-        return x, sprinkled_x, small_noise
+        user_defined_metadata = json.loads(b.attr(USER_DEFINED_METADATA_KEY))
+        self.feature_names = user_defined_metadata[FEATURE_NAMES_METADATA_KEY]
 
     def _get_test_data(
             self, path_to_test_json: str, method: str = 'readlines') -> object:

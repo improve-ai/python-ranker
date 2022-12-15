@@ -140,7 +140,7 @@ class XGBChooser:
         self._model_name = value
 
     @property
-    def model_feature_names(self) -> list:
+    def feature_names(self) -> list:
         """
         Feature names of this Improve AI model
 
@@ -152,9 +152,21 @@ class XGBChooser:
         """
         return self._model_feature_names
 
-    @model_feature_names.setter
-    def model_feature_names(self, new_val: list):
+    @feature_names.setter
+    def feature_names(self, new_val: list):
         self._model_feature_names = new_val
+
+    @property
+    def string_tables(self):
+        return self._string_tables
+
+    @string_tables.setter
+    def string_tables(self, value):
+        # make sure that value is a dict
+        assert isinstance(value, dict)
+        # make sure that this dict contains all list as values
+        assert all(isinstance(string_table, list) for string_table in value.values())
+        self._string_tables = value
 
     @property
     def current_noise(self):
@@ -283,10 +295,10 @@ class XGBChooser:
         Returns
         -------
         int
-            7
+            8
 
         """
-        return 7
+        return 8
 
     @property
     def VERSION_METADATA_KEY(self):
@@ -340,10 +352,11 @@ class XGBChooser:
         self.model_metadata = None
 
         self.feature_encoder = None
-        self.model_feature_names = np.empty(shape=(1,))
+        self.feature_names = np.empty(shape=(1,))
 
         self.model_seed = None
         self._model_name = None
+        self._string_tables = None
         self.current_noise = None
         self._imposed_noise = None
         self._improveai_major_version_from_metadata = None
@@ -398,69 +411,18 @@ class XGBChooser:
         model_metadata = self._get_model_metadata()
         self.model_seed = self._get_model_seed(model_metadata=model_metadata)
         self.model_name = self._get_model_name(model_metadata=model_metadata)
-        self.model_feature_names = self._get_model_feature_names(model_metadata=model_metadata)
+        self.feature_names = self._get_model_feature_names(model_metadata=model_metadata)
+        self.string_tables = self._get_string_tables(model_metadata=model_metadata)
         self.improveai_major_version_from_metadata = \
             self._get_improveai_major_version(model_metadata=model_metadata)
 
         if CYTHON_BACKEND_AVAILABLE:
-            self.feature_encoder = FastFeatureEncoder(model_seed=self.model_seed)
+            self.feature_encoder = FastFeatureEncoder(
+                feature_names=self.feature_names, string_tables=self.string_tables, model_seed=self.model_seed)
         else:
-            self.feature_encoder = FeatureEncoder(model_seed=self.model_seed)
-
-    def _get_improveai_major_version(self, model_metadata: dict) -> str or None:
-        """
-        Extract Improve AI version from model metadata and return it if it is valid / allowed
-
-        Parameters
-        ----------
-        model_metadata: dict
-            a dictionary containing model metadata
-
-        Returns
-        -------
-        str or None
-            major Improve AI version extracted from loaded improve model
-        """
-        improveai_major_version = None
-        if self.VERSION_METADATA_KEY in model_metadata.keys():
-            improveai_version = model_metadata[self.VERSION_METADATA_KEY]
-
-            if improveai_version is None or not isinstance(improveai_version, str):
-                raise IOError(f'Improve AI version stored in metadata ({improveai_version}) is either None or not a string')
-            # major version is the first chunk of version string
-            improveai_major_version = int(improveai_version.split('.')[0])
-
-            if improveai_major_version != self.IMPROVE_AI_ALLOWED_MAJOR_VERSION:
-                raise IOError(f'Attempting to load model from unsupported Improve AI version: {improveai_major_version}.'
-                              f' Currently supported Improve AI major version is: {self.IMPROVE_AI_ALLOWED_MAJOR_VERSION}')
-        return improveai_major_version
-
-    def _get_model_metadata(self) -> dict:
-        """
-        gets 'model metadata' from 'user defined metadata' of Improve AI model
-
-        Returns
-        -------
-        dict
-            dict with model metadata
-        """
-
-        if self.USER_DEFINED_METADATA_KEY not in self.model.attributes().keys():
-            raise IOError(f'Improve AI booster has no: {self.USER_DEFINED_METADATA_KEY} attribute')
-
-        user_defined_metadata_str = self.model.attr(USER_DEFINED_METADATA_KEY)
-        user_defined_metadata = json.loads(user_defined_metadata_str)
-
-        if not user_defined_metadata:
-            raise IOError('Model metadata is either None or empty')
-
-        loaded_metadata_keys = set(user_defined_metadata.keys())
-
-        for required_key in self.REQUIRED_METADATA_KEYS:
-            if required_key not in loaded_metadata_keys:
-                raise IOError(f'Improve AI booster`s metadata has no: {required_key} key')
-
-        return user_defined_metadata
+            # feature_names: list, string_tables: dict, model_seed: int
+            self.feature_encoder = FeatureEncoder(
+                feature_names=self.feature_names, string_tables=self.string_tables, model_seed=self.model_seed)
 
     def score(self, variants: list or tuple or np.ndarray, givens: dict or None, **kwargs) -> np.ndarray:
         """
@@ -491,7 +453,7 @@ class XGBChooser:
         missings_filled_v = \
             encoded_variants_to_np_method(
                 encoded_variants=encoded_variants,
-                feature_names=self.model_feature_names)
+                feature_names=self.feature_names)
 
         if CYTHON_BACKEND_AVAILABLE:
             missings_filled_v = np.asarray(missings_filled_v)
@@ -499,7 +461,7 @@ class XGBChooser:
         scores = \
             self.model.predict(
                 DMatrix(
-                    missings_filled_v, feature_names=self.model_feature_names))\
+                    missings_filled_v, feature_names=self.feature_names))\
             .astype('float64')
 
         return scores
@@ -523,7 +485,7 @@ class XGBChooser:
             fast_encoded_variants_to_np if CYTHON_BACKEND_AVAILABLE else encoded_variants_to_np
 
         features_matrix = encoded_variants_to_np_method(
-            encoded_variants=encoded_variants, feature_names=self.model_feature_names)
+            encoded_variants=encoded_variants, feature_names=self.feature_names)
 
         if CYTHON_BACKEND_AVAILABLE:
             features_matrix = np.asarray(features_matrix)
@@ -550,10 +512,10 @@ class XGBChooser:
         # make sure it is 2D array
         assert len(features_matrix.shape) == 2
         # make sure all features are present
-        assert len(self.model_feature_names) == features_matrix.shape[1]
+        assert len(self.feature_names) == features_matrix.shape[1]
         scores = \
             self.model.predict(
-                DMatrix(features_matrix, feature_names=self.model_feature_names)) \
+                DMatrix(features_matrix, feature_names=self.feature_names)) \
             .astype('float64')
         return scores
 
@@ -634,6 +596,61 @@ class XGBChooser:
         unzipped_model_src = check_and_get_unzipped_model(model_src=raw_model_src)
         return unzipped_model_src
 
+    def _get_improveai_major_version(self, model_metadata: dict) -> str or None:
+        """
+        Extract Improve AI version from model metadata and return it if it is valid / allowed
+
+        Parameters
+        ----------
+        model_metadata: dict
+            a dictionary containing model metadata
+
+        Returns
+        -------
+        str or None
+            major Improve AI version extracted from loaded improve model
+        """
+        improveai_major_version = None
+        if self.VERSION_METADATA_KEY in model_metadata.keys():
+            improveai_version = model_metadata[self.VERSION_METADATA_KEY]
+
+            if improveai_version is None or not isinstance(improveai_version, str):
+                raise IOError(f'Improve AI version stored in metadata ({improveai_version}) is either None or not a string')
+            # major version is the first chunk of version string
+            improveai_major_version = int(improveai_version.split('.')[0])
+
+            if improveai_major_version != self.IMPROVE_AI_ALLOWED_MAJOR_VERSION:
+                raise IOError(f'Attempting to load model from unsupported Improve AI version: {improveai_major_version}.'
+                              f' Currently supported Improve AI major version is: {self.IMPROVE_AI_ALLOWED_MAJOR_VERSION}')
+        return improveai_major_version
+
+    def _get_model_metadata(self) -> dict:
+        """
+        gets 'model metadata' from 'user defined metadata' of Improve AI model
+
+        Returns
+        -------
+        dict
+            dict with model metadata
+        """
+
+        if self.USER_DEFINED_METADATA_KEY not in self.model.attributes().keys():
+            raise IOError(f'Improve AI booster has no: {self.USER_DEFINED_METADATA_KEY} attribute')
+
+        user_defined_metadata_str = self.model.attr(USER_DEFINED_METADATA_KEY)
+        user_defined_metadata = json.loads(user_defined_metadata_str)
+
+        if not user_defined_metadata:
+            raise IOError('Model metadata is either None or empty')
+
+        loaded_metadata_keys = set(user_defined_metadata.keys())
+
+        for required_key in self.REQUIRED_METADATA_KEYS:
+            if required_key not in loaded_metadata_keys:
+                raise IOError(f'Improve AI booster`s metadata has no: {required_key} key')
+
+        return user_defined_metadata
+
     def _get_model_feature_names(self, model_metadata: dict) -> list:
         """
         Gets model feature names from model metadata
@@ -707,6 +724,16 @@ class XGBChooser:
             raise IOError(f'Wrong {MODEL_NAME_METADATA_KEY}: {model_name} (type: {type(model_name)}).')
 
         return model_name
+
+    def _get_string_tables(self, model_metadata: dict):
+        string_tables = model_metadata.get(self.STRING_TABLES_METADATA_KEY, None)
+        if not string_tables or not isinstance(string_tables, dict):
+            raise IOError('String tables can`t empty or None!')
+
+        # make sure that all values of `string_tables` are
+        if not all(isinstance(string_table, list) for string_table in string_tables.values()):
+            raise IOError('At least one of string tables is not a list')
+        return string_tables
 
     def sort(
             self, variants_w_scores: np.ndarray,

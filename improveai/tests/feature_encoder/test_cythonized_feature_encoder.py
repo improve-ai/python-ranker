@@ -17,13 +17,11 @@ import improveai.cythonized_feature_encoding.cythonized_feature_encoder as cfe
 
 FeatureEncoder = cfe.FeatureEncoder
 sprinkle = cfe.sprinkle
-shrink = cfe.shrink
-reverse_sprinkle = cfe.reverse_sprinkle
-_get_previous_value = cfe._get_previous_value
 
 # add_noise = cfe.add_noise
 
 
+from improveai.chooser import USER_DEFINED_METADATA_KEY, FEATURE_NAMES_METADATA_KEY
 import improveai.settings as improve_settings
 from improveai.utils.general_purpose_tools import read_jsonstring_from_file
 from improveai.tests.test_utils import convert_values_to_float32, assert_dicts_identical
@@ -101,17 +99,8 @@ class TestEncoder(TestCase):
         b = xgb.Booster()
         b.load_model(os.getenv("DUMMY_MODEL_PATH"))
 
-        user_defined_metadata = json.loads(b.attr('user_defined_metadata'))[
-            'json']
-        self.feature_names = user_defined_metadata['feature_names']
-
-    def _get_sprinkled_value_and_noise(self):
-        x = 1.0
-        noise = 0.1
-        small_noise = shrink(noise)
-
-        sprinkled_x = sprinkle(x, small_noise=small_noise)
-        return x, sprinkled_x, small_noise
+        user_defined_metadata = json.loads(b.attr(USER_DEFINED_METADATA_KEY))
+        self.feature_names = user_defined_metadata[FEATURE_NAMES_METADATA_KEY]
 
     def _get_test_data(
             self, path_to_test_json: str, method: str = 'readlines') -> object:
@@ -1400,80 +1389,6 @@ class TestEncoder(TestCase):
 
             assert os.getenv("FEATURE_ENCODER_ENCODE_FEATURE_VECTOR_WRONG_TYPE_OF_EXTRA_FEATURES_TYPEERROR_MSG") \
                    in str(type_err.value)
-
-    def test_add_multiple_extra_features(self):
-
-        dummy_encoded_variants = [{'0': 1, '1': 1} for _ in range(3)]
-
-        dummy_extra_features = [{'3': 3} for _ in range(3)]
-        dummy_extra_features[1] = {}
-        dummy_extra_features[2] = None
-
-        fe = FeatureEncoder(model_seed=0)
-        fe.add_extra_features(
-            encoded_variants=dummy_encoded_variants,
-            extra_features=dummy_extra_features)
-
-        expected_result = [{'0': 1, '1': 1} for _ in range(3)]
-        expected_result[0] = {'0': 1, '1': 1, '3': 3}
-
-        assert expected_result == dummy_encoded_variants
-
-    def test_extra_features_raises(self):
-
-        dummy_variants_count = 3
-
-        dummy_encoded_variants_dict = {'0': 1, '1': 1}
-        dummy_encoded_variants_list = \
-            [dummy_encoded_variants_dict for _ in range(dummy_variants_count)]
-
-        dummy_extra_features_dict = {'3': 3}
-        dummy_extra_features_list = \
-            [dummy_extra_features_dict for _ in range(dummy_variants_count)]
-
-        fe = FeatureEncoder(model_seed=0)
-        with raises(TypeError) as terr:
-            fe.add_extra_features(
-                encoded_variants=dummy_encoded_variants_list,
-                extra_features=dummy_extra_features_dict)
-            assert terr.value
-
-        with raises(TypeError) as terr:
-            fe.add_extra_features(
-                encoded_variants=dummy_encoded_variants_dict,
-                extra_features=dummy_extra_features_list)
-            assert terr.value
-
-    def test_add_none_extra_features(self):
-
-        dummy_encoded_variants = [{'0': 1, '1': 1} for _ in range(3)]
-
-        dummy_extra_features = None
-
-        fe = FeatureEncoder(model_seed=0)
-        fe.add_extra_features(
-            encoded_variants=dummy_encoded_variants,
-            extra_features=dummy_extra_features)
-
-        expected_result = [{'0': 1, '1': 1} for _ in range(3)]
-
-        assert expected_result == dummy_encoded_variants
-
-    def test__is_object_json_serializable_valid_types(self):
-        valid_objects = \
-            [1, 1.123, True, False, 'abc', None, [1, 2, 3], {'1': 2, 3: '4'}, (1, 2, 3, 4)]
-        assert all(cfe._is_object_json_serializable(object_) for object_ in valid_objects)
-
-    def test__is_object_json_serializable_raises_for_invalid_types(self):
-
-        # test for custom object
-        class CustomObject:
-            pass
-
-        # example types which are not JSON serializable
-        assert not cfe._is_object_json_serializable(CustomObject())
-        assert not cfe._is_object_json_serializable(np.array([1, 2, 3]))
-        assert not cfe._is_object_json_serializable(object)
 
     def test_encode_valid_types(self):
         fe = FeatureEncoder(feature_names=['a', 'b', 'c'],

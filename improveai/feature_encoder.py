@@ -192,24 +192,24 @@ class StringTable:
 
         self.value_table = {}
 
-        for index, hash in enumerate(reversed(string_table)):
+        for index, string_hash in enumerate(reversed(string_table)):
             # a single entry gets a value of 1.0
-            self.value_table[hash] = 1.0 if max_position == 0 else scale(index / max_position)
+            self.value_table[string_hash] = 1.0 if max_position == 0 else scale(index / max_position)
 
 
     def encode(self, string):
-        hash = xxh3(string, seed=self.model_seed)
-        value = self.value_table.get(hash & self.mask)
+        string_hash = xxh3(string, seed=self.model_seed)
+        value = self.value_table.get(string_hash & self.mask)
         if value is not None:
             return value
 
-        return self.encode_miss(hash)
+        return self.encode_miss(string_hash)
 
 
-    def encode_miss(self, hash):
+    def encode_miss(self, string_hash):
         # hash to float in range [-miss_width/2, miss_width/2]
         # 32 bit mask for JS portability
-        return scale((hash & 0xFFFFFFFF) * 2 ** -32, self.miss_width)
+        return scale((string_hash & 0xFFFFFFFF) * 2 ** -32, self.miss_width)
 
 
 def scale(val, width=2):

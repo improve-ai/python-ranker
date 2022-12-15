@@ -161,15 +161,3 @@ class Decision:
         self.decision_model.last_decision_id = self.id_
 
         return self.id_
-
-    def peek(self) -> object:
-        """
-        Returns best variant without tracking it
-
-        Returns
-        -------
-        object
-            best variant for this Decision
-
-        """
-        return self.best
