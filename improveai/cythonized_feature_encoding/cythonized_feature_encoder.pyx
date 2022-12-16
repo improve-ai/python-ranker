@@ -267,3 +267,17 @@ cdef class FeatureEncoder:
                 f'{obj} not JSON encodable. Must be string, int, float, bool, list, tuple, dict, or None')
 
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cpdef np.ndarray[double, ndim=2, mode='c'] encode_variants_to_matrix(
+        object variants, object givens, object feature_encoder, double noise=0.0):
+
+    cdef np.ndarray[double, ndim=2, mode='c'] into_matrix = \
+        np.full((len(variants), len(feature_encoder.feature_indexes)), np.nan)
+
+    for variant, into_row in zip(variants, into_matrix):
+        # variant: object, givens: object, extra_features: dict, into: np.ndarray, noise: float
+        feature_encoder.encode_feature_vector(
+            variant=variant, givens=givens, extra_features=None, into=into_row, noise=noise)
+
+    return into_matrix
