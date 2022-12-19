@@ -1,13 +1,12 @@
 {
     "test_case": {
-        "variant": -6.8119823565368776e-06
+        "variant": -1.6014893556020386e-43
     },
     "test_output": {
         "5e9f9c59": 0.0
     },
     "model_seed": 1,
-    "noise": 0.8928601514360016,
-    "variant_seed": 2675988294294598568,
-    "value_seed": 6818340268807889528,
-    "givens_seed": 12461487462738526788
+    "feature_names": ["v"],
+    "string_tables": {},
+    "noise": 0.8928601514360016
 }

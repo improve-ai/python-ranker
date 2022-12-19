@@ -52,13 +52,8 @@ class FeatureEncoder:
     def encode_givens(self, givens, into: np.ndarray, noise_shift: float = 0.0, noise_scale: float = 1.0):
         self._encode(givens, path=GIVENS_FEATURE_KEY, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
 
-    def encode_extra_features(self, extra_features: dict, into: np.ndarray, noise_shift: float = 0.0, noise_scale: float = 1.0):
-        for key, value in extra_features.items():
-            self._encode(obj=value, path=key, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
-
     def encode_feature_vector(
-            self, variant: object, givens: object,
-            extra_features: dict, into: np.ndarray, noise: float = 0.0):
+            self, variant: object, givens: object, into: np.ndarray, noise: float = 0.0):
         """
         Fully encodes provided variant and givens into a np.ndarray provided as `into` parameter.
         `into` must not be None
@@ -69,8 +64,6 @@ class FeatureEncoder:
             a JSON encodable object to be encoded
         givens: object
             a JSON encodable object to be encoded
-        extra_features: dict
-            additional features to be vectorized
         into: np.ndarray
             an array into which feature values will be added
         noise: float
@@ -90,9 +83,6 @@ class FeatureEncoder:
         if givens:
             self.encode_givens(givens, into, noise_shift, noise_scale)
 
-        if extra_features:
-            self.encode_extra_features(extra_features, into, noise_shift, noise_scale)
-
     def _encode(self, obj: object, path: str, into: np.ndarray, noise_shift: float = 0.0, noise_scale: float = 1.0):
         """
         Encodes a JSON serializable object to a float vector
@@ -106,12 +96,16 @@ class FeatureEncoder:
 
         Parameters
         ----------
-        object_: object
+        obj: object
             a JSON serializable object to be encoded to a flat key-value structure
-        seed: int
-            seed for xxhash3 to generate feature name
-        features: dict
-            a flat dict of {<feature name>: <feature value>, ...} pairs
+        path: str
+            JSON path of an encoded object (so far)
+        into: np.ndarray
+            a numpy array into which encoded value will be written
+        noise_shift: float
+            a noise shift
+        noise_scale: float
+            a noise scale
 
         Returns
         -------
@@ -140,11 +134,11 @@ class FeatureEncoder:
 
         elif isinstance(obj, dict):
             for key, value in obj.items():
-                self._encode(value, path + '.' + key, into)
+                self._encode(obj=value, path=path + '.' + key, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
             
         elif isinstance(obj, (list, tuple)):
             for index, item in enumerate(obj):
-                self._encode(item, path + '.' + str(index), into)
+                self._encode(obj=item, path=path + '.' + str(index), into=into, noise_shift=noise_shift, noise_scale=noise_scale)
 
         elif obj is None:
             pass

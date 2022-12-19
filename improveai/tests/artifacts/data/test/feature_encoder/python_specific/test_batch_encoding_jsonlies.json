@@ -29,7 +29,7 @@
                 "chars": 11,
                 "words": 2
             },
-            "reward": NaN,
+            "reward": null,
             "history_id": "49a82cf7",
             "message_id": "729904c4d2874a",
             "timestamp": "2021-02-07 21:33:23.403871232",
@@ -129,7 +129,7 @@
                 "chars": 14,
                 "words": 2
             },
-            "reward": NaN,
+            "reward": null,
             "history_id": "abd1c8b8",
             "message_id": "2956a0faa2434b",
             "timestamp": "2021-02-07 21:33:23.405177344"
@@ -358,8 +358,7 @@
   "c3abcfc3": 2.0000126}]
 ,
     "model_seed": 1,
-    "noise": 0.8928601514360016,
-    "variant_seed": 2675988294294598568,
-    "value_seed": 6818340268807889528,
-    "context_seed": 5164679660109946987
+    "feature_names": ["v"],
+    "string_tables": {},
+    "noise": 0.8928601514360016
 }

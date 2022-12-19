@@ -714,8 +714,20 @@ class TestDecision(TestCase):
         #  I'll simply test encoding method used by chooser
         chooser = self.decision_model_valid_track_url.chooser
 
-        variants = [{'a': [], 'b': '{} as str'.format(el)} for el in range(5)]
-        givens = {'g1': 1, 'g2': '2 as str', 'g3': [0, 1, 2]}
+        # variants = [{'a': [], 'b': '{} as str'.format(el)} for el in range(5)]
+        cool_names = ['lovely corgi', 'flawless urchin', 'astute myna', 'energetic tortoise', 'utopian gerbil']
+        variants = [None] * len(cool_names)
+
+        for cni, cn in enumerate(cool_names):
+            variants[cni] = {
+                'v.cool-name': cn,
+                'v.letter-0': cn[0],
+                'v.letter-1': cn[1],
+                'v.letter-2': cn[2],
+                'v.letter-3': cn[3],
+                'v.words': 2}
+
+        givens = {'g1': 0, 'g3': 3}
         # consecutive calls with identical seed should return identical encodings
         np.random.seed(0)
         encoded_variants_same_seed_0 = \

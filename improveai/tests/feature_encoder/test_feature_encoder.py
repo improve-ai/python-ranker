@@ -14,7 +14,7 @@ sys.path.append(
 
 from improveai.chooser import USER_DEFINED_METADATA_KEY, FEATURE_NAMES_METADATA_KEY
 # TODO test _encode
-from improveai.feature_encoder import sprinkle, FeatureEncoder
+from improveai.feature_encoder import sprinkle, get_noise_shift_scale, FeatureEncoder
 # TODO what should be imported here ?
 import improveai.settings as improve_settings
 from improveai.utils.general_purpose_tools import read_jsonstring_from_file
@@ -108,21 +108,60 @@ class TestEncoder(TestCase):
     def _set_model_properties_from_test_case(self, test_case: dict):
         # set model_seed
         self.encoder_seed = test_case.get("model_seed", None)
-
-        if self.encoder_seed is None:
-            raise ValueError("model_seed is missing from a test case")
+        assert self.encoder_seed is not None
 
         self.noise = test_case.get("noise", None)
+        assert self.noise is not None
 
-        if self.noise is None:
-            raise ValueError("noise is missing from a test case")
+        self.string_tables = test_case.get('string_tables', None)
+        assert self.string_tables is not None
 
-        self.feature_encoder = FeatureEncoder(model_seed=self.encoder_seed)
+        self.feature_names = test_case.get('feature_names', None)
+        assert self.feature_names is not None
+
+        self.string_tables = test_case.get('string_tables', None)
+        assert self.string_tables is not None
+
+        self.feature_encoder = FeatureEncoder(
+            feature_names=self.feature_names, string_tables=self.string_tables,
+            model_seed=self.encoder_seed)
+
+    def _get_encoded_arrays(
+            self, variant_input, givens_input):
+
+        encode_feature_vector_into_float64 = np.full((len(self.feature_names),), np.nan)
+
+        # check that encode_feature_vector returns desired output
+        self.feature_encoder.encode_feature_vector(
+            variant=variant_input, givens=givens_input,
+            into=encode_feature_vector_into_float64, noise=self.noise)
+
+        encode_feature_vector_into_float32 = \
+            convert_values_to_float32(encode_feature_vector_into_float64)
+
+        noise_shift, noise_scale = get_noise_shift_scale(self.noise)
+        # check that encode_variant returns desired output
+        manual_encode_into_float64 = np.full((len(self.feature_names),), np.nan)
+
+        # encode_variant
+        self.feature_encoder.encode_variant(
+            variant=variant_input, into=manual_encode_into_float64,
+            noise_shift=noise_shift, noise_scale=noise_scale)
+        # encode_givens
+        self.feature_encoder.encode_givens(
+            givens=givens_input, into=manual_encode_into_float64,
+            noise_shift=noise_shift, noise_scale=noise_scale)
+
+        manual_encode_into_float32 = \
+            convert_values_to_float32(manual_encode_into_float64)
+
+        return encode_feature_vector_into_float32, manual_encode_into_float32
 
     def _generic_test_encode_record_from_json_data(
             self, test_case_filename: str, input_data_key: str = 'test_case',
             variant_key: str = 'variant', givens_key: str = 'givens',
-            expected_output_data_key: str = 'test_output'):
+            expected_output_data_key: str = 'test_output',
+            big_float_case: bool = False):
 
         test_case_path = os.sep.join(
             [self.v6_test_suite_data_directory, test_case_filename])
@@ -132,33 +171,31 @@ class TestEncoder(TestCase):
         self._set_model_properties_from_test_case(test_case=test_case)
 
         test_input = test_case.get(input_data_key, None)
-
-        if test_input is None:
-            raise ValueError('Test input is empty')
+        assert test_input is not None
 
         variant_input = test_input.get(variant_key, None)
+        assert variant_input is not None
 
-        if variant_input is None:
-            raise ValueError('Test input for variant is empty')
-
-        given_input = test_input.get(givens_key, None)
+        # givens and extra features can be None
+        givens_input = test_input.get(givens_key, None)
 
         expected_output = test_case.get(expected_output_data_key, None)
+        assert expected_output is not None
 
-        if expected_output is None:
-            raise ValueError('Expected output is empty')
+        encode_feature_vector_into_float32, manual_encode_into_float32 = \
+            self._get_encoded_arrays(variant_input=variant_input, givens_input=givens_input)
 
-        tested_record_output_float64 = \
-            self.feature_encoder.encode_variant(
-                variant=variant_input, noise=self.noise,
-                into=self.feature_encoder.encode_givens(
-                    givens=deepcopy(given_input), noise=self.noise))
-
-        tested_record_output_float32 = \
-            convert_values_to_float32(tested_record_output_float64)
+        if big_float_case:
+            # currently a flat array of floats is expected to be the encoding's output
+            expected_output = [float(eo) for eo in expected_output]
 
         expected_output_float32 = convert_values_to_float32(expected_output)
-        assert expected_output_float32 == tested_record_output_float32
+
+        # check that encode_feature_vector() output is identical with expected output
+        np.testing.assert_array_equal(expected_output_float32, encode_feature_vector_into_float32)
+
+        # check that 'manual' encoding output is identical with expected output
+        np.testing.assert_array_equal(expected_output_float32, manual_encode_into_float32)
 
     def _generic_test_encode_record_for_same_output_from_json_data(
             self, first_test_case_filename: str, second_test_case_filename: str,
@@ -179,27 +216,15 @@ class TestEncoder(TestCase):
         self._set_model_properties_from_test_case(test_case=first_test_case)
 
         first_test_input = first_test_case.get(input_data_key, None)
-
-        if first_test_input is None:
-            raise ValueError(
-                "First test input for is empty")
+        assert first_test_input is not None
 
         first_variant_input = first_test_input.get(variant_key, None)
+        assert first_variant_input is not None
+
         first_given_input = first_test_input.get(givens_key, None)
 
-        pprint(first_variant_input)
-
-        if first_variant_input is None:
-            raise ValueError(
-                "First test variant input for is empty")
-
-        first_output_float64 = \
-            self.feature_encoder.encode_variant(
-                variant=first_variant_input, noise=self.noise,
-                into=self.feature_encoder.encode_givens(
-                    givens=deepcopy(first_given_input), noise=self.noise))
-
-        first_output_float32 = convert_values_to_float32(first_output_float64)
+        first_encode_feature_vector_into_float32, first_manual_encode_into_float32 = \
+            self._get_encoded_arrays(variant_input=first_variant_input, givens_input=first_given_input)
 
         second_test_case_path = os.sep.join(
             [self.v6_test_suite_data_directory, second_test_case_filename])
@@ -213,29 +238,24 @@ class TestEncoder(TestCase):
         self._set_model_properties_from_test_case(test_case=second_test_case)
 
         second_test_input = second_test_case.get(input_data_key, None)
-
-        if second_test_input is None:
-            raise ValueError(
-                "Second test input for is empty")
+        assert second_test_input is not None
 
         second_variant_input = second_test_input.get(variant_key, None)
+        assert second_variant_input is not None
+
         second_given_input = second_test_input.get(givens_key, None)
 
-        print(second_variant_input)
+        second_encode_feature_vector_into_float32, second_manual_encode_into_float32 = \
+            self._get_encoded_arrays(variant_input=second_variant_input, givens_input=second_given_input)
 
-        if second_variant_input is None:
-            raise ValueError(
-                "Second test input for is empty")
-
-        second_output_float64 = \
-            self.feature_encoder.encode_variant(
-                variant=second_variant_input, noise=self.noise,
-                into=self.feature_encoder.encode_givens(
-                    givens=deepcopy(second_given_input), noise=self.noise))
-
-        second_output_float32 = convert_values_to_float32(second_output_float64)
-
-        assert first_output_float32 == second_output_float32
+        np.testing.assert_array_equal(
+            first_encode_feature_vector_into_float32, first_manual_encode_into_float32)
+        np.testing.assert_array_equal(
+            first_encode_feature_vector_into_float32, second_encode_feature_vector_into_float32)
+        np.testing.assert_array_equal(
+            second_encode_feature_vector_into_float32, second_manual_encode_into_float32)
+        np.testing.assert_array_equal(
+            first_manual_encode_into_float32, second_manual_encode_into_float32)
 
     def _generic_test_encode_record_for_different_output_from_json_data(
             self, first_test_case_filename: str, second_test_case_filename: str,
@@ -256,27 +276,18 @@ class TestEncoder(TestCase):
         self._set_model_properties_from_test_case(test_case=first_test_case)
 
         first_test_input = first_test_case.get(input_data_key, None)
-
-        if first_test_input is None:
-            raise ValueError(
-                "First test input for is empty")
+        assert first_test_input is not None
 
         first_variant_input = first_test_input.get(variant_key, None)
+        assert first_variant_input is not None
+
         first_given_input = first_test_input.get(givens_key, None)
 
-        pprint(first_variant_input)
+        first_encode_feature_vector_into_float32, first_manual_encode_into_float32 = \
+            self._get_encoded_arrays(variant_input=first_variant_input,
+                                     givens_input=first_given_input)
 
-        if first_variant_input is None:
-            raise ValueError(
-                "First test variant input for is empty")
-
-        first_output_float_64 = \
-            self.feature_encoder.encode_variant(
-                variant=first_variant_input, noise=self.noise,
-                into=self.feature_encoder.encode_givens(
-                    givens=deepcopy(first_given_input), noise=self.noise))
-
-        first_output_float_32 = convert_values_to_float32(first_output_float_64)
+        np.testing.assert_array_equal(first_encode_feature_vector_into_float32, first_manual_encode_into_float32)
 
         second_test_case_path = os.sep.join(
             [self.v6_test_suite_data_directory, second_test_case_filename])
@@ -290,145 +301,135 @@ class TestEncoder(TestCase):
         self._set_model_properties_from_test_case(test_case=second_test_case)
 
         second_test_input = second_test_case.get(input_data_key, None)
-
-        if second_test_input is None:
-            raise ValueError(
-                "Second test input for is empty")
+        assert second_test_input is not None
 
         second_variant_input = second_test_input.get(variant_key, None)
+        assert second_variant_input is not None
+
         second_given_input = second_test_input.get(givens_key, None)
 
-        print(second_variant_input)
+        second_encode_feature_vector_into_float32, second_manual_encode_into_float32 = \
+            self._get_encoded_arrays(variant_input=second_variant_input,
+                                     givens_input=second_given_input)
+        np.testing.assert_array_equal(second_encode_feature_vector_into_float32, second_manual_encode_into_float32)
 
-        if second_variant_input is None:
-            raise ValueError(
-                "Second test input for is empty")
+        np.testing.assert_raises(np.testing.assert_array_equal(
+            first_encode_feature_vector_into_float32, second_encode_feature_vector_into_float32))
 
-        second_output_float64 = \
-            self.feature_encoder.encode_variant(
-                variant=second_variant_input, noise=self.noise,
-                into=self.feature_encoder.encode_givens(
-                    givens=deepcopy(second_given_input), noise=self.noise))
+        np.testing.assert_raises(np.testing.assert_array_equal(
+            first_manual_encode_into_float32, second_manual_encode_into_float32))
 
-        second_output_float32 = \
-            convert_values_to_float32(second_output_float64)
-
-        pprint('### outputs ###')
-        pprint(first_output_float_32)
-        pprint(second_output_float32)
-
-        assert first_output_float_32 != second_output_float32
-
-    def _generic_test_external_collisions(
-            self, test_case_filename: str, input_data_key: str = 'test_case',
-            expected_output_data_key: str = 'test_output',
-            variant_key: str = 'variant', givens_key: str = 'givens',
-            data_read_method: str = 'read'):
-
-        test_case_path = os.sep.join(
-            [self.v6_test_suite_data_directory, test_case_filename])
-
-        test_case = \
-            self._get_test_data(
-                path_to_test_json=test_case_path, method=data_read_method)
-
-        self._set_model_properties_from_test_case(test_case=test_case)
-
-        test_case_input = test_case.get(input_data_key, None)
-
-        if test_case_input is None:
-            raise ValueError("Test jsonlines are empty")
-
-        variant = test_case_input.get(variant_key, None)
-        givens = test_case_input.get(givens_key, None)
-
-        if variant is None or givens is None:
-            raise ValueError("variant or givens are empty")
-
-        expected_output = test_case.get(expected_output_data_key, None)
-
-        if expected_output is None:
-            raise ValueError("Expected output is empty")
-
-        encoded_variant = \
-            self.feature_encoder.encode_variant(variant=variant, noise=self.noise)
-        encoded_givens = \
-            self.feature_encoder.encode_givens(givens=givens, noise=self.noise)
-
-        common_keys = \
-            set(encoded_variant.keys()).intersection(set(encoded_givens.keys()))
-
-        assert len(common_keys) > 0
-
-        fully_encoded_variant_float64 = \
-            self.feature_encoder.encode_variant(
-                variant=variant, noise=self.noise,
-                into=self.feature_encoder.encode_givens(
-                    givens=deepcopy(givens), noise=self.noise))
-
-        fully_encoded_variant_float32 = \
-            convert_values_to_float32(fully_encoded_variant_float64)
-
-        expected_output_float32 = convert_values_to_float32(expected_output)
-
-        # np.testing.assert_array_equal(
-        #     expected_output_float32, fully_encoded_variant_float32)
-
-        for expected_key in expected_output.keys():
-            expected_value = expected_output[expected_key]
-            calculated_value = fully_encoded_variant_float32[expected_key]
-            print(expected_value)
-            print(calculated_value)
-            assert np.float32(expected_value) == calculated_value
-
-        single_common_key = list(common_keys)[0]
-
-        assert single_common_key in encoded_variant.keys() \
-               and single_common_key in encoded_givens.keys() \
-               and single_common_key in fully_encoded_variant_float32.keys()
-
-    def _generic_test_internal_collisions(
-            self, test_case_filename: str, input_data_key: str = 'test_case',
-            expected_output_data_key: str = 'test_output',
-            variant_key: str = 'variant', givens_key: str = 'givens',
-            data_read_method: str = 'read'):
-
-        test_case_path = os.sep.join(
-            [self.v6_test_suite_data_directory, test_case_filename])
-
-        test_case = \
-            self._get_test_data(
-                path_to_test_json=test_case_path, method=data_read_method)
-
-        self._set_model_properties_from_test_case(test_case=test_case)
-
-        test_case_input = test_case.get(input_data_key, None)
-
-        if test_case_input is None:
-            raise ValueError("Test jsonlines are empty")
-
-        variant = test_case_input.get(variant_key, None)
-        givens = test_case_input.get(givens_key, None)
-
-        if variant is None or givens is None:
-            raise ValueError("variant or givens are empty")
-
-        expected_output = test_case.get(expected_output_data_key, None)
-
-        if expected_output is None:
-            raise ValueError("Expected output is empty")
-
-        fully_encoded_variant_float64 = \
-            self.feature_encoder.encode_variant(
-                variant=variant, noise=self.noise,
-                into=self.feature_encoder.encode_givens(
-                    givens=deepcopy(givens), noise=self.noise))
-
-        fully_encoded_variant_float32 = \
-            convert_values_to_float32(fully_encoded_variant_float64)
-
-        expected_output_float32 = convert_values_to_float32(expected_output)
-        assert fully_encoded_variant_float32 == expected_output_float32
+    # # TODO currently there is no chance for any collision (root keys for variant and givens are different)?
+    # def _generic_test_external_collisions(
+    #         self, test_case_filename: str, input_data_key: str = 'test_case',
+    #         expected_output_data_key: str = 'test_output',
+    #         variant_key: str = 'variant', givens_key: str = 'givens',
+    #         data_read_method: str = 'read'):
+    #
+    #     test_case_path = os.sep.join(
+    #         [self.v6_test_suite_data_directory, test_case_filename])
+    #
+    #     test_case = \
+    #         self._get_test_data(
+    #             path_to_test_json=test_case_path, method=data_read_method)
+    #
+    #     self._set_model_properties_from_test_case(test_case=test_case)
+    #
+    #     test_case_input = test_case.get(input_data_key, None)
+    #
+    #     if test_case_input is None:
+    #         raise ValueError("Test jsonlines are empty")
+    #
+    #     variant = test_case_input.get(variant_key, None)
+    #     givens = test_case_input.get(givens_key, None)
+    #
+    #     if variant is None or givens is None:
+    #         raise ValueError("variant or givens are empty")
+    #
+    #     expected_output = test_case.get(expected_output_data_key, None)
+    #
+    #     if expected_output is None:
+    #         raise ValueError("Expected output is empty")
+    #
+    #     encoded_variant = \
+    #         self.feature_encoder.encode_variant(variant=variant, noise=self.noise)
+    #     encoded_givens = \
+    #         self.feature_encoder.encode_givens(givens=givens, noise=self.noise)
+    #
+    #     common_keys = \
+    #         set(encoded_variant.keys()).intersection(set(encoded_givens.keys()))
+    #
+    #     assert len(common_keys) > 0
+    #
+    #     fully_encoded_variant_float64 = \
+    #         self.feature_encoder.encode_variant(
+    #             variant=variant, noise=self.noise,
+    #             into=self.feature_encoder.encode_givens(
+    #                 givens=deepcopy(givens), noise=self.noise))
+    #
+    #     fully_encoded_variant_float32 = \
+    #         convert_values_to_float32(fully_encoded_variant_float64)
+    #
+    #     expected_output_float32 = convert_values_to_float32(expected_output)
+    #
+    #     # np.testing.assert_array_equal(
+    #     #     expected_output_float32, fully_encoded_variant_float32)
+    #
+    #     for expected_key in expected_output.keys():
+    #         expected_value = expected_output[expected_key]
+    #         calculated_value = fully_encoded_variant_float32[expected_key]
+    #         print(expected_value)
+    #         print(calculated_value)
+    #         assert np.float32(expected_value) == calculated_value
+    #
+    #     single_common_key = list(common_keys)[0]
+    #
+    #     assert single_common_key in encoded_variant.keys() \
+    #            and single_common_key in encoded_givens.keys() \
+    #            and single_common_key in fully_encoded_variant_float32.keys()
+    #
+    # def _generic_test_internal_collisions(
+    #         self, test_case_filename: str, input_data_key: str = 'test_case',
+    #         expected_output_data_key: str = 'test_output',
+    #         variant_key: str = 'variant', givens_key: str = 'givens',
+    #         data_read_method: str = 'read'):
+    #
+    #     test_case_path = os.sep.join(
+    #         [self.v6_test_suite_data_directory, test_case_filename])
+    #
+    #     test_case = \
+    #         self._get_test_data(
+    #             path_to_test_json=test_case_path, method=data_read_method)
+    #
+    #     self._set_model_properties_from_test_case(test_case=test_case)
+    #
+    #     test_case_input = test_case.get(input_data_key, None)
+    #
+    #     if test_case_input is None:
+    #         raise ValueError("Test jsonlines are empty")
+    #
+    #     variant = test_case_input.get(variant_key, None)
+    #     givens = test_case_input.get(givens_key, None)
+    #
+    #     if variant is None or givens is None:
+    #         raise ValueError("variant or givens are empty")
+    #
+    #     expected_output = test_case.get(expected_output_data_key, None)
+    #
+    #     if expected_output is None:
+    #         raise ValueError("Expected output is empty")
+    #
+    #     fully_encoded_variant_float64 = \
+    #         self.feature_encoder.encode_variant(
+    #             variant=variant, noise=self.noise,
+    #             into=self.feature_encoder.encode_givens(
+    #                 givens=deepcopy(givens), noise=self.noise))
+    #
+    #     fully_encoded_variant_float32 = \
+    #         convert_values_to_float32(fully_encoded_variant_float64)
+    #
+    #     expected_output_float32 = convert_values_to_float32(expected_output)
+    #     assert fully_encoded_variant_float32 == expected_output_float32
 
     # test all None-like types (None, [], {}, np.NaN)
     def test_none_variant(self):
@@ -460,10 +461,10 @@ class TestEncoder(TestCase):
 
         assert expected_output == tested_output_float32
 
+    # TODO update if still needed
     def _test_encode_feature_vector(
             self, test_case_envvar, variant_key: str = 'variant',
             givens_key: str = 'givens',
-            extra_features_key: str = 'extra_features',
             feature_names_key: str = 'feature_names',
             test_input_key: str = 'test_case',
             test_output_key: str = 'test_output', force_numpy: bool = False):
@@ -491,8 +492,6 @@ class TestEncoder(TestCase):
 
         test_givens = test_input.get(givens_key, None)
 
-        test_extra_features = test_input.get(extra_features_key, None)
-
         test_feature_names = test_input.get(feature_names_key, None)
 
         if not test_feature_names:
@@ -508,7 +507,6 @@ class TestEncoder(TestCase):
 
         self.feature_encoder.encode_feature_vector(
             variant=test_variant, givens=test_givens,
-            extra_features=test_extra_features,
             feature_names=test_feature_names, noise=self.noise,
             into=tested_into_float64)
 
@@ -550,11 +548,11 @@ class TestEncoder(TestCase):
             test_case_filename=os.getenv(
                 "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_NONE_JSON"))
 
-    def test_npnan(self):
-
-        self._generic_test_encode_record_from_json_data(
-            test_case_filename=os.getenv(
-                "FEATURE_ENCODER_TEST_NAN_JSON"))
+    # def test_npnan(self):
+    #
+    #     self._generic_test_encode_record_from_json_data(
+    #         test_case_filename=os.getenv(
+    #             "FEATURE_ENCODER_TEST_NAN_JSON"))
 
     # Test all primitive types: "string", true, false, 0, 0.0, 1, 1.0, -1, -1.0
     def test_true(self):
@@ -614,11 +612,12 @@ class TestEncoder(TestCase):
             test_case_filename=os.getenv(
                 "FEATURE_ENCODER_TEST_FLOAT_M1_JSON"))
 
-    def test_big_float(self):
+    def _generic_test_big_float(self, test_case_filename: str):
+
+        assert test_case_filename is not None
 
         test_case_path = os.sep.join(
-            [self.v6_test_suite_data_directory,
-             os.getenv("FEATURE_ENCODER_TEST_BIG_FLOAT_JSON")])
+            [self.v6_test_suite_data_directory, test_case_filename])
 
         test_case = \
             self._get_test_data(path_to_test_json=test_case_path)
@@ -626,23 +625,15 @@ class TestEncoder(TestCase):
         self._set_model_properties_from_test_case(test_case=test_case)
 
         test_input = test_case.get("test_case", None)
-
-        if test_input is None:
-            raise ValueError(
-                "Input data for `test_big_float_variant` can`t be empty")
+        assert test_input is not None
 
         variant_input = test_input.get('variant', None)
-        given_input = test_input.get('given', None)
+        assert variant_input is not None
 
-        if variant_input is None:
-            raise ValueError(
-                "Input variant data for `test_big_float_variant` can`t be empty")
+        givens_input = test_input.get('givens', None)
 
         expected_output = test_case.get("test_output", None)
-
-        if expected_output is None:
-            raise ValueError(
-                "Expected output for `test_big_float_variant` can`t be empty")
+        assert expected_output is not None
 
         expected_output = \
             dict((key, float(val)) for key, val in expected_output.items())
@@ -651,11 +642,80 @@ class TestEncoder(TestCase):
             self.feature_encoder.encode_variant(
                 variant=variant_input, noise=self.noise,
                 into=self.feature_encoder.encode_givens(
-                    givens=deepcopy(given_input), noise=self.noise))
+                    givens=deepcopy(givens_input), noise=self.noise))
 
         tested_output_float32 = convert_values_to_float32(tested_output_float64)
 
         assert expected_output == tested_output_float32
+
+    def test_big_positive_float(self):
+        big_float_test_case_file = os.getenv('FEATURE_ENCODER_TEST_BIG_POSITIVE_FLOAT_JSON', None)
+        assert big_float_test_case_file is not None
+
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=big_float_test_case_file, big_float_case=True)
+
+    def test_big_positive_float_noise_0(self):
+        big_float_test_case_file = os.getenv('FEATURE_ENCODER_TEST_BIG_POSITIVE_FLOAT_NOISE_0_JSON', None)
+        assert big_float_test_case_file is not None
+
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=big_float_test_case_file, big_float_case=True)
+
+    def test_big_negative_float(self):
+        big_float_test_case_file = os.getenv('FEATURE_ENCODER_TEST_BIG_NEGATIVE_FLOAT_JSON', None)
+        assert big_float_test_case_file is not None
+
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=big_float_test_case_file, big_float_case=True)
+
+    def test_big_negative_float_noise_0(self):
+        big_float_test_case_file = os.getenv('FEATURE_ENCODER_TEST_BIG_NEGATIVE_FLOAT_NOISE_0_JSON', None)
+        assert big_float_test_case_file is not None
+
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=big_float_test_case_file, big_float_case=True)
+
+        # test_case_path = os.sep.join(
+        #     [self.v6_test_suite_data_directory,
+        #      os.getenv("FEATURE_ENCODER_TEST_BIG_FLOAT_JSON")])
+        #
+        # test_case = \
+        #     self._get_test_data(path_to_test_json=test_case_path)
+        #
+        # self._set_model_properties_from_test_case(test_case=test_case)
+        #
+        # test_input = test_case.get("test_case", None)
+        #
+        # if test_input is None:
+        #     raise ValueError(
+        #         "Input data for `test_big_float_variant` can`t be empty")
+        #
+        # variant_input = test_input.get('variant', None)
+        # given_input = test_input.get('given', None)
+        #
+        # if variant_input is None:
+        #     raise ValueError(
+        #         "Input variant data for `test_big_float_variant` can`t be empty")
+        #
+        # expected_output = test_case.get("test_output", None)
+        #
+        # if expected_output is None:
+        #     raise ValueError(
+        #         "Expected output for `test_big_float_variant` can`t be empty")
+        #
+        # expected_output = \
+        #     dict((key, float(val)) for key, val in expected_output.items())
+        #
+        # tested_output_float64 = \
+        #     self.feature_encoder.encode_variant(
+        #         variant=variant_input, noise=self.noise,
+        #         into=self.feature_encoder.encode_givens(
+        #             givens=deepcopy(given_input), noise=self.noise))
+        #
+        # tested_output_float32 = convert_values_to_float32(tested_output_float64)
+        #
+        # assert expected_output == tested_output_float32
 
     def test_small_float(self):
         self._generic_test_encode_record_from_json_data(
@@ -1148,40 +1208,40 @@ class TestEncoder(TestCase):
             test_case_filename=os.getenv(
                 "FEATURE_ENCODER_TEST_NESTED_DICT_STRING_KEYS_JSON"))
 
-    def test_external_collisions_01(self):
-        self._generic_test_external_collisions(
-            test_case_filename=os.getenv(
-                "FEATURE_ENCODER_TEST_EXTERNAL_COLLISIONS_01_JSON"),
-            input_data_key='test_case', expected_output_data_key='test_output',
-            data_read_method='read')
-
-    def test_external_collisions_02(self):
-        self._generic_test_external_collisions(
-            test_case_filename=os.getenv(
-                "FEATURE_ENCODER_TEST_EXTERNAL_COLLISIONS_02_JSON"),
-            input_data_key='test_case', expected_output_data_key='test_output',
-            data_read_method='read')
-
-    def test_internal_collision_01(self):
-        self._generic_test_internal_collisions(
-            test_case_filename=os.getenv(
-                    "FEATURE_ENCODER_TEST_INTERNAL_COLLISIONS_01_JSON"),
-            input_data_key='test_case', expected_output_data_key='test_output',
-            data_read_method='read')
-
-    def test_internal_collision_02(self):
-        self._generic_test_internal_collisions(
-            test_case_filename=os.getenv(
-                "FEATURE_ENCODER_TEST_INTERNAL_COLLISIONS_02_JSON"),
-            input_data_key='test_case', expected_output_data_key='test_output',
-            data_read_method='read')
-
-    def test_internal_collision_03(self):
-        self._generic_test_internal_collisions(
-            test_case_filename=os.getenv(
-                "FEATURE_ENCODER_TEST_INTERNAL_COLLISIONS_03_JSON"),
-            input_data_key='test_case', expected_output_data_key='test_output',
-            data_read_method='read')
+    # def test_external_collisions_01(self):
+    #     self._generic_test_external_collisions(
+    #         test_case_filename=os.getenv(
+    #             "FEATURE_ENCODER_TEST_EXTERNAL_COLLISIONS_01_JSON"),
+    #         input_data_key='test_case', expected_output_data_key='test_output',
+    #         data_read_method='read')
+    #
+    # def test_external_collisions_02(self):
+    #     self._generic_test_external_collisions(
+    #         test_case_filename=os.getenv(
+    #             "FEATURE_ENCODER_TEST_EXTERNAL_COLLISIONS_02_JSON"),
+    #         input_data_key='test_case', expected_output_data_key='test_output',
+    #         data_read_method='read')
+    #
+    # def test_internal_collision_01(self):
+    #     self._generic_test_internal_collisions(
+    #         test_case_filename=os.getenv(
+    #                 "FEATURE_ENCODER_TEST_INTERNAL_COLLISIONS_01_JSON"),
+    #         input_data_key='test_case', expected_output_data_key='test_output',
+    #         data_read_method='read')
+    #
+    # def test_internal_collision_02(self):
+    #     self._generic_test_internal_collisions(
+    #         test_case_filename=os.getenv(
+    #             "FEATURE_ENCODER_TEST_INTERNAL_COLLISIONS_02_JSON"),
+    #         input_data_key='test_case', expected_output_data_key='test_output',
+    #         data_read_method='read')
+    #
+    # def test_internal_collision_03(self):
+    #     self._generic_test_internal_collisions(
+    #         test_case_filename=os.getenv(
+    #             "FEATURE_ENCODER_TEST_INTERNAL_COLLISIONS_03_JSON"),
+    #         input_data_key='test_case', expected_output_data_key='test_output',
+    #         data_read_method='read')
 
     def test_given_primitive_type_raises_type_error(self):
 
@@ -1300,7 +1360,6 @@ class TestEncoder(TestCase):
         with raises(ValueError) as val_err:
             self.feature_encoder.encode_feature_vector(
                 variant=test_variant, givens=test_givens,
-                extra_features=test_extra_features,
                 feature_names=test_feature_names,
                 noise=self.noise, into=tested_into)
 
@@ -1353,7 +1412,6 @@ class TestEncoder(TestCase):
         with raises(TypeError) as type_err:
             self.feature_encoder.encode_feature_vector(
                 variant=test_variant, givens=test_givens,
-                extra_features=test_extra_features,
                 feature_names=test_feature_names,
                 noise=self.noise, into=tested_into)
 

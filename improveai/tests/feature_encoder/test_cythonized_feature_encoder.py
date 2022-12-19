@@ -573,11 +573,11 @@ class TestEncoder(TestCase):
             test_case_filename=os.getenv(
                 "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_NONE_JSON"))
 
-    def test_npnan(self):
-
-        self._generic_test_encode_record_from_json_data(
-            test_case_filename=os.getenv(
-                "FEATURE_ENCODER_TEST_NAN_JSON"))
+    # def test_npnan(self):
+    #
+    #     self._generic_test_encode_record_from_json_data(
+    #         test_case_filename=os.getenv(
+    #             "FEATURE_ENCODER_TEST_NAN_JSON"))
 
     # Test all primitive types: "string", true, false, 0, 0.0, 1, 1.0, -1, -1.0
     def test_true(self):
@@ -1024,10 +1024,15 @@ class TestEncoder(TestCase):
             test_case_filename=os.getenv(
                 "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_BIG_INT_POSITIVE_JSON"))
 
-    def test_primitive_dict_big_int64(self):
+    def test_primitive_dict_big_positive_int64(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT64_BIG_JSON"))
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT64_BIG_POSITIVE_JSON"))
+
+    def test_primitive_dict_big_positive_int64(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT64_BIG_NEGATIVE_JSON"))
 
     def test_primitive_dict_small_int64(self):
         self._generic_test_encode_record_from_json_data(

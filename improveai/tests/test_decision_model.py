@@ -928,7 +928,7 @@ class TestDecisionModel(TestCase):
         assert expected_givens is not None
 
         decision_context = \
-            dm.DecisionModel(model_name='test_choose_from_model').given(context=givens)
+            dm.DecisionModel(model_name='test_decide_model').given(context=givens)
 
         assert isinstance(decision_context, dc.DecisionContext)
         assert hasattr(decision_context, 'givens')
@@ -1292,7 +1292,7 @@ class TestDecisionModel(TestCase):
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
-            decision = decision_model.choose_from(list(range(10)), scores=None)
+            decision = decision_model.decide(list(range(10)), scores=None)
             decision.track()
             time.sleep(0.175)
 
@@ -1321,7 +1321,7 @@ class TestDecisionModel(TestCase):
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success')
-            decision = decision_model.choose_from(list(range(10)), scores=None)
+            decision = decision_model.decide(list(range(10)), scores=None)
             decision.track()
             time.sleep(0.175)
 
@@ -1361,7 +1361,7 @@ class TestDecisionModel(TestCase):
 
         with rqm.Mocker() as m:
             m.post(self.track_url, text='success', additional_matcher=grab_decision_id_matcher)
-            decision = decision_model.choose_from(list(range(10)), scores=None)
+            decision = decision_model.decide(list(range(10)), scores=None)
             decision_id = decision.track()
             assert decision_id == decision.id_
             time.sleep(0.175)

@@ -150,17 +150,8 @@ cdef class FeatureEncoder:
         self._encode(givens, path=GIVENS_FEATURE_KEY, into=into,
                      noise_shift=noise_shift, noise_scale=noise_scale)
 
-    # TODO test this
-    cpdef void encode_extra_features(
-            self, dict extra_features, np.ndarray[double, ndim=1, mode='c'] into,
-            double noise_shift = 0.0, double noise_scale = 1.0):
-        for key, value in extra_features.items():
-            self._encode(obj=value, path=key, into=into,
-                         noise_shift=noise_shift, noise_scale=noise_scale)
-
     cpdef void encode_feature_vector(
-            self, object variant, dict givens,
-            dict extra_features, np.ndarray[double, ndim=1, mode='c'] into,
+            self, object variant, dict givens, np.ndarray[double, ndim=1, mode='c'] into,
             double noise: float = 0.0):
         """
         Fully encodes provided variant and givens into a np.ndarray provided as `into` parameter.
@@ -172,8 +163,6 @@ cdef class FeatureEncoder:
             a JSON encodable object to be encoded
         givens: object
             a JSON encodable object to be encoded
-        extra_features: dict
-            additional features to be vectorized
         into: np.ndarray
             an array into which feature values will be added
         noise: float
@@ -194,9 +183,6 @@ cdef class FeatureEncoder:
 
         if givens:
             self.encode_givens(givens, into, noise_shift, noise_scale)
-
-        if extra_features:
-            self.encode_extra_features(extra_features, into, noise_shift, noise_scale)
 
     cdef void _encode(
             self, object obj, str path, np.ndarray[double, ndim=1, mode='c'] into,
@@ -248,16 +234,15 @@ cdef class FeatureEncoder:
 
             string_table = self.string_tables[feature_index]
 
-            into[feature_index] = sprinkle(string_table.encode(obj),
-                                           noise_shift, noise_scale)
+            into[feature_index] = sprinkle(string_table.encode(obj), noise_shift, noise_scale)
 
         elif isinstance(obj, dict):
             for key, value in obj.items():
-                self._encode(value, path + '.' + key, into)
+                self._encode(obj=value, path=path + '.' + key, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
 
         elif isinstance(obj, (list, tuple)):
             for index, item in enumerate(obj):
-                self._encode(item, path + '.' + str(index), into)
+                self._encode(obj=item, path=path + '.' + str(index), into=into, noise_shift=noise_shift, noise_scale=noise_scale)
 
         elif obj is None:
             pass
@@ -278,6 +263,6 @@ cpdef np.ndarray[double, ndim=2, mode='c'] encode_variants_to_matrix(
     for variant, into_row in zip(variants, into_matrix):
         # variant: object, givens: object, extra_features: dict, into: np.ndarray, noise: float
         feature_encoder.encode_feature_vector(
-            variant=variant, givens=givens, extra_features=None, into=into_row, noise=noise)
+            variant=variant, givens=givens, into=into_row, noise=noise)
 
     return into_matrix
