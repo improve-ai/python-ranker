@@ -189,11 +189,16 @@ class StringTable:
         if value is not None:
             return value
 
+        print('This is a values absent in the string table -> returning miss encoding!')
         return self.encode_miss(string_hash)
 
     def encode_miss(self, string_hash):
         # hash to float in range [-miss_width/2, miss_width/2]
         # 32 bit mask for JS portability
+        small_string = f'{(np.float64(2 ** -32)).view(np.uint64):0>64b}'
+        print('### small_string ###')
+        print(np.float64(2 ** -32))
+        print(small_string)
         return scale((string_hash & 0xFFFFFFFF) * 2 ** -32, self.miss_width)
 
 

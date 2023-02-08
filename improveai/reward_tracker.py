@@ -10,7 +10,7 @@ from ksuid import Ksuid
 
 import improveai
 from improveai.chooser import XGBChooser
-from improveai.utils.general_purpose_tools import check_variants, is_valid_ksuid
+from improveai.utils.general_purpose_tools import check_items, is_valid_ksuid
 
 
 class DecisionTracker:
@@ -278,7 +278,8 @@ class DecisionTracker:
     def max_runners_up(self, new_val):
         self._max_runners_up = new_val
 
-    def __init__(self, track_url: str, track_api_key: str = None):
+    # RewardTracker(nonnull str modelName, nonnull trackURL, nullable trackApiKey)
+    def __init__(self, model_name: str, track_url: str, track_api_key: str = None):
         """
         Init with params
 
@@ -290,6 +291,7 @@ class DecisionTracker:
             Improve AI track endpoint API key (nullable)
         """
 
+        self.model_name = model_name
         self.track_url = track_url
         self.api_key = track_api_key
         # defaults to 50
@@ -338,7 +340,7 @@ class DecisionTracker:
             None if there are no runners up to track otherwise list of tracked runners up
 
         """
-        check_variants(ranked_variants)
+        check_items(ranked_variants)
         # len(ranked_variants) - 1 -> this will not include last element of collection
         top_runners_up = ranked_variants[1:min(len(ranked_variants), self.max_runners_up + 1)]\
             if ranked_variants is not None else None
@@ -428,7 +430,7 @@ class DecisionTracker:
             self.VARIANTS_COUNT_KEY: variants_count}
 
         if runners_up is not None:
-            check_variants(runners_up)
+            check_items(runners_up)
             body[self.RUNNERS_UP_KEY] = runners_up
 
         if has_sample:
@@ -558,7 +560,7 @@ class DecisionTracker:
 
         """
 
-        check_variants(ranked_variants)
+        check_items(ranked_variants)
         assert isinstance(track_runners_up, bool)
         assert len(ranked_variants) > 1
 

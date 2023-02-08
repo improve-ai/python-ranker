@@ -16,7 +16,7 @@ from improveai.utils.url_tools import is_path_http_addr, get_model_bytes_from_ur
 if CYTHON_BACKEND_AVAILABLE:
     from improveai.cythonized_feature_encoding import cfe
     FastFeatureEncoder = cfe.FeatureEncoder
-    fast_encode_variants_to_matrix = cfe.encode_variants_to_matrix
+    fast_encode_items_to_matrix = cfe.encode_items_to_matrix
 else:
     FastFeatureEncoder = FeatureEncoder
 
@@ -412,14 +412,14 @@ class XGBChooser:
 
         return noise
 
-    def encode_variants_to_matrix(
-            self, variants: list or tuple or np.ndarray, givens: dict or None, noise: float = 0.0):
-        into_matrix = np.full((len(variants), len(self.feature_encoder.feature_indexes)), np.nan)
+    def encode_items_to_matrix(
+            self, items: list or tuple or np.ndarray, context: dict or None, noise: float = 0.0):
+        into_matrix = np.full((len(items), len(self.feature_encoder.feature_indexes)), np.nan)
 
-        for variant, into_row in zip(variants, into_matrix):
+        for variant, into_row in zip(items, into_matrix):
             # variant: object, givens: object, into: np.ndarray, noise: float
             self.feature_encoder.encode_feature_vector(
-                variant=variant, givens=givens, into=into_row, noise=noise)
+                variant=variant, givens=context, into=into_row, noise=noise)
         return into_matrix
 
     def score(self, variants: list or tuple or np.ndarray, givens: dict or None, **kwargs) -> np.ndarray:
@@ -442,7 +442,7 @@ class XGBChooser:
         """
 
         encoded_variants_matrix = \
-            self.encode_variants_single_givens(variants=variants, givens=givens)
+            self.encode_items_single_context(items=variants, context=givens)
 
         scores = \
             self.model.predict(
@@ -475,12 +475,11 @@ class XGBChooser:
         assert len(self.feature_names) == features_matrix.shape[1]
         scores = \
             self.model.predict(
-                DMatrix(features_matrix, feature_names=self.feature_names)) \
-            .astype('float64')
+                DMatrix(features_matrix, feature_names=self.feature_names)).astype('float64')
         return scores
 
-    def encode_variants_single_givens(
-            self, variants: list or tuple or np.ndarray, givens: dict or None) -> np.ndarray:
+    def encode_items_single_context(
+            self, items: list or tuple or np.ndarray, context: object) -> np.ndarray:
         """
         Implemented as a XGBChooser helper method
         Cythonized loop over provided variants and a single givens dict.
@@ -488,9 +487,9 @@ class XGBChooser:
 
         Parameters
         ----------
-        variants: list or tuple or np.ndarray
+        items: list or tuple or np.ndarray
             collection of input variants to be encoded
-        givens: dict or None
+        context: dict or None
             context to be encoded with variants
 
         Returns
@@ -499,15 +498,12 @@ class XGBChooser:
             array of encoded dicts
         """
 
-        if not (isinstance(givens, dict) or givens is None or givens is {}):
-            raise TypeError('Unsupported givens` type: {}'.format(type(givens)))
-
         if CYTHON_BACKEND_AVAILABLE:
             return \
-                np.asarray(fast_encode_variants_to_matrix(
-                    variants=variants, givens=givens, feature_encoder=self.feature_encoder, noise=self._get_noise()))
+                np.asarray(fast_encode_items_to_matrix(
+                    items=items, context=context, feature_encoder=self.feature_encoder, noise=self._get_noise()))
         else:
-            return self.encode_variants_to_matrix(variants=variants, givens=givens, noise=self._get_noise())
+            return self.encode_items_to_matrix(items=items, context=context, noise=self._get_noise())
 
     @staticmethod
     def get_model_src(model_src: str or bytes) -> str or bytes:

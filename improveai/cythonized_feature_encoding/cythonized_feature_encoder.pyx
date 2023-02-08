@@ -66,16 +66,22 @@ cdef class StringTable:
 
     cpdef double encode(self, str string):
         cdef unsigned long long string_hash = xxh3(string, seed=self.model_seed)
-        cdef double value = self.value_table.get(string_hash & self.mask)
-        if value is not None:
-            return value
 
+        # TODO validate against vanilla FE implementation
+        cdef unsigned long long masked_hash = string_hash & self.mask
+        if masked_hash in self.value_table:
+            return self.value_table[masked_hash]
+
+        # TODO delete after tests!
+        # print(f'\n`{string}` is a value absent in the string table -> returning miss encoding!')
         return self.encode_miss(string_hash)
 
     cpdef double encode_miss(self, string_hash):
+        # TODO !! important note -> for negative exponents the base must be of
+        #  a float type
         # hash to float in range [-miss_width/2, miss_width/2]
         # 32 bit mask for JS portability
-        return scale((string_hash & 0xFFFFFFFF) * 2 ** -32, self.miss_width)
+        return scale((string_hash & 0xFFFFFFFF) * 2.0 ** -32, self.miss_width)
 
 
 @cython.boundscheck(False)
@@ -254,15 +260,13 @@ cdef class FeatureEncoder:
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef np.ndarray[double, ndim=2, mode='c'] encode_variants_to_matrix(
-        object variants, object givens, object feature_encoder, double noise=0.0):
+cpdef np.ndarray[double, ndim=2, mode='c'] encode_items_to_matrix(
+        object items, object context, object feature_encoder, double noise=0.0):
 
     cdef np.ndarray[double, ndim=2, mode='c'] into_matrix = \
-        np.full((len(variants), len(feature_encoder.feature_indexes)), np.nan)
+        np.full((len(items), len(feature_encoder.feature_indexes)), np.nan)
 
-    for variant, into_row in zip(variants, into_matrix):
-        # variant: object, givens: object, extra_features: dict, into: np.ndarray, noise: float
-        feature_encoder.encode_feature_vector(
-            variant=variant, givens=givens, into=into_row, noise=noise)
+    for variant, into_row in zip(items, into_matrix):
+        feature_encoder.encode_feature_vector(variant=variant, givens=context, into=into_row, noise=noise)
 
     return into_matrix

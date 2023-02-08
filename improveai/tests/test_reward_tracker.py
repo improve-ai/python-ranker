@@ -14,7 +14,7 @@ sys.path.append(
     os.sep.join(str(os.path.abspath(__file__)).split(os.sep)[:-3]))
 
 import improveai
-import improveai.decision_tracker as dtr
+import improveai.reward_tracker as dtr
 from improveai.settings import MAX_TRACK_THREADS
 from improveai.utils.general_purpose_tools import is_valid_ksuid
 
