@@ -55,7 +55,7 @@ class DecisionTracker:
         return "type"
 
     @property
-    def VARIANT_KEY(self) -> str:
+    def ITEM_KEY(self) -> str:
         """
         Track request body key storing best variant
 
@@ -68,7 +68,7 @@ class DecisionTracker:
         return "variant"
 
     @property
-    def GIVENS_KEY(self) -> str:
+    def CONTEXT_KEY(self) -> str:
         """
         Track request body key storing givens
 
@@ -79,19 +79,6 @@ class DecisionTracker:
 
         """
         return "givens"
-
-    @property
-    def VARIANTS_COUNT_KEY(self) -> str:
-        """
-        Track request body key storing variants count (from how many variants best was chosen)
-
-        Returns
-        -------
-        str
-            Track request body key storing variants count
-
-        """
-        return "count"
 
     @property
     def REWARD_TYPE(self) -> str:
@@ -134,7 +121,7 @@ class DecisionTracker:
         return "decision"
 
     @property
-    def DECISION_ID_KEY(self) -> str:
+    def REWARD_ID_KEY(self) -> str:
         """
         Track request body key storing decision ID
 
@@ -187,20 +174,7 @@ class DecisionTracker:
         return 'REQUEST_ERROR_CODE'
 
     @property
-    def RUNNERS_UP_KEY(self) -> str:
-        """
-        Track request headers key storing runners up
-
-        Returns
-        -------
-        str
-            Track request headers key storing runners up
-
-        """
-        return 'runners_up'
-
-    @property
-    def VARIANTS_COUNT_KEY(self) -> str:
+    def ITEMS_COUNT_KEY(self) -> str:
         """
         Track request headers key storing variants count
 
@@ -226,6 +200,29 @@ class DecisionTracker:
         return 'sample'
 
     @property
+    def model_name(self) -> str:
+        """
+        Name of tracked model. Model name must pass "^[a-zA-Z0-9][\w\-.]{0,63}$"
+        regex
+
+        Returns
+        -------
+        str
+            Name of the tracked model
+
+        """
+        return self._model_name
+
+    @model_name.setter
+    def model_name(self, value: str):
+        # make sure model_name is not None
+        assert value is not None
+        # make sure model name is valid
+        assert re.search(XGBChooser.MODEL_NAME_REGEXP, value) is not None, \
+            f'`model_name` must comply with {XGBChooser.MODEL_NAME_REGEXP} regexp'
+        self._model_name = value
+
+    @property
     def track_url(self) -> str:
         """
         Improve AI track endpoint URL
@@ -234,7 +231,6 @@ class DecisionTracker:
         -------
         str
             Improve AI track endpoint URL
-
 
         """
         return self._track_url
@@ -261,24 +257,6 @@ class DecisionTracker:
     def api_key(self, new_val: str):
         self._api_key = new_val
 
-    @property
-    def max_runners_up(self):
-        """
-        maximum number of runners up to be included in the Improve AI request
-
-        Returns
-        -------
-        int
-            maximum number of runners up to be included in the Improve AI request
-
-        """
-        return self._max_runners_up
-
-    @max_runners_up.setter
-    def max_runners_up(self, new_val):
-        self._max_runners_up = new_val
-
-    # RewardTracker(nonnull str modelName, nonnull trackURL, nullable trackApiKey)
     def __init__(self, model_name: str, track_url: str, track_api_key: str = None):
         """
         Init with params
@@ -294,124 +272,20 @@ class DecisionTracker:
         self.model_name = model_name
         self.track_url = track_url
         self.api_key = track_api_key
-        # defaults to 50
-        self.max_runners_up = 50
 
-    def _should_track_runners_up(self, variants_count: int) -> bool:
+    def _get_track_body(
+            self, item: object, num_candidates: int, context: object, sample: object):
         """
-        Returns bool that indicates whether runners up should be tracked
-
+        Helper method to create track body. used by RewardTracker's track()
 
         Parameters
         ----------
-        variants_count: int
-            number of variants
-
-
-        Returns
-        -------
-        bool
-            flag indicating if runners up will be tracked
-
-        """
-
-        if variants_count == 1 or self.max_runners_up == 0:
-            return False
-        elif variants_count == 2:
-            return True
-        else:
-            return np.random.rand() < 1 / min(variants_count - 1, self.max_runners_up)
-
-    def _top_runners_up(
-            self, ranked_variants: list or tuple or np.ndarray) -> list or tuple or np.ndarray or None:
-        """
-        Select top N runners up from `ranked_variants`
-
-
-        Parameters
-        ----------
-        ranked_variants: list
-            variants ordered descending by scores
-
-
-        Returns
-        -------
-        Iterable or None
-            None if there are no runners up to track otherwise list of tracked runners up
-
-        """
-        check_items(ranked_variants)
-        # len(ranked_variants) - 1 -> this will not include last element of collection
-        top_runners_up = ranked_variants[1:min(len(ranked_variants), self.max_runners_up + 1)]\
-            if ranked_variants is not None else None
-
-        # if there is a positive max_runners_up and more than 1 variant there must be at least 1 runner up
-        if len(ranked_variants) > 1 and self.max_runners_up > 0:
-            assert top_runners_up is not None and len(top_runners_up) > 0
-
-        # if max_runners_up == 0 there are no runners up
-        if self.max_runners_up == 0:
-            assert not top_runners_up  # None or []
-
-        # If `top_runners_up` == [] return None
-        if top_runners_up is None or len(top_runners_up) == 0:
-            return None
-
-        returned_top_runners_up = top_runners_up
-        if isinstance(top_runners_up, np.ndarray):
-            returned_top_runners_up = top_runners_up.tolist()
-
-        return returned_top_runners_up
-
-    def _is_sample_available(self, ranked_variants: list or None, runners_up: list or None) -> bool:
-        """
-        Returns True / False flag indicating whether sample is available
-
-
-        Parameters
-        ----------
-        ranked_variants: list or None
-            collection of evaluated variants
-        runners_up: list or None
-            tracked runners up
-
-
-        Returns
-        -------
-        bool
-            True if sample is available False otherwise
-
-        """
-
-        variants_count = len(ranked_variants)
-        runners_up_count = len(runners_up) if runners_up else 0
-
-        if variants_count - runners_up_count - 1 > 0:
-            return True
-
-        return False
-
-    def _get_decision_track_body(
-            self, variant: object, model_name: str, variants_count: int, givens: dict,
-            runners_up: list, sample: object, has_sample: bool):
-        """
-        Helper method to create track body. used by DecisionTracker's track() and
-        DecisionModel / DecisionContext track()
-
-        Parameters
-        ----------
-        variant: object
+        item: object
             tracked variant
-        model_name: str
-            tracked model name
-        variants_count: int
+        num_candidates: int
             number of variants
-        givens: dict
+        context: dict
             givens for this decision
-        runners_up: list
-            list of runners up to be tracked
-        has_sample: bool
-            has Decision a sample
         sample: object
             sample to be tracked
 
@@ -421,40 +295,127 @@ class DecisionTracker:
             body for _post_improve_request()
 
         """
-        assert re.search(XGBChooser.MODEL_NAME_REGEXP, model_name) is not None
 
         body = {
             self.TYPE_KEY: self.DECISION_TYPE,
-            self.MODEL_KEY: model_name,
-            self.VARIANT_KEY: variant,
-            self.VARIANTS_COUNT_KEY: variants_count}
+            self.MODEL_KEY: self.model_name,
+            self.ITEM_KEY: item,
+            self.ITEMS_COUNT_KEY: num_candidates}
 
-        if runners_up is not None:
-            check_items(runners_up)
-            body[self.RUNNERS_UP_KEY] = runners_up
-
-        if has_sample:
+        if sample is not None:
             body[self.SAMPLE_KEY] = sample
 
-        if givens is not None:
-            body[self.GIVENS_KEY] = givens
+        if context is not None:
+            body[self.CONTEXT_KEY] = context
 
         return body
 
-    def track(self, ranked_variants: list or np.ndarray, givens: dict, model_name: str) -> str or None:
+    def _check_candidates(
+            self, candidates: list or tuple or np.ndarray, num_candidates: int, item: object):
         """
-        Track that variant is causal in the system
-
+        Check if provided candidates and num_candidates have valid values and
+        item is in candidates
 
         Parameters
         ----------
-        ranked_variants: list or np.ndarray
-            collection of tracked variants
-        givens: dict:
-            givens for variants
-        model_name: str
-            name of model which made the decision (?) / to which observations
-            will be assigned
+        candidates: list or tuple or np.ndarray
+            collection of candidates
+        num_candidates: int
+            number of candidates
+        item: object
+            item chosen from candidates
+
+        Returns
+        -------
+        None
+            None
+
+        """
+        if candidates is not None:
+            # num candidates must be None
+            assert num_candidates is None
+            # candidates must be at least of length 2 (item + 1 candidate)
+            assert len(candidates) > 1
+            # item must be in candidates
+            assert item in candidates
+        elif candidates is None and num_candidates is not None:
+            # num candidates must be at least 2 (item + 1 candidate)
+            assert num_candidates > 1
+        else:
+            # this is the case when both candidates and num_candidates are None
+            raise ValueError('Either `candidates` or `num_candidates` must be provided')
+
+    def _get_items_count(self, candidates: list or tuple or np.ndarray, num_candidates: int):
+        """
+        Extracs items count based on candidates and num_candidates values
+
+        Parameters
+        ----------
+        candidates: list
+            list of candidates
+        num_candidates: int
+            number of candidates
+
+        Returns
+        -------
+        int
+            number of candidates to be tracked
+
+        """
+
+        if candidates is not None:
+            return len(candidates)
+        elif num_candidates is not None:
+            return num_candidates
+        else:
+            raise ValueError('Both `candidates` and `num_candidates` must not be provided at once')
+
+    def _check_sample(self, sample: object, item: object, candidates: list or tuple or np.ndarray):
+        """
+        Checks if sample is None.
+        if sample is not None, checks if sample is different from item and is in
+        candidates.
+
+        Parameters
+        ----------
+        sample: object
+            JSON encodable object included in candidates or None
+        item: object
+            the best of candidates
+        candidates: list or tuple or np.ndarray
+            collection of candidates
+
+        Returns
+        -------
+        None
+            None
+
+        """
+        if sample is not None:
+            # make sure sample is different from item
+            # TODO determine if duplicates are allowed -> if so id()s should be compared (?)
+            assert id(item) != id(sample)
+            # make sure sample is in candidates
+            assert sample in candidates
+
+    def track(self, item: object, candidates: list or tuple or np.ndarray = None,
+              num_candidates: int = None, context: object = None, sample: object = None) -> str or None:
+        """
+        Track that variant is causal in the system
+
+        Parameters
+        ----------
+        item: object
+            any JSON encodable object chosen as best from candidates
+        candidates: list or tuple or np.ndarray
+            collection of items from which best is chosen
+        num_candidates: int
+            number of items from which best is chosen; if provided, candidates must be None
+        context: object
+            any JSON encodable object representing context
+        sample: object
+            any JSON encodable object randomly selected from candidates
+            (different from `item`)
 
         Returns
         -------
@@ -462,46 +423,20 @@ class DecisionTracker:
             message id of sent improve request or None if an error happened
 
         """
-
         assert self.track_url is not None
 
-        if model_name is None:
-            warn('`model_name` must not be None in order to be tracked')
-            return None
+        # this will raise an assertion error if candidates are bad
+        self._check_candidates(candidates=candidates, num_candidates=num_candidates, item=item)
+        # this will raise an assertion error if sample is bad
+        self._check_sample(sample=sample, item=item, candidates=candidates)
 
-        if not re.search(XGBChooser.MODEL_NAME_REGEXP, model_name):
-            warn(f'`model_name` must comply with {XGBChooser.MODEL_NAME_REGEXP} regexp')
-            return None
-
-        if isinstance(ranked_variants, np.ndarray):
-            ranked_variants = ranked_variants.tolist()
-
-        variants_count = len(ranked_variants) if ranked_variants is not None else 1
-        track_runners_up = self._should_track_runners_up(variants_count=variants_count)
-
-        if len(ranked_variants) == 2 and self.max_runners_up > 0:
-            # for 2 variants runners_up should be True
-            assert track_runners_up
-
-        # for track_runners_up == false (max_runners_up == 0)
-        # we skip this clause and runners_up == None
-        runners_up = None
-        if track_runners_up:
-            runners_up = self._top_runners_up(ranked_variants=ranked_variants)
-
-        # If runners_up == None and len(variants) == 2 -> sample should be extracted
-        sample = None
-        has_sample = self._is_sample_available(ranked_variants=ranked_variants, runners_up=runners_up)
-        if has_sample:
-            sample = self.get_sample(ranked_variants=ranked_variants, track_runners_up=track_runners_up)
-
-        body = self._get_decision_track_body(
-            variant=ranked_variants[0], model_name=model_name, variants_count=variants_count,
-            givens=givens, runners_up=runners_up, sample=sample, has_sample=has_sample)
+        body = self._get_track_body(
+            item=item, num_candidates=self._get_items_count(candidates, num_candidates),
+            context=context, sample=sample)
 
         return self.post_improve_request(body_values=body)
 
-    def add_reward(self, reward: float or int, model_name: str, decision_id: str):
+    def add_reward(self, reward: float or int, reward_id: str):
         """
         Adds provided reward for a given decision id made by a given model.
 
@@ -510,11 +445,8 @@ class DecisionTracker:
         ----------
         reward: float or int
             reward to be assigned to a given decision
-        model_name: str
-            name of a model which made rewarded decision
-        decision_id: str
-            ksuid of rewarded decision
-
+        reward_id: str
+            ksuid of the reward
 
         Returns
         -------
@@ -523,10 +455,7 @@ class DecisionTracker:
 
         """
 
-        assert self.track_url is not None, '`track_url` is None - please provide valid `track_url`'
-        assert model_name is not None and decision_id is not None
-        assert is_valid_ksuid(decision_id)
-        assert re.search(XGBChooser.MODEL_NAME_REGEXP, model_name) is not None
+        assert is_valid_ksuid(reward_id)
         assert isinstance(reward, float) or isinstance(reward, int)
         assert reward is not None
         assert not np.isnan(reward)
@@ -534,55 +463,11 @@ class DecisionTracker:
 
         body = {
             self.TYPE_KEY: self.REWARD_TYPE,
-            self.MODEL_KEY: model_name,
+            self.MODEL_KEY: self.model_name,
             self.REWARD_KEY: reward,
-            self.DECISION_ID_KEY: decision_id}
+            self.REWARD_ID_KEY: reward_id}
 
         self.post_improve_request(body_values=body)
-
-    def get_sample(self, ranked_variants: list, track_runners_up: bool) -> object:
-        """
-        Gets sample from ranked_variants. Takes runenrs up into account
-
-
-        Parameters
-        ----------
-        ranked_variants: list or np.ndarray
-            list of ranked variants
-        track_runners_up: bool
-            should runners up be tracked ?
-
-
-        Returns
-        -------
-        object
-            sample
-
-        """
-
-        check_items(ranked_variants)
-        assert isinstance(track_runners_up, bool)
-        assert len(ranked_variants) > 1
-
-        if len(ranked_variants) == 2:
-            assert self.max_runners_up == 0
-
-        # If there are no runners up, then sample is a random sample
-        # from variants with just best excluded.
-
-        # randomly select variants from all minus best
-        if not track_runners_up:
-            return ranked_variants[np.random.randint(1, len(ranked_variants))]
-
-        # If there are no remaining variants after best and runners up,
-        # then there is no sample.
-        # below is just a check
-        last_runner_up_idx = min(len(ranked_variants), self.max_runners_up + 1)
-        assert last_runner_up_idx < len(ranked_variants)
-
-        # If there are runners up, then sample is a random sample from
-        # variants with best and runners up excluded.
-        return ranked_variants[np.random.randint(last_runner_up_idx, len(ranked_variants))]
 
     def _is_valid_message_id(self, message_id: str or None) -> bool:
         """
@@ -636,23 +521,20 @@ class DecisionTracker:
                         if len(payload_json) <= 1000 else payload_json[:100]
 
                 # TODO test this path within thread but how?
-                warn(
-                    'When attempting to post to improve.ai endpoint got an error with code {} and user info: {}'
-                    .format(str(response.status_code), orjson.dumps(user_info).decode('utf-8')))
+                warn('When attempting to post to improve.ai endpoint got an error with code {} and user info: {}'
+                     .format(str(response.status_code), orjson.dumps(user_info).decode('utf-8')))
 
         except Exception as exc:
             print('Following error occurred:')
             print(exc)
 
-    def post_improve_request(self, body_values: Dict[str, object], message_id: str = None) -> str:
+    def post_improve_request(self, body_values: Dict[str, object], message_id: str = None) -> str or None:
         """
         Posts request to tracker endpoint
         Parameters
         ----------
         body_values: dict
             dict to be posted
-        block: callable
-            callable to execute on error
         message_id: str or None
             ksuid of a given request
         Returns
