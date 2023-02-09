@@ -13,7 +13,7 @@ from improveai.chooser import XGBChooser
 from improveai.utils.general_purpose_tools import check_items, is_valid_ksuid
 
 
-class DecisionTracker:
+class RewardTracker:
 
     @property
     def MODEL_KEY(self) -> str:
@@ -398,10 +398,19 @@ class DecisionTracker:
             # make sure sample is in candidates
             assert sample in candidates
 
+    def _get_sample(self, item: object, candidates: list or tuple or np.ndarray) -> object:
+        item_index = candidates.index(item)
+        sample_index = item_index
+        while sample_index == item_index:
+            sample_index = np.random.randint(len(candidates))
+        return candidates[sample_index]
+
+    # nullable item, nonnull list candidates, nullable context
     def track(self, item: object, candidates: list or tuple or np.ndarray = None,
-              num_candidates: int = None, context: object = None, sample: object = None) -> str or None:
+              context: object = None) -> str or None:
         """
-        Track that variant is causal in the system
+        Track that variant is causal in the system. Select a random sample from
+        candidates
 
         Parameters
         ----------
@@ -409,13 +418,8 @@ class DecisionTracker:
             any JSON encodable object chosen as best from candidates
         candidates: list or tuple or np.ndarray
             collection of items from which best is chosen
-        num_candidates: int
-            number of items from which best is chosen; if provided, candidates must be None
         context: object
             any JSON encodable object representing context
-        sample: object
-            any JSON encodable object randomly selected from candidates
-            (different from `item`)
 
         Returns
         -------
@@ -423,17 +427,45 @@ class DecisionTracker:
             message id of sent improve request or None if an error happened
 
         """
-        assert self.track_url is not None
-
         # this will raise an assertion error if candidates are bad
-        self._check_candidates(candidates=candidates, num_candidates=num_candidates, item=item)
-        # this will raise an assertion error if sample is bad
-        self._check_sample(sample=sample, item=item, candidates=candidates)
+        # candidates must be at least of length 2 (item + 1 candidate)
+        assert len(candidates) > 1
+        # item must be in candidates
+        assert item in candidates
 
         body = self._get_track_body(
-            item=item, num_candidates=self._get_items_count(candidates, num_candidates),
-            context=context, sample=sample)
+            item=item, num_candidates=len(candidates), context=context, sample=self._get_sample(item, candidates))
 
+        return self.post_improve_request(body_values=body)
+
+    # nullable item, nullable sample, int numCandidates, nullable context
+    def track_with_sample(
+            self, item: object, num_candidates: int = None, context: object = None,
+            sample: object = None) -> str or None:
+        """
+        Tracks provided item with sample.
+
+        Parameters
+        ----------
+        item: object
+            any JSON encodable object chosen as best from candidates
+        num_candidates: int
+            number of candidates
+        context: object
+            any JSON encodable object representing context
+        sample: object
+            sample to be tracked along with item
+
+        Returns
+        -------
+        ste or None
+            decision ID or None
+
+        """
+
+        assert num_candidates > 1
+        body = self._get_track_body(
+            item=item, num_candidates=num_candidates, context=context, sample=sample)
         return self.post_improve_request(body_values=body)
 
     def add_reward(self, reward: float or int, reward_id: str):
