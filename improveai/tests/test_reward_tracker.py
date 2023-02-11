@@ -76,14 +76,6 @@ class TestRewardTracker:
     @candidates.setter
     def candidates(self, value):
         self._variants = value
-        
-    @property
-    def max_runners_up(self):
-        return self._max_runners_up
-
-    @max_runners_up.setter
-    def max_runners_up(self, value):
-        self._max_runners_up = value
 
     @property
     def sample_seed(self):
@@ -195,7 +187,7 @@ class TestRewardTracker:
         expected_sample = self.dummy_item
         assert calculated_sample == expected_sample
 
-    def test_track_single_none_item_none_context_no_runners_up(self):
+    def test_track_single_none_item_none_context(self):
 
         expected_track_body = {
             self.blocking_reward_tracker.MODEL_KEY: self.dummy_model_name,
@@ -265,7 +257,7 @@ class TestRewardTracker:
             assert is_valid_ksuid(reward_id)
             assert posted_request_container['request_json'] == expected_track_body
 
-    def test_track_2_variants_no_context(self):
+    def test_track_2_candidates_no_context(self):
 
         candidates = [0, 1]
         item = candidates[0]
@@ -337,6 +329,231 @@ class TestRewardTracker:
             assert posted_request_container['request_json'] == expected_track_body
 
     def test_track_ndarray_candidates(self):
+
+        candidates = [el for el in range(1, 20, 1)]
+        item = candidates[0]
+        context = {'dummy': 'givens'}
+        expected_sample = 9
+
+        expected_track_body = {
+            self.blocking_reward_tracker.MODEL_KEY: self.dummy_model_name,
+            self.blocking_reward_tracker.ITEM_KEY: candidates[0],
+            self.blocking_reward_tracker.ITEMS_COUNT_KEY: len(candidates),
+            self.blocking_reward_tracker.SAMPLE_KEY: expected_sample,
+            self.blocking_reward_tracker.CONTEXT_KEY: context}
+
+        posted_request_container = {'request_json': None}
+
+        def custom_matcher(request):
+            request_dict = deepcopy(request.json())
+            del request_dict[self.blocking_reward_tracker.MESSAGE_ID_KEY]
+            posted_request_container['request_json'] = request_dict
+            return True
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success',
+                   additional_matcher=custom_matcher)
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                np.random.seed(self.sample_seed)
+                decision_id = self.blocking_reward_tracker.track(
+                    item=item, candidates=np.array(candidates), context=context)
+            time.sleep(0.175)
+            for w_ in w:
+                print(w_.message)
+            assert len(w) == 0
+
+        assert is_valid_ksuid(decision_id)
+        assert posted_request_container['request_json'] == expected_track_body
+
+    def test_track_tuple_candidates(self):
+
+        candidates = [el for el in range(1, 20, 1)]
+        item = candidates[0]
+        context = {'dummy': 'givens'}
+        expected_sample = 9
+
+        expected_track_body = {
+            self.blocking_reward_tracker.MODEL_KEY: self.dummy_model_name,
+            self.blocking_reward_tracker.ITEM_KEY: candidates[0],
+            self.blocking_reward_tracker.ITEMS_COUNT_KEY: len(candidates),
+            self.blocking_reward_tracker.SAMPLE_KEY: expected_sample,
+            self.blocking_reward_tracker.CONTEXT_KEY: context}
+
+        posted_request_container = {'request_json': None}
+
+        def custom_matcher(request):
+            request_dict = deepcopy(request.json())
+            del request_dict[self.blocking_reward_tracker.MESSAGE_ID_KEY]
+            posted_request_container['request_json'] = request_dict
+            return True
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success',
+                   additional_matcher=custom_matcher)
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                np.random.seed(self.sample_seed)
+                decision_id = self.blocking_reward_tracker.track(
+                    item=item, candidates=tuple(candidates), context=context)
+            time.sleep(0.175)
+            for w_ in w:
+                print(w_.message)
+            assert len(w) == 0
+
+        assert is_valid_ksuid(decision_id)
+        assert posted_request_container['request_json'] == expected_track_body
+
+    # TODO test track_with_sample()
+
+    def test_track_with_sample_single_none_item_none_context(self):
+
+        expected_track_body = {
+            self.blocking_reward_tracker.MODEL_KEY: self.dummy_model_name,
+            self.blocking_reward_tracker.ITEM_KEY: None,
+            self.blocking_reward_tracker.ITEMS_COUNT_KEY: 1,
+        }
+
+        expected_request_json = json.dumps(expected_track_body, sort_keys=False)
+
+        def custom_matcher(request):
+            request_dict = deepcopy(request.json())
+            del request_dict[self.blocking_reward_tracker.MESSAGE_ID_KEY]
+
+            if json.dumps(request_dict,
+                          sort_keys=False) != expected_request_json:
+                print('request body:')
+                print(request.text)
+                print('expected body:')
+                print(expected_request_json)
+                return None
+            return True
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success',
+                   additional_matcher=custom_matcher)
+
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                # item: object, num_candidates: int, context: object, sample
+                reward_id = self.blocking_reward_tracker.track_with_sample(
+                    item=None, num_candidates=1, sample=None)
+                time.sleep(0.175)
+                assert len(w) == 0
+
+            assert is_valid_ksuid(reward_id)
+
+    def test_track_with_sample_none_context(self):
+
+        candidates = [el for el in range(0, 20, 1)]
+        item = candidates[0]
+        expected_sample = 9
+
+        expected_track_body = {
+            self.blocking_reward_tracker.MODEL_KEY: self.dummy_model_name,
+            self.blocking_reward_tracker.ITEM_KEY: candidates[0],
+            self.blocking_reward_tracker.ITEMS_COUNT_KEY: len(candidates),
+            self.blocking_reward_tracker.SAMPLE_KEY: expected_sample}
+
+        posted_request_container = {'request_json': None}
+
+        def custom_matcher(request):
+            request_dict = deepcopy(request.json())
+            del request_dict[self.blocking_reward_tracker.MESSAGE_ID_KEY]
+            posted_request_container['request_json'] = request_dict
+            return True
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success',
+                   additional_matcher=custom_matcher)
+
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                np.random.seed(self.sample_seed)
+                reward_id = self.blocking_reward_tracker.track_with_sample(
+                    item=item, num_candidates=20, context=None, sample=expected_sample)
+                time.sleep(0.175)
+                assert len(w) == 0
+
+            assert is_valid_ksuid(reward_id)
+            assert posted_request_container['request_json'] == expected_track_body
+
+    def test_track_with_sample_2_candidates_no_context(self):
+
+        candidates = [0, 1]
+        item = candidates[0]
+
+        expected_track_body = {
+            self.blocking_reward_tracker.MODEL_KEY: self.dummy_model_name,
+            self.blocking_reward_tracker.ITEM_KEY: item,
+            self.blocking_reward_tracker.ITEMS_COUNT_KEY: len(candidates),
+            self.blocking_reward_tracker.SAMPLE_KEY: candidates[1]}
+
+        posted_request_container = {'request_json': None}
+
+        def custom_matcher(request):
+            request_dict = deepcopy(request.json())
+            del request_dict[self.blocking_reward_tracker.MESSAGE_ID_KEY]
+            posted_request_container['request_json'] = request_dict
+            return True
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success',
+                   additional_matcher=custom_matcher)
+
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                np.random.seed(self.sample_seed)
+                reward_id = self.blocking_reward_tracker.track_with_sample(
+                    item=0, num_candidates=2, context=None, sample=1)
+                time.sleep(0.175)
+                assert len(w) == 0
+
+            assert is_valid_ksuid(reward_id)
+            assert posted_request_container[
+                       'request_json'] == expected_track_body
+
+    def test_track_with_sample(self):
+
+        candidates = [el for el in range(1, 20, 1)]
+        item = candidates[0]
+        context = {'dummy': 'givens'}
+        expected_sample = 6
+
+        expected_track_body = {
+            self.blocking_reward_tracker.MODEL_KEY: self.dummy_model_name,
+            self.blocking_reward_tracker.ITEM_KEY: item,
+            self.blocking_reward_tracker.ITEMS_COUNT_KEY: len(candidates),
+            self.blocking_reward_tracker.SAMPLE_KEY: expected_sample,
+            self.blocking_reward_tracker.CONTEXT_KEY: context}
+
+        posted_request_container = {'request_json': None}
+
+        def custom_matcher(request):
+            request_dict = deepcopy(request.json())
+            del request_dict[self.blocking_reward_tracker.MESSAGE_ID_KEY]
+            posted_request_container['request_json'] = request_dict
+            return True
+
+        with rqm.Mocker() as m:
+            m.post(self.track_url, text='success',
+                   additional_matcher=custom_matcher)
+
+            with catch_warnings(record=True) as w:
+                simplefilter("always")
+                np.random.seed(self.sample_seed)
+                np.random.seed(1)
+                reward_id = self.blocking_reward_tracker.track_with_sample(
+                    item=item, num_candidates=len(candidates), context=context, sample=expected_sample)
+                time.sleep(0.175)
+                assert len(w) == 0
+            # raise
+
+            assert is_valid_ksuid(reward_id)
+            assert posted_request_container[
+                       'request_json'] == expected_track_body
+
+    def test_track_with_sample_ndarray_candidates(self):
 
         candidates = [el for el in range(1, 20, 1)]
         item = candidates[0]
@@ -638,7 +855,6 @@ class TestRewardTracker:
         dummy_api_key = 'dummy-api-key'
         reward_tracker_with_headers = rtr.RewardTracker(
             model_name=self.dummy_model_name, track_url=self.track_url, track_api_key=dummy_api_key, _threaded_requests=False)
-        # self, track_url: str, max_runners_up: int = 50, track_api_key: str = None
         headers_cache = {'headers': None}
 
         def cache_headers(request):
