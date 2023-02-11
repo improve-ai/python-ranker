@@ -304,7 +304,6 @@ class RewardTracker:
         """
 
         body = {
-            # self.TYPE_KEY: self.DECISION_TYPE,
             self.MODEL_KEY: self.model_name,
             self.ITEM_KEY: item,
             self.ITEMS_COUNT_KEY: num_candidates}
@@ -347,8 +346,6 @@ class RewardTracker:
         sample_index = item_index
         while sample_index == item_index:
             sample_index = np.random.randint(len(candidates))
-        print('### sample_index ###')
-        print(sample_index)
         return candidates[sample_index]
 
     def track(self, item: object, candidates: list or tuple or np.ndarray = None,
@@ -372,9 +369,11 @@ class RewardTracker:
             message id of sent improve request or None if an error happened
 
         """
-        item, candidates, context = deepcopy_args(*[item, candidates, context])
         # this will raise an assertion error if candidates are bad
         check_candidates(candidates)
+        item, candidates, context = deepcopy_args(*[item, candidates, context])
+        if isinstance(candidates, np.ndarray):
+            candidates = candidates.tolist()
         # item must be in candidates
         assert item in candidates
 
@@ -442,7 +441,6 @@ class RewardTracker:
         assert not np.isinf(reward)
 
         body = {
-            # self.TYPE_KEY: self.REWARD_TYPE,
             self.MODEL_KEY: self.model_name,
             self.REWARD_KEY: reward,
             self.REWARD_ID_KEY: reward_id}
