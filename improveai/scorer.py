@@ -2,7 +2,7 @@ import numpy as np
 
 from improveai.chooser import XGBChooser
 from improveai.settings import DEBUG
-from improveai.utils.general_purpose_tools import check_items
+from improveai.utils.general_purpose_tools import check_candidates
 
 
 class Scorer:
@@ -59,7 +59,7 @@ class Scorer:
         assert len(items) > 0
         # Return a list of double scores
 
-        check_items(items=items)
+        check_candidates(candidates=items)
         # log givens for DEBUG == True
         if DEBUG is True:
             print(f'[DEBUG] givens: {context}')

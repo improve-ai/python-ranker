@@ -10,7 +10,8 @@ from ksuid import Ksuid
 
 import improveai
 from improveai.chooser import XGBChooser
-from improveai.utils.general_purpose_tools import check_items, is_valid_ksuid
+from improveai.utils.general_purpose_tools import check_candidates, is_valid_ksuid, \
+    deepcopy_args
 
 
 class RewardTracker:
@@ -65,7 +66,7 @@ class RewardTracker:
             Track request body key storing best variant
 
         """
-        return "variant"
+        return "item"
 
     @property
     def CONTEXT_KEY(self) -> str:
@@ -257,7 +258,11 @@ class RewardTracker:
     def api_key(self, new_val: str):
         self._api_key = new_val
 
-    def __init__(self, model_name: str, track_url: str, track_api_key: str = None):
+    @property
+    def threaded_requests(self):
+        return self.__threaded_requests
+
+    def __init__(self, model_name: str, track_url: str, track_api_key: str = None, _threaded_requests: bool = True):
         """
         Init with params
 
@@ -273,8 +278,10 @@ class RewardTracker:
         self.track_url = track_url
         self.api_key = track_api_key
 
-    def _get_track_body(
-            self, item: object, num_candidates: int, context: object, sample: object):
+        # bool flag indicating whether thread pool executor will be used for requests
+        self.__threaded_requests = _threaded_requests
+
+    def _get_track_body(self, item: object, num_candidates: int, context: object, sample: object):
         """
         Helper method to create track body. used by RewardTracker's track()
 
@@ -297,89 +304,28 @@ class RewardTracker:
         """
 
         body = {
-            self.TYPE_KEY: self.DECISION_TYPE,
+            # self.TYPE_KEY: self.DECISION_TYPE,
             self.MODEL_KEY: self.model_name,
             self.ITEM_KEY: item,
             self.ITEMS_COUNT_KEY: num_candidates}
 
-        if sample is not None:
+        # as long as the num_candidates is > 1, we can assume that the sample
+        # is present even if it is None
+        if num_candidates > 1:
             body[self.SAMPLE_KEY] = sample
 
         if context is not None:
             body[self.CONTEXT_KEY] = context
 
-        return body
+        # deepcopy to avoid effects of in-place modifications
+        return deepcopy(body)
 
-    def _check_candidates(
-            self, candidates: list or tuple or np.ndarray, num_candidates: int, item: object):
+    def _get_sample(self, item: object, candidates: list or tuple or np.ndarray) -> object:
         """
-        Check if provided candidates and num_candidates have valid values and
-        item is in candidates
+        Gets sample from candidates excluding item
 
         Parameters
         ----------
-        candidates: list or tuple or np.ndarray
-            collection of candidates
-        num_candidates: int
-            number of candidates
-        item: object
-            item chosen from candidates
-
-        Returns
-        -------
-        None
-            None
-
-        """
-        if candidates is not None:
-            # num candidates must be None
-            assert num_candidates is None
-            # candidates must be at least of length 2 (item + 1 candidate)
-            assert len(candidates) > 1
-            # item must be in candidates
-            assert item in candidates
-        elif candidates is None and num_candidates is not None:
-            # num candidates must be at least 2 (item + 1 candidate)
-            assert num_candidates > 1
-        else:
-            # this is the case when both candidates and num_candidates are None
-            raise ValueError('Either `candidates` or `num_candidates` must be provided')
-
-    def _get_items_count(self, candidates: list or tuple or np.ndarray, num_candidates: int):
-        """
-        Extracs items count based on candidates and num_candidates values
-
-        Parameters
-        ----------
-        candidates: list
-            list of candidates
-        num_candidates: int
-            number of candidates
-
-        Returns
-        -------
-        int
-            number of candidates to be tracked
-
-        """
-
-        if candidates is not None:
-            return len(candidates)
-        elif num_candidates is not None:
-            return num_candidates
-        else:
-            raise ValueError('Both `candidates` and `num_candidates` must not be provided at once')
-
-    def _check_sample(self, sample: object, item: object, candidates: list or tuple or np.ndarray):
-        """
-        Checks if sample is None.
-        if sample is not None, checks if sample is different from item and is in
-        candidates.
-
-        Parameters
-        ----------
-        sample: object
-            JSON encodable object included in candidates or None
         item: object
             the best of candidates
         candidates: list or tuple or np.ndarray
@@ -387,25 +333,24 @@ class RewardTracker:
 
         Returns
         -------
-        None
-            None
+        object
+            sample from candidates
 
         """
-        if sample is not None:
-            # make sure sample is different from item
-            # TODO determine if duplicates are allowed -> if so id()s should be compared (?)
-            assert id(item) != id(sample)
-            # make sure sample is in candidates
-            assert sample in candidates
+        assert len(candidates) > 1, \
+            'candidates must have at least 2 items in order to draw sample'
 
-    def _get_sample(self, item: object, candidates: list or tuple or np.ndarray) -> object:
+        if not isinstance(candidates, list):
+            candidates = list(candidates)
+
         item_index = candidates.index(item)
         sample_index = item_index
         while sample_index == item_index:
             sample_index = np.random.randint(len(candidates))
+        print('### sample_index ###')
+        print(sample_index)
         return candidates[sample_index]
 
-    # nullable item, nonnull list candidates, nullable context
     def track(self, item: object, candidates: list or tuple or np.ndarray = None,
               context: object = None) -> str or None:
         """
@@ -427,18 +372,18 @@ class RewardTracker:
             message id of sent improve request or None if an error happened
 
         """
+        item, candidates, context = deepcopy_args(*[item, candidates, context])
         # this will raise an assertion error if candidates are bad
-        # candidates must be at least of length 2 (item + 1 candidate)
-        assert len(candidates) > 1
+        check_candidates(candidates)
         # item must be in candidates
         assert item in candidates
 
         body = self._get_track_body(
-            item=item, num_candidates=len(candidates), context=context, sample=self._get_sample(item, candidates))
+            item=item, num_candidates=len(candidates), context=context,
+            sample=self._get_sample(item, candidates) if len(candidates) > 1 else None)
 
         return self.post_improve_request(body_values=body)
 
-    # nullable item, nullable sample, int numCandidates, nullable context
     def track_with_sample(
             self, item: object, num_candidates: int = None, context: object = None,
             sample: object = None) -> str or None:
@@ -463,7 +408,10 @@ class RewardTracker:
 
         """
 
-        assert num_candidates > 1
+        item, num_candidates, context, sample = \
+            deepcopy_args(*[item, num_candidates, context, sample])
+
+        assert num_candidates > 0
         body = self._get_track_body(
             item=item, num_candidates=num_candidates, context=context, sample=sample)
         return self.post_improve_request(body_values=body)
@@ -494,7 +442,7 @@ class RewardTracker:
         assert not np.isinf(reward)
 
         body = {
-            self.TYPE_KEY: self.REWARD_TYPE,
+            # self.TYPE_KEY: self.REWARD_TYPE,
             self.MODEL_KEY: self.model_name,
             self.REWARD_KEY: reward,
             self.REWARD_ID_KEY: reward_id}
@@ -590,6 +538,9 @@ class RewardTracker:
             warn("Data serialization error: {}\nbody: {}".format(exc, body))
             return None
 
-        improveai.track_improve_executor.submit(self.do_post_improve_request, *[payload_json, headers])
+        if self.threaded_requests:
+            improveai.track_improve_executor.submit(self.do_post_improve_request, *[payload_json, headers])
+        else:
+            self.do_post_improve_request(payload_json, headers)
 
         return body[self.MESSAGE_ID_KEY]
