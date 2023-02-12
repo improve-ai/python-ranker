@@ -8,8 +8,8 @@ class Ranker:
     # TODO I think we might go with scorer and model_url as properties with only getter.
     #  If we won't define them as properties anyone will be able to mutate them
     #  Exposing only getters and leaving underlying attributes private allows to make them
-    #  immutable and nobody will be able to tinker with them as one could with '
-    #  normal' instance attributes
+    #  immutable and nobody will be able to tinker with them as one could with
+    #  'normal' instance attributes
     @property
     def scorer(self):
         """
@@ -23,7 +23,6 @@ class Ranker:
              a scorer for this Ranked
         """
         return self.__scorer
-
 
     @property
     def model_url(self):
@@ -40,18 +39,16 @@ class Ranker:
 
     def __init__(self, scorer: Scorer = None, model_url: str = None):
 
-        # instantiate scorer and model_url
-        self.__scorer = scorer
-        self.__model_url = model_url
         # perform sanity check -> if scorer parameter is None set model_url with
         # provided URL and use it to create Scorer object and set scorer property
-        if scorer is None and model_url is not None:
-            self.__model_url = model_url
-            self.__scorer = Scorer(model_url=self.__model_url)
-        elif scorer is not None and model_url is not None:
+        if scorer is not None:
+            assert isinstance(scorer, Scorer)
             # if both are provided choose scorer over model_url
             self.__scorer = scorer
             self.__model_url = self.__scorer.model_url
+        elif scorer is None and model_url is not None:
+            self.__model_url = model_url
+            self.__scorer = Scorer(model_url=self.__model_url)
 
     def rank(self, items: list or tuple or np.ndarray, context: object) -> list:
         """
