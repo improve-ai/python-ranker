@@ -1,8 +1,7 @@
 import numpy as np
 import os
-from pytest import fixture, raises
+from pytest import raises
 
-from improveai.chooser import XGBChooser
 from improveai.ranker import Ranker
 from improveai.scorer import Scorer
 
@@ -17,9 +16,6 @@ class TestRanker:
         ranker = Ranker(scorer=scorer)
 
         assert isinstance(ranker.scorer, Scorer)
-        print('### ranker.model_url ###')
-        print(ranker.model_url)
-        print(scorer.model_url)
 
         assert ranker.model_url == scorer.model_url
 
