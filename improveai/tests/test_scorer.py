@@ -1,12 +1,6 @@
-from copy import deepcopy
-import json
-import math
 import numpy as np
-import requests_mock as rqm
 import os
 from pytest import fixture, raises
-import sys
-from warnings import catch_warnings, simplefilter
 
 from improveai.chooser import XGBChooser
 from improveai.ranker import Scorer
