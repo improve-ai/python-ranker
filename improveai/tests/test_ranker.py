@@ -42,10 +42,10 @@ class TestRanker:
         assert model_url is not None
 
         ranker = Ranker(model_url=model_url)
-        items = [1, 2, 3]
+        items = ['b', 'a', 'd']
         np.random.seed(0)
         ranked_items = ranker.rank(items=items, context=None)
-        expected_ranked_items = [2, 3, 1]
+        expected_ranked_items = ['b', 'a', 'd']
         np.testing.assert_array_equal(ranked_items, expected_ranked_items)
 
     def test_rank(self):
@@ -53,8 +53,10 @@ class TestRanker:
         assert model_url is not None
 
         ranker = Ranker(model_url=model_url)
-        items = [1, 2, 3]
+        items = ['c', 'a', 'd']
+        # TODO move this to a fixture
+        context = {'ga': 1, 'gb': 0}
         np.random.seed(0)
-        ranked_items = ranker.rank(items=items, context={'valid': 'context'})
-        expected_ranked_items = [2, 3, 1]
+        ranked_items = ranker.rank(items=items, context=context)
+        expected_ranked_items = ['a', 'd', 'c']
         np.testing.assert_array_equal(ranked_items, expected_ranked_items)

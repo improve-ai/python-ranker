@@ -2,8 +2,8 @@ import numpy as np
 import xxhash
 
 
-VARIANT_FEATURE_KEY = 'v'
-GIVENS_FEATURE_KEY = 'g'
+ITEM_FEATURE_KEY = 'item'
+CONTEXT_FEATURE_KEY = 'context'
 
 xxh3 = xxhash.xxh3_64_intdigest
 
@@ -46,23 +46,23 @@ class FeatureEncoder:
         except KeyError as exc:
             raise ValueError("Bad model metadata") from exc
 
-    def encode_variant(self, variant, into: np.ndarray, noise_shift: float = 0.0, noise_scale: float = 1.0):
-        self._encode(variant, path=VARIANT_FEATURE_KEY, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
+    def encode_item(self, item, into: np.ndarray, noise_shift: float = 0.0, noise_scale: float = 1.0):
+        self._encode(item, path=ITEM_FEATURE_KEY, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
 
-    def encode_givens(self, givens, into: np.ndarray, noise_shift: float = 0.0, noise_scale: float = 1.0):
-        self._encode(givens, path=GIVENS_FEATURE_KEY, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
+    def encode_context(self, context, into: np.ndarray, noise_shift: float = 0.0, noise_scale: float = 1.0):
+        self._encode(context, path=CONTEXT_FEATURE_KEY, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
 
     def encode_feature_vector(
-            self, variant: object, givens: object, into: np.ndarray, noise: float = 0.0):
+            self, item: object, context: object, into: np.ndarray, noise: float = 0.0):
         """
-        Fully encodes provided variant and givens into a np.ndarray provided as `into` parameter.
+        Fully encodes provided item and context into a np.ndarray provided as `into` parameter.
         `into` must not be None
 
         Parameters
         ----------
-        variant: object
+        item: object
             a JSON encodable object to be encoded
-        givens: object
+        context: object
             a JSON encodable object to be encoded
         into: np.ndarray
             an array into which feature values will be added
@@ -77,11 +77,11 @@ class FeatureEncoder:
         """
         noise_shift, noise_scale = get_noise_shift_scale(noise)
 
-        if variant:
-            self.encode_variant(variant, into, noise_shift, noise_scale)
+        if item:
+            self.encode_item(item, into, noise_shift, noise_scale)
 
-        if givens:
-            self.encode_givens(givens, into, noise_shift, noise_scale)
+        if context:
+            self.encode_context(context, into, noise_shift, noise_scale)
 
     def _encode(self, obj: object, path: str, into: np.ndarray, noise_shift: float = 0.0, noise_scale: float = 1.0):
         """
@@ -196,9 +196,6 @@ class StringTable:
         # hash to float in range [-miss_width/2, miss_width/2]
         # 32 bit mask for JS portability
         small_string = f'{(np.float64(2 ** -32)).view(np.uint64):0>64b}'
-        print('### small_string ###')
-        print(np.float64(2 ** -32))
-        print(small_string)
         return scale((string_hash & 0xFFFFFFFF) * 2 ** -32, self.miss_width)
 
 

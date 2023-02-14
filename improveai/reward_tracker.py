@@ -79,7 +79,7 @@ class RewardTracker:
             Track request body key storing givens
 
         """
-        return "givens"
+        return "context"
 
     @property
     def REWARD_TYPE(self) -> str:

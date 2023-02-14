@@ -419,7 +419,7 @@ class XGBChooser:
         for variant, into_row in zip(items, into_matrix):
             # variant: object, givens: object, into: np.ndarray, noise: float
             self.feature_encoder.encode_feature_vector(
-                variant=variant, givens=context, into=into_row, noise=noise)
+                item=variant, context=context, into=into_row, noise=noise)
         return into_matrix
 
     def score(self, variants: list or tuple or np.ndarray, givens: dict or None, **kwargs) -> np.ndarray:

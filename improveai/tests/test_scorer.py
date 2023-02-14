@@ -40,7 +40,8 @@ class TestScorer:
         self.invalid_fs_model_url = os.getenv('DUMMY_MODEL_INVALID_PATH', None)
         assert self.invalid_fs_model_url is not None
 
-        self.valid_context = {'a': 1, 'b': 2, 'c': 3}
+        # context = {'ga': 1, 'gb': 0}
+        self.valid_context = {'ga': 1, 'gb': 0}
 
     def test_constructor_with_valid_model_url(self):
         scorer = Scorer(model_url=self.valid_fs_model_url)
@@ -65,17 +66,22 @@ class TestScorer:
 
     def test_score_no_context(self):
         scorer = Scorer(model_url=self.valid_fs_model_url)
+        items = ['a', 'b', 'c', 'd']
         np.random.seed(0)
-        scores = scorer.score(items=[1, 2, 3], context=None)
+        scores = scorer.score(items=items, context=None)
+
         expected_scores = \
-            np.array([-0.07262340603001519, 2.5619021180586072, 2.5619021111587506]).astype(np.float64)
+            np.array([-0.5532910567296306, 1.7772981646970958, -0.561980838193514, -0.5601502151900769]).astype(np.float64)
         np.testing.assert_array_equal(scores, expected_scores)
 
     def test_score_valid_context(self):
         # TODO perhaps a model with `context` features should be trained
         scorer = Scorer(model_url=self.valid_fs_model_url)
+
+        items = ['a', 'b', 'c', 'd']
         np.random.seed(0)
-        scores = scorer.score(items=[1, 2, 3], context=self.valid_context)
+        scores = scorer.score(items=items, context=self.valid_context)
+
         expected_scores = \
-            np.array([-0.07262340603001519, 2.5619021180586072, 2.5619021111587506]).astype(np.float64)
+            np.array([1.7398908990847308, 1.8778475049452037, -0.5571367091079732, 0.22394380553421966]).astype(np.float64)
         np.testing.assert_array_equal(scores, expected_scores)

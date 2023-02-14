@@ -9,7 +9,7 @@ import numpy as np
 cimport numpy as np
 import xxhash
 
-from improveai.feature_encoder import VARIANT_FEATURE_KEY, GIVENS_FEATURE_KEY
+from improveai.feature_encoder import ITEM_FEATURE_KEY, CONTEXT_FEATURE_KEY
 
 cdef object xxh3 = xxhash.xxh3_64_intdigest
 
@@ -51,6 +51,9 @@ cdef class StringTable:
 
         self.model_seed = model_seed
         self.mask = get_mask(string_table)
+        print('### self.mask ###')
+        print(self.mask)
+        print(string_table)
         cdef unsigned long long max_position = len(string_table) - 1
 
         # empty and single entry tables will have a miss_width of 1 or range [-0.5, 0.5]
@@ -144,30 +147,30 @@ cdef class FeatureEncoder:
         except KeyError as exc:
             raise ValueError("Bad model metadata") from exc
 
-    cpdef void encode_variant(
-            self, object variant, np.ndarray[double, ndim=1, mode='c'] into,
+    cpdef void encode_item(
+            self, object item, np.ndarray[double, ndim=1, mode='c'] into,
             double noise_shift = 0.0, double noise_scale = 1.0):
-        self._encode(variant, path=VARIANT_FEATURE_KEY, into=into,
+        self._encode(item, path=ITEM_FEATURE_KEY, into=into,
                      noise_shift=noise_shift, noise_scale=noise_scale)
 
-    cpdef void encode_givens(
-            self, dict givens, np.ndarray[double, ndim=1, mode='c'] into,
+    cpdef void encode_context(
+            self, dict context, np.ndarray[double, ndim=1, mode='c'] into,
             double noise_shift = 0.0, double noise_scale = 1.0):
-        self._encode(givens, path=GIVENS_FEATURE_KEY, into=into,
+        self._encode(context, path=CONTEXT_FEATURE_KEY, into=into,
                      noise_shift=noise_shift, noise_scale=noise_scale)
 
     cpdef void encode_feature_vector(
-            self, object variant, dict givens, np.ndarray[double, ndim=1, mode='c'] into,
+            self, object item, dict context, np.ndarray[double, ndim=1, mode='c'] into,
             double noise: float = 0.0):
         """
-        Fully encodes provided variant and givens into a np.ndarray provided as `into` parameter.
+        Fully encodes provided item and context into a np.ndarray provided as `into` parameter.
         `into` must not be None
 
         Parameters
         ----------
-        variant: object
+        item: object
             a JSON encodable object to be encoded
-        givens: object
+        context: object
             a JSON encodable object to be encoded
         into: np.ndarray
             an array into which feature values will be added
@@ -184,11 +187,11 @@ cdef class FeatureEncoder:
         cdef float noise_scale
         noise_shift, noise_scale = get_noise_shift_scale(noise)
 
-        if variant:
-            self.encode_variant(variant, into, noise_shift, noise_scale)
+        if item:
+            self.encode_item(item, into, noise_shift, noise_scale)
 
-        if givens:
-            self.encode_givens(givens, into, noise_shift, noise_scale)
+        if context:
+            self.encode_context(context, into, noise_shift, noise_scale)
 
     cdef void _encode(
             self, object obj, str path, np.ndarray[double, ndim=1, mode='c'] into,
@@ -266,7 +269,7 @@ cpdef np.ndarray[double, ndim=2, mode='c'] encode_items_to_matrix(
     cdef np.ndarray[double, ndim=2, mode='c'] into_matrix = \
         np.full((len(items), len(feature_encoder.feature_indexes)), np.nan)
 
-    for variant, into_row in zip(items, into_matrix):
-        feature_encoder.encode_feature_vector(variant=variant, givens=context, into=into_row, noise=noise)
+    for item, into_row in zip(items, into_matrix):
+        feature_encoder.encode_feature_vector(item=item, context=context, into=into_row, noise=noise)
 
     return into_matrix
