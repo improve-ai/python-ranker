@@ -50,7 +50,7 @@ class Ranker:
             self.__model_url = model_url
             self.__scorer = Scorer(model_url=self.__model_url)
 
-    def rank(self, items: list or tuple or np.ndarray, context: object) -> list:
+    def rank(self, items: list or tuple or np.ndarray, context: object = None) -> list:
         """
         Ranks and returns provided items ordered best to worst
 

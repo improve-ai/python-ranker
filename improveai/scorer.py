@@ -38,7 +38,7 @@ class Scorer:
         self.__chooser = XGBChooser()
         self.__chooser.load_model(model_url)
 
-    def score(self, items: list or tuple or np.ndarray, context: object) -> np.ndarray:
+    def score(self, items: list or tuple or np.ndarray, context: object = None) -> np.ndarray:
         """
         Calculate scores for provided items given a context
 
