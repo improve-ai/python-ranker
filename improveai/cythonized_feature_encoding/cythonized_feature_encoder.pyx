@@ -154,7 +154,7 @@ cdef class FeatureEncoder:
                      noise_shift=noise_shift, noise_scale=noise_scale)
 
     cpdef void encode_context(
-            self, dict context, np.ndarray[double, ndim=1, mode='c'] into,
+            self, object context, np.ndarray[double, ndim=1, mode='c'] into,
             double noise_shift = 0.0, double noise_scale = 1.0):
         self._encode(context, path=CONTEXT_FEATURE_KEY, into=into,
                      noise_shift=noise_shift, noise_scale=noise_scale)
