@@ -659,8 +659,9 @@ class XGBChooser:
 
     def _get_string_tables(self, model_metadata: dict):
         string_tables = model_metadata.get(self.STRING_TABLES_METADATA_KEY, None)
-        if not string_tables or not isinstance(string_tables, dict):
-            raise IOError('String tables can`t empty or None!')
+        # empty dict string tables are allowed -> thye just need ot be present in metadata
+        if string_tables is None or not isinstance(string_tables, dict):
+            raise IOError('String tables can`t None or not of a dict type!')
 
         # make sure that all values of `string_tables` are
         if not all(isinstance(string_table, list) for string_table in string_tables.values()):
