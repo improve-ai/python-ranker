@@ -51,9 +51,6 @@ cdef class StringTable:
 
         self.model_seed = model_seed
         self.mask = get_mask(string_table)
-        print('### self.mask ###')
-        print(self.mask)
-        print(string_table)
         cdef unsigned long long max_position = len(string_table) - 1
 
         # empty and single entry tables will have a miss_width of 1 or range [-0.5, 0.5]
