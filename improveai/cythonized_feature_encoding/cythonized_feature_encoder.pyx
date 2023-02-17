@@ -160,7 +160,7 @@ cdef class FeatureEncoder:
                      noise_shift=noise_shift, noise_scale=noise_scale)
 
     cpdef void encode_feature_vector(
-            self, object item, dict context, np.ndarray[double, ndim=1, mode='c'] into,
+            self, object item, object context, np.ndarray[double, ndim=1, mode='c'] into,
             double noise: float = 0.0):
         """
         Fully encodes provided item and context into a np.ndarray provided as `into` parameter.
