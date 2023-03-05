@@ -43,19 +43,6 @@ class RewardTracker:
         return "message_id"
 
     @property
-    def TYPE_KEY(self) -> str:
-        """
-        Track request body key storing request type (e.g. decision is a request type as well as reward)
-
-        Returns
-        -------
-        str
-            Track request body key storing request type
-
-        """
-        return "type"
-
-    @property
     def ITEM_KEY(self) -> str:
         """
         Track request body key storing best variant
@@ -82,19 +69,6 @@ class RewardTracker:
         return "context"
 
     @property
-    def REWARD_TYPE(self) -> str:
-        """
-        If request is a reward this should be provided as `<request body>[<TYPE_KEY>]`
-
-        Returns
-        -------
-        str
-            type to be appended to request body in case of reward request
-
-        """
-        return 'reward'
-
-    @property
     def REWARD_KEY(self) -> str:
         """
         Track request body key storing reward value
@@ -106,20 +80,6 @@ class RewardTracker:
 
         """
         return 'reward'
-
-    @property
-    def DECISION_TYPE(self) -> str:
-        """
-        If a request is a decision this should be provided as `<request body>[<TYPE_KEY>]`
-
-        Returns
-        -------
-        str
-            type to be appended to request body in case of decision request
-
-        """
-
-        return "decision"
 
     @property
     def REWARD_ID_KEY(self) -> str:
@@ -306,7 +266,7 @@ class RewardTracker:
         body = {
             self.MODEL_KEY: self.model_name,
             self.ITEM_KEY: item,
-            self.ITEMS_COUNT_KEY: num_candidates}
+            self.ITEMS_COUNT_KEY: num_candidates,}
 
         # as long as the num_candidates is > 1, we can assume that the sample
         # is present even if it is None
@@ -443,7 +403,7 @@ class RewardTracker:
         body = {
             self.MODEL_KEY: self.model_name,
             self.REWARD_KEY: reward,
-            self.REWARD_ID_KEY: reward_id}
+            self.REWARD_ID_KEY: reward_id,}
 
         self.post_improve_request(body_values=body)
 

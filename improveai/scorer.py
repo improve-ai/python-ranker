@@ -66,10 +66,11 @@ class Scorer:
 
         # encode variants with single givens
         # TODO Check that it raises if there is a problem during feature encoding
-        encoded_items_matrix = self.__chooser.encode_items_single_context(items=items, context=context)
+        encoded_candidates_matrix = self.__chooser.encode_candidates_single_context(
+            candidates=items, context=context)
 
         # TODO Check that it raises for model error, such as non-JSON encodeable data type
-        scores = self.__chooser.calculate_predictions(features_matrix=encoded_items_matrix) + \
+        scores = self.__chooser.calculate_predictions(features_matrix=encoded_candidates_matrix) + \
             np.array(np.random.rand(len(items)), dtype='float64') * self.TIEBREAKER_MULTIPLIER
 
         return scores.astype(np.float64)

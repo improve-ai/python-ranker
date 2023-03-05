@@ -55,7 +55,7 @@ class FeatureEncoder:
     def encode_feature_vector(
             self, item: object, context: object, into: np.ndarray, noise: float = 0.0):
         """
-        Fully encodes provided item and context into a np.ndarray provided as `into` parameter.
+        Fully encodes provided variant and givens into a np.ndarray provided as `into` parameter.
         `into` must not be None
 
         Parameters
@@ -77,10 +77,10 @@ class FeatureEncoder:
         """
         noise_shift, noise_scale = get_noise_shift_scale(noise)
 
-        if item:
+        if item is not None:
             self.encode_item(item, into, noise_shift, noise_scale)
 
-        if context:
+        if context is not None:
             self.encode_context(context, into, noise_shift, noise_scale)
 
     def _encode(self, obj: object, path: str, into: np.ndarray, noise_shift: float = 0.0, noise_scale: float = 1.0):
@@ -96,16 +96,12 @@ class FeatureEncoder:
 
         Parameters
         ----------
-        obj: object
+        object_: object
             a JSON serializable object to be encoded to a flat key-value structure
-        path: str
-            JSON path of an encoded object (so far)
-        into: np.ndarray
-            a numpy array into which encoded value will be written
-        noise_shift: float
-            a noise shift
-        noise_scale: float
-            a noise scale
+        seed: int
+            seed for xxhash3 to generate feature name
+        features: dict
+            a flat dict of {<feature name>: <feature value>, ...} pairs
 
         Returns
         -------
@@ -119,23 +115,22 @@ class FeatureEncoder:
             feature_index = self.feature_indexes.get(path)
             if feature_index is None:
                 return
-            
+
             into[feature_index] = sprinkle(obj, noise_shift, noise_scale)
 
         elif isinstance(obj, str):
-
             feature_index = self.feature_indexes.get(path)
             if feature_index is None:
                 return
 
             string_table = self.string_tables[feature_index]
-            
+
             into[feature_index] = sprinkle(string_table.encode(obj), noise_shift, noise_scale)
 
         elif isinstance(obj, dict):
             for key, value in obj.items():
                 self._encode(obj=value, path=path + '.' + key, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
-            
+
         elif isinstance(obj, (list, tuple)):
             for index, item in enumerate(obj):
                 self._encode(obj=item, path=path + '.' + str(index), into=into, noise_shift=noise_shift, noise_scale=noise_scale)
@@ -161,9 +156,9 @@ def sprinkle(x, noise_shift, noise_scale):
 
 
 class StringTable:
-    
+
     def __init__(self, string_table, model_seed):
-        
+
         if model_seed < 0:
             raise ValueError(
                 "xxhash3_64 takes an unsigned 64-bit integer as seed. "
@@ -172,7 +167,7 @@ class StringTable:
         self.model_seed = model_seed
         self.mask = get_mask(string_table)
         max_position = len(string_table) - 1
-        
+
         # empty and single entry tables will have a miss_width of 1 or range [-0.5, 0.5]
         # 2 / max_position keeps miss values from overlapping with nonzero table values
         self.miss_width = 1 if max_position < 1 else 2 / max_position
@@ -189,13 +184,11 @@ class StringTable:
         if value is not None:
             return value
 
-        print('This is a values absent in the string table -> returning miss encoding!')
         return self.encode_miss(string_hash)
 
     def encode_miss(self, string_hash):
         # hash to float in range [-miss_width/2, miss_width/2]
         # 32 bit mask for JS portability
-        small_string = f'{(np.float64(2 ** -32)).view(np.uint64):0>64b}'
         return scale((string_hash & 0xFFFFFFFF) * 2 ** -32, self.miss_width)
 
 
@@ -205,7 +198,6 @@ def scale(val, width=2):
 
 
 def get_mask(string_table):
-
     if len(string_table) == 0:
         return 0
 
@@ -215,4 +207,3 @@ def get_mask(string_table):
 
     # find the most significant bit in the table and create a mask
     return (1 << int(np.log2(max_value) + 1)) - 1
-        

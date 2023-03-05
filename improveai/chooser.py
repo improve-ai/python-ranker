@@ -16,7 +16,7 @@ from improveai.utils.url_tools import is_path_http_addr, get_model_bytes_from_ur
 if CYTHON_BACKEND_AVAILABLE:
     from improveai.cythonized_feature_encoding import cfe
     FastFeatureEncoder = cfe.FeatureEncoder
-    fast_encode_items_to_matrix = cfe.encode_items_to_matrix
+    fast_encode_candidates_to_matrix = cfe.encode_candidates_to_matrix
 else:
     FastFeatureEncoder = FeatureEncoder
 
@@ -412,25 +412,24 @@ class XGBChooser:
 
         return noise
 
-    def encode_items_to_matrix(
-            self, items: list or tuple or np.ndarray, context: dict or None, noise: float = 0.0):
-        into_matrix = np.full((len(items), len(self.feature_encoder.feature_indexes)), np.nan)
+    def encode_candidates_to_matrix(
+            self, candidates: list or tuple or np.ndarray, context: dict or None, noise: float = 0.0):
+        into_matrix = np.full((len(candidates), len(self.feature_encoder.feature_indexes)), np.nan)
 
-        for variant, into_row in zip(items, into_matrix):
-            # variant: object, givens: object, into: np.ndarray, noise: float
-            self.feature_encoder.encode_feature_vector(
-                item=variant, context=context, into=into_row, noise=noise)
+        for item, into_row in zip(candidates, into_matrix):
+            self.feature_encoder.encode_feature_vector(item=item, context=context, into=into_row, noise=noise)
+
         return into_matrix
 
-    def score(self, variants: list or tuple or np.ndarray, givens: dict or None, **kwargs) -> np.ndarray:
+    def score(self, candidates: list or tuple or np.ndarray, context: dict or None, **kwargs) -> np.ndarray:
         """
-        Scores all provided variants
+        Scores all provided candidates
 
         Parameters
         ----------
-        variants: list or tuple or np.ndarray
-            list of variants to scores
-        givens: dict or None
+        candidates: list or tuple or np.ndarray
+            list of candidates to scores
+        context: dict or None
             context dict needed for encoding
         kwargs: dict
             kwargs
@@ -438,11 +437,11 @@ class XGBChooser:
         Returns
         -------
         np.ndarray
-            2D numpy array which contains (variant, score) pair in each row
+            1D numpy array with scores
         """
 
         encoded_variants_matrix = \
-            self.encode_items_single_context(items=variants, context=givens)
+            self.encode_candidates_single_context(candidates=candidates, context=context)
 
         scores = \
             self.model.predict(
@@ -478,8 +477,8 @@ class XGBChooser:
                 DMatrix(features_matrix, feature_names=self.feature_names)).astype('float64')
         return scores
 
-    def encode_items_single_context(
-            self, items: list or tuple or np.ndarray, context: object) -> np.ndarray:
+    def encode_candidates_single_context(
+            self, candidates: list or tuple or np.ndarray, context: object) -> np.ndarray:
         """
         Implemented as a XGBChooser helper method
         Cythonized loop over provided variants and a single givens dict.
@@ -487,7 +486,7 @@ class XGBChooser:
 
         Parameters
         ----------
-        items: list or tuple or np.ndarray
+        candidates: list or tuple or np.ndarray
             collection of input variants to be encoded
         context: dict or None
             context to be encoded with variants
@@ -500,10 +499,10 @@ class XGBChooser:
 
         if CYTHON_BACKEND_AVAILABLE:
             return \
-                np.asarray(fast_encode_items_to_matrix(
-                    items=items, context=context, feature_encoder=self.feature_encoder, noise=self._get_noise()))
+                np.asarray(fast_encode_candidates_to_matrix(
+                    candidates=candidates, context=context, feature_encoder=self.feature_encoder, noise=self._get_noise()))
         else:
-            return self.encode_items_to_matrix(items=items, context=context, noise=self._get_noise())
+            return self.encode_candidates_to_matrix(candidates=candidates, context=context, noise=self._get_noise())
 
     @staticmethod
     def get_model_src(model_src: str or bytes) -> str or bytes:

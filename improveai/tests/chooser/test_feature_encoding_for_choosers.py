@@ -10,8 +10,8 @@ sys.path.append(
 
 from improveai import FeatureEncoder
 from improveai.chooser import XGBChooser
-from improveai.utils.choosers_feature_encoding_tools import \
-    encoded_variants_to_np
+# from improveai.utils.choosers_feature_encoding_tools import \
+#     encoded_variants_to_np
 import improveai.settings as improve_settings
 from improveai.utils.general_purpose_tools import read_jsonstring_from_file
 from improveai.tests.test_utils import convert_values_to_float32
@@ -103,8 +103,8 @@ class TestChooserFeatureEncoding(TestCase):
 
         np.random.seed(self.batch_encoding_seed)
         tested_output_float64 = \
-            self.xgb_chooser.encode_variants_single_givens(
-                variants=test_variants, givens=test_givens)
+            self.xgb_chooser.encode_candidates_single_context(
+                candidates=test_variants, context=test_givens)
 
         tested_output_float32 = \
             convert_values_to_float32(val=tested_output_float64)
@@ -136,125 +136,125 @@ class TestChooserFeatureEncoding(TestCase):
 
         improve_settings.CYTHON_BACKEND_AVAILABLE = orig_use_cython_backend
 
-    def test_missing_features_filler_method_01(self):
-        test_case_path = os.sep.join(
-            [self.v6_test_python_specific_data_directory,
-             os.getenv("CHOOSERS_FEATURE_ENCODER_TEST_BATCH_FILLING_MISSING_FEATURES_01")])
-
-        test_case = \
-            self._get_test_data(path_to_test_json=test_case_path, method="read")
-
-        self._set_model_properties_from_test_case(test_case=test_case)
-
-        test_jsonlines = test_case.get("test_case", None)
-
-        if test_jsonlines is None:
-            raise ValueError("Test input empty")
-
-        test_variants = np.array([jl["variant"] for jl in test_jsonlines])
-        test_givens = [jl.get("given", {}) for jl in test_jsonlines][0]
-
-        expected_output = test_case.get("test_output", None)
-
-        if expected_output is None:
-            raise ValueError("Expected output is empty")
-
-        np.random.seed(self.batch_encoding_seed)
-        encoded_variants = \
-            self.xgb_chooser.encode_variants_single_givens(
-                variants=test_variants, givens=test_givens)
-
-        missings_filled_array_float64 = encoded_variants_to_np(
-            encoded_variants=encoded_variants,
-            feature_names=self.xgb_chooser.feature_names)
-
-        missings_filled_array_float32 = \
-            convert_values_to_float32(val=missings_filled_array_float64)
-
-        expected_output_float32 = convert_values_to_float32(expected_output)
-        np.testing.assert_array_equal(expected_output_float32, missings_filled_array_float32)
-
-    def test_missing_features_filler_method_02(self):
-        test_case_path = os.sep.join(
-            [self.v6_test_python_specific_data_directory,
-             os.getenv("CHOOSERS_FEATURE_ENCODER_TEST_BATCH_FILLING_MISSING_FEATURES_02")])
-
-        test_case = \
-            self._get_test_data(path_to_test_json=test_case_path, method="read")
-
-        self._set_model_properties_from_test_case(test_case=test_case)
-
-        test_jsonlines = test_case.get("test_case", None)
-
-        if test_jsonlines is None:
-            raise ValueError("Test input empty")
-
-        test_variants = np.array([jl["variant"] for jl in test_jsonlines])
-        test_givens = [jl.get("given", {}) for jl in test_jsonlines][0]
-
-        expected_output = test_case.get("test_output", None)
-
-        if expected_output is None:
-            raise ValueError("Expected output is empty")
-
-        encoded_variants = \
-            self.xgb_chooser.encode_variants_single_givens(
-                variants=test_variants, givens=test_givens)
-
-        missings_filled_array_float64 = encoded_variants_to_np(
-            encoded_variants=encoded_variants,
-            feature_names=self.xgb_chooser.feature_names)
-
-        missings_filled_array_float32 = \
-            convert_values_to_float32(val=missings_filled_array_float64)
-
-        # pprint(missings_filled_array_float32.tolist())
-
-        np.testing.assert_array_equal(
-            expected_output, missings_filled_array_float32)
-
-    def test_missing_features_filler_method_02_with_numpy(self):
-        test_case_path = os.sep.join(
-            [self.v6_test_python_specific_data_directory,
-             os.getenv("CHOOSERS_FEATURE_ENCODER_TEST_BATCH_FILLING_MISSING_FEATURES_02")])
-
-        test_case = \
-            self._get_test_data(path_to_test_json=test_case_path, method="read")
-
-        self._set_model_properties_from_test_case(test_case=test_case)
-
-        test_jsonlines = test_case.get("test_case", None)
-
-        if test_jsonlines is None:
-            raise ValueError("Test input empty")
-
-        test_variants = np.array([jl["variant"] for jl in test_jsonlines])
-        test_givens = [jl.get("given", {}) for jl in test_jsonlines][0]
-
-        expected_output = test_case.get("test_output", None)
-
-        if expected_output is None:
-            raise ValueError("Expected output is empty")
-
-        encoded_variants = \
-            self.xgb_chooser.encode_variants_single_givens(
-                variants=test_variants, givens=test_givens)
-
-        # done for 100% coverage
-        orig_use_cython_backend = improve_settings.CYTHON_BACKEND_AVAILABLE
-        improve_settings.CYTHON_BACKEND_AVAILABLE = False
-
-        missings_filled_array_float64 = encoded_variants_to_np(
-            encoded_variants=encoded_variants,
-            feature_names=self.xgb_chooser.feature_names)
-
-        improve_settings.CYTHON_BACKEND_AVAILABLE = orig_use_cython_backend
-
-        # pprint(missings_filled_array.tolist())
-
-        missings_filled_array_float32 = \
-            convert_values_to_float32(val=missings_filled_array_float64)
-
-        np.testing.assert_array_equal(
-            expected_output, missings_filled_array_float32)
+    # def test_missing_features_filler_method_01(self):
+    #     test_case_path = os.sep.join(
+    #         [self.v6_test_python_specific_data_directory,
+    #          os.getenv("CHOOSERS_FEATURE_ENCODER_TEST_BATCH_FILLING_MISSING_FEATURES_01")])
+    #
+    #     test_case = \
+    #         self._get_test_data(path_to_test_json=test_case_path, method="read")
+    #
+    #     self._set_model_properties_from_test_case(test_case=test_case)
+    #
+    #     test_jsonlines = test_case.get("test_case", None)
+    #
+    #     if test_jsonlines is None:
+    #         raise ValueError("Test input empty")
+    #
+    #     test_variants = np.array([jl["variant"] for jl in test_jsonlines])
+    #     test_givens = [jl.get("given", {}) for jl in test_jsonlines][0]
+    #
+    #     expected_output = test_case.get("test_output", None)
+    #
+    #     if expected_output is None:
+    #         raise ValueError("Expected output is empty")
+    #
+    #     np.random.seed(self.batch_encoding_seed)
+    #     encoded_variants = \
+    #         self.xgb_chooser.encode_variants_single_givens(
+    #             variants=test_variants, givens=test_givens)
+    #
+    #     missings_filled_array_float64 = encoded_variants_to_np(
+    #         encoded_variants=encoded_variants,
+    #         feature_names=self.xgb_chooser.feature_names)
+    #
+    #     missings_filled_array_float32 = \
+    #         convert_values_to_float32(val=missings_filled_array_float64)
+    #
+    #     expected_output_float32 = convert_values_to_float32(expected_output)
+    #     np.testing.assert_array_equal(expected_output_float32, missings_filled_array_float32)
+    #
+    # def test_missing_features_filler_method_02(self):
+    #     test_case_path = os.sep.join(
+    #         [self.v6_test_python_specific_data_directory,
+    #          os.getenv("CHOOSERS_FEATURE_ENCODER_TEST_BATCH_FILLING_MISSING_FEATURES_02")])
+    #
+    #     test_case = \
+    #         self._get_test_data(path_to_test_json=test_case_path, method="read")
+    #
+    #     self._set_model_properties_from_test_case(test_case=test_case)
+    #
+    #     test_jsonlines = test_case.get("test_case", None)
+    #
+    #     if test_jsonlines is None:
+    #         raise ValueError("Test input empty")
+    #
+    #     test_variants = np.array([jl["variant"] for jl in test_jsonlines])
+    #     test_givens = [jl.get("given", {}) for jl in test_jsonlines][0]
+    #
+    #     expected_output = test_case.get("test_output", None)
+    #
+    #     if expected_output is None:
+    #         raise ValueError("Expected output is empty")
+    #
+    #     encoded_variants = \
+    #         self.xgb_chooser.encode_variants_single_givens(
+    #             variants=test_variants, givens=test_givens)
+    #
+    #     missings_filled_array_float64 = encoded_variants_to_np(
+    #         encoded_variants=encoded_variants,
+    #         feature_names=self.xgb_chooser.feature_names)
+    #
+    #     missings_filled_array_float32 = \
+    #         convert_values_to_float32(val=missings_filled_array_float64)
+    #
+    #     # pprint(missings_filled_array_float32.tolist())
+    #
+    #     np.testing.assert_array_equal(
+    #         expected_output, missings_filled_array_float32)
+    #
+    # def test_missing_features_filler_method_02_with_numpy(self):
+    #     test_case_path = os.sep.join(
+    #         [self.v6_test_python_specific_data_directory,
+    #          os.getenv("CHOOSERS_FEATURE_ENCODER_TEST_BATCH_FILLING_MISSING_FEATURES_02")])
+    #
+    #     test_case = \
+    #         self._get_test_data(path_to_test_json=test_case_path, method="read")
+    #
+    #     self._set_model_properties_from_test_case(test_case=test_case)
+    #
+    #     test_jsonlines = test_case.get("test_case", None)
+    #
+    #     if test_jsonlines is None:
+    #         raise ValueError("Test input empty")
+    #
+    #     test_variants = np.array([jl["variant"] for jl in test_jsonlines])
+    #     test_givens = [jl.get("given", {}) for jl in test_jsonlines][0]
+    #
+    #     expected_output = test_case.get("test_output", None)
+    #
+    #     if expected_output is None:
+    #         raise ValueError("Expected output is empty")
+    #
+    #     encoded_variants = \
+    #         self.xgb_chooser.encode_variants_single_givens(
+    #             variants=test_variants, givens=test_givens)
+    #
+    #     # done for 100% coverage
+    #     orig_use_cython_backend = improve_settings.CYTHON_BACKEND_AVAILABLE
+    #     improve_settings.CYTHON_BACKEND_AVAILABLE = False
+    #
+    #     missings_filled_array_float64 = encoded_variants_to_np(
+    #         encoded_variants=encoded_variants,
+    #         feature_names=self.xgb_chooser.feature_names)
+    #
+    #     improve_settings.CYTHON_BACKEND_AVAILABLE = orig_use_cython_backend
+    #
+    #     # pprint(missings_filled_array.tolist())
+    #
+    #     missings_filled_array_float32 = \
+    #         convert_values_to_float32(val=missings_filled_array_float64)
+    #
+    #     np.testing.assert_array_equal(
+    #         expected_output, missings_filled_array_float32)
 

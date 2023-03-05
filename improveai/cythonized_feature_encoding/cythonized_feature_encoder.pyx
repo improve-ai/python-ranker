@@ -184,10 +184,10 @@ cdef class FeatureEncoder:
         cdef float noise_scale
         noise_shift, noise_scale = get_noise_shift_scale(noise)
 
-        if item:
+        if item is not None:
             self.encode_item(item, into, noise_shift, noise_scale)
 
-        if context:
+        if context is not None:
             self.encode_context(context, into, noise_shift, noise_scale)
 
     cdef void _encode(
@@ -260,13 +260,13 @@ cdef class FeatureEncoder:
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef np.ndarray[double, ndim=2, mode='c'] encode_items_to_matrix(
-        object items, object context, object feature_encoder, double noise=0.0):
+cpdef np.ndarray[double, ndim=2, mode='c'] encode_candidates_to_matrix(
+        object candidates, object context, object feature_encoder, double noise=0.0):
 
     cdef np.ndarray[double, ndim=2, mode='c'] into_matrix = \
-        np.full((len(items), len(feature_encoder.feature_indexes)), np.nan)
+        np.full((len(candidates), len(feature_encoder.feature_indexes)), np.nan)
 
-    for item, into_row in zip(items, into_matrix):
+    for item, into_row in zip(candidates, into_matrix):
         feature_encoder.encode_feature_vector(item=item, context=context, into=into_row, noise=noise)
 
     return into_matrix

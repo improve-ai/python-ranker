@@ -15,10 +15,10 @@ def gcc_and_py3_dev_installed() -> bool:
     py3_dev_installed = os.system('python3-config --help > /dev/null 2>&1') == 0
     return gcc_installed and py3_dev_installed
 
-# # TODO use cython once debugged
-# CYTHON_BACKEND_AVAILABLE = False
+# TODO use cython once debugged
+CYTHON_BACKEND_AVAILABLE = False
 # docs for module level variables like CYTHON_BACKEND_AVAILABLE are placed below them
-CYTHON_BACKEND_AVAILABLE = gcc_and_py3_dev_installed()
+# CYTHON_BACKEND_AVAILABLE = gcc_and_py3_dev_installed()
 """
 Indicates if cython backend is usable with python-SDK
 """

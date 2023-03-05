@@ -156,10 +156,10 @@ class TestEncoder(TestCase):
             raise ValueError('Expected output is empty')
 
         tested_record_output_float64 = \
-            self.feature_encoder.encode_variant(
-                variant=variant_input, noise=self.noise,
-                into=self.feature_encoder.encode_givens(
-                    givens=deepcopy(given_input), noise=self.noise))
+            self.feature_encoder.encode_item(
+                item=variant_input, noise=self.noise,
+                into=self.feature_encoder.encode_context(
+                    context=deepcopy(given_input), noise=self.noise))
 
         tested_record_output_float32 = \
             convert_values_to_float32(tested_record_output_float64)
@@ -209,10 +209,10 @@ class TestEncoder(TestCase):
                 "First test variant input for is empty")
 
         first_output_float64 = \
-            self.feature_encoder.encode_variant(
-                variant=first_variant_input, noise=self.noise,
-                into=self.feature_encoder.encode_givens(
-                    givens=deepcopy(first_given_input), noise=self.noise))
+            self.feature_encoder.encode_item(
+                item=first_variant_input, noise=self.noise,
+                into=self.feature_encoder.encode_context(
+                    context=deepcopy(first_given_input), noise=self.noise))
 
         first_output_float32 = convert_values_to_float32(first_output_float64)
 
@@ -243,10 +243,10 @@ class TestEncoder(TestCase):
                 "Second test input for is empty")
 
         second_output_float64 = \
-            self.feature_encoder.encode_variant(
-                variant=second_variant_input, noise=self.noise,
-                into=self.feature_encoder.encode_givens(
-                    givens=deepcopy(second_given_input), noise=self.noise))
+            self.feature_encoder.encode_item(
+                item=second_variant_input, noise=self.noise,
+                into=self.feature_encoder.encode_context(
+                    context=deepcopy(second_given_input), noise=self.noise))
 
         second_output_float32 = convert_values_to_float32(second_output_float64)
 
@@ -286,10 +286,10 @@ class TestEncoder(TestCase):
                 "First test variant input for is empty")
 
         first_output_float_64 = \
-            self.feature_encoder.encode_variant(
-                variant=first_variant_input, noise=self.noise,
-                into=self.feature_encoder.encode_givens(
-                    givens=deepcopy(first_given_input), noise=self.noise))
+            self.feature_encoder.encode_item(
+                item=first_variant_input, noise=self.noise,
+                into=self.feature_encoder.encode_context(
+                    context=deepcopy(first_given_input), noise=self.noise))
 
         first_output_float_32 = convert_values_to_float32(first_output_float_64)
 
@@ -320,10 +320,10 @@ class TestEncoder(TestCase):
                 "Second test input for is empty")
 
         second_output_float64 = \
-            self.feature_encoder.encode_variant(
-                variant=second_variant_input, noise=self.noise,
-                into=self.feature_encoder.encode_givens(
-                    givens=deepcopy(second_given_input), noise=self.noise))
+            self.feature_encoder.encode_item(
+                item=second_variant_input, noise=self.noise,
+                into=self.feature_encoder.encode_context(
+                    context=deepcopy(second_given_input), noise=self.noise))
 
         second_output_float32 = \
             convert_values_to_float32(second_output_float64)
@@ -366,9 +366,9 @@ class TestEncoder(TestCase):
             raise ValueError("Expected output is empty")
 
         encoded_variant = \
-            self.feature_encoder.encode_variant(variant=variant, noise=self.noise)
+            self.feature_encoder.encode_item(item=variant, noise=self.noise)
         encoded_givens = \
-            self.feature_encoder.encode_givens(givens=givens, noise=self.noise)
+            self.feature_encoder.encode_context(context=givens, noise=self.noise)
 
         common_keys = \
             set(encoded_variant.keys()).intersection(set(encoded_givens.keys()))
@@ -376,10 +376,10 @@ class TestEncoder(TestCase):
         assert len(common_keys) > 0
 
         fully_encoded_variant_float64 = \
-            self.feature_encoder.encode_variant(
-                variant=variant, noise=self.noise,
-                into=self.feature_encoder.encode_givens(
-                    givens=deepcopy(givens), noise=self.noise))
+            self.feature_encoder.encode_item(
+                item=variant, noise=self.noise,
+                into=self.feature_encoder.encode_context(
+                    context=deepcopy(givens), noise=self.noise))
 
         fully_encoded_variant_float32 = \
             convert_values_to_float32(fully_encoded_variant_float64)
@@ -427,10 +427,10 @@ class TestEncoder(TestCase):
             raise ValueError("Expected output is empty")
 
         fully_encoded_variant_float64 = \
-            self.feature_encoder.encode_variant(
-                variant=variant, noise=self.noise,
-                into=self.feature_encoder.encode_givens(
-                    givens=deepcopy(givens), noise=self.noise))
+            self.feature_encoder.encode_item(
+                item=variant, noise=self.noise,
+                into=self.feature_encoder.encode_context(
+                    context=deepcopy(givens), noise=self.noise))
 
         fully_encoded_variant_float32 = \
             convert_values_to_float32(fully_encoded_variant_float64)
@@ -468,10 +468,10 @@ class TestEncoder(TestCase):
             raise ValueError("Expected output empty for `test_none_variant`")
 
         tested_output_float64 = \
-            self.feature_encoder.encode_variant(
-                variant=variant_input, noise=self.noise,
-                into=self.feature_encoder.encode_givens(
-                    givens=deepcopy(given_input), noise=self.noise))
+            self.feature_encoder.encode_item(
+                item=variant_input, noise=self.noise,
+                into=self.feature_encoder.encode_context(
+                    context=deepcopy(given_input), noise=self.noise))
 
         tested_output_float32 = convert_values_to_float32(tested_output_float64)
         expected_output_float32 = convert_values_to_float32(expected_output)
@@ -528,7 +528,7 @@ class TestEncoder(TestCase):
             improve_settings.CYTHON_BACKEND_AVAILABLE = False
 
         self.feature_encoder.encode_feature_vector(
-            variant=test_variant, givens=test_givens,
+            item=test_variant, context=test_givens,
             extra_features=test_extra_features,
             feature_names=test_feature_names, noise=self.noise,
             into=tested_into_float64)
@@ -671,10 +671,10 @@ class TestEncoder(TestCase):
             dict((key, float(val)) for key, val in expected_output.items())
 
         tested_output_float64 = \
-            self.feature_encoder.encode_variant(
-                variant=variant_input, noise=self.noise,
-                into=self.feature_encoder.encode_givens(
-                    givens=deepcopy(given_input), noise=self.noise))
+            self.feature_encoder.encode_item(
+                item=variant_input, noise=self.noise,
+                into=self.feature_encoder.encode_context(
+                    context=deepcopy(given_input), noise=self.noise))
 
         tested_output_float32 = convert_values_to_float32(tested_output_float64)
 
@@ -841,19 +841,19 @@ class TestEncoder(TestCase):
         fe = FeatureEncoder(model_seed=0)
 
         with raises(ValueError) as high_noise_variant_error:
-            fe.encode_variant({}, noise=99)
+            fe.encode_item({}, noise=99)
             assert str(high_noise_variant_error.value)
 
         with raises(ValueError) as low_noise_variant_error:
-            fe.encode_variant({}, noise=-1.0)
+            fe.encode_item({}, noise=-1.0)
             assert str(low_noise_variant_error.value)
 
         with raises(ValueError) as high_noise_given_error:
-            fe.encode_givens({}, noise=99)
+            fe.encode_context({}, noise=99)
             assert str(high_noise_given_error.value)
 
         with raises(ValueError) as low_noise_given_error:
-            fe.encode_givens({}, noise=-1.0)
+            fe.encode_context({}, noise=-1.0)
             assert str(low_noise_given_error.value)
 
     def test_same_output_int_bool_1(self):
@@ -1005,10 +1005,10 @@ class TestEncoder(TestCase):
             dict((key, float(val)) for key, val in expected_output.items())
 
         tested_output_float64 = \
-            self.feature_encoder.encode_variant(
-                variant=variant_input, noise=self.noise,
-                into=self.feature_encoder.encode_givens(
-                    givens=deepcopy(given_input), noise=self.noise))
+            self.feature_encoder.encode_item(
+                item=variant_input, noise=self.noise,
+                into=self.feature_encoder.encode_context(
+                    context=deepcopy(given_input), noise=self.noise))
 
         tested_output_float32 = convert_values_to_float32(tested_output_float64)
 
@@ -1224,8 +1224,8 @@ class TestEncoder(TestCase):
 
             with raises(TypeError) as type_err:
 
-                self.feature_encoder.encode_givens(
-                    givens=illegal_primitive, noise=noise)
+                self.feature_encoder.encode_context(
+                    context=illegal_primitive, noise=noise)
 
             print('type_err.value')
             print(type_err.value)
@@ -1334,7 +1334,7 @@ class TestEncoder(TestCase):
 
         with raises(ValueError) as val_err:
             self.feature_encoder.encode_feature_vector(
-                variant=test_variant, givens=test_givens,
+                item=test_variant, context=test_givens,
                 extra_features=test_extra_features,
                 feature_names=test_feature_names,
                 noise=self.noise, into=tested_into)
@@ -1387,7 +1387,7 @@ class TestEncoder(TestCase):
 
         with raises(TypeError) as type_err:
             self.feature_encoder.encode_feature_vector(
-                variant=test_variant, givens=test_givens,
+                item=test_variant, context=test_givens,
                 extra_features=test_extra_features,
                 feature_names=test_feature_names,
                 noise=self.noise, into=tested_into)
