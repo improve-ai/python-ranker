@@ -1,5 +1,7 @@
 # AI Decisions, Ranking, Scoring & Multivariate Optimization for Python
 
+** !!! The release of v8 is imminent and features substantial breaking changes. We do not recommend deploying v7 at this time !!! **
+
 Improve AI is a machine learning platform for quickly implementing app optimization, personalization, and recommendations for [Python](https://improve.ai/python-sdk/), [iOS](https://improve.ai/ios-sdk/), and [Android](https://improve.ai/android-sdk/).
 
 The SDKs provide simple APIs for AI [decisions](https://improve.ai/decisions/), [ranking](https://improve.ai/ranking/), [scoring](https://improve.ai/scoring/), and [multivariate optimization](https://improve.ai/multivariate-optimization/) that execute immediately, on-device, with zero network latency. Decisions and rewards are tracked in the cloud with the [Improve AI Gym](https://github.com/improve-ai/gym/) and updated models are trained regularly on AWS SageMaker.
