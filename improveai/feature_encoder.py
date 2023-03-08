@@ -96,12 +96,16 @@ class FeatureEncoder:
 
         Parameters
         ----------
-        object_: object
+        obj: object
             a JSON serializable object to be encoded to a flat key-value structure
-        seed: int
-            seed for xxhash3 to generate feature name
-        features: dict
-            a flat dict of {<feature name>: <feature value>, ...} pairs
+        path: str
+            the path to the current object
+        into: np.ndarray
+            an array into which feature values will be encoded
+        noise_shift: float
+            small bias added to the feature value
+        noise_scale: float
+            small multiplier of the feature value
 
         Returns
         -------

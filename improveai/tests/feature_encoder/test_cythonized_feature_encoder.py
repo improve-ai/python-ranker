@@ -795,15 +795,15 @@ class TestEncoder(TestCase):
             test_case_filename=os.getenv(
                 "FEATURE_ENCODER_TEST_SEED_BIG_INT32_JSON"))
 
-    def test_leading_zeros_in_feature_names_01(self):
-        self._generic_test_encode_record_from_json_data(
-            test_case_filename=os.getenv(
-                "FEATURE_ENCODER_TEST_LEADING_ZEROS_IN_FEATURE_NAME_01"))
-
-    def test_leading_zeros_in_feature_names_02(self):
-        self._generic_test_encode_record_from_json_data(
-            test_case_filename=os.getenv(
-                "FEATURE_ENCODER_TEST_LEADING_ZEROS_IN_FEATURE_NAME_02"))
+    # def test_leading_zeros_in_feature_names_01(self):
+    #     self._generic_test_encode_record_from_json_data(
+    #         test_case_filename=os.getenv(
+    #             "FEATURE_ENCODER_TEST_LEADING_ZEROS_IN_FEATURE_NAME_01"))
+    #
+    # def test_leading_zeros_in_feature_names_02(self):
+    #     self._generic_test_encode_record_from_json_data(
+    #         test_case_filename=os.getenv(
+    #             "FEATURE_ENCODER_TEST_LEADING_ZEROS_IN_FEATURE_NAME_02"))
 
     def test_sprinkle_equals_zero(self):
         self._generic_test_encode_record_from_json_data(

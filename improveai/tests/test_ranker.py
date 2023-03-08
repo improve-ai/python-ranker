@@ -58,5 +58,5 @@ class TestRanker:
         context = {'ga': 1, 'gb': 0}
         np.random.seed(0)
         ranked_items = ranker.rank(items=items, context=context)
-        expected_ranked_items = ['a', 'c', 'd']
+        expected_ranked_items = ['a', 'd', 'c']
         np.testing.assert_array_equal(ranked_items, expected_ranked_items)

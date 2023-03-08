@@ -1,14 +1,10 @@
 {
     "test_case": {
-        "variant": "\u4e0f\u4e6c\u4fd0"
+        "item": "\u4e0f\u4e6c\u4fd0"
     },
-    "test_output": {
-        "08d966e4": -17145.117,
-        "5e9f9c59": 28497.193
-    },
-    "model_seed": 1,
-    "noise": 0.8928601514360016,
-    "variant_seed": 2675988294294598568,
-    "value_seed": 6818340268807889528,
-    "givens_seed": 12461487462738526788
+    "test_output": [1.00000681],
+    "model_seed": 3,
+    "feature_names": ["item"],
+    "string_tables": {"item":  [1]},
+    "noise": 0.8928601514360016
 }

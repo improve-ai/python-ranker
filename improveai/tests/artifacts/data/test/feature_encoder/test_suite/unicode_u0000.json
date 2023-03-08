@@ -1,14 +1,10 @@
 {
     "test_case": {
-        "variant": "\u0000"
+        "item": "\u0000"
     },
-    "test_output": {
-        "645f78f9": 12609.086,
-        "5e9f9c59": 26581.182
-    },
-    "model_seed": 1,
-    "noise": 0.8928601514360016,
-    "variant_seed": 2675988294294598568,
-    "value_seed": 6818340268807889528,
-    "givens_seed": 12461487462738526788
+    "test_output": [1.00000681],
+    "model_seed": 2,
+    "feature_names": ["item"],
+    "string_tables": {"item":  [1]},
+    "noise": 0.8928601514360016
 }

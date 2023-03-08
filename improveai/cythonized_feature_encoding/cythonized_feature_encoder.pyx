@@ -61,8 +61,7 @@ cdef class StringTable:
 
         for index, string_hash in enumerate(reversed(string_table)):
             # a single entry gets a value of 1.0
-            self.value_table[string_hash] = 1.0 if max_position == 0 else scale(
-                index / max_position)
+            self.value_table[string_hash] = 1.0 if max_position == 0 else scale(index / max_position)
 
     cpdef double encode(self, str string):
         cdef unsigned long long string_hash = xxh3(string, seed=self.model_seed)
@@ -72,8 +71,6 @@ cdef class StringTable:
         if masked_hash in self.value_table:
             return self.value_table[masked_hash]
 
-        # TODO delete after tests!
-        # print(f'\n`{string}` is a value absent in the string table -> returning miss encoding!')
         return self.encode_miss(string_hash)
 
     cpdef double encode_miss(self, string_hash):
@@ -147,14 +144,12 @@ cdef class FeatureEncoder:
     cpdef void encode_item(
             self, object item, np.ndarray[double, ndim=1, mode='c'] into,
             double noise_shift = 0.0, double noise_scale = 1.0):
-        self._encode(item, path=ITEM_FEATURE_KEY, into=into,
-                     noise_shift=noise_shift, noise_scale=noise_scale)
+        self._encode(item, path=ITEM_FEATURE_KEY, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
 
     cpdef void encode_context(
             self, object context, np.ndarray[double, ndim=1, mode='c'] into,
             double noise_shift = 0.0, double noise_scale = 1.0):
-        self._encode(context, path=CONTEXT_FEATURE_KEY, into=into,
-                     noise_shift=noise_shift, noise_scale=noise_scale)
+        self._encode(context, path=CONTEXT_FEATURE_KEY, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
 
     cpdef void encode_feature_vector(
             self, object item, object context, np.ndarray[double, ndim=1, mode='c'] into,
@@ -233,7 +228,6 @@ cdef class FeatureEncoder:
             into[feature_index] = sprinkle(obj, noise_shift, noise_scale)
 
         elif isinstance(obj, str):
-
             feature_index = self.feature_indexes.get(path)
             if feature_index is None:
                 return

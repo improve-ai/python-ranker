@@ -1,12 +1,12 @@
 {
     "test_case": {
-        "variant": {
+        "item": {
             "$value": 9223372036854775807
         }
     },
     "test_output": [9.22343487e+18],
     "model_seed": 1,
-    "feature_names": ["v.$value"],
+    "feature_names": ["item.$value"],
     "string_tables": {},
     "noise": 0.8928601514360016
 

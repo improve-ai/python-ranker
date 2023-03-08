@@ -1,10 +1,10 @@
 {
     "test_case": {
-        "variant": 9223372036854775807
+        "item": 9223372036854775807
     },
     "test_output": [9.223435e+18],
     "model_seed": 1,
-    "feature_names": ["v"],
+    "feature_names": ["item"],
     "string_tables": {},
     "noise": 0.8928601514360016
 }

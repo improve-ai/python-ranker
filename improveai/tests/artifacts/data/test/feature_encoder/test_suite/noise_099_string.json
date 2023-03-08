@@ -2,9 +2,9 @@
     "test_case": {
         "item": "string"
     },
-    "test_output": [1.0],
+    "test_output": [[-0.27093612]],
     "feature_names": ["item"],
     "string_tables": {"item": [1]},
     "model_seed": 1,
-    "noise": 0.0
+    "noise": 0.99
 }

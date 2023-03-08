@@ -1,16 +1,12 @@
 {
     "test_case": {
-        "variant": {
+        "item": {
             "$value": " !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
         }
     },
-    "test_output": {
-        "306cd3f7": -18562.127,
-        "5e9f9c59": -29001.197
-    },
+    "test_output": [3.0],
     "model_seed": 1,
-    "noise": 0.8928601514360016,
-    "variant_seed": 2675988294294598568,
-    "value_seed": 6818340268807889528,
-    "givens_seed": 12461487462738526788
+    "feature_names": ["item.$value"],
+    "string_tables": {"item.$value":  [3]},
+    "noise": 0.0
 }

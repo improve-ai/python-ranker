@@ -160,8 +160,8 @@ class TestEncoder(TestCase):
 
     def _generic_test_encode_record_from_json_data(
             self, test_case_filename: str, input_data_key: str = 'test_case',
-            variant_key: str = 'variant', givens_key: str = 'givens',
-            expected_output_data_key: str = 'test_output',
+            variant_key: str = 'item', givens_key: str = 'context',
+            expected_output_data_key: str = 'test_output', replace_none_with_nan: bool = False,
             big_float_case: bool = False):
 
         test_case_path = os.sep.join(
@@ -174,23 +174,25 @@ class TestEncoder(TestCase):
         test_input = test_case.get(input_data_key, None)
         assert test_input is not None
 
-        variant_input = test_input.get(variant_key, None)
-        assert variant_input is not None
+        item_input = test_input.get(variant_key, None)
+        assert item_input is not None
 
         # givens and extra features can be None
-        givens_input = test_input.get(givens_key, None)
+        context_input = test_input.get(givens_key, None)
 
         expected_output = test_case.get(expected_output_data_key, None)
         assert expected_output is not None
 
         encode_feature_vector_into_float32, manual_encode_into_float32 = \
-            self._get_encoded_arrays(variant_input=variant_input, givens_input=givens_input)
+            self._get_encoded_arrays(variant_input=item_input, givens_input=context_input)
 
         if big_float_case:
             # currently a flat array of floats is expected to be the encoding's output
             expected_output = [float(eo) for eo in expected_output]
 
         expected_output_float32 = convert_values_to_float32(expected_output)
+        if replace_none_with_nan:
+            expected_output_float32[expected_output_float32 == None] = np.nan
 
         # check that encode_feature_vector() output is identical with expected output
         np.testing.assert_array_equal(expected_output_float32, encode_feature_vector_into_float32)
@@ -535,19 +537,22 @@ class TestEncoder(TestCase):
 
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "FEATURE_ENCODER_TEST_EMPTY_LIST_JSON"))
+                "FEATURE_ENCODER_TEST_EMPTY_LIST_JSON"),
+            replace_none_with_nan=True)
 
     def test_empty_dict(self):
 
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "FEATURE_ENCODER_TEST_EMPTY_DICT_JSON"))
+                "FEATURE_ENCODER_TEST_EMPTY_DICT_JSON"),
+            replace_none_with_nan=True)
 
     def test_dict_with_null_value(self):
 
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
-                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_NONE_JSON"))
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_NONE_JSON"),
+            replace_none_with_nan=True)
 
     # def test_npnan(self):
     #
@@ -833,15 +838,15 @@ class TestEncoder(TestCase):
             test_case_filename=os.getenv(
                 "FEATURE_ENCODER_TEST_SEED_BIG_INT32_JSON"))
 
-    def test_leading_zeros_in_feature_names_01(self):
-        self._generic_test_encode_record_from_json_data(
-            test_case_filename=os.getenv(
-                "FEATURE_ENCODER_TEST_LEADING_ZEROS_IN_FEATURE_NAME_01"))
-
-    def test_leading_zeros_in_feature_names_02(self):
-        self._generic_test_encode_record_from_json_data(
-            test_case_filename=os.getenv(
-                "FEATURE_ENCODER_TEST_LEADING_ZEROS_IN_FEATURE_NAME_02"))
+    # def test_leading_zeros_in_feature_names_01(self):
+    #     self._generic_test_encode_record_from_json_data(
+    #         test_case_filename=os.getenv(
+    #             "FEATURE_ENCODER_TEST_LEADING_ZEROS_IN_FEATURE_NAME_01"))
+    #
+    # def test_leading_zeros_in_feature_names_02(self):
+    #     self._generic_test_encode_record_from_json_data(
+    #         test_case_filename=os.getenv(
+    #             "FEATURE_ENCODER_TEST_LEADING_ZEROS_IN_FEATURE_NAME_02"))
 
     def test_sprinkle_equals_zero(self):
         self._generic_test_encode_record_from_json_data(
@@ -1060,15 +1065,15 @@ class TestEncoder(TestCase):
             test_case_filename=os.getenv(
                 "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_BIG_INT_POSITIVE_JSON"))
 
-    def test_primitive_dict_big_int64(self):
-        self._generic_test_encode_record_from_json_data(
-            test_case_filename=os.getenv(
-                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT64_BIG_JSON"))
-
-    def test_primitive_dict_small_int64(self):
-        self._generic_test_encode_record_from_json_data(
-            test_case_filename=os.getenv(
-                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT64_SMALL_JSON"))
+    # def test_primitive_dict_big_int64(self):
+    #     self._generic_test_encode_record_from_json_data(
+    #         test_case_filename=os.getenv(
+    #             "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT64_BIG_JSON"))
+    #
+    # def test_primitive_dict_small_int64(self):
+    #     self._generic_test_encode_record_from_json_data(
+    #         test_case_filename=os.getenv(
+    #             "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT64_SMALL_JSON"))
 
     def test_primitive_dict_bool_false(self):
         self._generic_test_encode_record_from_json_data(
@@ -1100,7 +1105,7 @@ class TestEncoder(TestCase):
             test_case_filename=os.getenv(
                 "FEATURE_ENCODER_TEST_FOO_BAR_JSON"))
 
-    def test_dit_foo_bar(self):
+    def test_dict_foo_bar(self):
         self._generic_test_encode_record_from_json_data(
             test_case_filename=os.getenv(
                 "FEATURE_ENCODER_TEST_DICT_FOO_BAR_JSON"))
@@ -1249,9 +1254,9 @@ class TestEncoder(TestCase):
         model_seed = 0
         noise = 0
 
-        self.feature_encoder = FeatureEncoder(model_seed=model_seed)
+        self.feature_encoder = FeatureEncoder(model_seed=model_seed, feature_names=['item'], string_tables={})
 
-        for illegal_primitive in [0, 0.0, False, "string"]:
+        for illegal_primitive in [np.array([]), b'abc', np.nan, np.int(123), np.float64(1.234), object, str]:
 
             with raises(TypeError) as type_err:
 

@@ -1,11 +1,11 @@
 {
     "test_case": {
-        "givens": null,
-        "variant": null
+        "item": null,
+        "context": null
     },
     "test_output": [null, null],
     "model_seed": 1,
-    "feature_names": ["v", "g"],
+    "feature_names": ["item", "context"],
     "string_tables": {},
     "noise": 0.8928601514360016
 }

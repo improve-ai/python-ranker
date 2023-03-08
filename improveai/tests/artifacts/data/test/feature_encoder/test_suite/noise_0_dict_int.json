@@ -1,10 +1,10 @@
 {
     "test_case": {
-        "variant": {"$value":  0}
+        "item": {"$value":  0}
     },
     "test_output": [0.0],
     "model_seed": 1,
-    "feature_names": ["v.$value"],
+    "feature_names": ["item.$value"],
     "string_tables": {},
     "noise": 0.0
 }
