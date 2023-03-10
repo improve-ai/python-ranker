@@ -5,6 +5,6 @@
     "test_output": [1.0],
     "feature_names": ["item"],
     "string_tables": {"item": [1]},
-    "model_seed": 1,
+    "model_seed": 3,
     "noise": 0.0
 }

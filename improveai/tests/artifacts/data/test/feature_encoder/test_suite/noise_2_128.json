@@ -1,20 +1,14 @@
 {
     "test_case": {
-        "variant": {
+        "item": {
             "text": "lovely corgi",
             "chars": 12,
             "words": 2
         }
     },
-    "test_output": {
-        "291ec7b3": 22238.002,
-        "342fac51": 12.000002,
-        "1c1de8c1": 29437.004,
-        "c3abcfc3": 2.0000005
-    },
+    "test_output": [1.0000001, 12.000002, 2.0000002],
+    "feature_names": ["item.text", "item.chars", "item.words"],
+    "string_tables": {"item.text":  [1]},
     "model_seed": 1,
-    "noise": 0.015625,
-    "variant_seed": 2675988294294598568,
-    "value_seed": 6818340268807889528,
-    "givens_seed": 12461487462738526788
+    "noise": 0.015625
 }

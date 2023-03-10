@@ -112,6 +112,7 @@ class FeatureEncoder:
         None
         """
 
+        # TODO do we want to check if `obj` is JSON serializable?
         if isinstance(obj, (int, float)):  # bool is an instanceof int
             if np.isnan(obj):  # nan is treated as missing feature, return
                 return
