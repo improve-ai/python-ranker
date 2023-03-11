@@ -2,9 +2,9 @@
     "test_case": {
         "item": "Some text, some symbols \u00b1 \u00d7, some emojis \ud83d\ude44\ud83d\ude0c\ud83d\ude37"
     },
-    "test_output": [1.00000681],
+    "test_output": [1.00000381],
     "model_seed": 1,
     "feature_names": ["item"],
     "string_tables": {"item":  [1]},
-    "noise": 0.8928601514360016
+    "noise": 0.5
 }

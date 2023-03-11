@@ -6,7 +6,7 @@
             "words": 2
         }
     },
-    "test_output": [1.00000009, 12.00000107, 2.00000018],
+    "test_output": [ 1.0000001, 12.000001, 2.0000002],
     "model_seed": 1,
     "feature_names": ["item.text", "item.chars", "item.words"],
     "string_tables": {"item.text":  [1]},

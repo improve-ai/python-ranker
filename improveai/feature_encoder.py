@@ -111,9 +111,12 @@ class FeatureEncoder:
         -------
         None
         """
+        # TODO do we want to check if into is truly a np array?
+        # assert isinstance(into, np.ndarray)
 
         # TODO do we want to check if `obj` is JSON serializable?
         if isinstance(obj, (int, float)):  # bool is an instanceof int
+            # TODO - do we want to differentiate between np.nan and None in python?
             if np.isnan(obj):  # nan is treated as missing feature, return
                 return
 

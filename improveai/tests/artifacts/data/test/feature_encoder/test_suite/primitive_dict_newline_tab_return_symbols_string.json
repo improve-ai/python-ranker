@@ -4,9 +4,9 @@
             "$value": "\n\t\r"
         }
     },
-    "test_output": [5.0],
+    "test_output": [-0.5],
     "model_seed": 1,
     "feature_names": ["item.$value"],
-    "string_tables": {"item.$value":  [5]},
+    "string_tables": {"item.$value":  [5, 4, 3, 2, 1]},
     "noise": 0.0
 }
