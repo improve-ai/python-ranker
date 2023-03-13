@@ -16,7 +16,7 @@ cdef object xxh3 = xxhash.xxh3_64_intdigest
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef double scale(double val, double width=2):
+cpdef double scale(double val, double width=2.0):
     # map value in [0, 1] to [-width/2, width/2]
     return val * width - 0.5 * width
 
@@ -37,7 +37,7 @@ cpdef unsigned long long get_mask(list string_table):
 cdef class StringTable:
 
     cdef public unsigned long long model_seed
-    cdef public unsigned long mask
+    cdef public unsigned long long mask
     cdef public double miss_width
     cdef public dict value_table
 
@@ -51,7 +51,7 @@ cdef class StringTable:
 
         self.model_seed = model_seed
         self.mask = get_mask(string_table)
-        cdef unsigned long long max_position = len(string_table) - 1
+        cdef long long max_position = len(string_table) - 1
 
         # empty and single entry tables will have a miss_width of 1 or range [-0.5, 0.5]
         # 2 / max_position keeps miss values from overlapping with nonzero table values
@@ -73,7 +73,7 @@ cdef class StringTable:
 
         return self.encode_miss(string_hash)
 
-    cpdef double encode_miss(self, string_hash):
+    cpdef double encode_miss(self, unsigned long long string_hash):
         # TODO !! important note -> for negative exponents the base must be of
         #  a float type
         # hash to float in range [-miss_width/2, miss_width/2]
@@ -87,7 +87,7 @@ cpdef tuple get_noise_shift_scale(double noise):
     assert noise >= 0.0 and noise < 1.0
     # x + noise * 2 ** -142 will round to x for most values of x. Used to create
     # distinct values when x is 0.0 since x * scale would be zero
-    return (noise * 2 ** -142, 1 + noise * 2 ** -17)
+    return (noise * 2.0 ** -142, 1 + noise * 2.0 ** -17)
 
 
 @cython.boundscheck(False)
@@ -141,19 +141,29 @@ cdef class FeatureEncoder:
         except KeyError as exc:
             raise ValueError("Bad model metadata") from exc
 
+    cdef void _check_into(self, np.ndarray[double, ndim=1, mode='c'] into) except *:
+
+        if not isinstance(into, np.ndarray) or into.dtype != np.float64:
+            raise ValueError("into must be a float64 array")
+
+
     cpdef void encode_item(
             self, object item, np.ndarray[double, ndim=1, mode='c'] into,
-            double noise_shift = 0.0, double noise_scale = 1.0):
+            double noise_shift = 0.0, double noise_scale = 1.0) except *:
+        # make sure into is not None and is a float64 array
+        self._check_into(into)
         self._encode(item, path=ITEM_FEATURE_KEY, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
 
     cpdef void encode_context(
             self, object context, np.ndarray[double, ndim=1, mode='c'] into,
-            double noise_shift = 0.0, double noise_scale = 1.0):
+            double noise_shift = 0.0, double noise_scale = 1.0) except *:
+        # make sure into is not None and is a float64 array
+        self._check_into(into)
         self._encode(context, path=CONTEXT_FEATURE_KEY, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
 
     cpdef void encode_feature_vector(
             self, object item, object context, np.ndarray[double, ndim=1, mode='c'] into,
-            double noise: float = 0.0):
+            double noise: float = 0.0) except *:
         """
         Fully encodes provided item and context into a np.ndarray provided as `into` parameter.
         `into` must not be None
@@ -175,8 +185,11 @@ cdef class FeatureEncoder:
             None
 
         """
-        cdef float noise_shift
-        cdef float noise_scale
+        self._check_into(into)
+
+
+        cdef double noise_shift
+        cdef double noise_scale
         noise_shift, noise_scale = get_noise_shift_scale(noise)
 
         if item is not None:
@@ -185,9 +198,9 @@ cdef class FeatureEncoder:
         if context is not None:
             self.encode_context(context, into, noise_shift, noise_scale)
 
-    cdef void _encode(
+    cpdef void _encode(
             self, object obj, str path, np.ndarray[double, ndim=1, mode='c'] into,
-            double noise_shift = 0.0, double noise_scale = 1.0):
+            double noise_shift = 0.0, double noise_scale = 1.0) except *:
         """
         Encodes a JSON serializable object to a float vector
         Rules of encoding go as follows:
