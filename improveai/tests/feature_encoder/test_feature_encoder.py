@@ -2,11 +2,9 @@ from copy import deepcopy
 import json
 import numpy as np
 import os
-from pprint import pprint
-from pytest import fixture, raises, warns
+from pytest import fixture, raises
 import sys
 from unittest import TestCase
-from warnings import catch_warnings, simplefilter
 import xgboost as xgb
 
 sys.path.append(
@@ -74,18 +72,12 @@ class TestEncoder(TestCase):
 
     @fixture(autouse=True)
     def prepare_artifacts(self):
-        # self.encoder_seed = int(os.getenv("FEATURE_ENCODER_MODEL_SEED"))
-        # self.noise_seed = int(os.getenv("FEATURE_ENCODER_NOISE_SEED"))
 
         self.v6_test_suite_data_directory = \
             os.getenv("FEATURE_ENCODER_TEST_SUITE_JSONS_DIR")
 
         self.v6_test_python_specific_data_directory = \
             os.getenv("FEATURE_ENCODER_TEST_PYTHON_SPECIFIC_JSONS_DIR")
-        # self.feature_encoder = FeatureEncoder(model_seed=self.encoder_seed)
-
-        # np.random.seed(self.noise_seed)
-        # self.noise = np.random.rand()
 
         self._set_feature_names()
 
@@ -154,10 +146,6 @@ class TestEncoder(TestCase):
             context=givens_input, into=manual_encode_into_float64,
             noise_shift=noise_shift, noise_scale=noise_scale)
 
-        print('### encoded vectors ###')
-        print(encode_feature_vector_into_float64)
-        print(manual_encode_into_float64)
-
         manual_encode_into_float32 = \
             convert_values_to_float32(manual_encode_into_float64)
 
@@ -198,20 +186,6 @@ class TestEncoder(TestCase):
         expected_output_float32 = convert_values_to_float32(expected_output)
         if replace_none_with_nan:
             expected_output_float32[expected_output_float32 == None] = np.nan
-
-        # T: 1.0000001192092896 | C: 1.0000001192092896
-        # T: 12.000000953674316 | C: 12.000001907348633
-        # T: 2.000000238418579 | C: 2.000000238418579
-
-        # T: 1.0000001192092896 | C: 1.0000001192092896
-        # T: 12.000000953674316 | C: 12.000001907348633
-        # T: 2.000000238418579 | C: 2.000000238418579
-
-        print(f'Noise: {self.noise} | seed: {self.encoder_seed}')
-        for e1, e2 in zip(expected_output_float32, encode_feature_vector_into_float32):
-            print(f'T: {e1} | C: {e2}')
-
-            # print(f'T: {np.float32(e1)} | C: {np.float32(e2)}')
 
         # check that encode_feature_vector() output is identical with expected output
         np.testing.assert_array_equal(expected_output_float32, encode_feature_vector_into_float32)
@@ -912,29 +886,13 @@ class TestEncoder(TestCase):
         test_item = np.nan
         test_context = None
         test_into = np.full((2,), None)
+        print(test_into.dtype)
 
-        self.feature_encoder.encode_feature_vector(
-            item=test_item, context=test_context,
-            into=test_into, noise=self.noise)
-
-        np.testing.assert_array_equal(test_into, np.array([None, None]))
-
-    def test_encode_feature_vector_item_None_context_none_into_nan(self):
-
-        # feature_names: list, string_tables: dict, model_seed: int
-        self.feature_encoder = \
-            FeatureEncoder(feature_names=['item', 'context'], string_tables={}, model_seed=0)
-        self.noise = 0.0
-
-        test_item = None
-        test_context = None
-        test_into = np.full((2,), None)
-
-        self.feature_encoder.encode_feature_vector(
-            item=test_item, context=test_context,
-            into=test_into, noise=self.noise)
-
-        np.testing.assert_array_equal(test_into, np.array([None, None]))
+        with raises(ValueError) as verr:
+            self.feature_encoder.encode_feature_vector(
+                item=test_item, context=test_context,
+                into=test_into, noise=self.noise)
+        assert str(verr.value) == "into must be a float64 array"
 
     def test_encode_feature_vector_item_nan_context_none_into_nan(self):
 
@@ -1386,10 +1344,11 @@ class TestEncoder(TestCase):
 
         tested_into = None
 
-        with raises(TypeError) as terr:
+        with raises(ValueError) as verr:
             self.feature_encoder.encode_feature_vector(
                 item=test_item, context=test_context,
                 noise=self.noise, into=tested_into)
+        assert str(verr.value) == "into must be a float64 array"
 
             # assert os.getenv("FEATURE_ENCODER_ENCODE_FEATURE_VECTOR_INTO_IS_NONE_VALERROR_MSG") \
             #        in str(val_err.value)
@@ -1507,3 +1466,6 @@ class TestEncoder(TestCase):
 
         with raises(TypeError) as aerr:
             fe._encode(obj={'a': 1, 'b': 2, 'c': {'1': 1, 2: 2}},  path='a', into=np.array([]), noise_shift=0.0, noise_scale=0.0)
+
+
+# TODO add sprinkle tests

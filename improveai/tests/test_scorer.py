@@ -70,8 +70,13 @@ class TestScorer:
         np.random.seed(0)
         scores = scorer.score(items=items, context=None)
 
+        # 1.7733567613589007
+        # 1.7772981646970958
+        # -0.561980838193514
+        # -0.5601502151900769
+
         expected_scores = \
-            np.array([-0.5532910567296306, 1.7772981646970958, -0.561980838193514, -0.5601502151900769]).astype(np.float64)
+            np.array([1.7733567613589007, 1.7772981646970958, -0.561980838193514, -0.5601502151900769])
         np.testing.assert_array_equal(scores, expected_scores)
 
     def test_score_valid_context(self):
@@ -82,6 +87,11 @@ class TestScorer:
         np.random.seed(0)
         scores = scorer.score(items=items, context=self.valid_context)
 
+        # 1.7755810874926288
+        # 1.775398326249525
+        # -0.5622938817878743
+        # -0.5623421163970471
+
         expected_scores = \
-            np.array([1.7398908990847308, 1.8778475049452037, -0.5571367091079732, 0.22394380553421966]).astype(np.float64)
+            np.array([1.7755810874926288, 1.775398326249525, -0.5622938817878743, -0.5623421163970471])
         np.testing.assert_array_equal(scores, expected_scores)

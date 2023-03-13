@@ -46,10 +46,19 @@ class FeatureEncoder:
         except KeyError as exc:
             raise ValueError("Bad model metadata") from exc
 
+    def _check_into(self, into: np.ndarray):
+
+        if not isinstance(into, np.ndarray) or into.dtype != np.float64:
+            raise ValueError("into must be a float64 array")
+
     def encode_item(self, item, into: np.ndarray, noise_shift: float = 0.0, noise_scale: float = 1.0):
+        # make sure into is not None and is a float64 array
+        self._check_into(into=into)
         self._encode(item, path=ITEM_FEATURE_KEY, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
 
     def encode_context(self, context, into: np.ndarray, noise_shift: float = 0.0, noise_scale: float = 1.0):
+        # make sure into is not None and is a float64 array
+        self._check_into(into=into)
         self._encode(context, path=CONTEXT_FEATURE_KEY, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
 
     def encode_feature_vector(
@@ -75,6 +84,8 @@ class FeatureEncoder:
             None
 
         """
+
+        self._check_into(into=into)
         noise_shift, noise_scale = get_noise_shift_scale(noise)
 
         if item is not None:

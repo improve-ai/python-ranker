@@ -52,6 +52,7 @@ class TestChooserFeatureEncoding(TestCase):
         assert self.noise is not None
 
         self.xgb_chooser = XGBChooser()
+        self.xgb_chooser.imposed_noise = self.noise
         self.xgb_chooser.feature_encoder = FeatureEncoder(
             feature_names=self.feature_names, string_tables=self.string_tables,
             model_seed=self.encoder_seed)
@@ -94,6 +95,10 @@ class TestChooserFeatureEncoding(TestCase):
                 candidates=test_candidates, context=test_context)
 
         tested_output_float32 = convert_values_to_float32(val=tested_output_float64)
+
+        for el in tested_output_float32:
+            print('[' + ', '.join([str(n) for n in el]) + ']')
+
         expected_output_float32 = convert_values_to_float32(expected_output)
 
         np.testing.assert_array_equal(expected_output_float32, tested_output_float32)
