@@ -35,8 +35,13 @@ class Scorer:
 
         self.__model_url = model_url
         # attempt to create a chooser object
+        try:
+            model_src = XGBChooser.get_model_src(model_src=model_url)
+        except Exception as exc:
+            raise exc
+
         self.__chooser = XGBChooser()
-        self.__chooser.load_model(model_url)
+        self.__chooser.load_model(model_src)
 
     def score(self, items: list or tuple or np.ndarray, context: object = None) -> np.ndarray:
         """

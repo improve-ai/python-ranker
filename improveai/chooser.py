@@ -386,7 +386,7 @@ class XGBChooser:
             if verbose:
                 print(
                     'When attempting to load the model: {} the following error '
-                    'occured: {}'.format(input_model_src, exc))
+                    'occurred: {}'.format(input_model_src, exc))
             print_exc()
 
         model_metadata = self._get_model_metadata()

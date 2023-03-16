@@ -80,7 +80,7 @@ def check_and_get_unzipped_model(model_src: Union[str, bytes]) -> Union[str, byt
             return model_src
     elif isinstance(model_src, str) or isinstance(model_src, Path):
         if not os.path.isfile(model_src):
-            raise ValueError(
+            raise FileNotFoundError(
                 'This is not a proper path: {} and reading model from '
                 'string is not supported'.format(model_src))
 
@@ -88,7 +88,6 @@ def check_and_get_unzipped_model(model_src: Union[str, bytes]) -> Union[str, byt
             with open(model_src, 'rb') as chkd_bytes:
                 read_chkd_bytes = chkd_bytes.read()
                 if is_gz_bytes(chkd_bytes=read_chkd_bytes):
-                    # print('Returning unzipped file')
                     return gzip.decompress(read_chkd_bytes)
         except Exception as exc:
             print(

@@ -266,7 +266,7 @@ class RewardTracker:
         body = {
             self.MODEL_KEY: self.model_name,
             self.ITEM_KEY: item,
-            self.ITEMS_COUNT_KEY: num_candidates,}
+            self.ITEMS_COUNT_KEY: num_candidates}
 
         # as long as the num_candidates is > 1, we can assume that the sample
         # is present even if it is None
