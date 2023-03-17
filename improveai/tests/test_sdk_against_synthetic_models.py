@@ -2,7 +2,6 @@ import json
 import os
 
 import numpy as np
-import requests_mock as rqm
 from tqdm import tqdm
 
 from improveai import Scorer
@@ -50,6 +49,8 @@ def test_sdk_against_all_synthetic_models():
 
 
 # TODO this test no longer makes sense for a single model (due to feature names)
+# TODO 2 models should be created - 1. with 'plain' items and 2. with wrapped
+#  {'$value': item} items
 # def test_primitive_predicts_identical_with_primitive_dicts():
 #     test_case_dirs = \
 #         ['1000_numeric_variants_20_same_nested_givens_large_binary_reward',

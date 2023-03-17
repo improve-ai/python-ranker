@@ -95,3 +95,12 @@ class TestScorer:
         expected_scores = \
             np.array([1.7755810874926288, 1.775398326249525, -0.5622938817878743, -0.5623421163970471])
         np.testing.assert_array_equal(scores, expected_scores)
+
+    def test_scorer_with_gzipped_model(self):
+        gzipped_model_url = self.valid_fs_model_url + '.gz'
+        # attempt to load gzipped model
+        scorer = Scorer(model_url=gzipped_model_url)
+
+        assert scorer.chooser is not None
+        assert isinstance(scorer.chooser, XGBChooser)
+
