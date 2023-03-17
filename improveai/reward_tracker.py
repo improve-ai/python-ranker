@@ -10,8 +10,8 @@ from ksuid import Ksuid
 
 import improveai
 from improveai.chooser import XGBChooser
-from improveai.utils.general_purpose_tools import check_candidates, is_valid_ksuid, \
-    deepcopy_args
+from improveai.utils.general_purpose_tools import check_candidates, \
+    is_valid_ksuid, deepcopy_args
 
 
 class RewardTracker:
