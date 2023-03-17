@@ -247,7 +247,8 @@ cdef class FeatureEncoder:
 
             string_table = self.string_tables[feature_index]
 
-            into[feature_index] = sprinkle(string_table.encode(obj), noise_shift, noise_scale)
+            # TODO is that the best way to go? str(obj)
+            into[feature_index] = sprinkle(string_table.encode(str(obj)), noise_shift, noise_scale)
 
         elif isinstance(obj, dict):
             for key, value in obj.items():

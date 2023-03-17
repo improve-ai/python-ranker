@@ -5,6 +5,8 @@ from improveai.scorer import Scorer
 
 class Ranker:
 
+    SUPPORTED_CALLS = ['score', 'rank']
+
     # TODO I think we might go with scorer and model_url as properties with only getter.
     #  If we won't define them as properties anyone will be able to mutate them
     #  Exposing only getters and leaving underlying attributes private allows to make them
