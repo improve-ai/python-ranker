@@ -57,7 +57,7 @@ class TestRanker:
             Ranker(scorer='abc')
 
         with raises(AssertionError) as aerr:
-            Ranker(scorer=[1,2,3])
+            Ranker(scorer=[1, 2, 3])
 
     def test_rank_no_context(self):
         ranker = Ranker(model_url=self.model_url)
@@ -132,3 +132,19 @@ class TestRanker:
 
         with raises(AssertionError) as aerr:
             ranker.rank(items=np.array([]), context=None)
+
+    def test_rank_raises_for_non_json_encodable(self):
+        ranker = Ranker(model_url=self.model_url)
+        items = [np.array([1, 2, 3]) for _ in range(10)]
+        with raises(ValueError) as verr:
+            ranker.rank(items=items, context=None)
+
+    def test_attempt_to_set_model_url_raises(self):
+        ranker = Ranker(model_url=self.model_url)
+        with raises(AttributeError) as aerr:
+            ranker.model_url = 'abc'
+
+    def test_attempt_to_set_scorer_raises(self):
+        ranker = Ranker(model_url=self.model_url)
+        with raises(AttributeError) as aerr:
+            ranker.scorer = 'abc'

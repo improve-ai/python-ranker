@@ -40,7 +40,6 @@ class TestScorer:
         self.invalid_fs_model_url = os.getenv('DUMMY_MODEL_INVALID_PATH', None)
         assert self.invalid_fs_model_url is not None
 
-        # context = {'ga': 1, 'gb': 0}
         self.valid_context = {'ga': 1, 'gb': 0}
 
     def test_constructor_with_valid_model_url(self):
@@ -55,7 +54,7 @@ class TestScorer:
             Scorer(model_url=123)
 
         with raises(AssertionError) as aerr:
-            Scorer(model_url=[1,2, 3])
+            Scorer(model_url=[1, 2, 3])
 
         with raises(AssertionError) as aerr:
             Scorer(model_url=['a','b', 'b'])
@@ -96,6 +95,40 @@ class TestScorer:
             np.array([1.7755810874926288, 1.775398326249525, -0.5622938817878743, -0.5623421163970471])
         np.testing.assert_array_equal(scores, expected_scores)
 
+    def test_score_tuple_items_valid_context(self):
+        # TODO perhaps a model with `context` features should be trained
+        scorer = Scorer(model_url=self.valid_fs_model_url)
+
+        items = tuple(['a', 'b', 'c', 'd'])
+        np.random.seed(0)
+        scores = scorer.score(items=items, context=self.valid_context)
+
+        # 1.7755810874926288
+        # 1.775398326249525
+        # -0.5622938817878743
+        # -0.5623421163970471
+
+        expected_scores = \
+            np.array([1.7755810874926288, 1.775398326249525, -0.5622938817878743, -0.5623421163970471])
+        np.testing.assert_array_equal(scores, expected_scores)
+
+    def test_score_ndarray_items_valid_context(self):
+        # TODO perhaps a model with `context` features should be trained
+        scorer = Scorer(model_url=self.valid_fs_model_url)
+
+        items = np.array(['a', 'b', 'c', 'd'])
+        np.random.seed(0)
+        scores = scorer.score(items=items, context=self.valid_context)
+
+        # 1.7755810874926288
+        # 1.775398326249525
+        # -0.5622938817878743
+        # -0.5623421163970471
+
+        expected_scores = \
+            np.array([1.7755810874926288, 1.775398326249525, -0.5622938817878743, -0.5623421163970471])
+        np.testing.assert_array_equal(scores, expected_scores)
+
     def test_scorer_with_gzipped_model(self):
         gzipped_model_url = self.valid_fs_model_url + '.gz'
         # attempt to load gzipped model
@@ -104,3 +137,23 @@ class TestScorer:
         assert scorer.chooser is not None
         assert isinstance(scorer.chooser, XGBChooser)
 
+    def test_score_raises_for_bad_items_type(self):
+        scorer = Scorer(model_url=self.valid_fs_model_url)
+
+        with raises(AssertionError) as aerr:
+            scorer.score(items=None, context=None)
+
+        with raises(AssertionError) as aerr:
+            scorer.score(items=123, context=None)
+
+        with raises(AssertionError) as aerr:
+            scorer.score(items=1.23, context=None)
+
+        with raises(AssertionError) as aerr:
+            scorer.score(items={1.23}, context=None)
+
+        with raises(AssertionError) as aerr:
+            scorer.score(items={'a': 1.23}, context=None)
+
+    def test_score_raises_for_non_json_encodable(self):
+        pass

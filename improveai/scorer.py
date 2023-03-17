@@ -60,10 +60,6 @@ class Scorer:
             an array of double scores
 
         """
-        # throws exception if list is empty
-        assert len(items) > 0
-        # Return a list of double scores
-
         check_candidates(candidates=items)
         # log givens for DEBUG == True
         if DEBUG is True:
