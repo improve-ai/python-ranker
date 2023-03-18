@@ -42,12 +42,12 @@ class TestEncoder(TestCase):
         self._encoder_seed = value
 
     @property
-    def v6_test_suite_data_directory(self) -> str:
-        return self._v6_test_data_directory
+    def test_suite_data_directory(self) -> str:
+        return self._test_data_directory
 
-    @v6_test_suite_data_directory.setter
-    def v6_test_suite_data_directory(self, value):
-        self._v6_test_data_directory = value
+    @test_suite_data_directory.setter
+    def test_suite_data_directory(self, value):
+        self._test_data_directory = value
 
     @property
     def noise_seed(self):
@@ -76,10 +76,10 @@ class TestEncoder(TestCase):
     @fixture(autouse=True)
     def prepare_artifacts(self):
 
-        self.v6_test_suite_data_directory = \
+        self.test_suite_data_directory = \
             os.getenv("FEATURE_ENCODER_TEST_SUITE_JSONS_DIR")
 
-        self.v6_test_python_specific_data_directory = \
+        self.test_python_specific_data_directory = \
             os.getenv("FEATURE_ENCODER_TEST_PYTHON_SPECIFIC_JSONS_DIR")
 
         self._set_feature_names()
@@ -135,10 +135,7 @@ class TestEncoder(TestCase):
         encode_feature_vector_into_float32 = \
             convert_values_to_float32(encode_feature_vector_into_float64)
 
-        print('### self.noise ###')
-        print(self.noise)
         noise_shift, noise_scale = get_noise_shift_scale(self.noise)
-        print(f'shift: {noise_shift} | scale: {noise_scale}')
         # check that encode_variant returns desired output
         manual_encode_into_float64 = np.full((len(self.feature_names),), np.nan)
 
@@ -163,7 +160,7 @@ class TestEncoder(TestCase):
             big_float_case: bool = False):
 
         test_case_path = os.sep.join(
-            [self.v6_test_suite_data_directory, test_case_filename])
+            [self.test_suite_data_directory, test_case_filename])
 
         test_case = self._get_test_data(path_to_test_json=test_case_path)
 
@@ -206,7 +203,7 @@ class TestEncoder(TestCase):
             context_key: str = 'context'):
 
         first_test_case_path = os.sep.join(
-            [self.v6_test_suite_data_directory, first_test_case_filename])
+            [self.test_suite_data_directory, first_test_case_filename])
 
         if not provided_first_test_case:
             first_test_case = \
@@ -228,7 +225,7 @@ class TestEncoder(TestCase):
             self._get_encoded_arrays(variant_input=first_variant_input, givens_input=first_given_input)
 
         second_test_case_path = os.sep.join(
-            [self.v6_test_suite_data_directory, second_test_case_filename])
+            [self.test_suite_data_directory, second_test_case_filename])
 
         if not provided_second_test_case:
             second_test_case = \
@@ -266,7 +263,7 @@ class TestEncoder(TestCase):
             givens_key: str = 'context'):
 
         first_test_case_path = os.sep.join(
-            [self.v6_test_suite_data_directory, first_test_case_filename])
+            [self.test_suite_data_directory, first_test_case_filename])
 
         if not provided_first_test_case:
             first_test_case = \
@@ -291,7 +288,7 @@ class TestEncoder(TestCase):
         np.testing.assert_array_equal(first_encode_feature_vector_into_float32, first_manual_encode_into_float32)
 
         second_test_case_path = os.sep.join(
-            [self.v6_test_suite_data_directory, second_test_case_filename])
+            [self.test_suite_data_directory, second_test_case_filename])
 
         if not provided_second_test_case:
             second_test_case = \
@@ -454,7 +451,7 @@ class TestEncoder(TestCase):
         context_input = None
 
         test_case_path = os.sep.join(
-            [self.v6_test_suite_data_directory,
+            [self.test_suite_data_directory,
              os.getenv("FEATURE_ENCODER_TEST_NONE_JSON")])
 
         test_case = \
@@ -487,7 +484,7 @@ class TestEncoder(TestCase):
         assert test_case_filename is not None
 
         test_case_path = os.sep.join(
-            [self.v6_test_suite_data_directory, test_case_filename])
+            [self.test_suite_data_directory, test_case_filename])
 
         test_case = self._get_test_data(path_to_test_json=test_case_path)
 
@@ -549,6 +546,20 @@ class TestEncoder(TestCase):
             test_case_filename=os.getenv(
                 "FEATURE_ENCODER_TEST_EMPTY_DICT_JSON"),
             replace_none_with_nan=True)
+
+    def test_big_int_negative(self):
+
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "FEATURE_ENCODER_TEST_BIG_INT_NEGATIVE_JSON"),
+            replace_none_with_nan=False)
+
+    def test_big_int_positive(self):
+
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "FEATURE_ENCODER_TEST_BIG_INT_POSITIVE_JSON"),
+            replace_none_with_nan=False)
 
     def test_dict_with_null_value(self):
 
@@ -626,7 +637,7 @@ class TestEncoder(TestCase):
         assert test_case_filename is not None
 
         test_case_path = os.sep.join(
-            [self.v6_test_suite_data_directory, test_case_filename])
+            [self.test_suite_data_directory, test_case_filename])
 
         test_case = \
             self._get_test_data(path_to_test_json=test_case_path)
@@ -1054,7 +1065,7 @@ class TestEncoder(TestCase):
     def test_primitive_dict_big_float(self):
 
         test_case_path = os.sep.join(
-            [self.v6_test_suite_data_directory,
+            [self.test_suite_data_directory,
              os.getenv("FEATURE_ENCODER_TEST_PRIMITIVE_DICT_BIG_FLOAT_JSON")])
 
         test_case = \
@@ -1359,7 +1370,7 @@ class TestEncoder(TestCase):
         assert test_case_filename is not None
 
         test_case_path = os.sep.join(
-            [self.v6_test_suite_data_directory, test_case_filename])
+            [self.test_suite_data_directory, test_case_filename])
 
         test_case = self._get_test_data(path_to_test_json=test_case_path)
 

@@ -176,18 +176,27 @@ class TestEncoder(TestCase):
         expected_output = test_case.get(expected_output_data_key, None)
         assert expected_output is not None
 
+        print('### expected_output ###')
+        print(expected_output)
+
         encode_feature_vector_into_float32, manual_encode_into_float32 = \
             self._get_encoded_arrays(variant_input=item_input, givens_input=context_input)
 
         if big_float_case:
             # currently a flat array of floats is expected to be the encoding's output
+            print('Converting expected output to float')
             expected_output = [float(eo) for eo in expected_output]
 
         expected_output_float32 = convert_values_to_float32(expected_output)
         if replace_none_with_nan:
+            print('### replace_none_with_nan ###')
             expected_output_float32[expected_output_float32 == None] = np.nan
 
         # check that encode_feature_vector() output is identical with expected output
+        print('### expected_output_float32 ###')
+        print(expected_output_float32)
+        print('### encode_feature_vector_into_float32 ###')
+        print(encode_feature_vector_into_float32)
         np.testing.assert_array_equal(expected_output_float32, encode_feature_vector_into_float32)
 
         # check that 'manual' encoding output is identical with expected output
@@ -529,6 +538,34 @@ class TestEncoder(TestCase):
             test_case_filename=os.getenv(
                 "FEATURE_ENCODER_TEST_EMPTY_LIST_JSON"),
             replace_none_with_nan=True)
+
+    def test_big_int_negative(self):
+
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "FEATURE_ENCODER_TEST_BIG_INT_NEGATIVE_JSON"),
+            replace_none_with_nan=False)
+
+    def test_primitive_dict_int64_negative(self):
+
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT64_BIG_NEGATIVE_JSON"),
+            replace_none_with_nan=False)
+
+    def test_primitive_dict_int64_positive(self):
+
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "FEATURE_ENCODER_TEST_PRIMITIVE_DICT_INT64_BIG_POSITIVE_JSON"),
+            replace_none_with_nan=False)
+
+    def test_big_int_positive(self):
+
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv(
+                "FEATURE_ENCODER_TEST_BIG_INT_POSITIVE_JSON"),
+            replace_none_with_nan=False)
 
     def test_empty_dict(self):
 
