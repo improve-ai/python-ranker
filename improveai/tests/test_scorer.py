@@ -155,5 +155,16 @@ class TestScorer:
         with raises(AssertionError) as aerr:
             scorer.score(items={'a': 1.23}, context=None)
 
-    def test_score_raises_for_non_json_encodable(self):
-        pass
+    def test_score_raises_for_non_json_encodable_items(self):
+        scorer = Scorer(model_url=self.valid_fs_model_url)
+        items = [np.array([1, 2, 3]) for _ in range(10)]
+        with raises(ValueError) as verr:
+            scorer.score(items=items, context=None)
+
+    def test_score_raises_for_non_json_encodable_context(self):
+        scorer = Scorer(model_url=self.valid_fs_model_url)
+        items = [1, 2, 3]
+        context = np.array([1, 2, 3])
+        with raises(ValueError) as verr:
+            scorer.score(items=items, context=context)
+

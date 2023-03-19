@@ -139,6 +139,17 @@ class XGBChooser:
 
     @property
     def string_tables(self):
+        """
+        Strings tables to be used for string encoding with this chooser
+
+        Returns
+        -------
+        dict
+            Dict of lists - each list is a collection of shifted and masked string
+            hashes for a given feature. Hashes are sorted best to worst and they are
+            used to encode strings to numeric features
+
+        """
         return self._string_tables
 
     @string_tables.setter
@@ -333,7 +344,7 @@ class XGBChooser:
         self.model_metadata = None
 
         self.feature_encoder = None
-        self.feature_names = np.empty(shape=(1,))
+        self.feature_names = None
 
         self.model_seed = None
         self._model_name = None
@@ -365,6 +376,7 @@ class XGBChooser:
                     str(input_model_src[:10]) + ' ... ' + str(
                         input_model_src[-10:])))
 
+            input_model_src = XGBChooser.get_model_src(model_src=input_model_src)
             model_src = \
                 input_model_src if isinstance(input_model_src, str) or isinstance(input_model_src, Path) \
                 else bytearray(input_model_src)
@@ -387,7 +399,7 @@ class XGBChooser:
                 print(
                     'When attempting to load the model: {} the following error '
                     'occurred: {}'.format(input_model_src, exc))
-            print_exc()
+            raise exc
 
         model_metadata = self._get_model_metadata()
         self.model_seed = self._get_model_seed(model_metadata=model_metadata)
@@ -569,16 +581,23 @@ class XGBChooser:
             raise IOError(f'Improve AI booster has no: {self.USER_DEFINED_METADATA_KEY} attribute')
 
         user_defined_metadata_str = self.model.attr(self.USER_DEFINED_METADATA_KEY)
-        user_defined_metadata = json.loads(user_defined_metadata_str)
+        try:
+            user_defined_metadata = json.loads(user_defined_metadata_str)
+        except json.JSONDecodeError:
+            raise IOError('Model metadata is not a valid json')
+
+        if not isinstance(user_defined_metadata, dict):
+            raise IOError(f'Model metadata must be a dict '
+                          f'(current type: {type(user_defined_metadata)})')
 
         if not user_defined_metadata:
             raise IOError('Model metadata is either None or empty')
 
-        loaded_metadata_keys = set(user_defined_metadata.keys())
+        # loaded_metadata_keys = set(user_defined_metadata.keys())
 
-        for required_key in self.REQUIRED_METADATA_KEYS:
-            if required_key not in loaded_metadata_keys:
-                raise IOError(f'Improve AI booster`s metadata has no: {required_key} key')
+        # for required_key in self.REQUIRED_METADATA_KEYS:
+        #     if required_key not in loaded_metadata_keys:
+        #         raise IOError(f'Improve AI booster`s metadata has no: {required_key} key')
 
         return user_defined_metadata
 
@@ -597,6 +616,9 @@ class XGBChooser:
             list of feature names
 
         """
+
+        if not model_metadata:
+            raise IOError('Model metadata is either None or empty')
 
         feature_names = model_metadata.get(self.FEATURE_NAMES_METADATA_KEY, None)
 

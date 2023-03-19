@@ -133,11 +133,18 @@ class TestRanker:
         with raises(AssertionError) as aerr:
             ranker.rank(items=np.array([]), context=None)
 
-    def test_rank_raises_for_non_json_encodable(self):
+    def test_rank_raises_for_non_json_encodable_items(self):
         ranker = Ranker(model_url=self.model_url)
         items = [np.array([1, 2, 3]) for _ in range(10)]
         with raises(ValueError) as verr:
             ranker.rank(items=items, context=None)
+
+    def test_rank_raises_for_non_json_encodable_context(self):
+        ranker = Ranker(model_url=self.model_url)
+        items = [1, 2, 3]
+        context = np.array([1, 2, 3])
+        with raises(ValueError) as verr:
+            ranker.rank(items=items, context=context)
 
     def test_attempt_to_set_model_url_raises(self):
         ranker = Ranker(model_url=self.model_url)
