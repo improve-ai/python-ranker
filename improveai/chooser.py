@@ -554,7 +554,7 @@ class XGBChooser:
             major Improve AI version extracted from loaded improve model
         """
 
-        if model_metadata is None or not isinstance(model_metadata, dict) or len(model_metadata) == 0:
+        if model_metadata is None or not isinstance(model_metadata, dict):
             raise IOError('Model metadata is either None or empty')
 
         # TODO once we completely shift to 8.X we should disallow None values

@@ -405,16 +405,16 @@ def test__get_improveai_major_version_for_none_metadata():
         chooser._get_improveai_major_version(model_metadata=None)
 
 
-def test__get_improveai_major_version_for_empty_metadata():
-    global chooser
-    with raises(IOError) as ioe:
-        chooser._get_improveai_major_version(model_metadata={})
+# def test__get_improveai_major_version_for_empty_metadata():
+#     global chooser
+#     with raises(IOError) as ioe:
+#         chooser._get_improveai_major_version(model_metadata={})
 
 
 def test__get_improveai_major_version_for_none_major_improveai_version():
     global chooser
     with raises(IOError) as ioe:
-        chooser._get_improveai_major_version(model_metadata={})
+        chooser._get_improveai_major_version(model_metadata={chooser.VERSION_METADATA_KEY: None})
 
 
 def test__get_improveai_major_version_for_no_major_improveai_version_in_metadata():
