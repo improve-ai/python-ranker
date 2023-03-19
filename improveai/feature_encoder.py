@@ -3,7 +3,14 @@ import xxhash
 
 
 ITEM_FEATURE_KEY = 'item'
+"""
+Feature names prefix for features derived from candidates / items
+"""
+
 CONTEXT_FEATURE_KEY = 'context'
+"""
+Feature names prefix for features derived from context
+"""
 
 xxh3 = xxhash.xxh3_64_intdigest
 
@@ -47,17 +54,65 @@ class FeatureEncoder:
             raise ValueError("Bad model metadata") from exc
 
     def _check_into(self, into: np.ndarray):
+        """
+        Checks if the provided into array is an array and has desired dtype
+
+        Parameters
+        ----------
+        into: np.ndarray
+            array which will store feature values
+
+        Returns
+        -------
+
+        """
 
         if not isinstance(into, np.ndarray) or into.dtype != np.float64:
             raise ValueError("into must be a float64 array")
 
-    def encode_item(self, item, into: np.ndarray, noise_shift: float = 0.0, noise_scale: float = 1.0):
+    def encode_item(self, item: object, into: np.ndarray, noise_shift: float = 0.0, noise_scale: float = 1.0):
+        """
+        Encodes provided item to input numpy array
+
+        Parameters
+        ----------
+        item: object
+            JSON encodable python object
+        into: np.ndarray
+            array storing results of encoding
+        noise_shift: float
+            value to be added to features
+        noise_scale: float
+            multiplier used to scale shifted feature value
+
+        Returns
+        -------
+
+        """
         # make sure into is not None and is a float64 array
         self._check_into(into=into)
         self._encode(item, path=ITEM_FEATURE_KEY, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
 
-    def encode_context(self, context, into: np.ndarray, noise_shift: float = 0.0, noise_scale: float = 1.0):
-        # make sure into is not None and is a float64 array
+    def encode_context(self, context: object, into: np.ndarray, noise_shift: float = 0.0, noise_scale: float = 1.0):
+        """
+        Encodes provided context to input numpy array
+
+        Parameters
+        ----------
+        context: object
+            JSON encodable python object
+        into: np.ndarray
+            array storing results of encoding
+        noise_shift: float
+            value to be added to features
+        noise_scale: float
+            multiplier used to scale shifted feature value
+
+        Returns
+        -------
+
+        """
+        # make sure into is not None and is a float64 array (?)
         self._check_into(into=into)
         self._encode(context, path=CONTEXT_FEATURE_KEY, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
 
@@ -161,14 +216,46 @@ class FeatureEncoder:
             raise ValueError(f'{obj} not JSON encodable. Must be string, int, float, bool, list, tuple, dict, or None')
 
 
-def get_noise_shift_scale(noise):
+def get_noise_shift_scale(noise: float):
+    """
+    Returns noise shift (small value added to feature value) and noise scale
+    (value by which shifted feature value is multipled)
+
+    Parameters
+    ----------
+    noise: float
+        value in [0, 1) which will be combined with the feature value
+
+
+    Returns
+    -------
+
+    """
     assert noise >= 0.0 and noise < 1.0
     # x + noise * 2 ** -142 will round to x for most values of x. Used to create
     # distinct values when x is 0.0 since x * scale would be zero
     return (noise * 2 ** -142, 1 + noise * 2 ** -17)
 
 
-def sprinkle(x, noise_shift, noise_scale):
+def sprinkle(x: float, noise_shift: float, noise_scale: float) -> float:
+    """
+    Adds noise shift and scales shifted value
+
+    Parameters
+    ----------
+    x: float
+        value to be sprinkled
+    noise_shift: float
+        small bias added to the feature value
+    noise_scale: float
+        small multiplier of the shifted feature value
+
+    Returns
+    -------
+    float
+        sprinkled value
+
+    """
     # x + noise_offset will round to x for most values of x
     # allows different values when x == 0.0
     return (x + noise_shift) * noise_scale
@@ -177,6 +264,16 @@ def sprinkle(x, noise_shift, noise_scale):
 class StringTable:
 
     def __init__(self, string_table, model_seed):
+        """
+        Init StringTable with params
+
+        Parameters
+        ----------
+        string_table: dict
+            a dict with list of masked hashed for each string feature
+        model_seed: int
+            model seed value
+        """
 
         if model_seed < 0:
             raise ValueError(
@@ -197,7 +294,21 @@ class StringTable:
             # a single entry gets a value of 1.0
             self.value_table[string_hash] = 1.0 if max_position == 0 else scale(index / max_position)
 
-    def encode(self, string):
+    def encode(self, string: str) -> float:
+        """
+        Encode input string to a target value
+
+        Parameters
+        ----------
+        string: str
+            string to be encoded
+
+        Returns
+        -------
+        float
+            encoded value
+
+        """
         string_hash = xxh3(string, seed=self.model_seed)
         value = self.value_table.get(string_hash & self.mask)
         if value is not None:
@@ -205,18 +316,61 @@ class StringTable:
 
         return self.encode_miss(string_hash)
 
-    def encode_miss(self, string_hash):
+    def encode_miss(self, string_hash) -> float:
+        """
+        Encodes string hash as a miss
+
+        Parameters
+        ----------
+        string_hash: int
+            string hash to be encoded as a miss
+
+        Returns
+        -------
+        float
+            encoded miss value
+
+        """
         # hash to float in range [-miss_width/2, miss_width/2]
         # 32 bit mask for JS portability
         return scale((string_hash & 0xFFFFFFFF) * 2 ** -32, self.miss_width)
 
 
-def scale(val, width=2):
+def scale(val: float, width: float = 2) -> float:
+    """
+    Scales input miss value to [-width/2, width/2]
+
+    Parameters
+    ----------
+    val: float
+        miss value to be scaled
+    width: float
+        miss range width
+
+    Returns
+    -------
+
+    """
+    assert width >= 0
     # map value in [0, 1] to [-width/2, width/2]
     return val * width - 0.5 * width
 
 
-def get_mask(string_table):
+def get_mask(string_table: list) -> int:
+    """
+    Returns a hash string mask for a given string table
+
+    Parameters
+    ----------
+    string_table: list
+        list of hash string values for a given feature
+
+    Returns
+    -------
+    int
+        number of bytes needed to represent string hashed in the table
+
+    """
     if len(string_table) == 0:
         return 0
 

@@ -389,13 +389,20 @@ def test__get_improveai_major_version():
     assert improveai_major_version == 8
 
 
-def test__get_improveai_major_version_for_none_metadata():
+def test__get_improveai_major_version_raises_for_wrong_major_version():
+    global chooser
+    with raises(IOError) as ioe:
+        chooser._get_improveai_major_version(
+            model_metadata={chooser.VERSION_METADATA_KEY: "7.0.1"})
+
+
+def test__get_improveai_major_version_raise_for_none_metadata():
     global chooser
     with raises(IOError) as ioe:
         chooser._get_improveai_major_version(model_metadata=None)
 
 
-def test__get_improveai_major_version_for_none_major_improveai_version():
+def test__get_improveai_major_version_raises_for_none_major_improveai_version():
     global chooser
     with raises(IOError) as ioe:
         chooser._get_improveai_major_version(model_metadata={chooser.VERSION_METADATA_KEY: None})
@@ -407,15 +414,12 @@ def test__get_improveai_major_version_for_no_major_improveai_version_in_metadata
     model_metadata_with_missing_key = deepcopy(valid_model_metadata)
     del model_metadata_with_missing_key[chooser.VERSION_METADATA_KEY]
 
-    print('### model_metadata_with_missing_key ####')
-    print(model_metadata_with_missing_key)
-
-    improveai_major_version = chooser._get_improveai_major_version(
-            model_metadata=model_metadata_with_missing_key)
+    improveai_major_version = \
+        chooser._get_improveai_major_version(model_metadata=model_metadata_with_missing_key)
     assert improveai_major_version is None
 
 
-def test__get_improveai_major_version_for_string_tables_wrong_type():
+def test__get_improveai_major_version_for_string_tables_invalid_data():
     global chooser
 
     with raises(IOError) as ioe:
@@ -441,3 +445,6 @@ def test__get_improveai_major_version_for_string_tables_wrong_type():
     with raises(IOError) as ioe:
         chooser._get_string_tables(
             model_metadata={chooser.VERSION_METADATA_KEY: {'a': 1, 'b': 2, 'c': 3}})
+
+    with raises(IOError) as ioe:
+        chooser._get_improveai_major_version({chooser.VERSION_METADATA_KEY: 'a.b.c'})

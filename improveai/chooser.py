@@ -22,7 +22,15 @@ else:
 
 
 USER_DEFINED_METADATA_KEY = 'user_defined_metadata'
+"""
+Key used to store Improve AI metadata inside booster (<booster>.attr(USER_DEFINED_METADATA_KEY))
+"""
+
 FEATURE_NAMES_METADATA_KEY = 'ai.improve.features'
+"""
+Key used to store Improve AI booster feature names. During booster's  save provedure
+feature names are truncated from booster.
+"""
 
 
 class XGBChooser:
@@ -416,7 +424,18 @@ class XGBChooser:
             self.feature_encoder = FeatureEncoder(
                 feature_names=self.feature_names, string_tables=self.string_tables, model_seed=self.model_seed)
 
-    def _get_noise(self):
+    def _get_noise(self) -> float:
+        """
+        Private noise getter. Noise can be set manually - this was provided for
+        testing purposes. Please note that the 'natural' flow is for
+        noise to be randomly sampled 0-1 uniform
+
+        Returns
+        -------
+        float
+            noise used by chooser
+
+        """
         if self.imposed_noise is None:
             noise = np.random.rand()
         else:
@@ -425,7 +444,25 @@ class XGBChooser:
         return noise
 
     def encode_candidates_to_matrix(
-            self, candidates: list or tuple or np.ndarray, context: dict or None, noise: float = 0.0):
+            self, candidates: list or tuple or np.ndarray, context: object, noise: float = 0.0):
+        """
+        Encodes list of candidates to 2D np.array for a given context with provided noise
+
+        Parameters
+        ----------
+        candidates: list or tuple or np.ndarray
+            list of JSON encodable candidates / items to encode
+        context: object
+            JSON encodable object
+        noise: float
+            noise to be used for sprinkling of encoded features
+
+        Returns
+        -------
+        np.ndarray
+            2D numpy array with encoded candidates
+
+        """
         into_matrix = np.full((len(candidates), len(self.feature_encoder.feature_indexes)), np.nan)
 
         for item, into_row in zip(candidates, into_matrix):
@@ -565,7 +602,10 @@ class XGBChooser:
             if improveai_version is None or not isinstance(improveai_version, str):
                 raise IOError(f'Improve AI version stored in metadata ({improveai_version}) is either None or not a string')
             # major version is the first chunk of version string
-            improveai_major_version = int(improveai_version.split('.')[0])
+            try:
+                improveai_major_version = int(improveai_version.split('.')[0])
+            except:
+                raise IOError(f'Improve AI version stored in metadata ({improveai_version}) is invalid')
 
             if improveai_major_version != self.IMPROVE_AI_ALLOWED_MAJOR_VERSION:
                 raise IOError(f'Attempting to load model from unsupported Improve AI version: {improveai_major_version}.'
