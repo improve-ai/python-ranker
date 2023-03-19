@@ -553,6 +553,11 @@ class XGBChooser:
         str or None
             major Improve AI version extracted from loaded improve model
         """
+
+        if model_metadata is None or not isinstance(model_metadata, dict) or len(model_metadata) == 0:
+            raise IOError('Model metadata is either None or empty')
+
+        # TODO once we completely shift to 8.X we should disallow None values
         improveai_major_version = None
         if self.VERSION_METADATA_KEY in model_metadata.keys():
             improveai_version = model_metadata[self.VERSION_METADATA_KEY]
@@ -593,11 +598,11 @@ class XGBChooser:
         if not user_defined_metadata:
             raise IOError('Model metadata is either None or empty')
 
-        # loaded_metadata_keys = set(user_defined_metadata.keys())
+        loaded_metadata_keys = set(user_defined_metadata.keys())
 
-        # for required_key in self.REQUIRED_METADATA_KEYS:
-        #     if required_key not in loaded_metadata_keys:
-        #         raise IOError(f'Improve AI booster`s metadata has no: {required_key} key')
+        for required_key in self.REQUIRED_METADATA_KEYS:
+            if required_key not in loaded_metadata_keys:
+                raise IOError(f'Improve AI booster`s metadata has no: {required_key} key')
 
         return user_defined_metadata
 
@@ -646,10 +651,16 @@ class XGBChooser:
             model seed
 
         """
+
+        if not model_metadata:
+            raise IOError('Model metadata is either None or empty')
+
         model_seed = model_metadata.get(self.MODEL_SEED_METADATA_KEY, None)
 
-        if not model_seed or not isinstance(model_seed, int):
-            raise IOError(f'Wrong {MODEL_SEED_METADATA_KEY}: {model_seed} (type: {type(model_seed)}).')
+        if not model_seed or not (isinstance(model_seed, int) and not isinstance(model_seed, bool)):
+            raise IOError(
+                f'Wrong {self.MODEL_SEED_METADATA_KEY}: {model_seed} '
+                f'(type: {type(model_seed)}).')
 
         return model_seed
 
@@ -668,18 +679,38 @@ class XGBChooser:
             Improve AI model name
 
         """
+
+        if not model_metadata:
+            raise IOError('Model metadata is either None or empty')
+
         model_name = model_metadata.get(self.MODEL_NAME_METADATA_KEY, None)
 
-        if not model_name:
-            raise IOError('Model name empty or None!')
-
         if not model_name or not isinstance(model_name, str):
-            raise IOError(f'Wrong {MODEL_NAME_METADATA_KEY}: {model_name} (type: {type(model_name)}).')
+            raise IOError(f'Wrong {self.MODEL_NAME_METADATA_KEY}: {model_name} (type: {type(model_name)}).')
 
         return model_name
 
     def _get_string_tables(self, model_metadata: dict):
+        """
+        Gets string tables from model metadata
+
+        Parameters
+        ----------
+        model_metadata: dict
+            a dict containing model metadata
+
+        Returns
+        -------
+        dict
+            dict of lists with string tables
+
+        """
+
+        if not model_metadata:
+            raise IOError('Model metadata is either None or empty')
+
         string_tables = model_metadata.get(self.STRING_TABLES_METADATA_KEY, None)
+
         # empty dict string tables are allowed -> thye just need ot be present in metadata
         if string_tables is None or not isinstance(string_tables, dict):
             raise IOError('String tables can`t None or not of a dict type!')

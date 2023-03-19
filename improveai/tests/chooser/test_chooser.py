@@ -1,5 +1,6 @@
 from copy import deepcopy
 import numpy as np
+import orjson
 import os
 from pytest import raises, fixture
 import string
@@ -142,8 +143,15 @@ def test__get_model_metadata_raises_for_user_metadata_attr_with_missing_mandator
         'ai.improve.version': '8.0.0'}
 
     model_metadata_with_missing_keys = deepcopy(valid_model_metadata)
-    missing_key = 'ai.improve.model'
+    missing_key = chooser.MODEL_NAME_METADATA_KEY  # 'ai.improve.model'
     del model_metadata_with_missing_keys[missing_key]
+
+    chooser.model.set_attr(**{
+        USER_DEFINED_METADATA_KEY: orjson.dumps(model_metadata_with_missing_keys).decode('utf-8')})
+
+    with raises(IOError) as ioe:
+        chooser._get_model_metadata()
+        assert missing_key in ioe.value
 
     chooser.model.set_attr(**{USER_DEFINED_METADATA_KEY: "{abc, 13]"})
 
@@ -154,11 +162,13 @@ def test__get_model_metadata_raises_for_user_metadata_attr_with_missing_mandator
 
 
 def test__get_model_feature_names_raises_for_none_metadata():
+    global chooser
     with raises(IOError) as ioe:
         chooser._get_model_feature_names(model_metadata=None)
 
 
 def test__get_model_feature_names_raises_for_empty_metadata():
+    global chooser
     with raises(IOError) as ioe:
         chooser._get_model_feature_names(model_metadata={})
 
@@ -175,16 +185,275 @@ def test__get_model_feature_names_raises_for_no_feature_names():
 
 
 def test__get_model_feature_names_raises_for_none_feature_names():
+    global chooser
     with raises(IOError) as ioe:
         chooser._get_model_feature_names(model_metadata={chooser.FEATURE_NAMES_METADATA_KEY: None})
 
 
 def test__get_model_feature_names_raises_for_empty_feature_names():
+    global chooser
     with raises(IOError) as ioe:
         chooser._get_model_feature_names(model_metadata={chooser.FEATURE_NAMES_METADATA_KEY: []})
 
 
 def test__get_model_feature_names_raises_for_one_feature_name_not_string():
+    global chooser
     with raises(IOError) as ioe:
         chooser._get_model_feature_names(model_metadata={chooser.FEATURE_NAMES_METADATA_KEY: ['a', 1, '2']})
 
+
+def test__get_model_feature_names():
+    global chooser
+    feature_names = \
+        chooser._get_model_feature_names(model_metadata={chooser.FEATURE_NAMES_METADATA_KEY: ['item.a', 'item.b', 'item.c']})
+
+    assert feature_names == ['item.a', 'item.b', 'item.c']
+
+
+def test__get_model_seed_for_none_metadata():
+    global chooser
+    with raises(IOError) as ioe:
+        chooser._get_model_seed(model_metadata=None)
+
+
+def test__get_model_seed_for_empty_metadata():
+    global chooser
+    with raises(IOError) as ioe:
+        chooser._get_model_seed(model_metadata={})
+
+
+def test__get_model_seed_for_no_seed_in_metadata():
+    global chooser
+    global valid_model_metadata
+    model_metadata_with_missing_key = deepcopy(valid_model_metadata)
+    del model_metadata_with_missing_key[chooser.MODEL_SEED_METADATA_KEY]
+
+    with raises(IOError) as ioe:
+        chooser._get_model_seed(
+            model_metadata=model_metadata_with_missing_key)
+
+
+def test__get_model_seed_for_model_seed_none():
+    global chooser
+    with raises(IOError) as ioe:
+        chooser._get_model_seed(
+            model_metadata={chooser.MODEL_SEED_METADATA_KEY: None})
+
+
+def test__get_model_seed_for_model_seed_wrong_type():
+    global chooser
+
+    with raises(IOError) as ioe:
+        chooser._get_model_seed(
+            model_metadata={chooser.MODEL_SEED_METADATA_KEY: 'abc'})
+
+    with raises(IOError) as ioe:
+        chooser._get_model_seed(
+            model_metadata={chooser.MODEL_SEED_METADATA_KEY: True})
+
+    with raises(IOError) as ioe:
+        chooser._get_model_seed(
+            model_metadata={chooser.MODEL_SEED_METADATA_KEY: [1, 2, 3]})
+
+    with raises(IOError) as ioe:
+        chooser._get_model_seed(
+            model_metadata={chooser.MODEL_SEED_METADATA_KEY: {1, 2, 3}})
+
+    with raises(IOError) as ioe:
+        chooser._get_model_seed(
+            model_metadata={chooser.MODEL_SEED_METADATA_KEY: {'a': 1, 'b': 2, 'c': 3}})
+
+
+def test__get_model_seed():
+    global chooser
+    model_seed = chooser._get_model_seed(
+        model_metadata={chooser.MODEL_SEED_METADATA_KEY: 123})
+    assert model_seed == 123
+
+
+def test__get_model_name():
+    global chooser
+    model_name = chooser._get_model_name(
+        model_metadata={chooser.MODEL_NAME_METADATA_KEY: 'abc'})
+    assert model_name == 'abc'
+
+
+def test__get_model_name_for_none_metadata():
+    global chooser
+    with raises(IOError) as ioe:
+        chooser._get_model_name(model_metadata=None)
+
+
+def test__get_model_name_for_empty_metadata():
+    global chooser
+    with raises(IOError) as ioe:
+        chooser._get_model_name(model_metadata={})
+
+
+def test__get_model_name_for_no_model_name_in_metadata():
+    global chooser
+    global valid_model_metadata
+    model_metadata_with_missing_key = deepcopy(valid_model_metadata)
+    del model_metadata_with_missing_key[chooser.MODEL_NAME_METADATA_KEY]
+
+    with raises(IOError) as ioe:
+        chooser._get_model_name(
+            model_metadata=model_metadata_with_missing_key)
+
+
+def test__get_model_name_for_model_name_none():
+    global chooser
+    with raises(IOError) as ioe:
+        chooser._get_model_name(
+            model_metadata={chooser.MODEL_NAME_METADATA_KEY: None})
+
+
+def test__get_model_name_for_model_name_wrong_type():
+    global chooser
+
+    with raises(IOError) as ioe:
+        chooser._get_model_name(
+            model_metadata={chooser.MODEL_NAME_METADATA_KEY: 123})
+
+    with raises(IOError) as ioe:
+        chooser._get_model_name(
+            model_metadata={chooser.MODEL_NAME_METADATA_KEY: True})
+
+    with raises(IOError) as ioe:
+        chooser._get_model_name(
+            model_metadata={chooser.MODEL_NAME_METADATA_KEY: [1, 2, 3]})
+
+    with raises(IOError) as ioe:
+        chooser._get_model_name(
+            model_metadata={chooser.MODEL_NAME_METADATA_KEY: {1, 2, 3}})
+
+    with raises(IOError) as ioe:
+        chooser._get_model_name(
+            model_metadata={chooser.MODEL_NAME_METADATA_KEY: {'a': 1, 'b': 2, 'c': 3}})
+
+
+def test__get_string_tables_for_none_metadata():
+    global chooser
+    with raises(IOError) as ioe:
+        chooser._get_string_tables(model_metadata=None)
+
+
+def test__get_string_tables_for_empty_metadata():
+    global chooser
+    with raises(IOError) as ioe:
+        chooser._get_string_tables(model_metadata={})
+
+
+def test__get_string_tables_for_no_string_tables_in_metadata():
+    global chooser
+    global valid_model_metadata
+    model_metadata_with_missing_key = deepcopy(valid_model_metadata)
+    del model_metadata_with_missing_key[chooser.STRING_TABLES_METADATA_KEY]
+
+    with raises(IOError) as ioe:
+        chooser._get_string_tables(
+            model_metadata=model_metadata_with_missing_key)
+
+
+def test__get_string_tables_for_string_tables_none():
+    global chooser
+    with raises(IOError) as ioe:
+        chooser._get_string_tables(
+            model_metadata={chooser.STRING_TABLES_METADATA_KEY: None})
+
+
+def test__string_tables_for_string_tables_wrong_type():
+    global chooser
+
+    with raises(IOError) as ioe:
+        chooser._get_string_tables(
+            model_metadata={chooser.STRING_TABLES_METADATA_KEY: 123})
+
+    with raises(IOError) as ioe:
+        chooser._get_string_tables(
+            model_metadata={chooser.STRING_TABLES_METADATA_KEY: True})
+
+    with raises(IOError) as ioe:
+        chooser._get_string_tables(
+            model_metadata={chooser.STRING_TABLES_METADATA_KEY: 'abc'})
+
+    with raises(IOError) as ioe:
+        chooser._get_string_tables(
+            model_metadata={chooser.STRING_TABLES_METADATA_KEY: {1, 2, 3}})
+
+    with raises(IOError) as ioe:
+        chooser._get_string_tables(
+            model_metadata={chooser.STRING_TABLES_METADATA_KEY: [1, 2, 3, 4]})
+
+    with raises(IOError) as ioe:
+        chooser._get_string_tables(
+            model_metadata={chooser.STRING_TABLES_METADATA_KEY: {'a': 1, 'b': 2, 'c': 3}})
+
+
+def test__get_improveai_major_version():
+    global chooser
+
+    improveai_major_version = chooser._get_improveai_major_version(
+        model_metadata={chooser.VERSION_METADATA_KEY: '8.1'})
+
+    assert improveai_major_version == 8
+
+
+def test__get_improveai_major_version_for_none_metadata():
+    global chooser
+    with raises(IOError) as ioe:
+        chooser._get_improveai_major_version(model_metadata=None)
+
+
+def test__get_improveai_major_version_for_empty_metadata():
+    global chooser
+    with raises(IOError) as ioe:
+        chooser._get_improveai_major_version(model_metadata={})
+
+
+def test__get_improveai_major_version_for_none_major_improveai_version():
+    global chooser
+    with raises(IOError) as ioe:
+        chooser._get_improveai_major_version(model_metadata={})
+
+
+def test__get_improveai_major_version_for_no_major_improveai_version_in_metadata():
+    global chooser
+    global valid_model_metadata
+    model_metadata_with_missing_key = deepcopy(valid_model_metadata)
+    del model_metadata_with_missing_key[chooser.VERSION_METADATA_KEY]
+
+    print('### model_metadata_with_missing_key ####')
+    print(model_metadata_with_missing_key)
+
+    improveai_major_version = chooser._get_improveai_major_version(
+            model_metadata=model_metadata_with_missing_key)
+    assert improveai_major_version is None
+
+
+def test__get_improveai_major_version_for_string_tables_wrong_type():
+    global chooser
+
+    with raises(IOError) as ioe:
+        chooser._get_string_tables(
+            model_metadata={chooser.VERSION_METADATA_KEY: 123})
+
+    with raises(IOError) as ioe:
+        chooser._get_string_tables(
+            model_metadata={chooser.VERSION_METADATA_KEY: True})
+
+    with raises(IOError) as ioe:
+        chooser._get_string_tables(
+            model_metadata={chooser.VERSION_METADATA_KEY: 'abc'})
+
+    with raises(IOError) as ioe:
+        chooser._get_string_tables(
+            model_metadata={chooser.VERSION_METADATA_KEY: {1, 2, 3}})
+
+    with raises(IOError) as ioe:
+        chooser._get_string_tables(
+            model_metadata={chooser.VERSION_METADATA_KEY: [1, 2, 3, 4]})
+
+    with raises(IOError) as ioe:
+        chooser._get_string_tables(
+            model_metadata={chooser.VERSION_METADATA_KEY: {'a': 1, 'b': 2, 'c': 3}})
