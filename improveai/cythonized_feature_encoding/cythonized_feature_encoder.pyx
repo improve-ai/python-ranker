@@ -16,13 +16,14 @@ cdef object xxh3 = xxhash.xxh3_64_intdigest
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef double scale(double val, double width=2.0):
+cpdef double scale(double val, double width=2.0) except *:
+    assert width >= 0.0
     # map value in [0, 1] to [-width/2, width/2]
     return val * width - 0.5 * width
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef unsigned long long get_mask(list string_table):
+cpdef unsigned long long get_mask(list string_table) except *:
     if len(string_table) == 0:
         return 0
 
