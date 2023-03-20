@@ -19,7 +19,7 @@ class RewardTracker:
     @property
     def MODEL_KEY(self) -> str:
         """
-        Track request body key storing model name
+        Key under which model name is stored in track request dict / body
 
         Returns
         -------
@@ -32,7 +32,7 @@ class RewardTracker:
     @property
     def MESSAGE_ID_KEY(self) -> str:
         """
-        Track request body key storing message ID
+        Key under which message ID is stored in track request dict / body
 
         Returns
         -------
@@ -45,7 +45,7 @@ class RewardTracker:
     @property
     def ITEM_KEY(self) -> str:
         """
-        Track request body key storing best variant
+        Key under which item is stored in track request dict / body
 
         Returns
         -------
@@ -58,7 +58,7 @@ class RewardTracker:
     @property
     def CONTEXT_KEY(self) -> str:
         """
-        Track request body key storing givens
+        Key under which context is stored in track request dict / body
 
         Returns
         -------
@@ -71,7 +71,7 @@ class RewardTracker:
     @property
     def REWARD_KEY(self) -> str:
         """
-        Track request body key storing reward value
+        Key under which reward is stored in reward request dict / body
 
         Returns
         -------
@@ -84,7 +84,7 @@ class RewardTracker:
     @property
     def REWARD_ID_KEY(self) -> str:
         """
-        Track request body key storing decision ID
+        Key under which reward ID is stored in reward request dict / body
 
         Returns
         -------
@@ -97,7 +97,7 @@ class RewardTracker:
     @property
     def API_KEY_HEADER(self) -> str:
         """
-        Track request headers key storing `API key`
+        Key for request headers storing an API key
 
         Returns
         -------
@@ -137,7 +137,7 @@ class RewardTracker:
     @property
     def ITEMS_COUNT_KEY(self) -> str:
         """
-        Track request headers key storing variants count
+        Key under which candidates / items count is stored in reward request dict / body
 
         Returns
         -------
@@ -150,7 +150,7 @@ class RewardTracker:
     @property
     def SAMPLE_KEY(self) -> str:
         """
-        Track request headers key storing sample
+        Key under which sample is stored in reward request dict / body
 
         Returns
         -------
@@ -186,7 +186,7 @@ class RewardTracker:
     @property
     def track_url(self) -> str:
         """
-        Improve AI track endpoint URL
+        Improve AI AWS track endpoint URL
 
         Returns
         -------
@@ -204,7 +204,7 @@ class RewardTracker:
     @property
     def api_key(self) -> str:
         """
-        track endpoint API key (if applicable); Can be None
+        AWS track endpoint API key (if applicable); Can be None
 
         Returns
         -------
@@ -219,7 +219,18 @@ class RewardTracker:
         self._api_key = new_val
 
     @property
-    def threaded_requests(self):
+    def threaded_requests(self) -> bool:
+        """
+        Boolean flag indicating whether requests should be executed with ThreadPoolExecutor.
+        If True requests are non-blocking and executed within threads. If False
+        requests are blocking and executed consecutively.
+
+        Returns
+        -------
+        bool
+            should requests to AWS track endpoint be non-blockng
+
+        """
         return self.__threaded_requests
 
     def __init__(self, model_name: str, track_url: str, track_api_key: str = None, _threaded_requests: bool = True):
@@ -228,10 +239,15 @@ class RewardTracker:
 
         Parameters
         ----------
+        model_name: str
+            Name of the model which either makes the decisions or whose decisions are being rewarded
         track_url: str
-            Improve AI track endpoint URL
+            Improve AI track endpoint URL. Must not be None
         track_api_key: str
             Improve AI track endpoint API key (nullable)
+        _threaded_requests: bool
+            flag indicating whether requests to AWS track endpoint should be
+            non-blockng / executed within sub-threads. True by default
         """
 
         self.model_name = model_name
@@ -243,7 +259,8 @@ class RewardTracker:
 
     def _get_track_body(self, item: object, num_candidates: int, context: object, sample: object):
         """
-        Helper method to create track body. used by RewardTracker's track()
+        Helper method to create track body. Used by RewardTracker's `track()`
+        and `track_with_sample()`
 
         Parameters
         ----------
@@ -279,9 +296,10 @@ class RewardTracker:
         # deepcopy to avoid effects of in-place modifications
         return deepcopy(body)
 
+    # TODO check / add unittests
     def _get_sample(self, item: object, candidates: list or tuple or np.ndarray) -> object:
         """
-        Gets sample from candidates excluding item
+        Randomly selects a sample from `candidates` excluding `item`.
 
         Parameters
         ----------
@@ -289,6 +307,11 @@ class RewardTracker:
             the best of candidates
         candidates: list or tuple or np.ndarray
             collection of candidates
+
+        Raises
+        -------
+        AssertionError
+            if `len(candidates) == 1` it is nto possible to select a sample
 
         Returns
         -------
@@ -311,8 +334,8 @@ class RewardTracker:
     def track(self, item: object, candidates: list or tuple or np.ndarray = None,
               context: object = None) -> str or None:
         """
-        Track that variant is causal in the system. Select a random sample from
-        candidates
+        Track that input item is causal in the system. Select a random sample from
+        candidates. If `len(candidates) == 1` there is no sample.
 
         Parameters
         ----------
@@ -347,7 +370,9 @@ class RewardTracker:
             self, item: object, num_candidates: int = None, context: object = None,
             sample: object = None) -> str or None:
         """
-        Tracks provided item with sample.
+        Track that input item is causal in the system. Provided sample is
+        appended to track request (in contrary to `track(...)` where sample is
+        randomly selected from candidates).
 
         Parameters
         ----------
@@ -377,8 +402,8 @@ class RewardTracker:
 
     def add_reward(self, reward: float or int, reward_id: str):
         """
-        Adds provided reward for a given decision id made by a given model.
-
+        Assigns a reward (with POST request) to a given decision ID
+        (rewarded decision ID is equal to `reward_id`)
 
         Parameters
         ----------
@@ -433,7 +458,7 @@ class RewardTracker:
 
     def do_post_improve_request(self, payload_json: str, headers: dict):
         """
-        Execute improve POST request with provided payload and headers
+        Execute improve POST to track_url with provided payload and headers
 
         Parameters
         ----------
@@ -468,13 +493,16 @@ class RewardTracker:
 
     def post_improve_request(self, body_values: Dict[str, object], message_id: str = None) -> str or None:
         """
-        Posts request to tracker endpoint
+        Posts request to tracker endpoint. Does not break the main thread, just
+        prints a warning.
+
         Parameters
         ----------
         body_values: dict
-            dict to be posted
+            dict containing request body. Bodies differ for `track()` and `add_reward()`
         message_id: str or None
             ksuid of a given request
+
         Returns
         -------
         str

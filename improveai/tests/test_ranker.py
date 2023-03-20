@@ -155,3 +155,7 @@ class TestRanker:
         ranker = Ranker(model_url=self.model_url)
         with raises(AttributeError) as aerr:
             ranker.scorer = 'abc'
+
+    def test_ranker_constructor_raises_for_scorer_none_and_model_url_none(self):
+        with raises(ValueError) as verr:
+            Ranker(scorer=None, model_url=None)

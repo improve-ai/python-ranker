@@ -12,8 +12,9 @@ class Scorer:
     @property
     def model_url(self) -> str:
         """
-        URL leading to tracker endpoint. Used to track decisions and assign
-        rewards.
+        URL or local FS path leading to Improve AI booster to be used with this
+        scorer. Allows both raw xgboost files (most commonly having \*.xgb extension) as well as
+        gzipped boosters (\*.xgb.gz).
         Can only be set during object initialization.
 
         Returns
@@ -27,7 +28,7 @@ class Scorer:
     @property
     def chooser(self) -> XGBChooser:
         """
-        Chooser (for mre info please check chooser.py -> XGBChooser class) object
+        Chooser object (for more info please check Chooser tab -> XGBChooser class)
         for this scorer.
         Can only be set during object initialization.
 
@@ -42,17 +43,27 @@ class Scorer:
     @property
     def TIEBREAKER_MULTIPLIER(self) -> float:
         """
-        Small value randomized and added to model's scores
+        Small float value used to randomize model's scores (random numbers
+        sampled uniformly from [0, 1) are multiplied by `TIEBREAKER_MULTIPLIER` and added to scores)
 
         Returns
         -------
         float
-            Small value randomized and added to model's scores
+            Small float value used to randomize model's scores
 
         """
         return 2**-23
 
     def __init__(self, model_url: str):
+        """
+        Init with params
+
+        Parameters
+        ----------
+        model_url: str
+            URL or local FS path leading to ImproveAI model to be used with this Scorer
+
+        """
         assert model_url is not None and isinstance(model_url, str)
 
         self.__model_url = model_url
@@ -61,7 +72,7 @@ class Scorer:
 
     def score(self, items: list or tuple or np.ndarray, context: object = None) -> np.ndarray:
         """
-        Calculate scores for provided items given a context
+        Calculate scores for provided items and a context
 
         Parameters
         ----------
@@ -73,7 +84,7 @@ class Scorer:
         Returns
         -------
         np.ndarray
-            an array of double scores
+            an array of scores for items of type double
 
         """
         check_candidates(candidates=items)

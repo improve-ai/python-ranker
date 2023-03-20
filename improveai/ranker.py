@@ -6,6 +6,9 @@ from improveai.scorer import Scorer
 class Ranker:
 
     SUPPORTED_CALLS = ['score', 'rank']
+    """
+    Methods supported by improve CLI. Currently only `score` and `rank` are supported.
+    """
 
     # TODO I think we might go with scorer and model_url as properties with only getter.
     #  If we won't define them as properties anyone will be able to mutate them
@@ -15,34 +18,47 @@ class Ranker:
     @property
     def scorer(self):
         """
-        A Scorer is used to calculate scores for provided items.
-        Items must be JSON encodable. If both scorer and model_url are provided
-         scorer is preferred.
+        A Scorer is used to calculate scores for items.
+        Items must be JSON encodable. If both `scorer` and `model_url` are provided
+        `scorer` is preferred.
 
         Returns
         -------
         Scorer
-             a scorer for this Ranked
+             a Scorer object for this Ranker
         """
         return self.__scorer
 
     @property
     def model_url(self):
         """
-        A URL leading either to local file or remote ImproveAI model. If both scorer
-        and model_url are provided in the constructor model_url is ignored.
+        URL or local FS path leading to Improve AI booster to be used with this
+        scorer. Allows both raw xgboost files (most commonly having \*.xgb extension)
+        as well as gzipped boosters (\*.xgb.gz). If both `scorer` and `model_url`
+        are provided to Ranker's constructor `scorer` is preferred.
+        Can only be set during object initialization.
 
         Returns
         -------
         str
-            a model URL
+            model URL for this Ranker
+
         """
         return self.__model_url
 
     def __init__(self, scorer: Scorer = None, model_url: str = None):
+        """
+        Init Ranker with params. Either `scorer` or `model_url` must be provided.
+        If both are provided Scorer is preferred.
 
-        # perform sanity check -> if scorer parameter is None set model_url with
-        # provided URL and use it to create Scorer object and set scorer property
+        Parameters
+        ----------
+        scorer: Scorer
+            a Scorer object to be used with this Ranker
+        model_url: str
+            URL or local FS path leading to ImproveAI model to be used with this Ranker
+        """
+
         if scorer is not None:
             assert isinstance(scorer, Scorer)
             # if both are provided choose scorer over model_url
@@ -51,10 +67,12 @@ class Ranker:
         elif scorer is None and model_url is not None:
             self.__model_url = model_url
             self.__scorer = Scorer(model_url=self.__model_url)
+        else:
+            raise ValueError('Either `scorer` or `model_url` must be provided')
 
-    def rank(self, items: list or tuple or np.ndarray, context: object = None) -> list:
+    def rank(self, items: list or tuple or np.ndarray, context: object = None) -> list or tuple or np.ndarray:
         """
-        Ranks and returns provided items ordered best to worst
+        Ranks items and returns them ordered best to worst
 
         Parameters
         ----------
@@ -65,8 +83,8 @@ class Ranker:
 
         Returns
         -------
-        list
-            a list of ranked items
+        list or tuple or np.ndarray
+            a collection of ranked items (collection's type is identical with `items`)
         """
         # assure provided items are not empty
         assert len(items) > 0
