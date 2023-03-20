@@ -16,8 +16,6 @@ def gcc_and_py3_dev_installed() -> bool:
     return gcc_installed and py3_dev_installed
 
 
-# # TODO use cython once debugged
-# CYTHON_BACKEND_AVAILABLE = False
 # docs for module level variables like CYTHON_BACKEND_AVAILABLE are placed below them
 CYTHON_BACKEND_AVAILABLE = gcc_and_py3_dev_installed()
 """
