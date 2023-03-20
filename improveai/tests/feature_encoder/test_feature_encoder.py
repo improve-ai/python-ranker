@@ -1071,6 +1071,17 @@ class TestEncoder(TestCase):
             test_case_filename=os.getenv(
                 "FEATURE_ENCODER_TEST_NESTED_DICT_STRING_KEYS_JSON"))
 
+    def test_encode_item_raises_for_non_json_encodable(self):
+        feature_encoder = FeatureEncoder(
+            feature_names=['item', 'context'], string_tables={}, model_seed=1)
+        with raises(ValueError) as verr:
+            feature_encoder.encode_item(
+                item=object, into=np.array([np.nan, np.nan]))
+
+        with raises(ValueError) as verr:
+            feature_encoder.encode_item(
+                item=np.array([1, 2, 3]), into=np.array([np.nan, np.nan]))
+
     def test_encode_context_raises_for_non_json_encodable(self):
         feature_encoder = FeatureEncoder(
             feature_names=['item', 'context'], string_tables={}, model_seed=1)
