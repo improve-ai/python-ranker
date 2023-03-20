@@ -10,11 +10,33 @@ class Scorer:
     # TODO do not expose any attribute which is not strictly necessary as a property
     # exposed as read-only
     @property
-    def model_url(self):
+    def model_url(self) -> str:
+        """
+        URL leading to tracker endpoint. Used to track decisions and assign
+        rewards.
+        Can only be set during object initialization.
+
+        Returns
+        -------
+        str
+            model URL for this Scorer
+
+        """
         return self.__model_url
 
     @property
-    def chooser(self):
+    def chooser(self) -> XGBChooser:
+        """
+        Chooser (for mre info please check chooser.py -> XGBChooser class) object
+        for this scorer.
+        Can only be set during object initialization.
+
+        Returns
+        -------
+        XGBChooser
+            a chooser object for this Scorer
+
+        """
         return self.__chooser
 
     @property

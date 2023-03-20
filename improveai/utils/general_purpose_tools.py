@@ -100,5 +100,21 @@ def is_valid_ksuid(id_: str) -> bool:
 
 
 def deepcopy_args(*args):
+    """
+    Helper function to deepcopy request body items before request. Requests are
+    now asynchronous by default and not copying those values could yield strange
+    results
+
+    Parameters
+    ----------
+    args: list
+        lsit of args to be copied
+
+    Returns
+    -------
+    list
+        list of copied args
+
+    """
     return [deepcopy(arg) for arg in args]
 
