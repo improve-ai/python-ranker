@@ -1179,6 +1179,58 @@ class TestEncoder(TestCase):
         with raises(TypeError) as aerr:
             fe._encode(obj={'a': 1, 'b': 2, 'c': {'1': 1, 2: 2}},  path='a', into=np.array([]), noise_shift=0.0, noise_scale=0.0)
 
+    def test__encode_raises_for_bad_into_int_types(self):
+        fe = FeatureEncoder(feature_names=['item', 'context'], string_tables={}, model_seed=0)
+
+        for bad_into_dtype in [np.int, np.int32, bool, int]:
+            into = np.array([-1, -1], dtype=bad_into_dtype)
+            with raises(ValueError) as verr:
+                fe._encode(obj=1, path='item', into=into)
+
+    def test__encode_raises_for_bad_into_float_types(self):
+        fe = FeatureEncoder(feature_names=['item', 'context'],
+                            string_tables={}, model_seed=0)
+
+        for bad_into_dtype in [np.float16, np.float32]:
+            into = np.array([np.nan, np.nan], dtype=bad_into_dtype)
+            with raises(ValueError) as verr:
+                fe._encode(obj=1, path='item', into=into)
+
+    def test__encode_raises_for_bad_into_string_types(self):
+        fe = FeatureEncoder(feature_names=['item', 'context'],
+                            string_tables={}, model_seed=0)
+
+        for bad_into_dtype in [object, str, '<U16']:
+            into = np.array([None, None], dtype=bad_into_dtype)
+            with raises(ValueError) as verr:
+                fe._encode(obj=1, path='item', into=into)
+
+    def test_encode_feature_vector_raises_for_bad_into_int_types_item_none_context_none(self):
+        fe = FeatureEncoder(feature_names=['item', 'context'], string_tables={}, model_seed=0)
+
+        for bad_into_dtype in [np.int, np.int32, bool, int]:
+            into = np.array([-1, -1], dtype=bad_into_dtype)
+            with raises(ValueError) as verr:
+                fe.encode_feature_vector(item=None, context=None, into=into)
+
+    def test_encode_feature_vector_raises_for_bad_into_float_types_item_none_context_none(self):
+        fe = FeatureEncoder(feature_names=['item', 'context'],
+                            string_tables={}, model_seed=0)
+
+        for bad_into_dtype in [np.float16, np.float32]:
+            into = np.array([np.nan, np.nan], dtype=bad_into_dtype)
+            with raises(ValueError) as verr:
+                fe.encode_feature_vector(item=None, context=None, into=into)
+
+    def test_encode_feature_vector_raises_for_bad_into_string_types_item_none_context_none(self):
+        fe = FeatureEncoder(feature_names=['item', 'context'],
+                            string_tables={}, model_seed=0)
+
+        for bad_into_dtype in [object, str, '<U16']:
+            into = np.array([None, None], dtype=bad_into_dtype)
+            with raises(ValueError) as verr:
+                fe.encode_feature_vector(item=None, context=None, into=into)
+
 
 def test_get_noise_shift_scale():
     noise_shift, noise_scale = get_noise_shift_scale(0.0)

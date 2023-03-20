@@ -12,6 +12,8 @@ CONTEXT_FEATURE_KEY = 'context'
 Feature names prefix for features derived from context
 """
 
+FIRST_LEVEL_FEATURES_CHUNKS = {ITEM_FEATURE_KEY, CONTEXT_FEATURE_KEY}
+
 xxh3 = xxhash.xxh3_64_intdigest
 
 
@@ -19,6 +21,42 @@ class FeatureEncoder:
     """
     Encodes JSON encodable objects into float vectors
     """
+
+    @property
+    def feature_indexes(self) -> dict:
+        """
+        A map between feature names and feature indexes. Created by simple
+        iteration with enumeration over feature names
+
+        Returns
+        -------
+        dict
+            a mapping between a string feature names and feature index
+
+        """
+        return self._feature_indexes
+
+    @feature_indexes.setter
+    def feature_indexes(self, value: dict):
+        self._feature_indexes = value
+
+    @property
+    def string_tables(self) -> list:
+        """
+        List of StringTable objects indexed according to order present in the
+        constructor's string_tables param
+
+        Returns
+        -------
+        list
+            list of StringTables
+
+        """
+        return self._string_tables
+
+    @string_tables.setter
+    def string_tables(self, value: list):
+        self._string_tables = value
 
     def __init__(self, feature_names: list, string_tables: dict, model_seed: int):
         """
@@ -62,8 +100,9 @@ class FeatureEncoder:
         into: np.ndarray
             array which will store feature values
 
-        Returns
+        Raises
         -------
+        ValueError if into is not a numpy array or not of a float64 dtype
 
         """
 
@@ -89,8 +128,6 @@ class FeatureEncoder:
         -------
 
         """
-        # make sure into is not None and is a float64 array
-        self._check_into(into=into)
         self._encode(item, path=ITEM_FEATURE_KEY, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
 
     def encode_context(self, context: object, into: np.ndarray, noise_shift: float = 0.0, noise_scale: float = 1.0):
@@ -112,8 +149,6 @@ class FeatureEncoder:
         -------
 
         """
-        # make sure into is not None and is a float64 array (?)
-        self._check_into(into=into)
         self._encode(context, path=CONTEXT_FEATURE_KEY, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
 
     def encode_feature_vector(
@@ -140,7 +175,6 @@ class FeatureEncoder:
 
         """
 
-        self._check_into(into=into)
         noise_shift, noise_scale = get_noise_shift_scale(noise)
 
         if item is not None:
@@ -148,6 +182,11 @@ class FeatureEncoder:
 
         if context is not None:
             self.encode_context(context, into, noise_shift, noise_scale)
+
+        # for 10k calls this takes only 4 ms
+        # if both item and context are None into will not be checked until now.
+        if item is None and context is None:
+            self._check_into(into=into)
 
     def _encode(self, obj: object, path: str, into: np.ndarray, noise_shift: float = 0.0, noise_scale: float = 1.0):
         """
@@ -177,8 +216,8 @@ class FeatureEncoder:
         -------
         None
         """
-        # TODO do we want to check if into is truly a np array?
-        # assert isinstance(into, np.ndarray)
+        if path in FIRST_LEVEL_FEATURES_CHUNKS:
+            self._check_into(into)
 
         # TODO do we want to check if `obj` is JSON serializable?
         if isinstance(obj, (int, float)):  # bool is an instanceof int
@@ -216,10 +255,10 @@ class FeatureEncoder:
             raise ValueError(f'{obj} not JSON encodable. Must be string, int, float, bool, list, tuple, dict, or None')
 
 
-def get_noise_shift_scale(noise: float):
+def get_noise_shift_scale(noise: float) -> tuple:
     """
     Returns noise shift (small value added to feature value) and noise scale
-    (value by which shifted feature value is multipled)
+    (value by which shifted feature value is multiplied)
 
     Parameters
     ----------
@@ -229,6 +268,8 @@ def get_noise_shift_scale(noise: float):
 
     Returns
     -------
+    tuple
+        tuple of floats: (noise_shift, noise_scale)
 
     """
     assert noise >= 0.0 and noise < 1.0
@@ -262,6 +303,77 @@ def sprinkle(x: float, noise_shift: float, noise_scale: float) -> float:
 
 
 class StringTable:
+    """
+    A class responsible for target encoding of strings for given feature
+    """
+
+    @property
+    def model_seed(self) -> int:
+        """
+        32-bit integer used for string hashing with xxhash
+
+        Returns
+        -------
+        int
+            model seed
+
+        """
+        return self._model_seed
+
+    @model_seed.setter
+    def model_seed(self, value: int):
+        self._model_seed = value
+
+    @property
+    def mask(self) -> int:
+        """
+        At most 64 bit int representation of a string hash mask e.g., 000..00111
+
+        Returns
+        -------
+        int
+            mask used for hashed string value
+
+        """
+        return self._mask
+
+    @mask.setter
+    def mask(self, value: int):
+        self._mask = value
+
+    @property
+    def miss_width(self) -> float:
+        """
+        Float value representing width of the 0-centered miss numerical interval
+
+        Returns
+        -------
+        float
+            miss width value
+
+        """
+        return self._miss_width
+
+    @miss_width.setter
+    def miss_width(self, value: float):
+        self._miss_width = value
+
+    @property
+    def value_table(self) -> dict:
+        """
+        A mapping from masked string hash to target encoding's target value for a given feature
+
+        Returns
+        -------
+        dict
+            a dict with target value encoding
+
+        """
+        return self._value_table
+
+    @value_table.setter
+    def value_table(self, value: dict):
+        self._value_table = value
 
     def __init__(self, string_table, model_seed):
         """
@@ -349,6 +461,8 @@ def scale(val: float, width: float = 2) -> float:
 
     Returns
     -------
+    float
+        scaled miss value
 
     """
     assert width >= 0
