@@ -318,6 +318,7 @@ if __name__ == '__main__':
          '2_nested_dict_variants_20_random_nested_dict_givens_large_binary_reward.json',
          '2_numeric_variants_100_random_nested_dict_givens_binary_reward.json',
          '2_numeric_variants_100_random_nested_dict_givens_binary_reward.json',
+         '2_numeric_variants_no_givens_binary_reward.json',
          '2_numeric_variants_no_givens_large_binary_reward.json',
          '2_variants_20_huge_givens.json',
          '1000_list_of_numeric_variants_20_same_nested_givens_binary_reward.json',
