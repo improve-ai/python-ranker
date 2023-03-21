@@ -5,12 +5,12 @@
         "data_ends": "2021-12-31 00:00:00",
         "time_seed": 9
     },
-    "variants_definition": {
+    "candidates_definition": {
         "values": null,
         "eval_call": "[[1.0, 2]] + [[int(np.random.randint(0, 10000)) if np.random.rand() > 0.5 else np.random.rand() * 1000 for _ in range(2)] for el in range(1, 1000)]",
         "distribution_name": "#uniform#"
     },
-    "givens_definition": {
+    "context_definition": {
         "values": [
             {
                 "a": "b",
@@ -28,8 +28,8 @@
         "eval_call": null,
         "distribution_name": "#uniform#"
     },
-    "variants_to_givens_mapping": null,
-    "givens_fraction": 0.2,
+    "items_to_contexts_mapping": null,
+    "context_fraction": 0.2,
     "reward_mapping": {
         "0|0": 1
     },

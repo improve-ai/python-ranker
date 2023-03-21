@@ -5,7 +5,7 @@
         "data_ends": "2021-12-31 00:00:00",
         "time_seed": 9
     },
-    "variants_definition": {
+    "candidates_definition": {
         "values": [
             {
                 "a": 0.0,
@@ -38,7 +38,7 @@
         "eval_call": null,
         "distribution_name": "#uniform#"
     },
-    "givens_definition": {
+    "context_definition": {
         "values": [
             {
                 "value": "A"
@@ -51,8 +51,8 @@
         "distribution_name": "#uniform#"
     },
     "noise": 0.0,
-    "variants_to_givens_mapping": null,
-    "givens_fraction": 0.2,
+    "items_to_contexts_mapping": null,
+    "context_fraction": 0.2,
     "reward_mapping": {
         "0|0": 1,
         "1|#any#": 0

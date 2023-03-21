@@ -7,7 +7,6 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   improveai.utils.choosers_feature_encoding_tools
    improveai.utils.general_purpose_tools
    improveai.utils.gzip_tools
    improveai.utils.url_tools

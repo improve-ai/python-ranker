@@ -45,7 +45,7 @@ def get_test_data(path_to_test_json: str, method: str = 'readlines') -> dict:
 
 def assert_valid_decision(decision, expected_ranked_variants, expected_givens):
     # validate givens
-    assert decision.givens == expected_givens
+    assert decision.context == expected_givens
     # validate ranked variants
     np.testing.assert_array_equal(decision.ranked, expected_ranked_variants)
 

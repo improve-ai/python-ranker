@@ -48,10 +48,10 @@ copyright = '2022, Improve AI'
 author = 'Improve AI'
 
 # The short X.Y version
-version = '7.2.2'
+version = '8.0'
 
 # The full version, including alpha/beta/rc tags
-release = '7.2.2'
+release = '8.0.0'
 
 
 # -- General configuration ---------------------------------------------------
@@ -79,6 +79,11 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 source_suffix = ['.rst', '.md']
 
 autodoc_default_flags = ['members']
+autodoc_default_options = {
+    "members": True,
+    # "undoc-members": True,
+    "private-members": True,
+    "exclude-members": "__new__, __pyx_unpickle_FeatureEncoder, __pyx_unpickle_StringTable"}
 autosummary_generate = True
 add_module_names = False
 autodoc_typehints = 'both'
@@ -95,3 +100,4 @@ html_theme = 'sphinx_rtd_theme'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 autodoc_class_signature = 'separated'
+autodoc_member_order = 'bysource'

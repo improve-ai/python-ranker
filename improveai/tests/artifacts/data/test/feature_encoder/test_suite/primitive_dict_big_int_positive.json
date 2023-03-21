@@ -1,15 +1,12 @@
 {
     "test_case": {
-        "variant": {
+        "item": {
             "$value": 2147483647
         }
     },
-    "test_output": {
-        "5e9f9c59": 2147498200.0
-    },
+    "test_output": [2.14749828e+09],
     "model_seed": 1,
-    "noise": 0.8928601514360016,
-    "variant_seed": 2675988294294598568,
-    "value_seed": 6818340268807889528,
-    "givens_seed": 12461487462738526788
+    "feature_names": ["item.$value"],
+    "string_tables": {},
+    "noise": 0.8928601514360016
 }

@@ -17,13 +17,11 @@ Submodules
    :maxdepth: 4
 
    improveai.chooser
-   improveai.decision
-   improveai.decision_context
-   improveai.decision_model
-   improveai.decision_tracker
    improveai.feature_encoder
-   improveai.givens_provider
-   improveai.improve_model_cli
+   improveai.improve_cli
+   improveai.ranker
+   improveai.reward_tracker
+   improveai.scorer
    improveai.settings
 
 Module contents

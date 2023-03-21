@@ -1,7 +1,7 @@
 {
     "test_case": {
         "ordered": true,
-        "model_filename": "dummy_v6.xgb",
+        "model_filename": "appconfig.xgb",
         "variants": [
             {
                 "text": "lovely corgi",

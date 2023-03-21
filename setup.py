@@ -34,16 +34,6 @@ if __name__ == '__main__':
         import numpy as np
         from setuptools import Extension
 
-        cython_feature_encoding_utils_path_str = \
-            os.sep.join(
-                [IMPROVE_DIR, CYTHON_MODULE_DIR, 'cythonized_feature_encoding_utils.{}'.format(EXTENSION)])
-
-        cython_feature_encoding_utils_ext = \
-            Extension(
-                '{}.{}.cythonized_feature_encoding_utils'.format(IMPROVE_DIR, CYTHON_MODULE_DIR),
-                sources=[cython_feature_encoding_utils_path_str],
-                include_dirs=[np.get_include(), os.sep.join(['.', IMPROVE_DIR, CYTHON_MODULE_DIR])])
-
         cython_feature_encoder_path_str = \
             os.sep.join(
                 [IMPROVE_DIR, CYTHON_MODULE_DIR, 'cythonized_feature_encoder.{}'.format(EXTENSION)])
@@ -54,9 +44,8 @@ if __name__ == '__main__':
                 sources=[cython_feature_encoder_path_str],
                 include_dirs=[np.get_include(), os.sep.join(['.', IMPROVE_DIR, CYTHON_MODULE_DIR])])
 
-        # append setup kwargs with cythonization info
         setup_kwargs.update(
-            {'ext_modules': cythonize([cython_feature_encoding_utils_ext, cython_feature_encoder_ext], language_level="3"),
+            {'ext_modules': cythonize([cython_feature_encoder_ext], language_level="3"),
              'include_dirs': [np.get_include(), '.']
              })
 

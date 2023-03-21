@@ -1,6 +1,6 @@
 {
     "test_case": {
-        "model_filename": "dummy_v6.xgb",
+        "model_filename": "appconfig.xgb",
         "ordered": true,
         "variants": [
             {

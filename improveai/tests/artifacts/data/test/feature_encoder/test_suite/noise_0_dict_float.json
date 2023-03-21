@@ -1,11 +1,10 @@
 {
     "test_case": {
-        "variant": {"$value":  0.0}
+        "item": {"$value":  0.0}
     },
-    "test_output": {"5e9f9c59": 0.0},
+    "test_output": [0.0],
     "model_seed": 1,
-    "noise": 0.0,
-    "variant_seed": 2675988294294598568,
-    "value_seed": 6818340268807889528,
-    "givens_seed": 12461487462738526788
+    "feature_names": ["item.$value"],
+    "string_tables": {},
+    "noise": 0.0
 }

@@ -5,13 +5,13 @@ from pathlib import Path
 from typing import Union
 
 
-def is_gz_bytes(chkd_bytes: bytes) -> bool:
+def is_gz_bytes(checked_bytes: bytes) -> bool:
     """
-    Checks if provided bytes is a gz zipped file stream. If so returns True
+    Checks if provided bytes is a gzipped file stream. If so returns True.
 
     Parameters
     ----------
-    chkd_bytes: bytes
+    checked_bytes: bytes
         bytes to check for being gz zipped file
 
     Returns
@@ -21,10 +21,10 @@ def is_gz_bytes(chkd_bytes: bytes) -> bool:
 
     """
 
-    if not isinstance(chkd_bytes, bytes):
+    if not isinstance(checked_bytes, bytes):
         return False
 
-    with gzip.GzipFile(fileobj=BytesIO(chkd_bytes)) as f:
+    with gzip.GzipFile(fileobj=BytesIO(checked_bytes)) as f:
         try:
             f.read(1)
             return True
@@ -32,13 +32,13 @@ def is_gz_bytes(chkd_bytes: bytes) -> bool:
             return False
 
 
-def get_unzip_gz(to_be_unzpd_bytes: bytes) -> bytes:
+def get_unzipped_gz(to_be_unzipped_bytes: bytes) -> bytes:
     """
-    Unzips provided input bytes
+    Unzips provided input bytes.
 
     Parameters
     ----------
-    to_be_unzpd_bytes: bytes
+    to_be_unzipped_bytes: bytes
         bytes to be unzipped
 
     Returns
@@ -48,18 +48,18 @@ def get_unzip_gz(to_be_unzpd_bytes: bytes) -> bytes:
 
     """
 
-    if not isinstance(to_be_unzpd_bytes, bytes):
+    if not isinstance(to_be_unzipped_bytes, bytes):
         raise TypeError('`unzpd_bytes` param should be of bytes type')
 
-    unzipped_buffer = BytesIO(to_be_unzpd_bytes)
+    unzipped_buffer = BytesIO(to_be_unzipped_bytes)
     unzipped_buffer.seek(0)
     res = gzip.decompress(unzipped_buffer.read())
     return res
 
 
-def check_and_get_unzipped_model(model_src: Union[str, bytes]) -> Union[str, bytes, Path]:
+def check_and_get_unzipped_model(model_src: Union[str, bytes, Path]) -> Union[str, bytes, Path]:
     """
-    Checks if provided model is a compressed one and unzips it if so.
+    Checks if provided model is a gzipped one and unzips it if so.
 
     Parameters
     ----------
@@ -74,21 +74,20 @@ def check_and_get_unzipped_model(model_src: Union[str, bytes]) -> Union[str, byt
     """
 
     if isinstance(model_src, bytes):
-        if is_gz_bytes(chkd_bytes=model_src):
-            return get_unzip_gz(to_be_unzpd_bytes=model_src)
+        if is_gz_bytes(checked_bytes=model_src):
+            return get_unzipped_gz(to_be_unzipped_bytes=model_src)
         else:
             return model_src
     elif isinstance(model_src, str) or isinstance(model_src, Path):
         if not os.path.isfile(model_src):
-            raise ValueError(
+            raise FileNotFoundError(
                 'This is not a proper path: {} and reading model from '
                 'string is not supported'.format(model_src))
 
         try:
             with open(model_src, 'rb') as chkd_bytes:
                 read_chkd_bytes = chkd_bytes.read()
-                if is_gz_bytes(chkd_bytes=read_chkd_bytes):
-                    # print('Returning unzipped file')
+                if is_gz_bytes(checked_bytes=read_chkd_bytes):
                     return gzip.decompress(read_chkd_bytes)
         except Exception as exc:
             print(

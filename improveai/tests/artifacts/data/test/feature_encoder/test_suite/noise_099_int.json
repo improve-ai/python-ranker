@@ -1,0 +1,10 @@
+{
+    "test_case": {
+        "item": 0
+    },
+    "test_output": [1.77573883e-43],
+    "model_seed": 1,
+    "noise": 0.99,
+    "feature_names": ["item"],
+    "string_tables": {}
+}

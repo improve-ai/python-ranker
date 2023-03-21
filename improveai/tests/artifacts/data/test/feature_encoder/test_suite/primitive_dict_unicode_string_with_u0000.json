@@ -1,16 +1,12 @@
 {
     "test_case": {
-        "variant": {
+        "item": {
             "$value": "Empty character \u0000 in the middle"
         }
     },
-    "test_output": {
-        "5e9f9c59": -30939.21,
-        "03285f0a": -3543.0242
-    },
-    "model_seed": 1,
-    "noise": 0.8928601514360016,
-    "variant_seed": 2675988294294598568,
-    "value_seed": 6818340268807889528,
-    "givens_seed": 12461487462738526788
+    "test_output": [1.00000681],
+    "model_seed": 2,
+    "feature_names": ["item.$value"],
+    "string_tables": {"item.$value": [1]},
+    "noise": 0.8928601514360016
 }

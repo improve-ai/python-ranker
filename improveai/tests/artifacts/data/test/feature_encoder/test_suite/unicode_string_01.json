@@ -1,14 +1,10 @@
 {
     "test_case": {
-        "variant": "\u00a9\u00b5\u00f6"
+        "item": "\u00a9\u00b5\u00f6"
     },
-    "test_output": {
-        "f795218a": -21293.145,
-        "5e9f9c59": -11136.076
-    },
-    "model_seed": 1,
-    "noise": 0.8928601514360016,
-    "variant_seed": 2675988294294598568,
-    "value_seed": 6818340268807889528,
-    "givens_seed": 12461487462738526788
+    "test_output": [1.00000008],
+    "model_seed": 2,
+    "feature_names": ["item"],
+    "string_tables": {"item":  [1]},
+    "noise": 0.01
 }

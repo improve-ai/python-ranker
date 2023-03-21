@@ -7,566 +7,480 @@ import cython
 from libc.math cimport isnan
 import numpy as np
 cimport numpy as np
-import warnings
 import xxhash
 
+from improveai.feature_encoder import ITEM_FEATURE_KEY, CONTEXT_FEATURE_KEY, \
+    FIRST_LEVEL_FEATURES_CHUNKS
 
-cdef object xxhash3 = xxhash.xxh3_64_intdigest
-cdef set JSON_SERIALIZABLE_TYPES = {int, float, str, bool, list, tuple, dict}
-
-import improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils as cfeu
-import improveai.feature_encoder as fe
-
-
-encoded_variant_into_np_row = cfeu.encoded_variant_into_np_row
-encode_variants_multiple_givens = cfeu.encode_variants_multiple_givens
-encoded_variants_to_np = cfeu.encoded_variants_to_np
+cdef object xxh3 = xxhash.xxh3_64_intdigest
 
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef _is_object_json_serializable(object object_):
+cpdef double scale(double val, double width=2.0) except *:
     """
-    Checks if input value is JSON serializable
+    Scales input miss value to [-width/2, width/2].
+    Assumes input is within [0, 1] range.
 
     Parameters
     ----------
-    object_: object
-        object to be checked
+    val: double
+        miss value to be scaled
+    width: double
+        miss range width
 
     Returns
     -------
-    bool
-        True if input is JSON serializable False otherwise
-    """
-    return type(object_) in JSON_SERIALIZABLE_TYPES or object_ is None
+    double
+        scaled miss value
 
+    """
+    assert width >= 0.0
+    # map value in [0, 1] to [-width/2, width/2]
+    return val * width - 0.5 * width
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef _has_top_level_string_keys(dict checked_dict):
+cpdef unsigned long long get_mask(list string_table) except *:
     """
-    Check if all top level keys are of a string type. This is a helper function 
-    for encode() and since encode recurs in case of nested dicts only top level 
-    keys need to be checked. Return False on first encountered non-string key
+    Returns an integer representation of binary mask for a given string table
 
     Parameters
     ----------
-    checked_dict: dict
-        dict which top level keys will be checked
+    string_table: list
+        list of hash string values for a given feature
 
     Returns
     -------
-    bool
-        True if all keys are strings otherwise False
+    unsigned long long
+        number of bytes needed to represent string hashed in the table
 
     """
-    return all([isinstance(k, str) for k in checked_dict.keys()])
+    if len(string_table) == 0:
+        return 0
+
+    cdef unsigned long long max_value = max(string_table)
+    if max_value == 0:
+        return 0
+
+    # find the most significant bit in the table and create a mask
+    return (1 << int(np.log2(max_value) + 1)) - 1
+
+
+cdef class StringTable:
+    """
+    A class responsible for target encoding of strings
+    """
+
+    # int represents 32 bit int
+    cdef public unsigned int model_seed
+    """
+    32-bit random integer used for string hashing with xxhash
+    """
+
+    # long represents 64 bit int
+    cdef public unsigned long mask
+    """
+    At most 64 bit int representation of a string hash mask e.g., 000..00111
+    """
+
+    cdef public double miss_width
+    """
+    Float value representing snap / width of the 'miss interval' - numeric
+    interval into which all missing / unknown values are encoded. It is 0-centered.
+    """
+
+    cdef public dict value_table
+    """
+    A mapping from masked string hash to target encoding's target value for a given feature
+    """
+
+
+    def __init__(self, list string_table, unsigned long long model_seed):
+        """
+        Init StringTable with params
+
+        Parameters
+        ----------
+        string_table: dict
+            a dict with list of masked hashed for each string feature
+        model_seed: int
+            model seed value
+        """
+
+        if model_seed < 0:
+            raise ValueError(
+                "xxhash3_64 takes an unsigned 64-bit integer as seed. "
+                "Seed must be greater than or equal to 0.")
+
+        self.model_seed = model_seed
+        self.mask = get_mask(string_table)
+        cdef long long max_position = len(string_table) - 1
+
+        # empty and single entry tables will have a miss_width of 1 or range [-0.5, 0.5]
+        # 2 / max_position keeps miss values from overlapping with nonzero table values
+        self.miss_width = 1 if max_position < 1 else 2 / max_position
+
+        self.value_table = {}
+
+        for index, string_hash in enumerate(reversed(string_table)):
+            # a single entry gets a value of 1.0
+            self.value_table[string_hash] = 1.0 if max_position == 0 else scale(index / max_position)
+
+    cpdef double encode(self, str string):
+        """
+        Encode input string to a target value
+
+        Parameters
+        ----------
+        string: str
+            string to be encoded
+
+        Returns
+        -------
+        double
+            encoded value
+
+        """
+        cdef unsigned long long string_hash = xxh3(string, seed=self.model_seed)
+
+        # TODO validate against vanilla FE implementation
+        cdef unsigned long long masked_hash = string_hash & self.mask
+        if masked_hash in self.value_table:
+            return self.value_table[masked_hash]
+
+        return self.encode_miss(string_hash)
+
+    cpdef double encode_miss(self, unsigned long string_hash):
+        """
+        Encodes string hash as a miss
+
+        Parameters
+        ----------
+        string_hash: unsigned long
+            string hash to be encoded as a miss
+
+        Returns
+        -------
+        double
+            encoded miss value
+
+        """
+        # TODO !! important note -> for negative exponents the base must be of
+        #  a float type
+        # hash to float in range [-miss_width/2, miss_width/2]
+        # 32 bit mask for JS portability
+        return scale((string_hash & 0xFFFFFFFF) * 2.0 ** -32, self.miss_width)
 
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef warn_about_array_encoding(object object_):
+cpdef tuple get_noise_shift_scale(double noise):
     """
-    If object is an array warning will be printed (only once so the encoding speed does not suffer)
+    Returns noise shift (small value added to feature value) and noise scale
+    (value by which shifted feature value is multiplied)
 
     Parameters
     ----------
-    object_: object
-        encoded object
-
-    Returns
-    -------
-    None
-        None
-
-    """
-    # check if variant is a list, tuple or array
-    if not fe.WARNED_ABOUT_ARRAY_ENCODING and \
-            (isinstance(object_, list) or isinstance(object_, tuple) or isinstance(object_, np.ndarray)):
-        warnings.warn('Array encoding may change in the near future')
-        fe.WARNED_ABOUT_ARRAY_ENCODING = True
-
-
-@cython.boundscheck(False)
-@cython.wraparound(False)
-cpdef encode(object object_, unsigned long long seed, double small_noise, dict features):
-    """
-    Encodes a JSON serializable object to  a flat key - value pair(s) structure / dict
-    (sometimes a single `object_` will result in 2 features, e.g. strings, lists, etc...).
-    Rules of encoding go as follows:
-    
-    - None, json null, {}, [], nan, are treated as missing feature_names and ignored.  NaN is technically not allowed in JSON but check anyway.
-    
-    - boolean true and false are encoded as 1.0 and 0.0 respectively.
-    
-    - strings are encoded into an additional one-hot feature.
-    
-    - numbers are encoded as-is with up to about 5 decimal places of precision
-    
-    - a small amount of noise is incorporated to avoid overfitting
-    
-    - feature names are 8 hexadecimal characters
-    
-
-    Parameters
-    ----------
-    object_: object
-        a JSON serializable object to be encoded to a flat key-value structure
-    seed: int
-        seed for xxhash3 to generate feature name
-    small_noise: float
-        a shrunk noise to be added to value of encoded feature
-    features: dict
-        a flat dict of {<feature name>: <feature value>, ...} pairs
-
-    Returns
-    -------
-    None
-        None
-
-    """
-
-    assert _is_object_json_serializable(object_=object_)
-    warn_about_array_encoding(object_=object_)
-
-    cdef str feature_name = None
-    cdef double previous_object_
-
-    if isinstance(object_, (int, float)):  # bool is an instanceof int
-        if isnan(object_):  # nan is treated as missing feature, return
-            return
-
-        feature_name = hash_to_feature_name(seed)
-
-        previous_object_ = \
-            _get_previous_value(feature_name=feature_name, into=features, small_noise=small_noise)
-
-        features[feature_name] = sprinkle(object_ + previous_object_, small_noise)
-
-        return
-
-    cdef unsigned long long hashed
-    cdef double previous_hashed
-    cdef str hashed_feature_name
-    cdef double previous_hashed_for_feature_name
-
-    if isinstance(object_, str):
-        hashed = xxhash3(object_, seed=seed)
-
-        feature_name = hash_to_feature_name(seed)
-
-        previous_hashed = \
-            _get_previous_value(feature_name=feature_name, into=features, small_noise=small_noise)
-
-        features[feature_name] = \
-            sprinkle(<double>(<long long>(((hashed & 0xffff0000) >> 16) - 0x8000)) + previous_hashed, small_noise)
-
-        hashed_feature_name = hash_to_feature_name(hashed)
-
-        previous_hashed_for_feature_name = \
-            _get_previous_value(feature_name=hashed_feature_name, into=features, small_noise=small_noise)
-
-        features[hashed_feature_name] = \
-            sprinkle(<double>(<long long>((hashed & 0xffff) - 0x8000)) + previous_hashed_for_feature_name, small_noise)
-
-        return
-
-    if isinstance(object_, dict):
-        assert _has_top_level_string_keys(object_)
-        for key, value in object_.items():
-            encode(value, xxhash3(key, seed=seed), small_noise, features)
-        return
-
-    if isinstance(object_, (list, tuple)):
-        for index, item in enumerate(object_):
-            encode(item, xxhash3(index.to_bytes(8, byteorder='big'), seed=seed), small_noise, features)
-
-        return
-
-@cython.boundscheck(False)
-@cython.wraparound(False)
-cpdef double _get_previous_value(str feature_name, dict into, double small_noise):
-    """
-    Gets previous, 'unsprinkled' value of <feature_name> feature
-    from <features> dict
-
-    Parameters
-    ----------
-    feature_name: str
-        name of a feature which previous value is desired
-    into: dict
-        dict containing current results of encoding
-    small_noise: float
-        small noise used to sprinkle
-
-    Returns
-    -------
-    float
-        'unsprinkled' value of desired feature
-
-    """
-
-    cdef double  previous_sprinkled_object_
-
-    if into.get(feature_name, None) is None:
-        return 0.0
-    else:
-        previous_sprinkled_object_ = into.get(feature_name, None)
-        return reverse_sprinkle(previous_sprinkled_object_, small_noise)
-
-
-@cython.boundscheck(False)
-@cython.wraparound(False)
-cpdef str hash_to_feature_name(unsigned long long hash_):
-    """
-    Converts a hash to string which will become a feature name
-
-    Parameters
-    ----------
-    hash_: int
-        an integer output from xxhash3
-
-    Returns
-    -------
-    str
-        a string representation of a hex feature name created from int
-
-    """
-    return '%0*x' % (8, (hash_ >> 32))
-
-
-@cython.boundscheck(False)
-@cython.wraparound(False)
-cpdef double shrink(double noise):
-    """
-    Shrinks noise value by a hardcoded factor 2 ** -17
-
-    Parameters
-    ----------
-    noise: float
-        value within 0 - 1 range which will be 'shrunk' and added to feature value
+    noise: double
+        value in [0, 1) which will be combined with the feature value
 
 
     Returns
     -------
-    float
-        a shrunk noise
+    tuple
+        tuple of double: (noise_shift, noise_scale)
 
     """
-    # return noise * pow(2, -17)
-    # TODO after pypi deploy make sure this is used in the trainer
-    return noise * np.float_power(2, -17)
+    assert noise >= 0.0 and noise < 1.0
+    # x + noise * 2 ** -142 will round to x for most values of x. Used to create
+    # distinct values when x is 0.0 since x * scale would be zero
+    return (noise * 2.0 ** -142, 1 + noise * 2.0 ** -17)
 
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef double sprinkle(double x, double small_noise):
+cpdef double sprinkle(double x, double noise_shift, double noise_scale):
     """
-    Slightly modified input valuse using `small_noise`: (x + small_noise) * (1 + small_noise)
+    Adds noise shift and scales shifted value
 
     Parameters
     ----------
-    x: float
-        a number to be 'modified'
-    small_noise: float
-        a small number with which `x` will be modified
+    x: double
+        value to be sprinkled
+    noise_shift: double
+        small bias added to the feature value
+    noise_scale: double
+        small multiplier of the shifted feature value
 
     Returns
     -------
-    float
-        x modified with `small_noise`
-
-    """
-    return (x + small_noise) * (1 + small_noise)
-
-
-@cython.boundscheck(False)
-@cython.wraparound(False)
-cpdef double reverse_sprinkle(double sprinkled_x, double small_noise):
-    """
-    Retrieves true value from sprinkled one
-
-    Parameters
-    ----------
-    sprinkled_x: float
+    double
         sprinkled value
-    small_noise: float
-        noise used to calculate sprinkled_Xx
-
-    Returns
-    -------
-    float
-        true value of x which was used to calculate sprinkled_x
 
     """
-    return sprinkled_x / (1 + small_noise) - small_noise
+    # x + noise_offset will round to x for most values of x
+    # allows different values when x == 0.0
+    return (x + noise_shift) * noise_scale
 
 
 cdef class FeatureEncoder:
     """
-    This class serves as a preprocessor which allows to
-    convert event data in form of a JSON line (variants, givens and
-    extra features) to the tabular format expected on input by XGBoost.
-
-    Short summary of methods:
-     - encode_givens() -> encodes givens / variant metadata to dict of
-       feature name -> float pairs
-
-     - encode_variant() -> encodes variant to dict of feature name -> float pairs
-
-     - encode_feature_vector() -> encodes provided variant and givens;
-       appends extra features to the encoded variant dict;
-       converts encoded variant to numpy array using provided feature names
-
-     - add_noise() -> sprinkles each value of the input dict with small noise
-
-     - encode_to_np_matrix()  -> encodes collection of variants with collection
-       of givens and extra features to the numpy 2D array / matrix. If desired
-       uses cython backed (works much faster)
-
-     - add_extra_features() - helper method for adding extra features to already
-       encoded variants
-
+    Encodes JSON encodable objects into float vectors
     """
 
-    cdef unsigned long long variant_seed
-    cdef unsigned long long value_seed
-    cdef unsigned long long givens_seed
+    cdef public dict feature_indexes
+    """
+    A map between feature names and feature indexes. Created by simple 
+    iteration with enumeration over feature names 
+    """
 
-    def __init__(self, long long model_seed):
+    cdef public list string_tables
+    """
+    List of StringTable objects. The order of elements follows constructor's
+    `string_tables` parameter.    
+    """
+
+    def __init__(self, list feature_names, dict string_tables, long long model_seed):
         """
-        Init with params
+        Initialize the feature encoder for this model
 
         Parameters
         ----------
+        feature_names: list
+            the list of feature names. Order matters - first feature name should
+            be the first feature in the model
+        string_tables: dict
+            a mapping from feature names to string hash tables
         model_seed: int
-            model seed to be used during feature encoding
+            model seed to be used during string encoding
+
+        Raises
+        ----------
+        ValueError if feature names or tables are corrupt
         """
         if (model_seed < 0):
             raise TypeError(
                 "xxhash3_64 takes an unsigned 64-bit integer as seed. "
                 "Seed must be greater than or equal to 0.")
 
-        # memoize commonly used seeds
-        self.variant_seed = xxhash3("variant", seed=model_seed)
-        self.value_seed = xxhash3("$value", seed=self.variant_seed)
-        self.givens_seed = xxhash3("givens", seed=model_seed)
+        self.feature_indexes = {}
 
-    cdef void _check_noise_value(self, double noise) except *:
+        for i, feature_name in enumerate(feature_names):
+            self.feature_indexes[feature_name] = i
+
+        self.string_tables = [StringTable([], model_seed)] * len(feature_names)
+
+        try:
+            for feature_name, table in string_tables.items():
+                self.string_tables[self.feature_indexes[feature_name]] = StringTable(table, model_seed)
+        except KeyError as exc:
+            raise ValueError("Bad model metadata") from exc
+
+    cdef void _check_into(self, np.ndarray[double, ndim=1, mode='c'] into) except *:
         """
-        Check whether noise value is valid; Raises if `noise` is invalid
+        Checks if the provided `into` array is an array and has desired
+        np.float64 dtype
 
         Parameters
         ----------
-        noise: float
-            checked value of no ise
-
-        Returns
-        -------
-        None
-            None
-        """
-
-        if noise > 1.0 or noise < 0.0:
-            raise ValueError(
-                'Provided `noise` is out of allowed bounds <0.0, 1.0>')
-
-    cpdef dict encode_givens(self, dict givens, double noise=0.0, dict into=None):
-        """
-        Encodes provided givens of arbitrary complexity to a flat feature dict;
-        Givens must be JSON encodable
-
-        Parameters
-        ----------
-        givens: dict or None
-            givens to be encoded
-        noise: float
-            value within 0 - 1 range which will be 'shrunk' and added to feature value
-        into: dict
-            a dict into which new features will be inserted; Can be None
-
-        Returns
-        -------
-        dict
-            A dict with results of givens encoding
-
-        """
-
-        self._check_noise_value(noise=noise)
-
-        if givens is not None and not isinstance(givens, dict):
-            raise TypeError(
-                "Only dict type is supported for context encoding. {} type was "
-                "provided.".format(type(givens)))
-
-        if into is None:
-            into = {}
-
-        encode(givens, self.givens_seed, shrink(noise), into)
-
-        return into
-
-    cpdef dict encode_variant(self, object variant, double noise=0.0, dict into=None):
-        """
-        Encodes provided variant of arbitrary complexity to a flat feature dict;
-        Variant must be JSON encodable
-
-        Parameters
-        ----------
-        variant: object
-            variant to be encoded
-        noise: float
-            value within 0 - 1 range which will be 'shrunk' and added to feature value
-        into: dict
-            a dict into which new features will be inserted; Can be None
-
-        Returns
-        -------
-        dict
-            A dict with results of variant encoding
-
-        """
-
-        self._check_noise_value(noise=noise)
-
-        if into is None:
-            into = {}
-
-        small_noise = shrink(noise)
-
-        if isinstance(variant, dict):
-            encode(variant, self.variant_seed, small_noise, into)
-        else:
-            encode(variant, self.value_seed, small_noise, into)
-
-        return into
-
-
-    cpdef encode_feature_vector(
-            self, object variant = None, dict givens = None,
-            dict extra_features = None, list feature_names = None,
-            double noise = 0.0, np.ndarray into = None):
-        """
-        Fully encodes provided variant and givens into a np.ndarray provided as `into` parameter.
-        `into` must not be None
-
-        Parameters
-        ----------
-        variant: object
-            a JSON encodable object to be encoded to flat features' dict
-        givens: dict
-            a dict with givens to be enncoded to flat features' dict (all entries must be JSON encodable)
-        extra_features: dict
-            features to be added to encoded variant with givens
-        feature_names: list or np.ndarray
-            list of model's feature names (only overlapping features will be selected for resulting vector)
-        noise: float
-            value within 0 - 1 range which will be 'shrunk' and added to feature value
         into: np.ndarray
-            an array into which feature values will be added / inserted
+            array which will store feature values
 
-        Returns
+        Raises
         -------
-        None
-            None
+        ValueError if into is not a numpy array or not of a float64 dtype
 
         """
 
-        if into is None:
-            raise ValueError('`into` can`t be None')
+        if not isinstance(into, np.ndarray) or into.dtype != np.float64:
+            raise ValueError("into must be a float64 array")
 
-        cdef dict encoded_givens = {}
-        # encode givens
-        encoded_givens = \
-            self.encode_givens(givens=givens, noise=noise, into=dict())
 
-        cdef dict encoded_variant = {}
-        # encoded variant and givens
-        encoded_variant = \
-            self.encode_variant(
-                variant=variant, noise=noise, into=encoded_givens)
-
-        if extra_features:
-            if not isinstance(extra_features, dict):
-                raise TypeError(
-                    'Provided `extra_features` is not a dict but: {}'
-                    .format(extra_features))
-
-            encoded_variant.update(extra_features)
-
-        # n + nan = nan so you'll have to check for nan values on into
-        encoded_variant_into_np_row(
-            encoded_variant=encoded_variant, feature_names=feature_names,
-            into=into)
-
-    cpdef double [:, :] encode_to_np_matrix(
-            self, list variants, list multiple_givens,
-            list multiple_extra_features, list feature_names, double noise):
+    cpdef void encode_item(
+            self, object item, np.ndarray[double, ndim=1, mode='c'] into,
+            double noise_shift = 0.0, double noise_scale = 1.0) except *:
         """
-        Provided list of variants and corresponding lists of givens and extra
-        features encodes variants completely and converts to numpy array
+        Encodes provided item to `input` numpy array
 
         Parameters
         ----------
-        variants: list
-            list of variants to be encoded
-        multiple_givens: list
-            list of givens - givens[i] will be used to encode variants[i]
-        multiple_extra_features: list
-            list of extra_features - multiple_extra_features[i] will be used
-            to encode variants[i]
-        feature_names: list
-            names of features expected by the model
-        noise: float
-            noise to be used when encoding data
+        item: object
+            JSON encodable python object
+        into: np.ndarray[double, ndim=1, mode='c']
+            array storing results of encoding
+        noise_shift: double
+            value to be added to features
+        noise_scale: double
+            multiplier used to scale shifted feature value
 
         Returns
         -------
-        np.ndarray
-            2D numpy array of encoded variants
 
         """
+        self._encode(item, path=ITEM_FEATURE_KEY, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
 
-        encoded_variants = encode_variants_multiple_givens(
-            variants=variants, multiple_givens=multiple_givens,
-            multiple_extra_features=multiple_extra_features, noise=noise,
-            variants_encoder=self.encode_variant,
-            givens_encoder=self.encode_givens)
-        encoded_variants_array = encoded_variants_to_np(
-            encoded_variants=encoded_variants, feature_names=feature_names)
-
-        return encoded_variants_array
-
-    cpdef void add_extra_features(self, list encoded_variants, list extra_features):
+    cpdef void encode_context(
+            self, object context, np.ndarray[double, ndim=1, mode='c'] into,
+            double noise_shift = 0.0, double noise_scale = 1.0) except *:
         """
-        Once variants are encoded this method can be used to quickly append
-        extra features
+        Encodes provided context to `input` numpy array
 
         Parameters
         ----------
-        encoded_variants: list
-            collection of encoded variants to be updated with extra features
-        extra_features: list
-            payload to be appended to encoded variants
+        context: object
+            JSON encodable python object
+        into: np.ndarray[double, ndim=1, mode='c']
+            array storing results of encoding
+        noise_shift: double
+            value to be added to features
+        noise_scale: double
+            multiplier used to scale shifted feature value
 
         Returns
         -------
-        None
-            None
 
         """
+        self._encode(context, path=CONTEXT_FEATURE_KEY, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
 
-        if extra_features is None:
-            return
+    cpdef void encode_feature_vector(
+            self, object item, object context, np.ndarray[double, ndim=1, mode='c'] into,
+            double noise: float = 0.0) except *:
+        """
+        Fully encodes provided variant and context into a np.ndarray provided as
+        `into` parameter. `into` must not be None
 
-        if not isinstance(encoded_variants, list):
-            raise TypeError('`encoded_variants` should be of a list type')
+        Parameters
+        ----------
+        item: object
+            a JSON encodable object to be encoded
+        context: object
+            a JSON encodable object to be encoded
+        into: np.ndarray[double, ndim=1, mode='c']
+            an array into which feature values will be added
+        noise: double
+            value in [0, 1) which will be combined with the feature value
 
-        if not isinstance(extra_features, list):
-            raise TypeError('`extra_features` should be of a list type')
+        Returns
+        -------
+        """
 
-        [encoded_variant.update(single_extra_features)
-         if single_extra_features is not None else encoded_variant
-         for encoded_variant, single_extra_features in
-         zip(encoded_variants, extra_features)]
+        cdef double noise_shift
+        cdef double noise_scale
+        noise_shift, noise_scale = get_noise_shift_scale(noise)
+
+        if item is not None:
+            self.encode_item(item, into, noise_shift, noise_scale)
+
+        if context is not None:
+            self.encode_context(context, into, noise_shift, noise_scale)
+
+        # if both item and context are None into will not be checked until now.
+        if item is None and context is None:
+            self._check_into(into=into)
+
+
+    cpdef void _encode(
+            self, object obj, str path, np.ndarray[double, ndim=1, mode='c'] into,
+            double noise_shift = 0.0, double noise_scale = 1.0) except *:
+        """
+        Encodes a JSON serializable object to a float vector
+        Rules of encoding go as follows:
+
+        - None, json null, {}, [], and nan are treated as missing features and ignored.
+
+        - numbers and booleans are encoded as-is.
+
+        - strings are encoded using a lookup table
+
+        Parameters
+        ----------
+        obj: object
+            a JSON serializable object to be encoded to a flat key-value structure
+        path: str
+            the path to the current object
+        into: np.ndarray[double, ndim=1, mode='c']
+            an array into which feature values will be encoded
+        noise_shift: double
+            small bias added to the feature value
+        noise_scale: double
+            small multiplier of the feature value
+
+        Returns
+        -------
+        """
+
+        if path in FIRST_LEVEL_FEATURES_CHUNKS:
+            self._check_into(into)
+
+        cdef object feature_index
+        cdef StringTable string_table
+
+        if isinstance(obj, (int, float)):  # bool is an instanceof int
+            if isnan(obj):  # nan is treated as missing feature, return
+                return
+
+            # TODO feature_index might be of an int type but .get() returns None
+            #  if path is not found in self.feature_indexes
+            feature_index = self.feature_indexes.get(path)
+            if feature_index is None:
+                return
+
+            into[feature_index] = sprinkle(obj, noise_shift, noise_scale)
+
+        elif isinstance(obj, str):
+            feature_index = self.feature_indexes.get(path)
+            if feature_index is None:
+                return
+
+            string_table = self.string_tables[feature_index]
+
+            # TODO is that the best way to go? str(obj)
+            into[feature_index] = sprinkle(string_table.encode(str(obj)), noise_shift, noise_scale)
+
+        elif isinstance(obj, dict):
+            for key, value in obj.items():
+                self._encode(obj=value, path=path + '.' + key, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
+
+        elif isinstance(obj, (list, tuple)):
+            for index, item in enumerate(obj):
+                self._encode(obj=item, path=path + '.' + str(index), into=into, noise_shift=noise_shift, noise_scale=noise_scale)
+
+        elif obj is None:
+            pass
+
+        else:
+            raise ValueError(
+                f'{obj} not JSON encodable. Must be string, int, float, bool, list, tuple, dict, or None')
+
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cpdef np.ndarray[double, ndim=2, mode='c'] encode_candidates_to_matrix(
+        object candidates, object context, object feature_encoder, double noise=0.0):
+    """
+    Encodes list of candidates to 2D np.array for a given context with provided noise
+
+    Parameters
+    ----------
+    candidates: object
+        list or tuple or np.ndarray of JSON encodable candidates / items to encode
+    context: object
+        JSON encodable object
+    noise: double
+        noise to be used for sprinkling of encoded features
+
+    Returns
+    -------
+    np.ndarray[double, ndim=2, mode='c']
+        2D numpy array with encoded candidates
+
+    """
+
+    cdef np.ndarray[double, ndim=2, mode='c'] into_matrix = \
+        np.full((len(candidates), len(feature_encoder.feature_indexes)), np.nan)
+
+    for item, into_row in zip(candidates, into_matrix):
+        feature_encoder.encode_feature_vector(item=item, context=context, into=into_row, noise=noise)
+
+    return into_matrix

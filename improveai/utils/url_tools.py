@@ -2,20 +2,23 @@ import requests as rq
 from urllib.parse import urlparse
 
 
-def is_path_http_addr(pth_to_model: str) -> bool:
+def is_path_http_addr(path: str) -> bool:
     """
-    Checks if provided string is a http address
+    Checks if provided string is a http address.
 
     Parameters
     ----------
-    pth_to_model
+    path: str or Path
+        is this path a URL?
 
     Returns
     -------
+    bool
+        True if path is a URL otherwise False
 
     """
     try:
-        res = urlparse(pth_to_model)
+        res = urlparse(path)
         return all([res.scheme, res.netloc])
     except ValueError:
         return False
@@ -23,7 +26,7 @@ def is_path_http_addr(pth_to_model: str) -> bool:
 
 def get_model_bytes_from_url(model_url: str) -> bytes:
     """
-    Gets model from provided URL
+    Gets model from provided URL.
 
     Parameters
     ----------
