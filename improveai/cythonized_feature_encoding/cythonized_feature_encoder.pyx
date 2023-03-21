@@ -19,7 +19,8 @@ cdef object xxh3 = xxhash.xxh3_64_intdigest
 @cython.wraparound(False)
 cpdef double scale(double val, double width=2.0) except *:
     """
-    Scales input miss value to [-width/2, width/2]
+    Scales input miss value to [-width/2, width/2].
+    Assumes input is within [0, 1] range.
 
     Parameters
     ----------
@@ -42,7 +43,7 @@ cpdef double scale(double val, double width=2.0) except *:
 @cython.wraparound(False)
 cpdef unsigned long long get_mask(list string_table) except *:
     """
-    Returns a hash string mask for a given string table
+    Returns an integer representation of binary mask for a given string table
 
     Parameters
     ----------
@@ -85,7 +86,8 @@ cdef class StringTable:
 
     cdef public double miss_width
     """
-    Float value representing width of the 0-centered miss numerical interval    
+    Float value representing snap / width of the 'miss interval' - numeric
+    interval into which all missing / unknown values are encoded. It is 0-centered.
     """
 
     cdef public dict value_table
@@ -235,8 +237,8 @@ cdef class FeatureEncoder:
 
     cdef public list string_tables
     """
-    List of StringTable objects indexed according to order present in the 
-    constructor's string_tables param    
+    List of StringTable objects. The order of elements follows constructor's
+    `string_tables` parameter.    
     """
 
     def __init__(self, list feature_names, dict string_tables, long long model_seed):
@@ -246,7 +248,8 @@ cdef class FeatureEncoder:
         Parameters
         ----------
         feature_names: list
-            the feature names in order of how they are vectorized
+            the list of feature names. Order matters - first feature name should
+            be the first feature in the model
         string_tables: dict
             a mapping from feature names to string hash tables
         model_seed: int
@@ -276,7 +279,8 @@ cdef class FeatureEncoder:
 
     cdef void _check_into(self, np.ndarray[double, ndim=1, mode='c'] into) except *:
         """
-        Checks if the provided into array is an array and has desired dtype
+        Checks if the provided `into` array is an array and has desired
+        np.float64 dtype
 
         Parameters
         ----------
@@ -297,7 +301,7 @@ cdef class FeatureEncoder:
             self, object item, np.ndarray[double, ndim=1, mode='c'] into,
             double noise_shift = 0.0, double noise_scale = 1.0) except *:
         """
-        Encodes provided item to input numpy array
+        Encodes provided item to `input` numpy array
 
         Parameters
         ----------
@@ -320,7 +324,7 @@ cdef class FeatureEncoder:
             self, object context, np.ndarray[double, ndim=1, mode='c'] into,
             double noise_shift = 0.0, double noise_scale = 1.0) except *:
         """
-        Encodes provided context to input numpy array
+        Encodes provided context to `input` numpy array
 
         Parameters
         ----------
@@ -343,8 +347,8 @@ cdef class FeatureEncoder:
             self, object item, object context, np.ndarray[double, ndim=1, mode='c'] into,
             double noise: float = 0.0) except *:
         """
-        Fully encodes provided variant and givens into a np.ndarray provided as `into` parameter.
-        `into` must not be None
+        Fully encodes provided variant and context into a np.ndarray provided as
+        `into` parameter. `into` must not be None
 
         Parameters
         ----------
@@ -359,8 +363,6 @@ cdef class FeatureEncoder:
 
         Returns
         -------
-        None
-
         """
 
         cdef double noise_shift
@@ -406,7 +408,6 @@ cdef class FeatureEncoder:
 
         Returns
         -------
-        None
         """
 
         if path in FIRST_LEVEL_FEATURES_CHUNKS:

@@ -11,23 +11,20 @@ Welcome to Improve AI python SDK documentation!
    :maxdepth: 3
    :caption: Readme:
 
-   About Improve AI python SDK  <readme.md>
+   About Improve AI python ranker  <readme.md>
 
 
-Classes
 ===============================================
 
 .. toctree::
    :maxdepth: 3
    :caption: Classes:
 
-   DecisionModel <improveai.decision_model>
-   DecisionContext <improveai.decision_context>
-   Decision <improveai.decision>
-   DecisionTracker <improveai.decision_tracker>
+   Scorer <improveai.scorer>
+   Ranker <improveai.ranker>
+   RewardTracker <improveai.reward_tracker>
    FeatureEncoder <improveai.feature_encoder>
    CythonizedFeatureEncoder <improveai.cythonized_feature_encoding.cythonized_feature_encoder>
-   GivensProvider <improveai.givens_provider>
    Chooser <improveai.chooser>
 
 
@@ -37,10 +34,8 @@ Classes
    :maxdepth: 3
    :caption: Utils:
 
-   SDK settings <improveai.settings>
+   Settings <improveai.settings>
    general purpose tools <improveai.utils.general_purpose_tools>
-   feature encoding tools <improveai.utils.choosers_feature_encoding_tools>
-   cythonized feature encoding tools <improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils>
    gzip tools <improveai.utils.gzip_tools>
    URL tools <improveai.utils.url_tools>
 

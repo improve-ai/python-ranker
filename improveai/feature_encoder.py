@@ -4,12 +4,24 @@ import xxhash
 
 ITEM_FEATURE_KEY = 'item'
 """
-Feature names prefix for features derived from candidates / items
+Feature names prefix for features derived from candidates / items, e.g.:
+
+- item == 1 -> feature name is "item"
+
+- item == [1] -> feature names is "item.0"
+
+- item == {"a": 1}} - feature name is "item.a"
 """
 
 CONTEXT_FEATURE_KEY = 'context'
 """
-Feature names prefix for features derived from context
+Feature names prefix for features derived from context, e.g.:
+
+- context == 1 -> feature name is "context"
+
+- context == [1] -> feature names is "context.0"
+
+- context == {"a": 1}} - feature name is "context.a"
 """
 
 FIRST_LEVEL_FEATURES_CHUNKS = {ITEM_FEATURE_KEY, CONTEXT_FEATURE_KEY}
@@ -43,8 +55,8 @@ class FeatureEncoder:
     @property
     def string_tables(self) -> list:
         """
-        List of StringTable objects indexed according to order present in the
-        constructor's string_tables param
+        List of StringTable objects. The order of elements follows constructor's
+        `string_tables` parameter.
 
         Returns
         -------
@@ -65,7 +77,8 @@ class FeatureEncoder:
         Parameters
         ----------
         feature_names: list
-            the feature names in order of how they are vectorized
+            the list of feature names. Order matters - first feature name should
+            be the first feature in the model
         string_tables: dict
             a mapping from feature names to string hash tables
         model_seed: int
@@ -93,7 +106,8 @@ class FeatureEncoder:
 
     def _check_into(self, into: np.ndarray):
         """
-        Checks if the provided into array is an array and has desired dtype
+        Checks if the provided `into` array is an array and has desired
+        np.float64 dtype
 
         Parameters
         ----------
@@ -111,7 +125,7 @@ class FeatureEncoder:
 
     def encode_item(self, item: object, into: np.ndarray, noise_shift: float = 0.0, noise_scale: float = 1.0):
         """
-        Encodes provided item to input numpy array
+        Encodes provided item to `input` numpy array
 
         Parameters
         ----------
@@ -120,9 +134,9 @@ class FeatureEncoder:
         into: np.ndarray
             array storing results of encoding
         noise_shift: float
-            value to be added to features
+            value to be added to values of features
         noise_scale: float
-            multiplier used to scale shifted feature value
+            multiplier used to scale shifted feature values
 
         Returns
         -------
@@ -132,7 +146,7 @@ class FeatureEncoder:
 
     def encode_context(self, context: object, into: np.ndarray, noise_shift: float = 0.0, noise_scale: float = 1.0):
         """
-        Encodes provided context to input numpy array
+        Encodes provided context to `input` numpy array
 
         Parameters
         ----------
@@ -141,9 +155,9 @@ class FeatureEncoder:
         into: np.ndarray
             array storing results of encoding
         noise_shift: float
-            value to be added to features
+            value to be added to values of features
         noise_scale: float
-            multiplier used to scale shifted feature value
+            multiplier used to scale shifted feature values
 
         Returns
         -------
@@ -154,15 +168,15 @@ class FeatureEncoder:
     def encode_feature_vector(
             self, item: object, context: object, into: np.ndarray, noise: float = 0.0):
         """
-        Fully encodes provided variant and givens into a np.ndarray provided as `into` parameter.
-        `into` must not be None
+        Fully encodes provided variant and context into a np.ndarray provided as
+        `into` parameter. `into` must not be None
 
         Parameters
         ----------
         item: object
-            a JSON encodable object to be encoded
+            a JSON encodable item to be encoded
         context: object
-            a JSON encodable object to be encoded
+            a JSON encodable context to be encoded
         into: np.ndarray
             an array into which feature values will be added
         noise: float
@@ -170,8 +184,6 @@ class FeatureEncoder:
 
         Returns
         -------
-        None
-            None
 
         """
 
@@ -204,7 +216,7 @@ class FeatureEncoder:
         obj: object
             a JSON serializable object to be encoded to a flat key-value structure
         path: str
-            the path to the current object
+            the JSON-normalized path to the current object
         into: np.ndarray
             an array into which feature values will be encoded
         noise_shift: float
@@ -214,7 +226,6 @@ class FeatureEncoder:
 
         Returns
         -------
-        None
         """
         if path in FIRST_LEVEL_FEATURES_CHUNKS:
             self._check_into(into)
@@ -304,13 +315,13 @@ def sprinkle(x: float, noise_shift: float, noise_scale: float) -> float:
 
 class StringTable:
     """
-    A class responsible for target encoding of strings for given feature
+    A class responsible for target encoding of strings for a given feature
     """
 
     @property
     def model_seed(self) -> int:
         """
-        32-bit integer used for string hashing with xxhash
+        32-bit random integer used to hash strings with xxhash
 
         Returns
         -------
@@ -332,7 +343,7 @@ class StringTable:
         Returns
         -------
         int
-            mask used for hashed string value
+            mask used to 'decrease' hashed string value
 
         """
         return self._mask
@@ -344,7 +355,9 @@ class StringTable:
     @property
     def miss_width(self) -> float:
         """
-        Float value representing width of the 0-centered miss numerical interval
+        Float value representing snap / width of the 'miss interval' - numeric
+        interval into which all missing / unknown values are encoded. It is
+        0-centered.
 
         Returns
         -------
@@ -450,7 +463,8 @@ class StringTable:
 
 def scale(val: float, width: float = 2) -> float:
     """
-    Scales input miss value to [-width/2, width/2]
+    Scales input miss value to [-width/2, width/2].
+    Assumes input is within [0, 1] range.
 
     Parameters
     ----------
@@ -472,7 +486,7 @@ def scale(val: float, width: float = 2) -> float:
 
 def get_mask(string_table: list) -> int:
     """
-    Returns a hash string mask for a given string table
+    Returns an integer representation of a binary mask for a given string table
 
     Parameters
     ----------

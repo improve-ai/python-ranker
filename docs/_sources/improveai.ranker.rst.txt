@@ -1,7 +1,7 @@
-decision_context.py module
+ranker.py module
 ============================================
 
-.. automodule:: improveai.decision_context
+.. automodule:: improveai.ranker
    :members:
    :undoc-members:
    :show-inheritance:

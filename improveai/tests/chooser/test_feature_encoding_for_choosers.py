@@ -91,7 +91,7 @@ class TestChooserFeatureEncoding(TestCase):
         assert expected_output is not None
 
         tested_output_float64 = \
-            self.xgb_chooser.encode_candidates_single_context(
+            self.xgb_chooser.encode_candidates_with_context(
                 candidates=test_candidates, context=test_context)
 
         tested_output_float32 = convert_values_to_float32(val=tested_output_float64)

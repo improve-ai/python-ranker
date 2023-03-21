@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>cythonized_feature_encoder.pyx module &mdash; improveai 7.0.3 documentation</title>
+  <title>cythonized_feature_encoder.pyx module &mdash; improveai 8.0.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
@@ -13,13 +13,12 @@
   <![endif]-->
   
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="givens_provider.py module" href="improveai.givens_provider.html" />
+    <link rel="next" title="chooser.py module" href="improveai.chooser.html" />
     <link rel="prev" title="feature_encoder.py module" href="improveai.feature_encoder.html" /> 
 </head>
 
@@ -28,14 +27,18 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> improveai
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            improveai
           </a>
               <div class="version">
-                7.0.3
+                8.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -43,25 +46,48 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Readme:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="readme.html">About Improve AI python SDK</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readme.html">About Improve AI python ranker</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Classes:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="improveai.decision_model.html">DecisionModel</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.decision_context.html">DecisionContext</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.decision.html">Decision</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.decision_tracker.html">DecisionTracker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.scorer.html">Scorer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.ranker.html">Ranker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.reward_tracker.html">RewardTracker</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.feature_encoder.html">FeatureEncoder</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">CythonizedFeatureEncoder</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.givens_provider.html">GivensProvider</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">CythonizedFeatureEncoder</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.__init__"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder.__init__()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder._encode"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder._encode()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.encode_context"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder.encode_context()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.encode_feature_vector"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder.encode_feature_vector()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.encode_item"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder.encode_item()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.feature_indexes"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder.feature_indexes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.string_tables"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder.string_tables</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable"><code class="docutils literal notranslate"><span class="pre">StringTable</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable.__init__"><code class="docutils literal notranslate"><span class="pre">StringTable.__init__()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable.encode"><code class="docutils literal notranslate"><span class="pre">StringTable.encode()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable.encode_miss"><code class="docutils literal notranslate"><span class="pre">StringTable.encode_miss()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable.mask"><code class="docutils literal notranslate"><span class="pre">StringTable.mask</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable.miss_width"><code class="docutils literal notranslate"><span class="pre">StringTable.miss_width</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable.model_seed"><code class="docutils literal notranslate"><span class="pre">StringTable.model_seed</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable.value_table"><code class="docutils literal notranslate"><span class="pre">StringTable.value_table</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.encode_candidates_to_matrix"><code class="docutils literal notranslate"><span class="pre">encode_candidates_to_matrix()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.get_mask"><code class="docutils literal notranslate"><span class="pre">get_mask()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.get_noise_shift_scale"><code class="docutils literal notranslate"><span class="pre">get_noise_shift_scale()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.scale"><code class="docutils literal notranslate"><span class="pre">scale()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.sprinkle"><code class="docutils literal notranslate"><span class="pre">sprinkle()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.chooser.html">Chooser</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Utils:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="improveai.settings.html">SDK settings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.settings.html">Settings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.utils.general_purpose_tools.html">general purpose tools</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.utils.choosers_feature_encoding_tools.html">feature encoding tools</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.html">cythonized feature encoding tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.utils.gzip_tools.html">gzip tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.utils.url_tools.html">URL tools</a></li>
 </ul>
@@ -79,8 +105,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>cythonized_feature_encoder.pyx module</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">cythonized_feature_encoder.pyx module</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/improveai.cythonized_feature_encoding.cythonized_feature_encoder.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -91,64 +117,66 @@
            <div itemprop="articleBody">
              
   <section id="module-improveai.cythonized_feature_encoding.cythonized_feature_encoder">
-<span id="cythonized-feature-encoder-pyx-module"></span><h1>cythonized_feature_encoder.pyx module<a class="headerlink" href="#module-improveai.cythonized_feature_encoding.cythonized_feature_encoder" title="Permalink to this headline"></a></h1>
+<span id="cythonized-feature-encoder-pyx-module"></span><h1>cythonized_feature_encoder.pyx module<a class="headerlink" href="#module-improveai.cythonized_feature_encoding.cythonized_feature_encoder" title="Permalink to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FeatureEncoder</span></span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>This class serves as a preprocessor which allows to
-convert event data in form of a JSON line (variants, givens and
-extra features) to the tabular format expected on input by XGBoost.</p>
-<dl class="simple">
-<dt>Short summary of methods:</dt><dd><ul class="simple">
-<li><p>encode_givens() -&gt; encodes givens / variant metadata to dict of
-feature name -&gt; float pairs</p></li>
-<li><p>encode_variant() -&gt; encodes variant to dict of feature name -&gt; float pairs</p></li>
-<li><p>encode_feature_vector() -&gt; encodes provided variant and givens;
-appends extra features to the encoded variant dict;
-converts encoded variant to numpy array using provided feature names</p></li>
-<li><p>add_noise() -&gt; sprinkles each value of the input dict with small noise</p></li>
-<li><p>encode_to_np_matrix()  -&gt; encodes collection of variants with collection
-of givens and extra features to the numpy 2D array / matrix. If desired
-uses cython backed (works much faster)</p></li>
-<li><p>add_extra_features() - helper method for adding extra features to already
-encoded variants</p></li>
-</ul>
-</dd>
-</dl>
+<p>Encodes JSON encodable objects into float vectors</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.__init__" title="Permalink to this definition"></a></dt>
-<dd><p>Init with params</p>
+<dd><p>Initialize the feature encoder for this model</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>model_seed</strong> (<em>int</em>) – model seed to be used during feature encoding</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>feature_names</strong> (<em>list</em>) – the list of feature names. Order matters - first feature name should
+be the first feature in the model</p></li>
+<li><p><strong>string_tables</strong> (<em>dict</em>) – a mapping from feature names to string hash tables</p></li>
+<li><p><strong>model_seed</strong> (<em>int</em>) – model seed to be used during string encoding</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError if feature names</strong><strong> or </strong><strong>tables are corrupt</strong> – </p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.__new__">
-<span class="sig-name descname"><span class="pre">__new__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.__new__" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.add_extra_features">
-<span class="sig-name descname"><span class="pre">add_extra_features</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.add_extra_features" title="Permalink to this definition"></a></dt>
-<dd><p>Once variants are encoded this method can be used to quickly append
-extra features</p>
+<dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder._encode">
+<span class="sig-name descname"><span class="pre">_encode</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder._encode" title="Permalink to this definition"></a></dt>
+<dd><p>Encodes a JSON serializable object to a float vector
+Rules of encoding go as follows:</p>
+<ul class="simple">
+<li><p>None, json null, {}, [], and nan are treated as missing features and ignored.</p></li>
+<li><p>numbers and booleans are encoded as-is.</p></li>
+<li><p>strings are encoded using a lookup table</p></li>
+</ul>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>encoded_variants</strong> (<em>list</em>) – collection of encoded variants to be updated with extra features</p></li>
-<li><p><strong>extra_features</strong> (<em>list</em>) – payload to be appended to encoded variants</p></li>
+<li><p><strong>obj</strong> (<em>object</em>) – a JSON serializable object to be encoded to a flat key-value structure</p></li>
+<li><p><strong>path</strong> (<em>str</em>) – the path to the current object</p></li>
+<li><p><strong>into</strong> (<em>np.ndarray</em><em>[</em><em>double</em><em>, </em><em>ndim=1</em><em>, </em><em>mode='c'</em><em>]</em>) – an array into which feature values will be encoded</p></li>
+<li><p><strong>noise_shift</strong> (<em>double</em>) – small bias added to the feature value</p></li>
+<li><p><strong>noise_scale</strong> (<em>double</em>) – small multiplier of the feature value</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>None</p>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.encode_context">
+<span class="sig-name descname"><span class="pre">encode_context</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.encode_context" title="Permalink to this definition"></a></dt>
+<dd><p>Encodes provided context to <cite>input</cite> numpy array</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> (<em>object</em>) – JSON encodable python object</p></li>
+<li><p><strong>into</strong> (<em>np.ndarray</em><em>[</em><em>double</em><em>, </em><em>ndim=1</em><em>, </em><em>mode='c'</em><em>]</em>) – array storing results of encoding</p></li>
+<li><p><strong>noise_shift</strong> (<em>double</em>) – value to be added to features</p></li>
+<li><p><strong>noise_scale</strong> (<em>double</em>) – multiplier used to scale shifted feature value</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -156,181 +184,205 @@ extra features</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.encode_feature_vector">
 <span class="sig-name descname"><span class="pre">encode_feature_vector</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.encode_feature_vector" title="Permalink to this definition"></a></dt>
-<dd><p>Fully encodes provided variant and givens into a np.ndarray provided as <cite>into</cite> parameter.
-<cite>into</cite> must not be None</p>
+<dd><p>Fully encodes provided variant and context into a np.ndarray provided as
+<cite>into</cite> parameter. <cite>into</cite> must not be None</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>variant</strong> (<em>object</em>) – a JSON encodable object to be encoded to flat features’ dict</p></li>
-<li><p><strong>givens</strong> (<em>dict</em>) – a dict with givens to be enncoded to flat features’ dict (all entries must be JSON encodable)</p></li>
-<li><p><strong>extra_features</strong> (<em>dict</em>) – features to be added to encoded variant with givens</p></li>
-<li><p><strong>feature_names</strong> (<em>list</em><em> or </em><em>np.ndarray</em>) – list of model’s feature names (only overlapping features will be selected for resulting vector)</p></li>
-<li><p><strong>noise</strong> (<em>float</em>) – value within 0 - 1 range which will be ‘shrunk’ and added to feature value</p></li>
-<li><p><strong>into</strong> (<em>np.ndarray</em>) – an array into which feature values will be added / inserted</p></li>
+<li><p><strong>item</strong> (<em>object</em>) – a JSON encodable object to be encoded</p></li>
+<li><p><strong>context</strong> (<em>object</em>) – a JSON encodable object to be encoded</p></li>
+<li><p><strong>into</strong> (<em>np.ndarray</em><em>[</em><em>double</em><em>, </em><em>ndim=1</em><em>, </em><em>mode='c'</em><em>]</em>) – an array into which feature values will be added</p></li>
+<li><p><strong>noise</strong> (<em>double</em>) – value in [0, 1) which will be combined with the feature value</p></li>
 </ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.encode_givens">
-<span class="sig-name descname"><span class="pre">encode_givens</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.encode_givens" title="Permalink to this definition"></a></dt>
-<dd><p>Encodes provided givens of arbitrary complexity to a flat feature dict;
-Givens must be JSON encodable</p>
+<dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.encode_item">
+<span class="sig-name descname"><span class="pre">encode_item</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.encode_item" title="Permalink to this definition"></a></dt>
+<dd><p>Encodes provided item to <cite>input</cite> numpy array</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>givens</strong> (<em>dict</em><em> or </em><em>None</em>) – givens to be encoded</p></li>
-<li><p><strong>noise</strong> (<em>float</em>) – value within 0 - 1 range which will be ‘shrunk’ and added to feature value</p></li>
-<li><p><strong>into</strong> (<em>dict</em>) – a dict into which new features will be inserted; Can be None</p></li>
+<li><p><strong>item</strong> (<em>object</em>) – JSON encodable python object</p></li>
+<li><p><strong>into</strong> (<em>np.ndarray</em><em>[</em><em>double</em><em>, </em><em>ndim=1</em><em>, </em><em>mode='c'</em><em>]</em>) – array storing results of encoding</p></li>
+<li><p><strong>noise_shift</strong> (<em>double</em>) – value to be added to features</p></li>
+<li><p><strong>noise_scale</strong> (<em>double</em>) – multiplier used to scale shifted feature value</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A dict with results of givens encoding</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>dict</p>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.feature_indexes">
+<span class="sig-name descname"><span class="pre">feature_indexes</span></span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.feature_indexes" title="Permalink to this definition"></a></dt>
+<dd><p>A map between feature names and feature indexes. Created by simple
+iteration with enumeration over feature names</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.string_tables">
+<span class="sig-name descname"><span class="pre">string_tables</span></span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.string_tables" title="Permalink to this definition"></a></dt>
+<dd><p>List of StringTable objects. The order of elements follows constructor’s
+<cite>string_tables</cite> parameter.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">StringTable</span></span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class responsible for target encoding of strings</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Init StringTable with params</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>string_table</strong> (<em>dict</em>) – a dict with list of masked hashed for each string feature</p></li>
+<li><p><strong>model_seed</strong> (<em>int</em>) – model seed value</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.encode_to_np_matrix">
-<span class="sig-name descname"><span class="pre">encode_to_np_matrix</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.encode_to_np_matrix" title="Permalink to this definition"></a></dt>
-<dd><p>Provided list of variants and corresponding lists of givens and extra
-features encodes variants completely and converts to numpy array</p>
+<dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable.encode">
+<span class="sig-name descname"><span class="pre">encode</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable.encode" title="Permalink to this definition"></a></dt>
+<dd><p>Encode input string to a target value</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>variants</strong> (<em>list</em>) – list of variants to be encoded</p></li>
-<li><p><strong>multiple_givens</strong> (<em>list</em>) – list of givens - givens[i] will be used to encode variants[i]</p></li>
-<li><p><strong>multiple_extra_features</strong> (<em>list</em>) – list of extra_features - multiple_extra_features[i] will be used
-to encode variants[i]</p></li>
-<li><p><strong>feature_names</strong> (<em>list</em>) – names of features expected by the model</p></li>
-<li><p><strong>noise</strong> (<em>float</em>) – noise to be used when encoding data</p></li>
-</ul>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>string</strong> (<em>str</em>) – string to be encoded</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>2D numpy array of encoded variants</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>encoded value</p>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>double</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.encode_variant">
-<span class="sig-name descname"><span class="pre">encode_variant</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.encode_variant" title="Permalink to this definition"></a></dt>
-<dd><p>Encodes provided variant of arbitrary complexity to a flat feature dict;
-Variant must be JSON encodable</p>
+<dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable.encode_miss">
+<span class="sig-name descname"><span class="pre">encode_miss</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable.encode_miss" title="Permalink to this definition"></a></dt>
+<dd><p>Encodes string hash as a miss</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>string_hash</strong> (<em>unsigned long</em>) – string hash to be encoded as a miss</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>encoded miss value</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>double</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable.mask">
+<span class="sig-name descname"><span class="pre">mask</span></span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable.mask" title="Permalink to this definition"></a></dt>
+<dd><p>At most 64 bit int representation of a string hash mask e.g., 000..00111</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable.miss_width">
+<span class="sig-name descname"><span class="pre">miss_width</span></span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable.miss_width" title="Permalink to this definition"></a></dt>
+<dd><p>Float value representing snap / width of the ‘miss interval’ - numeric
+interval into which all missing / unknown values are encoded. It is 0-centered.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable.model_seed">
+<span class="sig-name descname"><span class="pre">model_seed</span></span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable.model_seed" title="Permalink to this definition"></a></dt>
+<dd><p>32-bit random integer used for string hashing with xxhash</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable.value_table">
+<span class="sig-name descname"><span class="pre">value_table</span></span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable.value_table" title="Permalink to this definition"></a></dt>
+<dd><p>A mapping from masked string hash to target encoding’s target value for a given feature</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.encode_candidates_to_matrix">
+<span class="sig-name descname"><span class="pre">encode_candidates_to_matrix</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.encode_candidates_to_matrix" title="Permalink to this definition"></a></dt>
+<dd><p>Encodes list of candidates to 2D np.array for a given context with provided noise</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>variant</strong> (<em>object</em>) – variant to be encoded</p></li>
-<li><p><strong>noise</strong> (<em>float</em>) – value within 0 - 1 range which will be ‘shrunk’ and added to feature value</p></li>
-<li><p><strong>into</strong> (<em>dict</em>) – a dict into which new features will be inserted; Can be None</p></li>
+<li><p><strong>candidates</strong> (<em>object</em>) – list or tuple or np.ndarray of JSON encodable candidates / items to encode</p></li>
+<li><p><strong>context</strong> (<em>object</em>) – JSON encodable object</p></li>
+<li><p><strong>noise</strong> (<em>double</em>) – noise to be used for sprinkling of encoded features</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A dict with results of variant encoding</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>2D numpy array with encoded candidates</p>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>dict</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray[double, ndim=2, mode=’c’]</p>
 </dd>
 </dl>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.get_mask">
+<span class="sig-name descname"><span class="pre">get_mask</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.get_mask" title="Permalink to this definition"></a></dt>
+<dd><p>Returns an integer representation of binary mask for a given string table</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>string_table</strong> (<em>list</em>) – list of hash string values for a given feature</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>number of bytes needed to represent string hashed in the table</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>unsigned long long</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.encode">
-<span class="sig-name descname"><span class="pre">encode</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.encode" title="Permalink to this definition"></a></dt>
-<dd><p>Encodes a JSON serializable object to  a flat key - value pair(s) structure / dict
-(sometimes a single <cite>object_</cite> will result in 2 features, e.g. strings, lists, etc…).
-Rules of encoding go as follows:</p>
-<ul class="simple">
-<li><p>None, json null, {}, [], nan, are treated as missing feature_names and ignored.  NaN is technically not allowed in JSON but check anyway.</p></li>
-<li><p>boolean true and false are encoded as 1.0 and 0.0 respectively.</p></li>
-<li><p>strings are encoded into an additional one-hot feature.</p></li>
-<li><p>numbers are encoded as-is with up to about 5 decimal places of precision</p></li>
-<li><p>a small amount of noise is incorporated to avoid overfitting</p></li>
-<li><p>feature names are 8 hexadecimal characters</p></li>
-</ul>
+<dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.get_noise_shift_scale">
+<span class="sig-name descname"><span class="pre">get_noise_shift_scale</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.get_noise_shift_scale" title="Permalink to this definition"></a></dt>
+<dd><p>Returns noise shift (small value added to feature value) and noise scale
+(value by which shifted feature value is multiplied)</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>noise</strong> (<em>double</em>) – value in [0, 1) which will be combined with the feature value</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple of double: (noise_shift, noise_scale)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.scale">
+<span class="sig-name descname"><span class="pre">scale</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.scale" title="Permalink to this definition"></a></dt>
+<dd><p>Scales input miss value to [-width/2, width/2].
+Assumes input is within [0, 1] range.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>object</strong> (<em>object</em>) – a JSON serializable object to be encoded to a flat key-value structure</p></li>
-<li><p><strong>seed</strong> (<em>int</em>) – seed for xxhash3 to generate feature name</p></li>
-<li><p><strong>small_noise</strong> (<em>float</em>) – a shrunk noise to be added to value of encoded feature</p></li>
-<li><p><strong>features</strong> (<em>dict</em>) – a flat dict of {&lt;feature name&gt;: &lt;feature value&gt;, …} pairs</p></li>
+<li><p><strong>val</strong> (<em>double</em>) – miss value to be scaled</p></li>
+<li><p><strong>width</strong> (<em>double</em>) – miss range width</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>None</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>scaled miss value</p>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.hash_to_feature_name">
-<span class="sig-name descname"><span class="pre">hash_to_feature_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.hash_to_feature_name" title="Permalink to this definition"></a></dt>
-<dd><p>Converts a hash to string which will become a feature name</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>hash</strong> (<em>int</em>) – an integer output from xxhash3</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>a string representation of a hex feature name created from int</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.reverse_sprinkle">
-<span class="sig-name descname"><span class="pre">reverse_sprinkle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.reverse_sprinkle" title="Permalink to this definition"></a></dt>
-<dd><p>Retrieves true value from sprinkled one</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>sprinkled_x</strong> (<em>float</em>) – sprinkled value</p></li>
-<li><p><strong>small_noise</strong> (<em>float</em>) – noise used to calculate sprinkled_Xx</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>true value of x which was used to calculate sprinkled_x</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.shrink">
-<span class="sig-name descname"><span class="pre">shrink</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.shrink" title="Permalink to this definition"></a></dt>
-<dd><p>Shrinks noise value by a hardcoded factor 2 ** -17</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>noise</strong> (<em>float</em>) – value within 0 - 1 range which will be ‘shrunk’ and added to feature value</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>a shrunk noise</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>float</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>double</p>
 </dd>
 </dl>
 </dd></dl>
@@ -338,36 +390,20 @@ Rules of encoding go as follows:</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.sprinkle">
 <span class="sig-name descname"><span class="pre">sprinkle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.sprinkle" title="Permalink to this definition"></a></dt>
-<dd><p>Slightly modified input valuse using <cite>small_noise</cite>: (x + small_noise) * (1 + small_noise)</p>
+<dd><p>Adds noise shift and scales shifted value</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>float</em>) – a number to be ‘modified’</p></li>
-<li><p><strong>small_noise</strong> (<em>float</em>) – a small number with which <cite>x</cite> will be modified</p></li>
+<li><p><strong>x</strong> (<em>double</em>) – value to be sprinkled</p></li>
+<li><p><strong>noise_shift</strong> (<em>double</em>) – small bias added to the feature value</p></li>
+<li><p><strong>noise_scale</strong> (<em>double</em>) – small multiplier of the shifted feature value</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>x modified with <cite>small_noise</cite></p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>sprinkled value</p>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="improveai.cythonized_feature_encoding.cythonized_feature_encoder.warn_about_array_encoding">
-<span class="sig-name descname"><span class="pre">warn_about_array_encoding</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#improveai.cythonized_feature_encoding.cythonized_feature_encoder.warn_about_array_encoding" title="Permalink to this definition"></a></dt>
-<dd><p>If object is an array warning will be printed (only once so the encoding speed does not suffer)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>object</strong> (<em>object</em>) – encoded object</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>None</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>double</p>
 </dd>
 </dl>
 </dd></dl>
@@ -379,7 +415,7 @@ Rules of encoding go as follows:</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="improveai.feature_encoder.html" class="btn btn-neutral float-left" title="feature_encoder.py module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="improveai.givens_provider.html" class="btn btn-neutral float-right" title="givens_provider.py module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="improveai.chooser.html" class="btn btn-neutral float-right" title="chooser.py module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

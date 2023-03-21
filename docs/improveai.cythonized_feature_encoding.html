@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>improveai.cythonized_feature_encoding package &mdash; improveai 7.0.3 documentation</title>
+  <title>improveai.cythonized_feature_encoding package &mdash; improveai 8.0.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
@@ -13,9 +13,8 @@
   <![endif]-->
   
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
@@ -26,14 +25,18 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> improveai
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            improveai
           </a>
               <div class="version">
-                7.0.3
+                8.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -41,25 +44,21 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Readme:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="readme.html">About Improve AI python SDK</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readme.html">About Improve AI python ranker</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Classes:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="improveai.decision_model.html">DecisionModel</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.decision_context.html">DecisionContext</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.decision.html">Decision</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.decision_tracker.html">DecisionTracker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.scorer.html">Scorer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.ranker.html">Ranker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.reward_tracker.html">RewardTracker</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.feature_encoder.html">FeatureEncoder</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html">CythonizedFeatureEncoder</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.givens_provider.html">GivensProvider</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.chooser.html">Chooser</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Utils:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="improveai.settings.html">SDK settings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.settings.html">Settings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.utils.general_purpose_tools.html">general purpose tools</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.utils.choosers_feature_encoding_tools.html">feature encoding tools</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.html">cythonized feature encoding tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.utils.gzip_tools.html">gzip tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.utils.url_tools.html">URL tools</a></li>
 </ul>
@@ -77,8 +76,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>improveai.cythonized_feature_encoding package</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">improveai.cythonized_feature_encoding package</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/improveai.cythonized_feature_encoding.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -89,18 +88,44 @@
            <div itemprop="articleBody">
              
   <section id="improveai-cythonized-feature-encoding-package">
-<h1>improveai.cythonized_feature_encoding package<a class="headerlink" href="#improveai-cythonized-feature-encoding-package" title="Permalink to this headline"></a></h1>
+<h1>improveai.cythonized_feature_encoding package<a class="headerlink" href="#improveai-cythonized-feature-encoding-package" title="Permalink to this heading"></a></h1>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html">cythonized_feature_encoder.pyx module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.html">cythonized_feature_encoding_utils.pyx module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html">cythonized_feature_encoder.pyx module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.__init__"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder.__init__()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder._encode"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder._encode()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.encode_context"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder.encode_context()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.encode_feature_vector"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder.encode_feature_vector()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.encode_item"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder.encode_item()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.feature_indexes"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder.feature_indexes</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.FeatureEncoder.string_tables"><code class="docutils literal notranslate"><span class="pre">FeatureEncoder.string_tables</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable"><code class="docutils literal notranslate"><span class="pre">StringTable</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable.__init__"><code class="docutils literal notranslate"><span class="pre">StringTable.__init__()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable.encode"><code class="docutils literal notranslate"><span class="pre">StringTable.encode()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable.encode_miss"><code class="docutils literal notranslate"><span class="pre">StringTable.encode_miss()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable.mask"><code class="docutils literal notranslate"><span class="pre">StringTable.mask</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable.miss_width"><code class="docutils literal notranslate"><span class="pre">StringTable.miss_width</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable.model_seed"><code class="docutils literal notranslate"><span class="pre">StringTable.model_seed</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.StringTable.value_table"><code class="docutils literal notranslate"><span class="pre">StringTable.value_table</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.encode_candidates_to_matrix"><code class="docutils literal notranslate"><span class="pre">encode_candidates_to_matrix()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.get_mask"><code class="docutils literal notranslate"><span class="pre">get_mask()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.get_noise_shift_scale"><code class="docutils literal notranslate"><span class="pre">get_noise_shift_scale()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.scale"><code class="docutils literal notranslate"><span class="pre">scale()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html#improveai.cythonized_feature_encoding.cythonized_feature_encoder.sprinkle"><code class="docutils literal notranslate"><span class="pre">sprinkle()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </div>
 </section>
 <section id="module-improveai.cythonized_feature_encoding">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-improveai.cythonized_feature_encoding" title="Permalink to this headline"></a></h2>
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-improveai.cythonized_feature_encoding" title="Permalink to this heading"></a></h2>
 </section>
 </section>
 

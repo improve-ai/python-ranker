@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Readme &mdash; improveai 7.0.3 documentation</title>
+  <title>Readme &mdash; improveai 8.0.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
@@ -13,13 +13,12 @@
   <![endif]-->
   
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="decision_model.py module" href="improveai.decision_model.html" />
+    <link rel="next" title="scorer.py module" href="improveai.scorer.html" />
     <link rel="prev" title="Welcome to Improve AI python SDK documentation!" href="index.html" /> 
 </head>
 
@@ -28,14 +27,18 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> improveai
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            improveai
           </a>
               <div class="version">
-                7.0.3
+                8.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -43,42 +46,34 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Readme:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">About Improve AI python SDK</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#numbers-too">Numbers Too</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#booleans">Booleans</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#complex-objects">Complex Objects</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#example-optimizing-an-upsell-offer">Example: Optimizing an Upsell Offer</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#example-performance-tuning">Example: Performance Tuning</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#installation-prerequisites">Installation prerequisites</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#install-with-pip">Install with pip</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#pip-s-cache">pip’s cache</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#build-and-install-from-cloned-git-repo">Build and install from cloned git repo</a></li>
-</ul>
-</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">About Improve AI python ranker</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#initialization">Initialization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#contextual-decisions">Contextual Decisions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ranking">Ranking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#scoring">Scoring</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#multivariate-optimization">Multivariate Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#variant-types">Variant Types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#privacy">Privacy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#resources">Resources</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#help-improve-our-world">Help Improve Our World</a></li>
 </ul>
 </li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Classes:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="improveai.decision_model.html">DecisionModel</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.decision_context.html">DecisionContext</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.decision.html">Decision</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.decision_tracker.html">DecisionTracker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.scorer.html">Scorer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.ranker.html">Ranker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.reward_tracker.html">RewardTracker</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.feature_encoder.html">FeatureEncoder</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoder.html">CythonizedFeatureEncoder</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.givens_provider.html">GivensProvider</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.chooser.html">Chooser</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Utils:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="improveai.settings.html">SDK settings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="improveai.settings.html">Settings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.utils.general_purpose_tools.html">general purpose tools</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.utils.choosers_feature_encoding_tools.html">feature encoding tools</a></li>
-<li class="toctree-l1"><a class="reference internal" href="improveai.cythonized_feature_encoding.cythonized_feature_encoding_utils.html">cythonized feature encoding tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.utils.gzip_tools.html">gzip tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="improveai.utils.url_tools.html">URL tools</a></li>
 </ul>
@@ -96,8 +91,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Readme</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Readme</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/readme.md.txt" rel="nofollow"> View page source</a>
       </li>
@@ -108,217 +103,124 @@
            <div itemprop="articleBody">
              
   <section id="readme">
-<h1>Readme<a class="headerlink" href="#readme" title="Permalink to this headline"></a></h1>
-<p>Optimize and personalize your apps with fast AI decisions that get smarter over time. Improve AI makes it simple to apply <em>reinforcement learning</em> to directly optimize revenue, user retention, or any other metric.</p>
-<p>The heart of Improve AI is the <em>which()</em> statement. <em>which()</em> is like an AI if/then statement.</p>
+<h1>Readme<a class="headerlink" href="#readme" title="Permalink to this heading"></a></h1>
+<p>Improve AI is a machine learning platform for quickly implementing app optimization, personalization, and recommendations for <a class="reference external" href="https://improve.ai/python-sdk/">Python</a>, <a class="reference external" href="https://improve.ai/ios-sdk/">iOS</a>, and <a class="reference external" href="https://improve.ai/android-sdk/">Android</a>.</p>
+<p>The SDKs provide simple APIs for AI <a class="reference external" href="https://improve.ai/decisions/">decisions</a>, <a class="reference external" href="https://improve.ai/ranking/">ranking</a>, <a class="reference external" href="https://improve.ai/scoring/">scoring</a>, and <a class="reference external" href="https://improve.ai/multivariate-optimization/">multivariate optimization</a> that execute immediately, on-device, with zero network latency. Decisions and rewards are tracked in the cloud with the <a class="reference external" href="https://github.com/improve-ai/gym/">Improve AI Gym</a> and updated models are trained regularly on AWS SageMaker.</p>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h2>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pip3 install improveai</span>
+</pre></div>
+</div>
+</section>
+<section id="initialization">
+<h2>Initialization<a class="headerlink" href="#initialization" title="Permalink to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">improveai</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">track_url</span> <span class="o">=</span> <span class="s1">&#39;https://xxxx.lambda-url.us-east-1.on.aws/&#39;</span>
+<span class="n">model_url</span> <span class="o">=</span> <span class="s1">&#39;https://xxxx.s3.amazonaws.com/models/latest/greetings.xgb.gz&#39;</span>
+
+<span class="n">greetings_model</span> <span class="o">=</span> <span class="n">improveai</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">model_url</span><span class="p">,</span> <span class="n">track_url</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this heading"></a></h2>
+<p>The heart of Improve AI is the <em>which()</em> statement. <em>which()</em> is like an AI <em>if/then</em> statement.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">greeting</span><span class="p">,</span> <span class="n">decision_id</span> <span class="o">=</span> <span class="n">greetings_model</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;Hello&#39;</span><span class="p">,</span> <span class="s1">&#39;Howdy&#39;</span><span class="p">,</span> <span class="s1">&#39;Hola&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><em>which()</em> uses logic stored in a machine learning model, a decision model, to make the best choice.</p>
-<p>Decision models are easily trained by <em>reinforcement learning</em> or assigning rewards for positive outcomes. <em>which()</em> chooses the option that provides the highest expected reward given the current conditions.</p>
+<p><em>which()</em> takes a list of <em>variants</em> and returns the best - the “best” being the variant that provides the highest expected reward given the current conditions.</p>
+<p>Decision models are easily trained with <a class="reference external" href="https://improve.ai/reinforcement-learning/">reinforcement learning</a>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">success</span><span class="p">:</span>
    <span class="n">greetings_model</span><span class="o">.</span><span class="n">add_reward</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">decision_id</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>When rewards are business metrics, such as revenue or user retention, the decisions will optimize to automatically improve those metrics over time.</p>
-<p><em>That’s like A/B testing on steroids.</em></p>
-<p>However, unlike A/B testing, Improve AI may optionally use context to make the best decision.</p>
-<p>Custom context can be provided via <em>given()</em>:</p>
+<p>With reinforcement learning, positive rewards are assigned for positive outcomes (a “carrot”) and negative rewards are assigned for undesirable outcomes (a “stick”).</p>
+<p><em>which()</em> automatically tracks it’s decision with the <a class="reference external" href="https://github.com/improve-ai/gym/">Improve AI Gym</a>.</p>
+</section>
+<section id="contextual-decisions">
+<h2>Contextual Decisions<a class="headerlink" href="#contextual-decisions" title="Permalink to this heading"></a></h2>
+<p>Unlike A/B testing or feature flags, Improve AI uses <em>context</em> to make the best decision.</p>
+<p>Context can be provided via <em>given()</em>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
 <span class="n">greeting</span><span class="p">,</span> <span class="n">decision_id</span> <span class="o">=</span> <span class="n">greetings_model</span><span class="o">.</span><span class="n">given</span><span class="p">({</span><span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;cowboy&quot;</span><span class="p">})</span> \
                                        <span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s2">&quot;Hello&quot;</span><span class="p">,</span> <span class="s2">&quot;Howdy&quot;</span><span class="p">,</span> <span class="s2">&quot;Hola&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Given the language is <em>cowboy</em>, the variant with the highest expected reward should be <em>“Howdy”</em> and the model would learn to make that choice.</p>
-<section id="numbers-too">
-<h2>Numbers Too<a class="headerlink" href="#numbers-too" title="Permalink to this headline"></a></h2>
-<p>What discount should we offer?</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">discount</span><span class="p">,</span> <span class="n">decision_id</span> <span class="o">=</span> <span class="n">discounts_model</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">)</span>
+</section>
+<section id="ranking">
+<h2>Ranking<a class="headerlink" href="#ranking" title="Permalink to this heading"></a></h2>
+<p><a class="reference external" href="https://improve.ai/ranking/">Ranking</a> is a fundamental task in recommender systems, search engines, and social media feeds. Fast ranking can be performed on-device in a single line of code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ranked_wines</span> <span class="o">=</span> <span class="n">sommelier_model</span><span class="o">.</span><span class="n">given</span><span class="p">(</span><span class="n">entree</span><span class="p">)</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">wines</span><span class="p">)</span>
 </pre></div>
 </div>
+<p><strong>Note</strong>: Decisions are not tracked when calling <em>rank()</em>. <em>which()</em> or <em>decide()</em> must be used to train models for ranking.</p>
 </section>
-<section id="booleans">
-<h2>Booleans<a class="headerlink" href="#booleans" title="Permalink to this headline"></a></h2>
-<p>Dynamically enable feature flags for best performance…</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">enabled</span><span class="p">,</span> <span class="n">decision_id</span> <span class="o">=</span> <span class="n">features_model</span><span class="o">.</span><span class="n">given</span><span class="p">(</span><span class="n">givens</span><span class="o">=</span><span class="n">example_attributes</span><span class="p">)</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+<section id="scoring">
+<h2>Scoring<a class="headerlink" href="#scoring" title="Permalink to this heading"></a></h2>
+<p><a class="reference external" href="https://improve.ai/scoring/">Scoring</a> makes it easy to turn any database table into a recommendation engine.</p>
+<p>Simply add a <em>score</em> column to the database and update the score for each row.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scores</span> <span class="o">=</span> <span class="n">conversion_rate_model</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>At query time, sort the query results descending by the <em>score</em> column and the first results will be the top recommendations.</p>
+<p><em>score()</em> is also useful for crafting custom optimization algorithms or providing supplemental metrics in a multi-stage recommendation system.</p>
+<p><strong>Note</strong>: Decisions are not tracked when calling <em>score()</em>. <em>which()</em>, <em>decide()</em>, or <em>optimize()</em> must be used to train models for scoring.</p>
 </section>
-<section id="complex-objects">
-<h2>Complex Objects<a class="headerlink" href="#complex-objects" title="Permalink to this headline"></a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">theme_variants</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="p">{</span> <span class="s2">&quot;textColor&quot;</span><span class="p">:</span> <span class="s2">&quot;#000000&quot;</span><span class="p">,</span> <span class="s2">&quot;backgroundColor&quot;</span><span class="p">:</span> <span class="s2">&quot;#ffffff&quot;</span> <span class="p">},</span>
-    <span class="p">{</span> <span class="s2">&quot;textColor&quot;</span><span class="p">:</span> <span class="s2">&quot;#F0F0F0&quot;</span><span class="p">,</span> <span class="s2">&quot;backgroundColor&quot;</span><span class="p">:</span> <span class="s2">&quot;#aaaaaa&quot;</span> <span class="p">}]</span>
+<section id="multivariate-optimization">
+<h2>Multivariate Optimization<a class="headerlink" href="#multivariate-optimization" title="Permalink to this heading"></a></h2>
+<p><a class="reference external" href="https://improve.ai/multivariate-optimization/">Multivariate optimization</a> is the joint optimization of multiple variables simultaneously. This is often useful for app configuration and performance tuning.</p>
+<div class="highlight-swift notranslate"><div class="highlight"><pre><span></span><span class="n">config</span><span class="p">,</span> <span class="n">decision_id</span> <span class="p">=</span> <span class="n">config_model</span><span class="p">.</span><span class="n">optimize</span><span class="p">({</span><span class="s">&quot;buffer_size&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">2048</span><span class="p">,</span> <span class="mi">4096</span><span class="p">,</span> <span class="mi">8192</span><span class="p">],</span>
+                                             <span class="s">&quot;video_bitrate&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">256000</span><span class="p">,</span> <span class="mi">384000</span><span class="p">,</span> <span class="mi">512000</span><span class="p">]})</span>
+</pre></div>
+</div>
+<p>This example decides multiple variables simultaneously.  Notice that instead of a single list of variants, a dictionary mapping keys to lists of variants is provided. This multi-variate mode jointly optimizes all variables for the highest expected reward.</p>
+<p><em>optimize()</em> automatically tracks it’s decision with the <a class="reference external" href="https://github.com/improve-ai/gym/">Improve AI Gym</a>. Rewards are credited to the most recent decision made by the model, including from a previous app session.</p>
+</section>
+<section id="variant-types">
+<h2>Variant Types<a class="headerlink" href="#variant-types" title="Permalink to this heading"></a></h2>
+<p>Variants can be any JSON encodeable data structure of arbitrary complexity, including nested dicts, lists, strings, numbers, and None. Object properties and nested items within collections are automatically encoded as machine learning features to assist in the decision making process.</p>
+<p>The following are all valid:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">greeting</span><span class="p">,</span> <span class="n">decision_id</span> <span class="o">=</span> <span class="n">greetings_model</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;Hello&#39;</span><span class="p">,</span> <span class="s1">&#39;Howdy&#39;</span><span class="p">,</span> <span class="s1">&#39;Hola&#39;</span><span class="p">)</span>
 
-<span class="n">theme</span><span class="p">,</span> <span class="n">decision_id</span> <span class="o">=</span> <span class="n">themes_model</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">theme_variants</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Variants can be any JSON encodeable data structure of arbitrary complexity, including nested dictionaries, arrays, strings, numbers, nulls, and booleans.</p>
-</section>
-<section id="example-optimizing-an-upsell-offer">
-<h2>Example: Optimizing an Upsell Offer<a class="headerlink" href="#example-optimizing-an-upsell-offer" title="Permalink to this headline"></a></h2>
-<p>Improve AI is powerful and flexible. Variants can be any JSON encodeable data structure including <strong>strings</strong>,
-<strong>numbers</strong>, <strong>booleans</strong>, <strong>lists</strong>, and <strong>dictionaries</strong>.</p>
-<p>For a dungeon crawler game, say the user was purchasing an item using an In App Purchase.
-We can use Improve AI to choose an additional product to display as an upsell offer during checkout.
-With a few lines of code, we can train a model that will learn to optimize the upsell offer given the original product being purchased.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">product</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;red sword&#39;</span><span class="p">,</span> <span class="s1">&#39;price&#39;</span><span class="p">:</span> <span class="mf">4.99</span><span class="p">}</span>
+<span class="n">discount</span><span class="p">,</span> <span class="n">decision_id</span> <span class="o">=</span> <span class="n">discounts_model</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">)</span>
 
-<span class="n">upsell</span><span class="p">,</span> <span class="n">decision_id</span> <span class="o">=</span> <span class="n">upsell_model</span><span class="o">.</span><span class="n">given</span><span class="p">(</span><span class="n">product</span><span class="p">)</span> \
-                                  <span class="o">.</span><span class="n">which</span><span class="p">([{</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;gold&quot;</span><span class="p">,</span> <span class="s2">&quot;quantity&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;price&quot;</span><span class="p">:</span> <span class="mf">1.99</span> <span class="p">},</span>
-                                          <span class="p">{</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;diamonds&quot;</span><span class="p">,</span> <span class="s2">&quot;quantity&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;price&quot;</span><span class="p">:</span> <span class="mf">2.99</span> <span class="p">},</span>
-                                          <span class="p">{</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;red scabbard&quot;</span><span class="p">,</span> <span class="s2">&quot;price&quot;</span><span class="p">:</span> <span class="mf">0.99</span> <span class="p">}])</span>
-</pre></div>
-</div>
-<p>The product to be purchased is the red sword. Notice that the variants are dictionaries with a mix of string and numeric values.</p>
-<p>The rewards in this case might be any additional revenue from the upsell.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">upsell_purchased</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># flag indicating if decision was correct</span>
+<span class="n">enabled</span><span class="p">,</span> <span class="n">decision_id</span> <span class="o">=</span> <span class="n">feature_flag_model</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
-<span class="k">if</span> <span class="n">upsell_purchased</span><span class="p">:</span>
-    <span class="c1"># assign reward</span>
-    <span class="n">upsell_model</span><span class="o">.</span><span class="n">add_reward</span><span class="p">(</span><span class="n">upsell</span><span class="p">[</span><span class="s1">&#39;price&#39;</span><span class="p">],</span> <span class="n">decision_id</span><span class="o">=</span><span class="n">upsell_decision_id</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>While it is reasonable to hypothesize that the red scabbard might be the best upsell offer to pair with the red sword, it is still a guess. Any time a guess is made on the value of a variable, instead use Improve AI to decide.</p>
-<p><em>Replace guesses with AI decisions.</em></p>
-</section>
-<section id="example-performance-tuning">
-<h2>Example: Performance Tuning<a class="headerlink" href="#example-performance-tuning" title="Permalink to this headline"></a></h2>
-<p>In the 2000s I was writing a lot of video streaming code.
-The initial motivation for Improve AI came out of my frustrations with attempting to
-tune video streaming clients across heterogeneous networks.</p>
-<p>I was forced to make guesses on performance sensitive configuration defaults through
-slow trial and error. My client configuration code maybe looked something like this:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;bufferSize&quot;</span><span class="p">:</span> <span class="mi">2048</span><span class="p">,</span>
-          <span class="s2">&quot;videoBitrate&quot;</span><span class="p">:</span> <span class="mi">384000</span><span class="p">}</span>
-</pre></div>
-</div>
-<p>This is the code I wish I could have written:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">product</span>
+<span class="n">item</span><span class="p">,</span> <span class="n">decision_id</span> <span class="o">=</span> <span class="n">filter_model</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
+<span class="n">themes</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;font&quot;</span><span class="p">:</span> <span class="s2">&quot;Helvetica&quot;</span><span class="p">,</span> <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;#000000&quot;</span><span class="p">},</span>
+          <span class="p">{</span><span class="s2">&quot;font&quot;</span><span class="p">:</span> <span class="s2">&quot;Comic Sans&quot;</span><span class="p">,</span> <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;#F0F0F0&quot;</span><span class="p">}]</span>
 
-<span class="n">buffer_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">2048</span><span class="p">,</span> <span class="mi">4096</span><span class="p">,</span> <span class="mi">8192</span><span class="p">]</span>
-<span class="n">video_bit_rates</span> <span class="o">=</span> <span class="p">[</span><span class="mi">256000</span><span class="p">,</span> <span class="mi">384000</span><span class="p">,</span> <span class="mi">512000</span><span class="p">]</span>
-
-<span class="n">config</span><span class="p">,</span> <span class="n">config_decision_id</span> <span class="o">=</span> \
-    <span class="n">config_model</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="o">*</span><span class="p">[{</span><span class="s2">&quot;bufferSize&quot;</span><span class="p">:</span> <span class="n">bs</span><span class="p">,</span> <span class="s2">&quot;videoBitrate&quot;</span><span class="p">:</span> <span class="n">br</span><span class="p">}</span> <span class="k">for</span> <span class="n">bs</span><span class="p">,</span> <span class="n">br</span> <span class="ow">in</span> <span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">buffer_sizes</span><span class="p">,</span> <span class="n">video_bit_rates</span><span class="p">])])</span>
-</pre></div>
-</div>
-<p>This example decides multiple variables simultaneously.
-This multi-variate mode jointly optimizes both variables for the highest expected reward.</p>
-<p>The rewards in this case might be negative to penalize any stalls during video playback.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">video_stalled</span><span class="p">:</span>
-    <span class="n">config_model</span><span class="o">.</span><span class="n">add_reward</span><span class="p">(</span><span class="o">-</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">decision_id</span><span class="o">=</span><span class="n">config_decision_id</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Improve AI frees us from having to overthink our configuration values during development.
-We simply give it some reasonable variants and let it learn from real world usage.</p>
-<p>Look for places where you’re relying on guesses or an executive decision and consider
-instead directly optimizing for the outcomes you desire.</p>
-</section>
-<section id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline"></a></h2>
-<section id="installation-prerequisites">
-<h3>Installation prerequisites<a class="headerlink" href="#installation-prerequisites" title="Permalink to this headline"></a></h3>
-<ul>
-<li><p>python 3.7+</p></li>
-<li><p>in order to take advantage of fast feature encoding please install <code class="docutils literal notranslate"><span class="pre">gcc</span></code> and python headers: <code class="docutils literal notranslate"><span class="pre">python3-dev</span></code> or <code class="docutils literal notranslate"><span class="pre">python3-devel</span></code> (<code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt</span> <span class="pre">install</span> <span class="pre">gcc</span> <span class="pre">python3-dev</span></code> for apt and <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">yum</span> <span class="pre">install</span> <span class="pre">gcc</span> <span class="pre">python3-devel</span></code> for yum or dnf)</p></li>
-<li><p>for macOS it might be necessary to <a class="reference external" href="https://xgboost.readthedocs.io/en/stable/build.html">build xgboost from sources</a> (otherwise <code class="docutils literal notranslate"><span class="pre">pip3</span> <span class="pre">install</span> <span class="pre">xgboost</span></code> might fail)</p></li>
-<li><p>if possible virtual environment (e.g. venv) usage is strongly encouraged</p></li>
-<li><p>upgrading pip, wheel and packages is also a good idea:</p>
-<p><code class="docutils literal notranslate"><span class="pre">pip3</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">pip</span> <span class="pre">wheel</span> <span class="pre">build</span></code></p>
-</li>
-</ul>
-</section>
-<section id="install-with-pip">
-<h3>Install with pip<a class="headerlink" href="#install-with-pip" title="Permalink to this headline"></a></h3>
-<p>To install from pip simply use:</p>
-<p><code class="docutils literal notranslate"><span class="pre">pip3</span> <span class="pre">install</span> <span class="pre">improveai</span></code></p>
-</section>
-<section id="pip-s-cache">
-<h3>pip’s cache<a class="headerlink" href="#pip-s-cache" title="Permalink to this headline"></a></h3>
-<p>Fog big packages and small amount of RAM (e.g., 1 GB) pip’s caching mechanism might cause Out Of Memory error resulting in
-“Killed” error message on e.g. xgboost installation attempt.
-To avoid this either purge pip’s cache:</p>
-<p><code class="docutils literal notranslate"><span class="pre">pip3</span> <span class="pre">cache</span> <span class="pre">purge</span></code></p>
-<p>or use <code class="docutils literal notranslate"><span class="pre">--no-cache-dir</span></code> flag</p>
-</section>
-<section id="build-and-install-from-cloned-git-repo">
-<h3>Build and install from cloned git repo<a class="headerlink" href="#build-and-install-from-cloned-git-repo" title="Permalink to this headline"></a></h3>
-<p>To install from cloned repo:</p>
-<ol>
-<li><p>clone repo: git clone https://github.com/improve-ai/python-sdk</p></li>
-<li><p>make sure you are in the cloned folder (python-sdk)</p></li>
-<li><p>activate your virtualenv (if you are using one, if not you can skip this step; using venv is advised)</p></li>
-<li><p>purge pip’s cache:</p>
-<p><code class="docutils literal notranslate"><span class="pre">pip3</span> <span class="pre">cache</span> <span class="pre">purge</span></code></p>
-</li>
-<li><p>install wheel and cmake:</p>
-<p><code class="docutils literal notranslate"><span class="pre">pip3</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">pip</span> <span class="pre">build</span> <span class="pre">wheel</span> <span class="pre">cmake</span> <span class="pre">--no-cache-dir</span></code></p>
-</li>
-<li><p>install requirements:</p>
-<p><code class="docutils literal notranslate"><span class="pre">pip3</span> <span class="pre">install</span> <span class="pre">-r</span> <span class="pre">requirements.txt</span> <span class="pre">--no-cache-dir</span></code></p>
-</li>
-<li><p>to build package wheel call:</p>
-<p><code class="docutils literal notranslate"><span class="pre">python3</span> <span class="pre">-m</span> <span class="pre">build</span></code></p>
-</li>
-<li><p>install built wheel with pip:</p>
-<p><code class="docutils literal notranslate"><span class="pre">pip3</span> <span class="pre">install</span> <span class="pre">dist/improveai-7.0.1*.whl</span></code></p>
-<p>where <code class="docutils literal notranslate"><span class="pre">*</span></code> represents system specific part of wheel name</p>
-</li>
-</ol>
-</section>
-</section>
-<section id="initialization">
-<h2>Initialization<a class="headerlink" href="#initialization" title="Permalink to this headline"></a></h2>
-<p><a class="reference external" href="https://github.com/improve-ai/gym">Gym</a> needs new data (decisions and rewards) to train increasingly accurate models.
-Initializing <code class="docutils literal notranslate"><span class="pre">DecisionModel()</span></code> with <code class="docutils literal notranslate"><span class="pre">track_url</span></code> allows DecisionModel() to send decisions and rewards directly to <a class="reference external" href="https://github.com/improve-ai/gym">gym’s</a>
-track endpoint. Easiest way to get started with deciding and rewarding is to import <code class="docutils literal notranslate"><span class="pre">DecisionModel</span></code> from <code class="docutils literal notranslate"><span class="pre">improveai</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">improveai</span> <span class="kn">import</span> <span class="n">DecisionModel</span>
-</pre></div>
-</div>
-<p>Possible <code class="docutils literal notranslate"><span class="pre">DecisionModel</span></code> initializations:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">model_name</span> <span class="pre">!=</span> <span class="pre">None</span></code> and <code class="docutils literal notranslate"><span class="pre">track_url</span> <span class="pre">!=</span> <span class="pre">None</span></code> → decisions of <code class="docutils literal notranslate"><span class="pre">'grettings'</span></code> model are tracked and rewarded</p></li>
-</ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">track_url</span> <span class="o">=</span> <span class="s1">&#39;https://x5fvx48stc.execute-api.&lt;region&gt;.amazonaws.com/track&#39;</span>
-<span class="n">decision_model</span> <span class="o">=</span> <span class="n">DecisionModel</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s1">&#39;greetings&#39;</span><span class="p">,</span> <span class="n">track_url</span><span class="o">=</span><span class="n">track_url</span><span class="p">)</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">model_name</span> <span class="pre">!=</span> <span class="pre">None</span></code> and <code class="docutils literal notranslate"><span class="pre">track_url</span> <span class="pre">==</span> <span class="pre">None</span></code> → decisions are not tracked nor rewarded</p></li>
-</ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">decision_model</span> <span class="o">=</span> <span class="n">DecisionModel</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s1">&#39;greetings&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">model_name</span> <span class="pre">==</span> <span class="pre">None</span></code> and <code class="docutils literal notranslate"><span class="pre">track_url</span> <span class="pre">!=</span> <span class="pre">None</span></code> → decisions are not tracked nor rewarded
-(<code class="docutils literal notranslate"><span class="pre">model_name</span></code> must not be None for a valid decision / reward)</p></li>
-</ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">track_url</span> <span class="o">=</span> <span class="s1">&#39;https://x5fvx48stc.execute-api.&lt;region&gt;.amazonaws.com/track&#39;</span>
-<span class="n">decision_model</span> <span class="o">=</span> <span class="n">DecisionModel</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">track_url</span><span class="o">=</span><span class="n">track_url</span><span class="p">)</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">model_name</span> <span class="pre">==</span> <span class="pre">None</span></code> and <code class="docutils literal notranslate"><span class="pre">track_url</span> <span class="pre">==</span> <span class="pre">None</span></code> → decisions are not tracked and rewarded</p></li>
-</ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">decision_model</span> <span class="o">=</span> <span class="n">DecisionModel</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Once model is initialized an existing XGBoost Improve AI model can be loaded.
-If <code class="docutils literal notranslate"><span class="pre">DecisionModel</span></code> was initialized with <code class="docutils literal notranslate"><span class="pre">model_name</span> <span class="pre">=</span> <span class="pre">None</span></code> then the <code class="docutils literal notranslate"><span class="pre">model_name</span></code> cached
-in the loaded booster will be set to <code class="docutils literal notranslate"><span class="pre">model_name</span></code> attribute of <code class="docutils literal notranslate"><span class="pre">DecisionModel</span></code>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">decision_model</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_url</span><span class="o">=</span><span class="s1">&#39;&lt;URL or FS path to booster&gt;&#39;</span><span class="p">)</span>
+<span class="n">theme</span><span class="p">,</span> <span class="n">decision_id</span> <span class="o">=</span> <span class="n">themes_model</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">themes</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
 <section id="privacy">
-<h2>Privacy<a class="headerlink" href="#privacy" title="Permalink to this headline"></a></h2>
+<h2>Privacy<a class="headerlink" href="#privacy" title="Permalink to this heading"></a></h2>
 <p>It is strongly recommended to never include Personally Identifiable Information (PII) in variants or givens so that it is never tracked, persisted, or used as training data.</p>
 </section>
+<section id="resources">
+<h2>Resources<a class="headerlink" href="#resources" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference external" href="https://improve.ai/quick-start/">Quick Start Guide</a></p></li>
+<li><p><a class="reference external" href="https://improve.ai/python-sdk/">Python SDK API Docs</a></p></li>
+<li><p><a class="reference external" href="https://github.com/improve-ai/gym/">Improve AI Gym</a></p></li>
+<li><p><a class="reference external" href="https://aws.amazon.com/marketplace/pp/prodview-pyqrpf5j6xv6g">Improve AI Trainer (FREE)</a></p></li>
+<li><p><a class="reference external" href="https://aws.amazon.com/marketplace/pp/prodview-adchtrf2zyvow">Improve AI Trainer (PRO)</a></p></li>
+<li><p><a class="reference external" href="https://improve.ai/reinforcement-learning/">Reinforcement Learning</a></p></li>
+<li><p><a class="reference external" href="https://improve.ai/multivariate-optimization/">Decisions</a></p></li>
+<li><p><a class="reference external" href="https://improve.ai/ranking/">Ranking</a></p></li>
+<li><p><a class="reference external" href="https://improve.ai/scoring/">Scoring</a></p></li>
+<li><p><a class="reference external" href="https://improve.ai/multivariate-optimization/">Multivariate optimization</a></p></li>
+</ul>
+</section>
 <section id="help-improve-our-world">
-<h2>Help Improve Our World<a class="headerlink" href="#help-improve-our-world" title="Permalink to this headline"></a></h2>
-<p>The mission of Improve AI is to make our corner of the world a little bit better each day. When each of us improve our corner of the world, the whole world becomes better. If your product or work does not make the world better, do not use Improve AI. Otherwise, welcome, I hope you find value in my labor of love. - Justin Chapweske</p>
+<h2>Help Improve Our World<a class="headerlink" href="#help-improve-our-world" title="Permalink to this heading"></a></h2>
+<p>The mission of Improve AI is to make our corner of the world a little bit better each day. When each of us improve our corner of the world, the whole world becomes better. If your product or work does not make the world better, do not use Improve AI. Otherwise, welcome, I hope you find value in my labor of love.</p>
+<p>– Justin Chapweske</p>
 </section>
 </section>
 
@@ -327,7 +229,7 @@ in the loaded booster will be set to <code class="docutils literal notranslate">
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="index.html" class="btn btn-neutral float-left" title="Welcome to Improve AI python SDK documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="improveai.decision_model.html" class="btn btn-neutral float-right" title="decision_model.py module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="improveai.scorer.html" class="btn btn-neutral float-right" title="scorer.py module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

@@ -1,7 +1,7 @@
-decision_model.py module
+reward_tracker.py module
 ============================================
 
-.. automodule:: improveai.decision_model
+.. automodule:: improveai.reward_tracker
    :members:
    :undoc-members:
    :show-inheritance:

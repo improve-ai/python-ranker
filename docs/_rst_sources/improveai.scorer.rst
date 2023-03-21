@@ -1,7 +1,7 @@
-decision_tracker.py module
+scorer.py module
 ============================================
 
-.. automodule:: improveai.decision_tracker
+.. automodule:: improveai.scorer
    :members:
    :undoc-members:
    :show-inheritance:

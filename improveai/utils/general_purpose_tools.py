@@ -11,7 +11,7 @@ def read_jsonstring_from_file(
         path_to_file: str, mode: str = 'r', method: str = 'readlines',
         decode_escape_char: bool = False) -> str:
     """
-    Safely reads desired file with json wrapper
+    Safely reads JSON string from desired file into JSON dict
 
     Parameters
     ----------
@@ -49,7 +49,7 @@ def read_jsonstring_from_file(
 
 def check_candidates(candidates: list or tuple or np.ndarray) -> list or tuple or np.ndarray:
     """
-    Check if variants are of desired type and if they are not an empty collection
+    Checks if items / candidates are of desired type and if they are not an empty collection
 
     Parameters
     ----------

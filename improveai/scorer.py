@@ -94,7 +94,7 @@ class Scorer:
 
         # encode variants with single givens
         # TODO Check that it raises if there is a problem during feature encoding
-        encoded_candidates_matrix = self.__chooser.encode_candidates_single_context(
+        encoded_candidates_matrix = self.__chooser.encode_candidates_with_context(
             candidates=items, context=context)
 
         # TODO Check that it raises for model error, such as non-JSON encodeable data type

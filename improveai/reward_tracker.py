@@ -434,7 +434,7 @@ class RewardTracker:
 
     def _is_valid_message_id(self, message_id: str or None) -> bool:
         """
-        Check if message_id is  valid
+        Check if message_id is a valid Ksuid
 
 
         Parameters
@@ -458,7 +458,7 @@ class RewardTracker:
 
     def do_post_improve_request(self, payload_json: str, headers: dict):
         """
-        Execute improve POST to track_url with provided payload and headers
+        Execute Improve POST to `track_url` with provided payload and headers
 
         Parameters
         ----------
@@ -493,8 +493,9 @@ class RewardTracker:
 
     def post_improve_request(self, body_values: Dict[str, object], message_id: str = None) -> str or None:
         """
-        Posts request to tracker endpoint. Does not break the main thread, just
-        prints a warning.
+        Posts request to AWS tracker endpoint. In case of an exception during
+        POST process does not break the main thread, just prints a warning with
+        an error message.
 
         Parameters
         ----------

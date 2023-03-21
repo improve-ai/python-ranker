@@ -1,7 +1,7 @@
-givens_provider.py module
+improve_cli.py module
 ============================================
 
-.. automodule:: improveai.givens_provider
+.. automodule:: improveai.improve_cli
    :members:
    :undoc-members:
    :show-inheritance:

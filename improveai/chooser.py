@@ -28,7 +28,7 @@ Key used to store Improve AI metadata inside booster (<booster>.attr(USER_DEFINE
 
 FEATURE_NAMES_METADATA_KEY = 'ai.improve.features'
 """
-Key used to store Improve AI booster feature names. During booster's  save provedure
+Key used to store Improve AI booster feature names. During booster's  save procedure
 feature names are truncated from booster.
 """
 
@@ -91,26 +91,9 @@ class XGBChooser:
         self._feature_encoder = new_val
 
     @property
-    def model_seed(self):
-        """
-        Model seed needed for FeatureEncoder constructor
-
-        Returns
-        -------
-        int
-            Model seed needed for FeatureEncoder constructor
-
-        """
-        return self._model_seed
-
-    @model_seed.setter
-    def model_seed(self, value):
-        self._model_seed = value
-
-    @property
     def model_name(self):
         """
-        Model name of this Improve AI model
+        Model name for this Improve AI model
 
         Returns
         -------
@@ -146,32 +129,9 @@ class XGBChooser:
         self._model_feature_names = new_val
 
     @property
-    def string_tables(self):
-        """
-        Strings tables to be used for string encoding with this chooser
-
-        Returns
-        -------
-        dict
-            Dict of lists - each list is a collection of shifted and masked string
-            hashes for a given feature. Hashes are sorted best to worst and they are
-            used to encode strings to numeric features
-
-        """
-        return self._string_tables
-
-    @string_tables.setter
-    def string_tables(self, value):
-        # make sure that value is a dict
-        assert isinstance(value, dict)
-        # make sure that this dict contains all list as values
-        assert all(isinstance(string_table, list) for string_table in value.values())
-        self._string_tables = value
-
-    @property
     def current_noise(self):
         """
-        Currently used noise value. Needed for SDK + synthetic model validation
+        Currently used noise value. Needed for SDK validation with synthetic models.
 
         Returns
         -------
@@ -188,7 +148,7 @@ class XGBChooser:
     @property
     def imposed_noise(self):
         """
-        Forced noise value. Needed for SDK + synthetic model validation
+        Imposed noise value. Needed for SDK validation with synthetic models.
 
         Returns
         -------
@@ -316,7 +276,7 @@ class XGBChooser:
     @property
     def USER_DEFINED_METADATA_KEY(self):
         """
-        booster attribute name storing an entire user defined metadata dict
+        booster's attribute name storing an entire user defined metadata dict
 
         Returns
         -------
@@ -354,9 +314,7 @@ class XGBChooser:
         self.feature_encoder = None
         self.feature_names = None
 
-        self.model_seed = None
         self._model_name = None
-        self._string_tables = None
         self.current_noise = None
         self._imposed_noise = None
         self._improveai_major_version_from_metadata = None
@@ -410,25 +368,25 @@ class XGBChooser:
             raise exc
 
         model_metadata = self._get_model_metadata()
-        self.model_seed = self._get_model_seed(model_metadata=model_metadata)
+        model_seed = self._get_model_seed(model_metadata=model_metadata)
         self.model_name = self._get_model_name(model_metadata=model_metadata)
         self.feature_names = self._get_model_feature_names(model_metadata=model_metadata)
-        self.string_tables = self._get_string_tables(model_metadata=model_metadata)
+        string_tables = self._get_string_tables(model_metadata=model_metadata)
         self.improveai_major_version_from_metadata = \
             self._get_improveai_major_version(model_metadata=model_metadata)
 
         if CYTHON_BACKEND_AVAILABLE:
             self.feature_encoder = FastFeatureEncoder(
-                feature_names=self.feature_names, string_tables=self.string_tables, model_seed=self.model_seed)
+                feature_names=self.feature_names, string_tables=string_tables, model_seed=model_seed)
         else:
             self.feature_encoder = FeatureEncoder(
-                feature_names=self.feature_names, string_tables=self.string_tables, model_seed=self.model_seed)
+                feature_names=self.feature_names, string_tables=string_tables, model_seed=model_seed)
 
     def _get_noise(self) -> float:
         """
         Private noise getter. Noise can be set manually - this was provided for
         testing purposes. Please note that the 'natural' flow is for
-        noise to be randomly sampled 0-1 uniform
+        noise to be randomly sampled from 0-1 uniform distribution.
 
         Returns
         -------
@@ -472,7 +430,11 @@ class XGBChooser:
 
     def score(self, candidates: list or tuple or np.ndarray, context: dict or None, **kwargs) -> np.ndarray:
         """
-        Scores all provided candidates
+        Calculates scores for all provided candidates in 2 steps:
+
+        1. encodes candidates to np array
+
+        2. predicts with booster on encoded features
 
         Parameters
         ----------
@@ -490,7 +452,7 @@ class XGBChooser:
         """
 
         encoded_variants_matrix = \
-            self.encode_candidates_single_context(candidates=candidates, context=context)
+            self.encode_candidates_with_context(candidates=candidates, context=context)
 
         scores = \
             self.model.predict(
@@ -521,17 +483,15 @@ class XGBChooser:
         assert len(features_matrix.shape) == 2
         # make sure all features are present
         assert len(self.feature_names) == features_matrix.shape[1]
-        scores = \
-            self.model.predict(
+        return self.model.predict(
                 DMatrix(features_matrix, feature_names=self.feature_names)).astype('float64')
-        return scores
 
-    def encode_candidates_single_context(
+    def encode_candidates_with_context(
             self, candidates: list or tuple or np.ndarray, context: object) -> np.ndarray:
         """
-        Implemented as a XGBChooser helper method
-        Cythonized loop over provided variants and a single givens dict.
-        Returns array of encoded dicts.
+        Encodes provided candidates with a given context into numpy 2D matrix.
+        Implemented as a XGBChooser helper method (will use Cython backend to
+        speed things up if possible)
 
         Parameters
         ----------
@@ -543,7 +503,7 @@ class XGBChooser:
         Returns
         -------
         np.ndarray
-            array of encoded dicts
+            2D array of encoded values
         """
 
         if CYTHON_BACKEND_AVAILABLE:
@@ -554,23 +514,35 @@ class XGBChooser:
             return self.encode_candidates_to_matrix(candidates=candidates, context=context, noise=self._get_noise())
 
     @staticmethod
-    def get_model_src(model_src: str or bytes) -> str or bytes:
+    def get_model_src(model_src: str or Path or bytes) -> str or bytearray:
         """
-        Gets model src from provided input path, url or bytes
+        Based on provided `model_src` this method will return:
+
+        - a FS string path for input FS path to unzipped booster
+
+        - Path object for input Path object to unzipped booster
+
+        - unzipped bytesarray for input  FS path / Path object to gzipped booster
+
+        - (unzipped) bytesarray for input URL (if URL leads to gzipped booster
+        it will be unzipped)
+
+
+        Output from this method can in be passed directly to Booster.load_model().
 
         Parameters
         ----------
-        model_src: str or bytes
+        model_src: str or Path or bytes
             pth to model, url or bytes
 
         Returns
         -------
-        str or bytes
+        str or Path or bytearray
             path or downloaded model
 
         """
         raw_model_src = model_src
-        if not isinstance(model_src, Path) and is_path_http_addr(pth_to_model=model_src):
+        if not isinstance(model_src, Path) and is_path_http_addr(path=model_src):
             raw_model_src = get_model_bytes_from_url(model_url=model_src)
 
         unzipped_model_src = check_and_get_unzipped_model(model_src=raw_model_src)
@@ -578,7 +550,7 @@ class XGBChooser:
 
     def _get_improveai_major_version(self, model_metadata: dict) -> str or None:
         """
-        Extract Improve AI version from model metadata and return it if it is valid / allowed
+        Extracts Improve AI version from model metadata and return it if it is valid / allowed
 
         Parameters
         ----------
@@ -614,7 +586,8 @@ class XGBChooser:
 
     def _get_model_metadata(self) -> dict:
         """
-        gets 'model metadata' from 'user defined metadata' of Improve AI model
+        Gets 'model metadata' from JSON string stored in 'user defined metadata'
+        attribute of Improve AI booster
 
         Returns
         -------
@@ -759,35 +732,3 @@ class XGBChooser:
         if not all(isinstance(string_table, list) for string_table in string_tables.values()):
             raise IOError('At least one of string tables is not a list')
         return string_tables
-
-    def sort(
-            self, variants_w_scores: np.ndarray,
-            scores_col_idx: int = 1, class_cols_idx: int = 2) -> np.ndarray:
-        """
-        Performs sorting of provided variants with scores array
-
-        Parameters
-        ----------
-        variants_w_scores: np.ndarray
-            array with variant, scores rows
-        scores_col_idx: int
-            the index of column with scores
-        class_cols_idx: int
-            index of the class label in a single row
-
-        Returns
-        -------
-        np.ndarray
-            2D sorted array of rows (variant, score)
-
-        """
-
-        desc_scores_sorting_col = -1 * variants_w_scores[:, scores_col_idx]
-        class_sorting_col = variants_w_scores[:, class_cols_idx]
-
-        ind = np.lexsort((desc_scores_sorting_col, class_sorting_col))
-
-        srtd_variants_w_scores = \
-            variants_w_scores[ind]
-
-        return srtd_variants_w_scores
