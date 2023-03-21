@@ -1,4 +1,4 @@
-# AI Decisions, Ranking, Scoring & Multivariate Optimization for Python
+**!!! The release of v8 is imminent and features a brand new API. We do not recommend deploying v7 at this time !!!**
 
 Improve AI is a machine learning platform for quickly implementing app optimization, personalization, and recommendations for [Python](https://improve.ai/python-sdk/), [iOS](https://improve.ai/ios-sdk/), and [Android](https://improve.ai/android-sdk/).
 
