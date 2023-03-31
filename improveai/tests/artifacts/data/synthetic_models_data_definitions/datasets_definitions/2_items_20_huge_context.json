@@ -1,5 +1,5 @@
 {
-    "dataset_name": "2_variants_20_huge_givens",
+    "dataset_name": "2_items_20_huge_context",
     "timespan": {
         "data_starts": "2021-01-01 00:00:00",
         "data_ends": "2021-12-31 00:00:00",

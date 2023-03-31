@@ -1,5 +1,5 @@
 {
-    "dataset_name": "primitive_variants_no_givens_binary_reward",
+    "dataset_name": "primitive_items_no_context_binary_reward",
     "timespan": {
         "data_starts": "2021-01-01 00:00:00",
         "data_ends": "2021-12-31 00:00:00",
