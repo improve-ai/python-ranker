@@ -1,10 +1,7 @@
-import coremltools as ct
 import docker
 import json
 import numpy as np
-import orjson
 import os
-import xgboost as xgb
 
 
 from synthetic_models_config import SYNTHETIC_TRACKER_URL, CONFIG_DIR, \
@@ -138,41 +135,6 @@ def run_single_synthetic_training(
         data_generator=data_generator, model_directory=target_model_directory, )
 
 
-def convert_xgb_to_mlmodel(source_models_directory):
-    # TODO delete once conversion is back online in the trainer
-    MODEL_NAME_METADATA_KEY = 'ai.improve.model'
-    FEATURE_NAMES_METADATA_KEY = 'ai.improve.features'
-    STRING_TABLES_METADATA_KEY = 'ai.improve.string_tables'
-    MODEL_SEED_METADATA_KEY = 'ai.improve.seed'
-    CREATED_AT_METADATA_KEY = 'ai.improve.created_at'
-    VERSION_METADATA_KEY = 'ai.improve.version'
-
-    USER_DEFINED_METADATA_KEY = 'user_defined_metadata'
-    MLMODEL_REGRESSOR_MODE = 'regressor'
-    VERSION = '8.0.0'
-
-    # load model from FS
-    booster = xgb.Booster()
-    booster.load_model(source_models_directory + os.sep + 'model.xgb')
-    xgb_booster_metadata = orjson.loads(booster.attr('user_defined_metadata'))
-
-    model_name = xgb_booster_metadata[MODEL_NAME_METADATA_KEY]
-    model_seed = xgb_booster_metadata[MODEL_SEED_METADATA_KEY]
-    created_at = xgb_booster_metadata[CREATED_AT_METADATA_KEY]
-    string_tables = xgb_booster_metadata[STRING_TABLES_METADATA_KEY]
-    feature_names = xgb_booster_metadata[FEATURE_NAMES_METADATA_KEY]
-
-    # fill metadata values
-    mlmodel = ct.converters.xgboost.convert(booster, mode=MLMODEL_REGRESSOR_MODE, feature_names=feature_names, force_32bit_float=True)
-    mlmodel.user_defined_metadata[MODEL_NAME_METADATA_KEY] = model_name
-    mlmodel.user_defined_metadata[STRING_TABLES_METADATA_KEY] = json.dumps(string_tables)
-    mlmodel.user_defined_metadata[MODEL_SEED_METADATA_KEY] = str(model_seed)
-    mlmodel.user_defined_metadata[CREATED_AT_METADATA_KEY] = created_at
-    mlmodel.user_defined_metadata[VERSION_METADATA_KEY] = VERSION
-
-    return mlmodel
-
-
 def copy_final_model(
         last_epoch_index: int, data_set_name: str, target_model_directory: str,
         case_id):
@@ -193,10 +155,6 @@ def copy_final_model(
         os.sep.join(['{}_{}'.format(MODELS_DIR, case_id), 'epoch_{}'.format(last_epoch_index)])
 
     # copy models from model/epoch_X -> <data set name>/
-    # convert model to mlmodel
-    mlmodel = convert_xgb_to_mlmodel(source_models_directory)
-    mlmodel.save(source_models_directory + os.sep + 'model.mlmodel')
-
     cp_sys_code = \
         os.system('cp {}/* {}/'.format(source_models_directory, abs_target_model_path))
     assert cp_sys_code == 0
@@ -243,7 +201,6 @@ def create_synthetic_model_test_json(
             "case_name": data_generator.dataset_name,
             "train_stats": data_generator.reward_cache,
 
-            # "variants_vs_givens_stats": data_generator.variants_vs_givens_stats
         },
         "test_case": {
             "candidates": data_generator.candidates,
@@ -310,23 +267,22 @@ if __name__ == '__main__':
     trained_models_dir = os.sep.join([IMPROVE_ABS_PATH, SYNTHETIC_MODELS_TEST_CASES_DIR])
     already_trained_models = os.listdir(trained_models_dir)
 
-    # paths = [SYNTHETIC_DATA_DEFINITIONS_DIRECTORY + '/happy_sunday.json']
-    # paths = [SYNTHETIC_DATA_DEFINITIONS_DIRECTORY + '/a_z.json']
     paths = [
         SYNTHETIC_DATA_DEFINITIONS_DIRECTORY + os.sep + el for el in
-        ['0_and_nan.json',
-         '2_nested_dict_variants_20_random_nested_dict_givens_large_binary_reward.json',
-         '2_numeric_variants_100_random_nested_dict_givens_binary_reward.json',
-         '2_numeric_variants_100_random_nested_dict_givens_binary_reward.json',
-         '2_numeric_variants_no_givens_binary_reward.json',
-         '2_numeric_variants_no_givens_large_binary_reward.json',
-         '2_variants_20_huge_givens.json',
-         '1000_list_of_numeric_variants_20_same_nested_givens_binary_reward.json',
-         '1000_numeric_variants_20_random_nested_givens_small_binary_reward.json',
-         '1000_numeric_variants_20_same_nested_givens_large_binary_reward.json',
-         '1000_numeric_variants_no_givens_small_binary_reward.json',
+        ['a_z.json',
+         '0_and_nan.json',
+         '2_nested_dict_items_20_random_nested_dict_context_large_binary_reward.json',
+         '2_numeric_items_100_random_nested_dict_context_binary_reward.json',
+         '2_numeric_items_100_random_nested_dict_context_binary_reward.json',
+         '2_numeric_items_no_context_binary_reward.json',
+         '2_numeric_items_no_context_large_binary_reward.json',
+         '2_items_20_huge_context.json',
+         '1000_list_of_numeric_items_20_same_nested_context_binary_reward.json',
+         '1000_numeric_items_20_random_nested_context_small_binary_reward.json',
+         '1000_numeric_items_20_same_nested_context_large_binary_reward.json',
+         '1000_numeric_items_no_context_small_binary_reward.json',
          'happy_sunday.json',
-         'primitive_variants_no_givens_binary_reward.json']]
+         'primitive_items_no_context_binary_reward.json']]
 
     # recalc_paths = ['0_and_nan.json']
     # paths = [SYNTHETIC_DATA_DEFINITIONS_DIRECTORY + os.sep + path for path in recalc_paths]

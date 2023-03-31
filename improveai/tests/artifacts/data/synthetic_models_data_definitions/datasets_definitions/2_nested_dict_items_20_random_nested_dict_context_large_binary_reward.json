@@ -1,0 +1,55 @@
+{
+    "dataset_name": "2_nested_dict_variants_20_random_nested_dict_givens_large_binary_reward",
+    "timespan": {
+        "data_starts": "2021-01-01 00:00:00",
+        "data_ends": "2021-12-31 00:00:00",
+        "time_seed": 9
+    },
+    "candidates_definition": {
+        "values": [
+            {
+                "a": 2.0,
+                "b": {
+                    "x": [
+                        0,
+                        1.0,
+                        2
+                    ],
+                    "y": false,
+                    "z": {
+                        "value": "abc"
+                    }
+                }
+            },
+            {
+                "a": 2.0,
+                "c": {
+                    "u": [
+                        10,
+                        3.0
+                    ],
+                    "v": false,
+                    "q": {
+                        "value": "xyz"
+                    }
+                }
+            }
+        ],
+        "eval_call": null,
+        "distribution_name": "#uniform#"
+    },
+    "context_definition": {
+        "values": null,
+        "eval_call": "[{'a': el, 'b': {'x': np.random.rand(), 'y': [0, 1, 2], 'z': 'abc'}} for el in range(10)]",
+        "distribution_name": "#uniform#"
+    },
+    "items_to_contexts_mapping": null,
+    "context_fraction": 0.2,
+    "reward_mapping": {
+        "0|#any#": 1000,
+        "1|#any#": 0
+    },
+    "records_per_epoch": 2000,
+    "epochs": 3,
+    "data_seed": 0
+}
