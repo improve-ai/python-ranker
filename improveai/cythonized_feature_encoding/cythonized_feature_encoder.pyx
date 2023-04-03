@@ -102,8 +102,8 @@ cdef class StringTable:
 
         Parameters
         ----------
-        string_table: dict
-            a dict with list of masked hashed for each string feature
+        string_table: list
+            a list of masked hashed for each string feature
         model_seed: int
             model seed value
         """

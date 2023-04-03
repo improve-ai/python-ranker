@@ -1,7 +1,9 @@
 import numpy as np
 import os
 from pytest import raises, fixture
+import re
 
+from improveai.chooser import XGBChooser
 from improveai.ranker import Ranker
 from improveai.scorer import Scorer
 
@@ -42,12 +44,24 @@ class TestRanker:
     def test_constructor_with_model_url(self):
         ranker = Ranker(model_url=self.model_url)
         assert isinstance(ranker.scorer, Scorer)
+        assert isinstance(ranker.scorer.chooser, XGBChooser)
         assert ranker.model_url == self.model_url
 
     def test_constructor_with_gzipped_model(self):
         ranker = Ranker(model_url=self.model_url + '.gz')
         assert isinstance(ranker.scorer, Scorer)
+        assert isinstance(ranker.scorer.chooser, XGBChooser)
         assert ranker.model_url == self.model_url + '.gz'
+
+    def test_constructor_with_gzipped_model_relative_path(self):
+        user_path_chunk = os.path.expanduser('~')
+        # make sure to replace front chunk of path
+        relative_gzipped_model_url = \
+            re.sub("^" + user_path_chunk, '~', self.model_url)
+        ranker = Ranker(model_url=relative_gzipped_model_url + '.gz')
+        assert isinstance(ranker.scorer, Scorer)
+        assert isinstance(ranker.scorer.chooser, XGBChooser)
+        assert ranker.model_url == relative_gzipped_model_url + '.gz'
 
     def test_constructor_raises_for_bad_scorer_type(self):
         with raises(AssertionError) as aerr:

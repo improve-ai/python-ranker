@@ -1,6 +1,7 @@
 import numpy as np
 import os
 from pytest import fixture, raises
+import re
 
 from improveai.chooser import XGBChooser
 from improveai.ranker import Scorer
@@ -133,6 +134,16 @@ class TestScorer:
         gzipped_model_url = self.valid_fs_model_url + '.gz'
         # attempt to load gzipped model
         scorer = Scorer(model_url=gzipped_model_url)
+
+        assert scorer.chooser is not None
+        assert isinstance(scorer.chooser, XGBChooser)
+
+    def test_scorer_with_relative_model_path(self):
+        user_path_chunk = os.path.expanduser('~')
+        # make sure to replace front chunk of path
+        relative_gzipped_model_url = \
+            re.sub("^" + user_path_chunk, '~', self.valid_fs_model_url)
+        scorer = Scorer(model_url=relative_gzipped_model_url)
 
         assert scorer.chooser is not None
         assert isinstance(scorer.chooser, XGBChooser)

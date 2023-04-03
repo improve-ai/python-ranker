@@ -79,6 +79,15 @@ def check_and_get_unzipped_model(model_src: Union[str, bytes, Path]) -> Union[st
         else:
             return model_src
     elif isinstance(model_src, str) or isinstance(model_src, Path):
+        if str(model_src).startswith('~'):
+            # append the absolute prefix to the input path
+            abs_model_src = os.path.expanduser(model_src)
+            if isinstance(model_src, Path):
+                # if model_src was of a Path type then we need to convert it back
+                abs_model_src = Path(abs_model_src)
+            # update model_src value
+            model_src = abs_model_src
+            print(f'Model src: {model_src}')
         if not os.path.isfile(model_src):
             raise FileNotFoundError(
                 'This is not a proper path: {} and reading model from '
