@@ -329,10 +329,7 @@ class XGBChooser:
             URL / path to desired model
         verbose: bool
             should I print debug messages
-        Returns
-        -------
-        None
-            None
+
         """
 
         try:
@@ -473,6 +470,8 @@ class XGBChooser:
 
         Returns
         -------
+        np.ndarray
+            an array of double scores
 
         """
         # make sure input is a numpy array

@@ -1,0 +1,13 @@
+{
+    "test_case": {
+        "items": [null, null, null, null, null, null],
+        "contexts": ["a", "b", "c", "fxlal", "uvddh", "zbwmy"]
+    },
+    "test_output": [
+        [-1.0, null], [-0.6666666666666667, null], [-0.33333333333333337, null],
+        [-1.0, null], [-0.6666666666666667, null], [-0.33333333333333337, null]],
+    "model_seed": 29306437,
+    "feature_names": ["context", "item"],
+    "string_tables": {"context": [14, 3, 5, 4, 11, 7, 8]},
+    "noise": 0.0
+}

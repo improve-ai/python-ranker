@@ -467,11 +467,6 @@ class RewardTracker:
         headers: dict
             request headers
 
-        Returns
-        -------
-        None
-            None
-
         """
         try:
             response = rq.post(url=self.track_url, data=payload_json, headers=headers)

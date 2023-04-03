@@ -106,6 +106,7 @@ cdef class StringTable:
             a list of masked hashed strings for each string feature
         model_seed: int
             model seed value
+
         """
 
         if model_seed < 0:
@@ -314,9 +315,6 @@ cdef class FeatureEncoder:
         noise_scale: double
             multiplier used to scale shifted feature value
 
-        Returns
-        -------
-
         """
         self._encode(item, path=ITEM_FEATURE_KEY, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
 
@@ -336,9 +334,6 @@ cdef class FeatureEncoder:
             value to be added to features
         noise_scale: double
             multiplier used to scale shifted feature value
-
-        Returns
-        -------
 
         """
         self._encode(context, path=CONTEXT_FEATURE_KEY, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
@@ -361,8 +356,6 @@ cdef class FeatureEncoder:
         noise: double
             value in [0, 1) which will be combined with the feature value
 
-        Returns
-        -------
         """
 
         cdef double noise_shift
@@ -406,8 +399,6 @@ cdef class FeatureEncoder:
         noise_scale: double
             small multiplier of the feature value
 
-        Returns
-        -------
         """
 
         if path in FIRST_LEVEL_FEATURES_CHUNKS:

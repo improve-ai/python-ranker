@@ -399,6 +399,58 @@ class TestEncoder(TestCase):
         expected_output_float32 = np.array(expected_output).astype(np.float32)
         np.testing.assert_array_equal(expected_output_float32, tested_into_float32)
 
+    def _generic_test_collisions(
+            self, test_case_envvar, items_key: str = 'items',
+            context_key: str = 'contexts', test_input_key: str = 'test_case',
+            test_output_key: str = 'test_output', force_numpy: bool = False,
+            replace_none_with_nan: bool = False):
+
+        test_case_filename = os.getenv(test_case_envvar, None)
+        assert test_case_filename is not None
+
+        test_case_path = os.sep.join(
+            [self.test_suite_data_directory, test_case_filename])
+
+        test_case = self._get_test_data(path_to_test_json=test_case_path)
+
+        self._set_model_properties_from_test_case(test_case=test_case)
+
+        test_input = test_case.get(test_input_key, None)
+        assert test_input is not None
+
+        test_items = test_input.get(items_key, None)
+        test_contexts = test_input.get(context_key, None)
+
+        if test_contexts is None:
+            test_contexts = [None] * len(test_items)
+
+        expected_output = test_case.get(test_output_key, None)
+        assert expected_output is not None
+        expected_output = np.array(expected_output)
+
+        if replace_none_with_nan:
+            expected_output[expected_output == None] = np.nan
+
+        tested_into_float64 = \
+            np.full((len(test_items), len(self.feature_names)), np.nan)
+
+        if force_numpy:
+            orig_use_cython_backend = improve_settings.CYTHON_BACKEND_AVAILABLE
+            improve_settings.CYTHON_BACKEND_AVAILABLE = False
+
+        for item, context, into_row in zip(test_items, test_contexts, tested_into_float64):
+            # self, item: object, context: object, into: np.ndarray, noise: float = 0.0
+            self.feature_encoder.encode_feature_vector(
+                item=item, context=context, into=into_row, noise=self.noise)
+
+        if force_numpy:
+            improve_settings.CYTHON_BACKEND_AVAILABLE = orig_use_cython_backend
+
+        tested_into_float32 = convert_values_to_float32(tested_into_float64)
+
+        expected_output_float32 = np.array(expected_output).astype(np.float32)
+        np.testing.assert_array_equal(expected_output_float32, tested_into_float32)
+
     def test_empty_list(self):
 
         self._generic_test_encode_record_from_json_data(
@@ -1230,6 +1282,18 @@ class TestEncoder(TestCase):
             into = np.array([None, None], dtype=bad_into_dtype)
             with raises(ValueError) as verr:
                 fe.encode_feature_vector(item=None, context=None, into=into)
+
+    def test_collisions_valid_items_no_context(self):
+        self._generic_test_collisions(
+            test_case_envvar='FEATURE_ENCODER_TEST_INTERNAL_COLLISIONS_VALID_ITEMS_NO_CONTEXT_JSON')
+
+    def test_collisions_valid_items_and_context(self):
+        self._generic_test_collisions(
+            test_case_envvar='FEATURE_ENCODER_TEST_INTERNAL_COLLISIONS_VALID_ITEMS_AND_CONTEXT_JSON')
+
+    def test_collisions_none_items_valid_context(self):
+        self._generic_test_collisions(
+            test_case_envvar='FEATURE_ENCODER_TEST_INTERNAL_COLLISIONS_NONE_ITEMS_AND_CONTEXT_JSON')
 
 
 def test_get_noise_shift_scale():

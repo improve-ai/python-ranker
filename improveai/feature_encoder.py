@@ -138,9 +138,6 @@ class FeatureEncoder:
         noise_scale: float
             multiplier used to scale shifted feature values
 
-        Returns
-        -------
-
         """
         self._encode(item, path=ITEM_FEATURE_KEY, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
 
@@ -158,9 +155,6 @@ class FeatureEncoder:
             value to be added to values of features
         noise_scale: float
             multiplier used to scale shifted feature values
-
-        Returns
-        -------
 
         """
         self._encode(context, path=CONTEXT_FEATURE_KEY, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
@@ -181,9 +175,6 @@ class FeatureEncoder:
             an array into which feature values will be added
         noise: float
             value in [0, 1) which will be combined with the feature value
-
-        Returns
-        -------
 
         """
 
@@ -224,8 +215,6 @@ class FeatureEncoder:
         noise_scale: float
             small multiplier of the feature value
 
-        Returns
-        -------
         """
         if path in FIRST_LEVEL_FEATURES_CHUNKS:
             self._check_into(into)
@@ -398,6 +387,7 @@ class StringTable:
             a list of masked hashed strings for each string feature
         model_seed: int
             model seed value
+
         """
 
         if model_seed < 0:

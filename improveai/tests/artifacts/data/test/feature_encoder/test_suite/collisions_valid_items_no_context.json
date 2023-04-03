@@ -1,0 +1,10 @@
+{
+    "test_case": {
+        "items": ["a", "b", "c", "dzsys", "pasdy", "atoat"]
+    },
+    "test_output": [[1.0], [0.6666666666666667], [0.0], [1.0], [0.6666666666666667], [0.0]],
+    "model_seed": 4255466980,
+    "feature_names": ["item"],
+    "string_tables": {"item": [124, 9, 73, 40, 54, 110, 67]},
+    "noise": 0.0
+}
