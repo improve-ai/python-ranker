@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Readme &mdash; improveai 8.0.0 documentation</title>
+  <title>Installation &mdash; improveai 8.0.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
@@ -46,20 +46,17 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Readme:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">About Improve AI python ranker</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#initialization">Initialization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#contextual-decisions">Contextual Decisions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#ranking">Ranking</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#scoring">Scoring</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#multivariate-optimization">Multivariate Optimization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#variant-types">Variant Types</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#privacy">Privacy</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#resources">Resources</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#help-improve-our-world">Help Improve Our World</a></li>
-</ul>
-</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#initialization">Initialization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#usage">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#contextual-decisions">Contextual Decisions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#ranking">Ranking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#scoring">Scoring</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#multivariate-optimization">Multivariate Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#variant-types">Variant Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#privacy">Privacy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#resources">Resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#help-improve-our-world">Help Improve Our World</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Classes:</span></p>
 <ul>
@@ -92,7 +89,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Readme</li>
+      <li class="breadcrumb-item active">Installation</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/readme.md.txt" rel="nofollow"> View page source</a>
       </li>
@@ -102,18 +99,18 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="readme">
-<h1>Readme<a class="headerlink" href="#readme" title="Permalink to this heading"></a></h1>
+  <p>Readme
+======<strong>!!! The release of v8 is imminent and features a brand new API. We do not recommend deploying v7 at this time !!!</strong></p>
 <p>Improve AI is a machine learning platform for quickly implementing app optimization, personalization, and recommendations for <a class="reference external" href="https://improve.ai/python-sdk/">Python</a>, <a class="reference external" href="https://improve.ai/ios-sdk/">iOS</a>, and <a class="reference external" href="https://improve.ai/android-sdk/">Android</a>.</p>
 <p>The SDKs provide simple APIs for AI <a class="reference external" href="https://improve.ai/decisions/">decisions</a>, <a class="reference external" href="https://improve.ai/ranking/">ranking</a>, <a class="reference external" href="https://improve.ai/scoring/">scoring</a>, and <a class="reference external" href="https://improve.ai/multivariate-optimization/">multivariate optimization</a> that execute immediately, on-device, with zero network latency. Decisions and rewards are tracked in the cloud with the <a class="reference external" href="https://github.com/improve-ai/gym/">Improve AI Gym</a> and updated models are trained regularly on AWS SageMaker.</p>
 <section id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h2>
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h1>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pip3 install improveai</span>
 </pre></div>
 </div>
 </section>
 <section id="initialization">
-<h2>Initialization<a class="headerlink" href="#initialization" title="Permalink to this heading"></a></h2>
+<h1>Initialization<a class="headerlink" href="#initialization" title="Permalink to this heading"></a></h1>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">improveai</span>
 </pre></div>
 </div>
@@ -125,7 +122,7 @@
 </div>
 </section>
 <section id="usage">
-<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this heading"></a></h2>
+<h1>Usage<a class="headerlink" href="#usage" title="Permalink to this heading"></a></h1>
 <p>The heart of Improve AI is the <em>which()</em> statement. <em>which()</em> is like an AI <em>if/then</em> statement.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">greeting</span><span class="p">,</span> <span class="n">decision_id</span> <span class="o">=</span> <span class="n">greetings_model</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;Hello&#39;</span><span class="p">,</span> <span class="s1">&#39;Howdy&#39;</span><span class="p">,</span> <span class="s1">&#39;Hola&#39;</span><span class="p">)</span>
 </pre></div>
@@ -140,7 +137,7 @@
 <p><em>which()</em> automatically tracks it’s decision with the <a class="reference external" href="https://github.com/improve-ai/gym/">Improve AI Gym</a>.</p>
 </section>
 <section id="contextual-decisions">
-<h2>Contextual Decisions<a class="headerlink" href="#contextual-decisions" title="Permalink to this heading"></a></h2>
+<h1>Contextual Decisions<a class="headerlink" href="#contextual-decisions" title="Permalink to this heading"></a></h1>
 <p>Unlike A/B testing or feature flags, Improve AI uses <em>context</em> to make the best decision.</p>
 <p>Context can be provided via <em>given()</em>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
@@ -151,7 +148,7 @@
 <p>Given the language is <em>cowboy</em>, the variant with the highest expected reward should be <em>“Howdy”</em> and the model would learn to make that choice.</p>
 </section>
 <section id="ranking">
-<h2>Ranking<a class="headerlink" href="#ranking" title="Permalink to this heading"></a></h2>
+<h1>Ranking<a class="headerlink" href="#ranking" title="Permalink to this heading"></a></h1>
 <p><a class="reference external" href="https://improve.ai/ranking/">Ranking</a> is a fundamental task in recommender systems, search engines, and social media feeds. Fast ranking can be performed on-device in a single line of code:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ranked_wines</span> <span class="o">=</span> <span class="n">sommelier_model</span><span class="o">.</span><span class="n">given</span><span class="p">(</span><span class="n">entree</span><span class="p">)</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">wines</span><span class="p">)</span>
 </pre></div>
@@ -159,7 +156,7 @@
 <p><strong>Note</strong>: Decisions are not tracked when calling <em>rank()</em>. <em>which()</em> or <em>decide()</em> must be used to train models for ranking.</p>
 </section>
 <section id="scoring">
-<h2>Scoring<a class="headerlink" href="#scoring" title="Permalink to this heading"></a></h2>
+<h1>Scoring<a class="headerlink" href="#scoring" title="Permalink to this heading"></a></h1>
 <p><a class="reference external" href="https://improve.ai/scoring/">Scoring</a> makes it easy to turn any database table into a recommendation engine.</p>
 <p>Simply add a <em>score</em> column to the database and update the score for each row.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scores</span> <span class="o">=</span> <span class="n">conversion_rate_model</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
@@ -170,7 +167,7 @@
 <p><strong>Note</strong>: Decisions are not tracked when calling <em>score()</em>. <em>which()</em>, <em>decide()</em>, or <em>optimize()</em> must be used to train models for scoring.</p>
 </section>
 <section id="multivariate-optimization">
-<h2>Multivariate Optimization<a class="headerlink" href="#multivariate-optimization" title="Permalink to this heading"></a></h2>
+<h1>Multivariate Optimization<a class="headerlink" href="#multivariate-optimization" title="Permalink to this heading"></a></h1>
 <p><a class="reference external" href="https://improve.ai/multivariate-optimization/">Multivariate optimization</a> is the joint optimization of multiple variables simultaneously. This is often useful for app configuration and performance tuning.</p>
 <div class="highlight-swift notranslate"><div class="highlight"><pre><span></span><span class="n">config</span><span class="p">,</span> <span class="n">decision_id</span> <span class="p">=</span> <span class="n">config_model</span><span class="p">.</span><span class="n">optimize</span><span class="p">({</span><span class="s">&quot;buffer_size&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">2048</span><span class="p">,</span> <span class="mi">4096</span><span class="p">,</span> <span class="mi">8192</span><span class="p">],</span>
                                              <span class="s">&quot;video_bitrate&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">256000</span><span class="p">,</span> <span class="mi">384000</span><span class="p">,</span> <span class="mi">512000</span><span class="p">]})</span>
@@ -180,7 +177,7 @@
 <p><em>optimize()</em> automatically tracks it’s decision with the <a class="reference external" href="https://github.com/improve-ai/gym/">Improve AI Gym</a>. Rewards are credited to the most recent decision made by the model, including from a previous app session.</p>
 </section>
 <section id="variant-types">
-<h2>Variant Types<a class="headerlink" href="#variant-types" title="Permalink to this heading"></a></h2>
+<h1>Variant Types<a class="headerlink" href="#variant-types" title="Permalink to this heading"></a></h1>
 <p>Variants can be any JSON encodeable data structure of arbitrary complexity, including nested dicts, lists, strings, numbers, and None. Object properties and nested items within collections are automatically encoded as machine learning features to assist in the decision making process.</p>
 <p>The following are all valid:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">greeting</span><span class="p">,</span> <span class="n">decision_id</span> <span class="o">=</span> <span class="n">greetings_model</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;Hello&#39;</span><span class="p">,</span> <span class="s1">&#39;Howdy&#39;</span><span class="p">,</span> <span class="s1">&#39;Hola&#39;</span><span class="p">)</span>
@@ -199,11 +196,11 @@
 </div>
 </section>
 <section id="privacy">
-<h2>Privacy<a class="headerlink" href="#privacy" title="Permalink to this heading"></a></h2>
+<h1>Privacy<a class="headerlink" href="#privacy" title="Permalink to this heading"></a></h1>
 <p>It is strongly recommended to never include Personally Identifiable Information (PII) in variants or givens so that it is never tracked, persisted, or used as training data.</p>
 </section>
 <section id="resources">
-<h2>Resources<a class="headerlink" href="#resources" title="Permalink to this heading"></a></h2>
+<h1>Resources<a class="headerlink" href="#resources" title="Permalink to this heading"></a></h1>
 <ul class="simple">
 <li><p><a class="reference external" href="https://improve.ai/quick-start/">Quick Start Guide</a></p></li>
 <li><p><a class="reference external" href="https://improve.ai/python-sdk/">Python SDK API Docs</a></p></li>
@@ -218,10 +215,9 @@
 </ul>
 </section>
 <section id="help-improve-our-world">
-<h2>Help Improve Our World<a class="headerlink" href="#help-improve-our-world" title="Permalink to this heading"></a></h2>
+<h1>Help Improve Our World<a class="headerlink" href="#help-improve-our-world" title="Permalink to this heading"></a></h1>
 <p>The mission of Improve AI is to make our corner of the world a little bit better each day. When each of us improve our corner of the world, the whole world becomes better. If your product or work does not make the world better, do not use Improve AI. Otherwise, welcome, I hope you find value in my labor of love.</p>
 <p>– Justin Chapweske</p>
-</section>
 </section>
 
 

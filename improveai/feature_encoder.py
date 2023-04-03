@@ -395,7 +395,7 @@ class StringTable:
         Parameters
         ----------
         string_table: list
-            a list of masked hashed for each string feature
+            a list of masked hashed strings for each string feature
         model_seed: int
             model seed value
         """
