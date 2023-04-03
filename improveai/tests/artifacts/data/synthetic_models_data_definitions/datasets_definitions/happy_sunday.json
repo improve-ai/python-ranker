@@ -16,7 +16,7 @@
     },
     "context_definition": {
         "values": null,
-        "eval_call": "[{'weekday': el} for el in range(7)]",
+        "eval_call": "[el for el in range(7)]",
         "distribution_name": "#uniform#"
     },
     "items_to_contexts_mapping": null,
