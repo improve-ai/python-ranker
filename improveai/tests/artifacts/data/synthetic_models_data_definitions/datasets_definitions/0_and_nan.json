@@ -45,9 +45,7 @@
             {
                 "value": "A"
             },
-            {
-                "value": "B"
-            }
+            "B"
         ],
         "eval_call": null,
         "distribution_name": "#uniform#"
