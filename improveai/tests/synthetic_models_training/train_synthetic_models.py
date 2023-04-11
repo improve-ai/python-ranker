@@ -173,7 +173,8 @@ def create_synthetic_model_test_json(
     model_path = os.sep.join([abs_model_directory, data_generator.dataset_name, 'model.xgb.gz'])
     scorer = Scorer(model_url=model_path)
     # extract all variants, context and variants <-> context mapping from data def
-    all_contexts = {} if data_generator.all_contexts is None else data_generator.all_contexts.copy()
+    all_contexts = [None] if data_generator.all_contexts is None else data_generator.all_contexts.copy()
+
     if data_generator.context_fraction < 1 and None not in all_contexts:
         all_contexts.append(None)
     noise_seed = data_generator.data_seed
@@ -204,7 +205,7 @@ def create_synthetic_model_test_json(
         },
         "test_case": {
             "candidates": data_generator.candidates,
-            "contexts": data_generator.all_contexts,
+            "contexts":  all_contexts,  # data_generator.all_contexts,
             "noise": noise,
             "python_seed": data_generator.data_seed
         },
@@ -269,20 +270,22 @@ if __name__ == '__main__':
 
     paths = [
         SYNTHETIC_DATA_DEFINITIONS_DIRECTORY + os.sep + el for el in
-        ['a_z.json',
-         '0_and_nan.json',
-         '2_nested_dict_items_20_random_nested_dict_context_large_binary_reward.json',
-         '2_numeric_items_100_random_nested_dict_context_binary_reward.json',
-         '2_numeric_items_100_random_nested_dict_context_binary_reward.json',
+        [
+         #    'a_z.json',
+         # '0_and_nan.json',
+         # '2_nested_dict_items_20_random_nested_dict_context_large_binary_reward.json',
+         # '2_numeric_items_100_random_nested_dict_context_binary_reward.json',
+         # '2_numeric_items_100_random_nested_dict_context_binary_reward.json',
          '2_numeric_items_no_context_binary_reward.json',
          '2_numeric_items_no_context_large_binary_reward.json',
-         '2_items_20_huge_context.json',
-         '1000_list_of_numeric_items_20_same_nested_context_binary_reward.json',
-         '1000_numeric_items_20_random_nested_context_small_binary_reward.json',
-         '1000_numeric_items_20_same_nested_context_large_binary_reward.json',
+         # '2_items_20_huge_context.json',
+         # '1000_list_of_numeric_items_20_same_nested_context_binary_reward.json',
+         # '1000_numeric_items_20_random_nested_context_small_binary_reward.json',
+         # '1000_numeric_items_20_same_nested_context_large_binary_reward.json',
          '1000_numeric_items_no_context_small_binary_reward.json',
-         'happy_sunday.json',
-         'primitive_items_no_context_binary_reward.json']]
+         # 'happy_sunday.json',
+         'primitive_items_no_context_binary_reward.json'
+        ]]
 
     # recalc_paths = ['0_and_nan.json']
     # paths = [SYNTHETIC_DATA_DEFINITIONS_DIRECTORY + os.sep + path for path in recalc_paths]
