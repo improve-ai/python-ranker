@@ -1,1 +1,7 @@
-{"model_name":  "local_test_model"}
+{
+  "model_name":  "local_test_model",
+  "max_decision_records": 1000000,
+  "trees": 150,
+  "features": 300,
+  "max_checkpoint_age": "24 hours"
+}
