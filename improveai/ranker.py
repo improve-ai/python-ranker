@@ -5,16 +5,12 @@ from improveai.scorer import Scorer
 
 class Ranker:
 
-    SUPPORTED_CALLS = ['score', 'rank']
-    """
-    Methods supported by improve CLI. Currently only `score` and `rank` are supported.
-    """
-
     # TODO I think we might go with scorer and model_url as properties with only getter.
     #  If we won't define them as properties anyone will be able to mutate them
     #  Exposing only getters and leaving underlying attributes private allows to make them
     #  immutable and nobody will be able to tinker with them as one could with
     #  'normal' instance attributes
+
     @property
     def scorer(self):
         """

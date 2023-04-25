@@ -18,7 +18,6 @@ Submodules
 
    improveai.chooser
    improveai.feature_encoder
-   improveai.improve_cli
    improveai.ranker
    improveai.reward_tracker
    improveai.scorer
