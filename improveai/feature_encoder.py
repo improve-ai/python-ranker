@@ -120,6 +120,9 @@ class FeatureEncoder:
 
         """
 
+        if into is not None:
+            assert len(self.feature_indexes) == len(into)
+
         if not isinstance(into, np.ndarray) or into.dtype != np.float64:
             raise ValueError("into must be a float64 array")
 
@@ -471,7 +474,8 @@ def scale(val: float, width: float = 2) -> float:
     """
     assert width >= 0
     # map value in [0, 1] to [-width/2, width/2]
-    return val * width - 0.5 * width
+    # return val * width - 0.5 * width
+    return width * (val - 0.5)
 
 
 def get_mask(string_table: list) -> int:
