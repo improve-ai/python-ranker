@@ -29,7 +29,7 @@ class Ranker:
     a ImproveAI model to evaluate and rank the given items.
     """
     
-    def __init__(self, scorer: Scorer = None, model_url: str = None)
+    def __init__(self, scorer: Scorer = None, model_url: str = None):
         """
         Init Ranker with params. Either `scorer` or `model_url` must be provided.
         If both are provided Scorer is preferred.
@@ -41,8 +41,10 @@ class Ranker:
         model_url: str
             URL or local FS of a plain or gzip compressed Improve AI model resource
         """
+        # for true implementation please consult improveai/ranker.py
+        pass
     
-    def rank(self, items: list or tuple or np.ndarray, context: object = None) -> list or tuple or np.ndarray
+    def rank(self, items: list or tuple or np.ndarray, context: object = None) -> list or tuple or np.ndarray:
         """
         Ranks items and returns them ordered best to worst
 
@@ -59,6 +61,8 @@ class Ranker:
         list or tuple or np.ndarray
             a collection of ranked items, sorted by their scores in descending order.
         """
+        # for true implementation please check out improveai/ranker.py
+        pass
 
         
 class Scorer:
@@ -66,7 +70,7 @@ class Scorer:
     Scores items with optional context using a Improve AI model
     """
     
-    def __init__(self, model_url: str)
+    def __init__(self, model_url: str):
         """
         Init with params
 
@@ -75,6 +79,8 @@ class Scorer:
         model_url: str
             URL or local FS of a plain or gzip compressed Improve AI model resource
         """
+        # for true implementation please check out improveai/scorer.py
+        pass
         
     def score(self, items: list or tuple or np.ndarray, context: object = None) -> np.ndarray
         """
@@ -93,6 +99,8 @@ class Scorer:
         np.ndarray
             an array of float64 (double) values representing the scores of the items.
         """
+        # for true implementation please check out improveai/scorer.py
+        pass
 
 
 class RewardTracker:
@@ -102,7 +110,7 @@ class RewardTracker:
     Use the `reward_id` to track future rewards associated with that item.
     """
     
-    def __init__(self, model_name: str, track_url: str, track_api_key: str = None, _threaded_requests: bool = True)
+    def __init__(self, model_name: str, track_url: str, track_api_key: str = None, _threaded_requests: bool = True):
         """
         Create a RewardTracker for a specific model.
 
@@ -119,8 +127,10 @@ class RewardTracker:
             flag indicating whether requests to AWS track endpoint should be
             non-blockng / executed within sub-threads. True by default
         """
+        # for true implementation please check out improveai/reward_tracker.py
+        pass
         
-    def track(self, item: object, candidates: list or tuple or np.ndarray = None, context: object = None) -> str or None
+    def track(self, item: object, candidates: list or tuple or np.ndarray = None, context: object = None) -> str or None:
         """
         Tracks the item selected from candidates and a random sample from the remaining items.
         If `len(candidates) == 1` there is no sample.
@@ -140,9 +150,11 @@ class RewardTracker:
         str or None
             reward_id of this track request or None if an error happened
         """
+        # for true implementation please check out improveai/reward_tracker.py
+        pass        
 
     def track_with_sample(
-            self, item: object, num_candidates: int = None, context: object = None, sample: object = None) -> str or None
+            self, item: object, num_candidates: int = None, context: object = None, sample: object = None) -> str or None:
         """
         Tracks the item selected and a specific sample.. Provided sample is
         appended to track request (in contrary to `track(...)` where sample is
@@ -165,8 +177,10 @@ class RewardTracker:
         ste or None
             reward_id of this track request or None if an error happened
         """        
+        # for true implementation please check out improveai/reward_tracker.py
+        pass        
 
-    def add_reward(self, reward: float or int, reward_id: str)
+    def add_reward(self, reward: float or int, reward_id: str):
         """
         Add reward for the provided reward_id
 
@@ -183,6 +197,8 @@ class RewardTracker:
         str
             message ID
         """
+        # for true implementation please check out improveai/reward_tracker.py
+        pass
 ```
 
 

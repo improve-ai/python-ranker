@@ -124,7 +124,7 @@ Items and their rewards are with the <a class="reference external" href="https:/
 <span class="sd">    a ImproveAI model to evaluate and rank the given items.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scorer</span><span class="p">:</span> <span class="n">Scorer</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">model_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scorer</span><span class="p">:</span> <span class="n">Scorer</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">model_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Init Ranker with params. Either `scorer` or `model_url` must be provided.</span>
 <span class="sd">        If both are provided Scorer is preferred.</span>
@@ -136,8 +136,10 @@ Items and their rewards are with the <a class="reference external" href="https:/
 <span class="sd">        model_url: str</span>
 <span class="sd">            URL or local FS of a plain or gzip compressed Improve AI model resource</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># for true implementation please consult improveai/ranker.py</span>
+        <span class="k">pass</span>
     
-    <span class="k">def</span> <span class="nf">rank</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">items</span><span class="p">:</span> <span class="nb">list</span> <span class="ow">or</span> <span class="nb">tuple</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span> <span class="ow">or</span> <span class="nb">tuple</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="k">def</span> <span class="nf">rank</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">items</span><span class="p">:</span> <span class="nb">list</span> <span class="ow">or</span> <span class="nb">tuple</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span> <span class="ow">or</span> <span class="nb">tuple</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Ranks items and returns them ordered best to worst</span>
 
@@ -154,6 +156,8 @@ Items and their rewards are with the <a class="reference external" href="https:/
 <span class="sd">        list or tuple or np.ndarray</span>
 <span class="sd">            a collection of ranked items, sorted by their scores in descending order.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># for true implementation please check out improveai/ranker.py</span>
+        <span class="k">pass</span>
 
         
 <span class="k">class</span> <span class="nc">Scorer</span><span class="p">:</span>
@@ -161,7 +165,7 @@ Items and their rewards are with the <a class="reference external" href="https:/
 <span class="sd">    Scores items with optional context using a Improve AI model</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Init with params</span>
 
@@ -170,6 +174,8 @@ Items and their rewards are with the <a class="reference external" href="https:/
 <span class="sd">        model_url: str</span>
 <span class="sd">            URL or local FS of a plain or gzip compressed Improve AI model resource</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># for true implementation please check out improveai/scorer.py</span>
+        <span class="k">pass</span>
         
     <span class="k">def</span> <span class="nf">score</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">items</span><span class="p">:</span> <span class="nb">list</span> <span class="ow">or</span> <span class="nb">tuple</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -188,6 +194,8 @@ Items and their rewards are with the <a class="reference external" href="https:/
 <span class="sd">        np.ndarray</span>
 <span class="sd">            an array of float64 (double) values representing the scores of the items.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># for true implementation please check out improveai/scorer.py</span>
+        <span class="k">pass</span>
 
 
 <span class="k">class</span> <span class="nc">RewardTracker</span><span class="p">:</span>
@@ -197,7 +205,7 @@ Items and their rewards are with the <a class="reference external" href="https:/
 <span class="sd">    Use the `reward_id` to track future rewards associated with that item.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">track_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">track_api_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">_threaded_requests</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">track_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">track_api_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">_threaded_requests</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create a RewardTracker for a specific model.</span>
 
@@ -214,8 +222,10 @@ Items and their rewards are with the <a class="reference external" href="https:/
 <span class="sd">            flag indicating whether requests to AWS track endpoint should be</span>
 <span class="sd">            non-blockng / executed within sub-threads. True by default</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># for true implementation please check out improveai/reward_tracker.py</span>
+        <span class="k">pass</span>
         
-    <span class="k">def</span> <span class="nf">track</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">candidates</span><span class="p">:</span> <span class="nb">list</span> <span class="ow">or</span> <span class="nb">tuple</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="ow">or</span> <span class="kc">None</span>
+    <span class="k">def</span> <span class="nf">track</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">candidates</span><span class="p">:</span> <span class="nb">list</span> <span class="ow">or</span> <span class="nb">tuple</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Tracks the item selected from candidates and a random sample from the remaining items.</span>
 <span class="sd">        If `len(candidates) == 1` there is no sample.</span>
@@ -235,9 +245,11 @@ Items and their rewards are with the <a class="reference external" href="https:/
 <span class="sd">        str or None</span>
 <span class="sd">            reward_id of this track request or None if an error happened</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># for true implementation please check out improveai/reward_tracker.py</span>
+        <span class="k">pass</span>        
 
     <span class="k">def</span> <span class="nf">track_with_sample</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">num_candidates</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">sample</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="ow">or</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">num_candidates</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">sample</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Tracks the item selected and a specific sample.. Provided sample is</span>
 <span class="sd">        appended to track request (in contrary to `track(...)` where sample is</span>
@@ -260,8 +272,10 @@ Items and their rewards are with the <a class="reference external" href="https:/
 <span class="sd">        ste or None</span>
 <span class="sd">            reward_id of this track request or None if an error happened</span>
 <span class="sd">        &quot;&quot;&quot;</span>        
+        <span class="c1"># for true implementation please check out improveai/reward_tracker.py</span>
+        <span class="k">pass</span>        
 
-    <span class="k">def</span> <span class="nf">add_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reward</span><span class="p">:</span> <span class="nb">float</span> <span class="ow">or</span> <span class="nb">int</span><span class="p">,</span> <span class="n">reward_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">add_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reward</span><span class="p">:</span> <span class="nb">float</span> <span class="ow">or</span> <span class="nb">int</span><span class="p">,</span> <span class="n">reward_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add reward for the provided reward_id</span>
 
@@ -278,6 +292,8 @@ Items and their rewards are with the <a class="reference external" href="https:/
 <span class="sd">        str</span>
 <span class="sd">            message ID</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># for true implementation please check out improveai/reward_tracker.py</span>
+        <span class="k">pass</span>
 </pre></div>
 </div>
 </section>
