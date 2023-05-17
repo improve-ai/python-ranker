@@ -4,6 +4,10 @@ from improveai.scorer import Scorer
 
 
 class Ranker:
+    """
+    A utility for ranking items based on their scores. The Ranker struct takes
+    a ImproveAI model to evaluate and rank the given items.
+    """
 
     # TODO I think we might go with scorer and model_url as properties with only getter.
     #  If we won't define them as properties anyone will be able to mutate them
@@ -52,7 +56,7 @@ class Ranker:
         scorer: Scorer
             a Scorer object to be used with this Ranker
         model_url: str
-            URL or local FS path leading to ImproveAI model to be used with this Ranker
+            URL or local FS of a plain or gzip compressed Improve AI model resource
         """
 
         if scorer is not None:
@@ -75,12 +79,13 @@ class Ranker:
         items: list or tuple or np.ndarray
             list of items to be ranked
         context: object
-            any JSON encodable object serving as a context for ranking
+            any JSON encodable extra context info that will be used with each of
+            the item to get its score
 
         Returns
         -------
         list or tuple or np.ndarray
-            a collection of ranked items (collection's type is identical with `items`)
+            a collection of ranked items, sorted by their scores in descending order.
         """
         # assure provided items are not empty
         assert len(items) > 0

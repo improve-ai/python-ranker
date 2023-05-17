@@ -1,9 +1,9 @@
 Readme
-======**!!! The release of v8 is imminent and features a brand new API. We do not recommend deploying v7 at this time !!!**
-
+======
 Improve AI is a machine learning platform for quickly implementing app optimization, personalization, and recommendations for [Python](https://improve.ai/python-sdk/), [iOS](https://improve.ai/ios-sdk/), and [Android](https://improve.ai/android-sdk/).
 
-The SDKs provide simple APIs for AI [decisions](https://improve.ai/decisions/), [ranking](https://improve.ai/ranking/), [scoring](https://improve.ai/scoring/), and [multivariate optimization](https://improve.ai/multivariate-optimization/) that execute immediately, on-device, with zero network latency. Decisions and rewards are tracked in the cloud with the [Improve AI Gym](https://github.com/improve-ai/gym/) and updated models are trained regularly on AWS SageMaker.
+The SDKs provide simple APIs for AI [decisions]((https://improve.ai/decisions/), [ranking](https://improve.ai/ranking/), and [scoring](https://improve.ai/scoring/), that execute immediately, on-device, with zero network latency. 
+Items and their rewards are with the [Improve AI Tracker / Trainer](https://github.com/improve-ai/tracker-trainer) and updated models are trained regularly for continuous learning.
 
 ## Installation
 
@@ -11,131 +11,255 @@ The SDKs provide simple APIs for AI [decisions](https://improve.ai/decisions/), 
 pip3 install improveai
 ```
 
-## Initialization
+## Instructions for ChatGPT
+
+Paste the following into your ChatGPT prompt to have it write code against the Improve AI APIs:
+
 
 ```python
-import improveai
+"""
+The following is the Python API documentation for ImproveAI, which is imported with 
+'import improveai'. Simply respond with 'ImproveAI documentation imported':
+"""
+
+
+class Ranker:
+    """
+    A utility for ranking items based on their scores. The Ranker struct takes
+    a ImproveAI model to evaluate and rank the given items.
+    """
+    
+    def __init__(self, scorer: Scorer = None, model_url: str = None)
+        """
+        Init Ranker with params. Either `scorer` or `model_url` must be provided.
+        If both are provided Scorer is preferred.
+
+        Parameters
+        ----------
+        scorer: Scorer
+            a Scorer object to be used with this Ranker
+        model_url: str
+            URL or local FS of a plain or gzip compressed Improve AI model resource
+        """
+    
+    def rank(self, items: list or tuple or np.ndarray, context: object = None) -> list or tuple or np.ndarray
+        """
+        Ranks items and returns them ordered best to worst
+
+        Parameters
+        ----------
+        items: list or tuple or np.ndarray
+            list of items to be ranked
+        context: object
+            any JSON encodable extra context info that will be used with each of
+            the item to get its score
+
+        Returns
+        -------
+        list or tuple or np.ndarray
+            a collection of ranked items, sorted by their scores in descending order.
+        """
+
+        
+class Scorer:
+    """
+    Scores items with optional context using a Improve AI model
+    """
+    
+    def __init__(self, model_url: str)
+        """
+        Init with params
+
+        Parameters
+        ----------
+        model_url: str
+            URL or local FS of a plain or gzip compressed Improve AI model resource
+        """
+        
+    def score(self, items: list or tuple or np.ndarray, context: object = None) -> np.ndarray
+        """
+        Uses the model to score a list of items with the given context
+
+        Parameters
+        ----------
+        items: list or tuple or np.ndarray
+            list of items to be scored
+        context: object
+            any JSON encodable extra context info that will be used with each of
+            the item to get its score
+
+        Returns
+        -------
+        np.ndarray
+            an array of float64 (double) values representing the scores of the items.
+        """
+
+
+class RewardTracker:
+    """
+    Tracks items and rewards for training updated scoring models. When an item
+    becomes causal, pass it to the track() function, which will return a `reward_id`.
+    Use the `reward_id` to track future rewards associated with that item.
+    """
+    
+    def __init__(self, model_name: str, track_url: str, track_api_key: str = None, _threaded_requests: bool = True)
+        """
+        Create a RewardTracker for a specific model.
+
+        Parameters
+        ----------
+        model_name: str
+            Name of the model, such as "songs" or "discounts", which either makes
+            the decisions or which decisions are being rewarded
+        track_url: str
+            The track endpoint URL that all tracked data will be sent to.
+        track_api_key: str
+            track endpoint API key (if applicable); Can be None
+        _threaded_requests: bool
+            flag indicating whether requests to AWS track endpoint should be
+            non-blockng / executed within sub-threads. True by default
+        """
+        
+    def track(self, item: object, candidates: list or tuple or np.ndarray = None, context: object = None) -> str or None
+        """
+        Tracks the item selected from candidates and a random sample from the remaining items.
+        If `len(candidates) == 1` there is no sample.
+
+        Parameters
+        ----------
+        item: object
+            any JSON encodable object chosen as best from candidates
+        candidates: list or tuple or np.ndarray
+            collection of items from which best is chosen
+        context: object
+            any JSON encodable extra context info that was used with each of the
+            item to get its score
+
+        Returns
+        -------
+        str or None
+            reward_id of this track request or None if an error happened
+        """
+
+    def track_with_sample(
+            self, item: object, num_candidates: int = None, context: object = None, sample: object = None) -> str or None
+        """
+        Tracks the item selected and a specific sample.. Provided sample is
+        appended to track request (in contrary to `track(...)` where sample is
+        randomly selected from candidates).
+
+        Parameters
+        ----------
+        item: object
+            any JSON encodable object chosen as best from candidates
+        num_candidates: int
+            total number of candidates, including the selected item
+        context: object
+            any JSON encodable extra context info that was used with each of the
+            item to get its score
+        sample: object
+            a random sample from the candidates
+
+        Returns
+        -------
+        ste or None
+            reward_id of this track request or None if an error happened
+        """        
+
+    def add_reward(self, reward: float or int, reward_id: str)
+        """
+        Add reward for the provided reward_id
+
+        Parameters
+        ----------
+        reward: float or int
+            the reward to add; must be numeric (float, int ro bool), must not be
+             `None`, `np.nan` or +-`inf`
+        reward_id: str
+            the id that was returned from the track(...) / track_with_sample(...) methods
+
+        Returns
+        -------
+        str
+            message ID
+        """
 ```
 
-```python
-track_url = 'https://xxxx.lambda-url.us-east-1.on.aws/'
-model_url = 'https://xxxx.s3.amazonaws.com/models/latest/greetings.xgb.gz'
-
-greetings_model = improveai.load_model(model_url, track_url)
-```
 
 ## Usage
 
-The heart of Improve AI is the *which()* statement. *which()* is like an AI *if/then* statement.
+Create a list of JSON encodable items and simply call `Ranker.rank(items)`.
+
+For instance, in a bedtime story app, you may have a list of Story dicts / objects:
+
 
 ```python
-greeting, decision_id = greetings_model.which('Hello', 'Howdy', 'Hola')
+story = {
+    "title": "<title string>",
+    "author": "<author string>",
+    "page_count": 123  # example integer representing number of pages for a given story
+}
 ```
 
-*which()* takes a list of *variants* and returns the best - the "best" being the variant that provides the highest expected reward given the current conditions.
-
-Decision models are easily trained with [reinforcement learning](https://improve.ai/reinforcement-learning/):
+To obtain a ranked list of stories, use just one line of code:
 
 ```python
-if success:
-   greetings_model.add_reward(1.0, decision_id)
+ranked_stories = Ranker(model_url).rank(stories)
 ```
 
-With reinforcement learning, positive rewards are assigned for positive outcomes (a "carrot") and negative rewards are assigned for undesirable outcomes (a "stick").
+## Reward Assignment
 
-*which()* automatically tracks it's decision with the [Improve AI Gym](https://github.com/improve-ai/gym/).
+Easily train your rankers using [reinforcement learning](https://improve.ai/reinforcement-learning/).
 
-## Contextual Decisions
-
-Unlike A/B testing or feature flags, Improve AI uses *context* to make the best decision. 
-
-Context can be provided via *given()*:
+First, track when an item is used:
 
 ```python
-
-greeting, decision_id = greetings_model.given({"language": "cowboy"}) \
-                                       .which("Hello", "Howdy", "Hola")
+tracker = RewardTracker("stories", track_url)
+reward_id = tracker.track(story, ranked_stories)
 ```
 
-Given the language is *cowboy*, the variant with the highest expected reward should be *"Howdy"* and the model would learn to make that choice.
-
-
-## Ranking
-
-[Ranking](https://improve.ai/ranking/) is a fundamental task in recommender systems, search engines, and social media feeds. Fast ranking can be performed on-device in a single line of code:
+Later, if a positive outcome occurs, provide a reward:
 
 ```python
-ranked_wines = sommelier_model.given(entree).rank(wines)
+if purchased:
+    tracker.add_reward(profit, reward_id)
 ```
 
-**Note**: Decisions are not tracked when calling *rank()*. *which()* or *decide()* must be used to train models for ranking.
+Reinforcement learning uses positive rewards for favorable outcomes (a "carrot") and negative rewards 
+for undesirable outcomes (a "stick"). By assigning rewards based on business metrics, 
+such as revenue or conversions, the system optimizes these metrics over time.
 
-## Scoring
+## Contextual Ranking & Scoring
 
-[Scoring](https://improve.ai/scoring/) makes it easy to turn any database table into a recommendation engine.
+Improve AI turns XGBoost into a contextual multi-armed bandit, meaning that context is considered when making ranking or scoring decisions.
 
-Simply add a *score* column to the database and update the score for each row.
+Often, the choice of the best variant depends on the context that the decision is made within. Let's take the example of greetings for different times of the day:
 
 ```python
-scores = conversion_rate_model.score(rows)
+greetings = ["Good Morning", 
+             "Good Afternoon", 
+             "Good Evening",
+             "Buenos Días",
+             "Buenas Tardes",
+             "Buenas Noches"]
 ```
 
-At query time, sort the query results descending by the *score* column and the first results will be the top recommendations.
-
-*score()* is also useful for crafting custom optimization algorithms or providing supplemental metrics in a multi-stage recommendation system.
-
-**Note**: Decisions are not tracked when calling *score()*. *which()*, *decide()*, or *optimize()* must be used to train models for scoring.
-
-## Multivariate Optimization
-
-[Multivariate optimization](https://improve.ai/multivariate-optimization/) is the joint optimization of multiple variables simultaneously. This is often useful for app configuration and performance tuning.
-
-```swift
-config, decision_id = config_model.optimize({"buffer_size": [1024, 2048, 4096, 8192],
-                                             "video_bitrate": [256000, 384000, 512000]})
-```
-
-This example decides multiple variables simultaneously.  Notice that instead of a single list of variants, a dictionary mapping keys to lists of variants is provided. This multi-variate mode jointly optimizes all variables for the highest expected reward.  
-
-*optimize()* automatically tracks it's decision with the [Improve AI Gym](https://github.com/improve-ai/gym/). Rewards are credited to the most recent decision made by the model, including from a previous app session.
-
-## Variant Types
-
-Variants can be any JSON encodeable data structure of arbitrary complexity, including nested dicts, lists, strings, numbers, and None. Object properties and nested items within collections are automatically encoded as machine learning features to assist in the decision making process.
-
-The following are all valid:
+rank() also considers the context of each decision. The context can be any JSON-encodable data structure.
 
 ```python
-greeting, decision_id = greetings_model.which('Hello', 'Howdy', 'Hola')
-
-discount, decision_id = discounts_model.which(0.1, 0.2, 0.3)
-
-enabled, decision_id = feature_flag_model.which(True, False)
-
-item, decision_id = filter_model.which(item, None)
-
-themes = [{"font": "Helvetica", "size": 12, "color": "#000000"},
-          {"font": "Comic Sans", "size": 16, "color": "#F0F0F0"}]
-
-theme, decision_id = themes_model.which(themes)
+ranked = ranker.rank(items=greetings, 
+                     context={ "day_time": 12.0,
+                               "language": "en" })
+greeting = ranked[0]
 ```
 
-## Privacy
-  
-It is strongly recommended to never include Personally Identifiable Information (PII) in variants or givens so that it is never tracked, persisted, or used as training data.
+Trained with appropriate rewards, Improve AI would learn from scratch which greeting is best for each time of day and language.
 
 ## Resources
 
 - [Quick Start Guide](https://improve.ai/quick-start/)
-- [Python SDK API Docs](https://improve.ai/python-sdk/)
-- [Improve AI Gym](https://github.com/improve-ai/gym/)
-- [Improve AI Trainer (FREE)](https://aws.amazon.com/marketplace/pp/prodview-pyqrpf5j6xv6g)
-- [Improve AI Trainer (PRO)](https://aws.amazon.com/marketplace/pp/prodview-adchtrf2zyvow)
+- [Tracker / Trainer](https://github.com/improve-ai/tracker-trainer/)
 - [Reinforcement Learning](https://improve.ai/reinforcement-learning/)
-- [Decisions](https://improve.ai/multivariate-optimization/)
-- [Ranking](https://improve.ai/ranking/)
-- [Scoring](https://improve.ai/scoring/)
-- [Multivariate optimization](https://improve.ai/multivariate-optimization/)
 
 ## Help Improve Our World
 

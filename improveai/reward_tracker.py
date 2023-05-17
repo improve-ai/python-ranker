@@ -15,6 +15,11 @@ from improveai.utils.general_purpose_tools import check_candidates, \
 
 
 class RewardTracker:
+    """
+    Tracks items and rewards for training updated scoring models. When an item
+    becomes causal, pass it to the track() function, which will return a `reward_id`.
+    Use the `reward_id` to track future rewards associated with that item.
+    """
 
     @property
     def MODEL_KEY(self) -> str:
@@ -235,16 +240,17 @@ class RewardTracker:
 
     def __init__(self, model_name: str, track_url: str, track_api_key: str = None, _threaded_requests: bool = True):
         """
-        Init with params
+        Create a RewardTracker for a specific model.
 
         Parameters
         ----------
         model_name: str
-            Name of the model which either makes the decisions or whose decisions are being rewarded
+            Name of the model, such as "songs" or "discounts", which either makes
+            the decisions or which decisions are being rewarded
         track_url: str
-            Improve AI track endpoint URL. Must not be None
+            The track endpoint URL that all tracked data will be sent to.
         track_api_key: str
-            Improve AI track endpoint API key (nullable)
+            track endpoint API key (if applicable); Can be None
         _threaded_requests: bool
             flag indicating whether requests to AWS track endpoint should be
             non-blockng / executed within sub-threads. True by default
@@ -334,8 +340,8 @@ class RewardTracker:
     def track(self, item: object, candidates: list or tuple or np.ndarray = None,
               context: object = None) -> str or None:
         """
-        Track that input item is causal in the system. Select a random sample from
-        candidates. If `len(candidates) == 1` there is no sample.
+        Tracks the item selected from candidates and a random sample from the remaining items.
+        If `len(candidates) == 1` there is no sample.
 
         Parameters
         ----------
@@ -344,12 +350,13 @@ class RewardTracker:
         candidates: list or tuple or np.ndarray
             collection of items from which best is chosen
         context: object
-            any JSON encodable object representing context
+            any JSON encodable extra context info that was used with each of the
+            item to get its score
 
         Returns
         -------
         str or None
-            message id of sent improve request or None if an error happened
+            reward_id of this track request or None if an error happened
 
         """
         # this will raise an assertion error if candidates are bad
@@ -370,7 +377,7 @@ class RewardTracker:
             self, item: object, num_candidates: int = None, context: object = None,
             sample: object = None) -> str or None:
         """
-        Track that input item is causal in the system. Provided sample is
+        Tracks the item selected and a specific sample.. Provided sample is
         appended to track request (in contrary to `track(...)` where sample is
         randomly selected from candidates).
 
@@ -379,16 +386,17 @@ class RewardTracker:
         item: object
             any JSON encodable object chosen as best from candidates
         num_candidates: int
-            number of candidates
+            total number of candidates, including the selected item
         context: object
-            any JSON encodable object representing context
+            any JSON encodable extra context info that was used with each of the
+            item to get its score
         sample: object
-            sample to be tracked along with item
+            a random sample from the candidates
 
         Returns
         -------
         ste or None
-            decision ID or None
+            reward_id of this track request or None if an error happened
 
         """
 
@@ -402,15 +410,15 @@ class RewardTracker:
 
     def add_reward(self, reward: float or int, reward_id: str):
         """
-        Assigns a reward (with POST request) to a given decision ID
-        (rewarded decision ID is equal to `reward_id`)
+        Add reward for the provided reward_id
 
         Parameters
         ----------
         reward: float or int
-            reward to be assigned to a given decision
+            the reward to add; must be numeric (float, int ro bool), must not be
+             `None`, `np.nan` or +-`inf`
         reward_id: str
-            ksuid of the reward
+            the id that was returned from the track(...) / track_with_sample(...) methods
 
         Returns
         -------

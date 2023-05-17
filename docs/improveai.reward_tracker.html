@@ -46,17 +46,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Readme:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="readme.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="readme.html#initialization">Initialization</a></li>
-<li class="toctree-l1"><a class="reference internal" href="readme.html#usage">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="readme.html#contextual-decisions">Contextual Decisions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="readme.html#ranking">Ranking</a></li>
-<li class="toctree-l1"><a class="reference internal" href="readme.html#scoring">Scoring</a></li>
-<li class="toctree-l1"><a class="reference internal" href="readme.html#multivariate-optimization">Multivariate Optimization</a></li>
-<li class="toctree-l1"><a class="reference internal" href="readme.html#variant-types">Variant Types</a></li>
-<li class="toctree-l1"><a class="reference internal" href="readme.html#privacy">Privacy</a></li>
-<li class="toctree-l1"><a class="reference internal" href="readme.html#resources">Resources</a></li>
-<li class="toctree-l1"><a class="reference internal" href="readme.html#help-improve-our-world">Help Improve Our World</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readme.html">About Improve AI python ranker</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Classes:</span></p>
 <ul class="current">
@@ -134,6 +124,9 @@
 <dt class="sig sig-object py" id="improveai.reward_tracker.RewardTracker">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RewardTracker</span></span><a class="headerlink" href="#improveai.reward_tracker.RewardTracker" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Tracks items and rewards for training updated scoring models. When an item
+becomes causal, pass it to the track() function, which will return a <cite>reward_id</cite>.
+Use the <cite>reward_id</cite> to track future rewards associated with that item.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="improveai.reward_tracker.RewardTracker.MODEL_KEY">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MODEL_KEY</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#improveai.reward_tracker.RewardTracker.MODEL_KEY" title="Permalink to this definition"></a></dt>
@@ -307,13 +300,14 @@ requests are blocking and executed consecutively.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="improveai.reward_tracker.RewardTracker.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">track_url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">track_api_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_threaded_requests</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.reward_tracker.RewardTracker.__init__" title="Permalink to this definition"></a></dt>
-<dd><p>Init with params</p>
+<dd><p>Create a RewardTracker for a specific model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>model_name</strong> (<em>str</em>) – Name of the model which either makes the decisions or whose decisions are being rewarded</p></li>
-<li><p><strong>track_url</strong> (<em>str</em>) – Improve AI track endpoint URL. Must not be None</p></li>
-<li><p><strong>track_api_key</strong> (<em>str</em>) – Improve AI track endpoint API key (nullable)</p></li>
+<li><p><strong>model_name</strong> (<em>str</em>) – Name of the model, such as “songs” or “discounts”, which either makes
+the decisions or which decisions are being rewarded</p></li>
+<li><p><strong>track_url</strong> (<em>str</em>) – The track endpoint URL that all tracked data will be sent to.</p></li>
+<li><p><strong>track_api_key</strong> (<em>str</em>) – track endpoint API key (if applicable); Can be None</p></li>
 <li><p><strong>_threaded_requests</strong> (<em>bool</em>) – flag indicating whether requests to AWS track endpoint should be
 non-blockng / executed within sub-threads. True by default</p></li>
 </ul>
@@ -413,18 +407,19 @@ and <cite>track_with_sample()</cite></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="improveai.reward_tracker.RewardTracker.track">
 <span class="sig-name descname"><span class="pre">track</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">candidates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.reward_tracker.RewardTracker.track" title="Permalink to this definition"></a></dt>
-<dd><p>Track that input item is causal in the system. Select a random sample from
-candidates. If <cite>len(candidates) == 1</cite> there is no sample.</p>
+<dd><p>Tracks the item selected from candidates and a random sample from the remaining items.
+If <cite>len(candidates) == 1</cite> there is no sample.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>item</strong> (<em>object</em>) – any JSON encodable object chosen as best from candidates</p></li>
 <li><p><strong>candidates</strong> (<em>list</em><em> or </em><em>tuple</em><em> or </em><em>np.ndarray</em>) – collection of items from which best is chosen</p></li>
-<li><p><strong>context</strong> (<em>object</em>) – any JSON encodable object representing context</p></li>
+<li><p><strong>context</strong> (<em>object</em>) – any JSON encodable extra context info that was used with each of the
+item to get its score</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>message id of sent improve request or None if an error happened</p>
+<dd class="field-even"><p>reward_id of this track request or None if an error happened</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>str or None</p>
@@ -435,20 +430,21 @@ candidates. If <cite>len(candidates) == 1</cite> there is no sample.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="improveai.reward_tracker.RewardTracker.track_with_sample">
 <span class="sig-name descname"><span class="pre">track_with_sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_candidates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.reward_tracker.RewardTracker.track_with_sample" title="Permalink to this definition"></a></dt>
-<dd><p>Track that input item is causal in the system. Provided sample is
+<dd><p>Tracks the item selected and a specific sample.. Provided sample is
 appended to track request (in contrary to <cite>track(…)</cite> where sample is
 randomly selected from candidates).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>item</strong> (<em>object</em>) – any JSON encodable object chosen as best from candidates</p></li>
-<li><p><strong>num_candidates</strong> (<em>int</em>) – number of candidates</p></li>
-<li><p><strong>context</strong> (<em>object</em>) – any JSON encodable object representing context</p></li>
-<li><p><strong>sample</strong> (<em>object</em>) – sample to be tracked along with item</p></li>
+<li><p><strong>num_candidates</strong> (<em>int</em>) – total number of candidates, including the selected item</p></li>
+<li><p><strong>context</strong> (<em>object</em>) – any JSON encodable extra context info that was used with each of the
+item to get its score</p></li>
+<li><p><strong>sample</strong> (<em>object</em>) – a random sample from the candidates</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>decision ID or None</p>
+<dd class="field-even"><p>reward_id of this track request or None if an error happened</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>ste or None</p>
@@ -459,13 +455,16 @@ randomly selected from candidates).</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="improveai.reward_tracker.RewardTracker.add_reward">
 <span class="sig-name descname"><span class="pre">add_reward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reward</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reward_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#improveai.reward_tracker.RewardTracker.add_reward" title="Permalink to this definition"></a></dt>
-<dd><p>Assigns a reward (with POST request) to a given decision ID
-(rewarded decision ID is equal to <cite>reward_id</cite>)</p>
+<dd><p>Add reward for the provided reward_id</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>reward</strong> (<em>float</em><em> or </em><em>int</em>) – reward to be assigned to a given decision</p></li>
-<li><p><strong>reward_id</strong> (<em>str</em>) – ksuid of the reward</p></li>
+<li><p><strong>reward</strong> (<em>float</em><em> or </em><em>int</em>) – <dl class="simple">
+<dt>the reward to add; must be numeric (float, int ro bool), must not be</dt><dd><p><cite>None</cite>, <cite>np.nan</cite> or +-<cite>inf</cite></p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>reward_id</strong> (<em>str</em>) – the id that was returned from the track(…) / track_with_sample(…) methods</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

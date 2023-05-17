@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Installation &mdash; improveai 8.0.0 documentation</title>
+  <title>Readme &mdash; improveai 8.0.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
@@ -46,17 +46,16 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Readme:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#initialization">Initialization</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#usage">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#contextual-decisions">Contextual Decisions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#ranking">Ranking</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#scoring">Scoring</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#multivariate-optimization">Multivariate Optimization</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#variant-types">Variant Types</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#privacy">Privacy</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#resources">Resources</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#help-improve-our-world">Help Improve Our World</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">About Improve AI python ranker</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#instructions-for-chatgpt">Instructions for ChatGPT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reward-assignment">Reward Assignment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#contextual-ranking-scoring">Contextual Ranking &amp; Scoring</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#resources">Resources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#help-improve-our-world">Help Improve Our World</a></li>
+</ul>
+</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Classes:</span></p>
 <ul>
@@ -89,7 +88,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Installation</li>
+      <li class="breadcrumb-item active">Readme</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/readme.md.txt" rel="nofollow"> View page source</a>
       </li>
@@ -99,125 +98,256 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <p>Readme
-======<strong>!!! The release of v8 is imminent and features a brand new API. We do not recommend deploying v7 at this time !!!</strong></p>
+  <section id="readme">
+<h1>Readme<a class="headerlink" href="#readme" title="Permalink to this heading"></a></h1>
 <p>Improve AI is a machine learning platform for quickly implementing app optimization, personalization, and recommendations for <a class="reference external" href="https://improve.ai/python-sdk/">Python</a>, <a class="reference external" href="https://improve.ai/ios-sdk/">iOS</a>, and <a class="reference external" href="https://improve.ai/android-sdk/">Android</a>.</p>
-<p>The SDKs provide simple APIs for AI <a class="reference external" href="https://improve.ai/decisions/">decisions</a>, <a class="reference external" href="https://improve.ai/ranking/">ranking</a>, <a class="reference external" href="https://improve.ai/scoring/">scoring</a>, and <a class="reference external" href="https://improve.ai/multivariate-optimization/">multivariate optimization</a> that execute immediately, on-device, with zero network latency. Decisions and rewards are tracked in the cloud with the <a class="reference external" href="https://github.com/improve-ai/gym/">Improve AI Gym</a> and updated models are trained regularly on AWS SageMaker.</p>
+<p>The SDKs provide simple APIs for AI [decisions]((https://improve.ai/decisions/), <a class="reference external" href="https://improve.ai/ranking/">ranking</a>, and <a class="reference external" href="https://improve.ai/scoring/">scoring</a>, that execute immediately, on-device, with zero network latency.
+Items and their rewards are with the <a class="reference external" href="https://github.com/improve-ai/tracker-trainer">Improve AI Tracker / Trainer</a> and updated models are trained regularly for continuous learning.</p>
 <section id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h1>
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h2>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pip3 install improveai</span>
 </pre></div>
 </div>
 </section>
-<section id="initialization">
-<h1>Initialization<a class="headerlink" href="#initialization" title="Permalink to this heading"></a></h1>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">improveai</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">track_url</span> <span class="o">=</span> <span class="s1">&#39;https://xxxx.lambda-url.us-east-1.on.aws/&#39;</span>
-<span class="n">model_url</span> <span class="o">=</span> <span class="s1">&#39;https://xxxx.s3.amazonaws.com/models/latest/greetings.xgb.gz&#39;</span>
+<section id="instructions-for-chatgpt">
+<h2>Instructions for ChatGPT<a class="headerlink" href="#instructions-for-chatgpt" title="Permalink to this heading"></a></h2>
+<p>Paste the following into your ChatGPT prompt to have it write code against the Improve AI APIs:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">The following is the Python API documentation for ImproveAI, which is imported with </span>
+<span class="sd">&#39;import improveai&#39;. Simply respond with &#39;ImproveAI documentation imported&#39;:</span>
+<span class="sd">&quot;&quot;&quot;</span>
 
-<span class="n">greetings_model</span> <span class="o">=</span> <span class="n">improveai</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">model_url</span><span class="p">,</span> <span class="n">track_url</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Ranker</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A utility for ranking items based on their scores. The Ranker struct takes</span>
+<span class="sd">    a ImproveAI model to evaluate and rank the given items.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scorer</span><span class="p">:</span> <span class="n">Scorer</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">model_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Init Ranker with params. Either `scorer` or `model_url` must be provided.</span>
+<span class="sd">        If both are provided Scorer is preferred.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        scorer: Scorer</span>
+<span class="sd">            a Scorer object to be used with this Ranker</span>
+<span class="sd">        model_url: str</span>
+<span class="sd">            URL or local FS of a plain or gzip compressed Improve AI model resource</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">rank</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">items</span><span class="p">:</span> <span class="nb">list</span> <span class="ow">or</span> <span class="nb">tuple</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span> <span class="ow">or</span> <span class="nb">tuple</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Ranks items and returns them ordered best to worst</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        items: list or tuple or np.ndarray</span>
+<span class="sd">            list of items to be ranked</span>
+<span class="sd">        context: object</span>
+<span class="sd">            any JSON encodable extra context info that will be used with each of</span>
+<span class="sd">            the item to get its score</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list or tuple or np.ndarray</span>
+<span class="sd">            a collection of ranked items, sorted by their scores in descending order.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        
+<span class="k">class</span> <span class="nc">Scorer</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Scores items with optional context using a Improve AI model</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Init with params</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model_url: str</span>
+<span class="sd">            URL or local FS of a plain or gzip compressed Improve AI model resource</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+    <span class="k">def</span> <span class="nf">score</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">items</span><span class="p">:</span> <span class="nb">list</span> <span class="ow">or</span> <span class="nb">tuple</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Uses the model to score a list of items with the given context</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        items: list or tuple or np.ndarray</span>
+<span class="sd">            list of items to be scored</span>
+<span class="sd">        context: object</span>
+<span class="sd">            any JSON encodable extra context info that will be used with each of</span>
+<span class="sd">            the item to get its score</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        np.ndarray</span>
+<span class="sd">            an array of float64 (double) values representing the scores of the items.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">RewardTracker</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Tracks items and rewards for training updated scoring models. When an item</span>
+<span class="sd">    becomes causal, pass it to the track() function, which will return a `reward_id`.</span>
+<span class="sd">    Use the `reward_id` to track future rewards associated with that item.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">track_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">track_api_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">_threaded_requests</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a RewardTracker for a specific model.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model_name: str</span>
+<span class="sd">            Name of the model, such as &quot;songs&quot; or &quot;discounts&quot;, which either makes</span>
+<span class="sd">            the decisions or which decisions are being rewarded</span>
+<span class="sd">        track_url: str</span>
+<span class="sd">            The track endpoint URL that all tracked data will be sent to.</span>
+<span class="sd">        track_api_key: str</span>
+<span class="sd">            track endpoint API key (if applicable); Can be None</span>
+<span class="sd">        _threaded_requests: bool</span>
+<span class="sd">            flag indicating whether requests to AWS track endpoint should be</span>
+<span class="sd">            non-blockng / executed within sub-threads. True by default</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+    <span class="k">def</span> <span class="nf">track</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">candidates</span><span class="p">:</span> <span class="nb">list</span> <span class="ow">or</span> <span class="nb">tuple</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="ow">or</span> <span class="kc">None</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Tracks the item selected from candidates and a random sample from the remaining items.</span>
+<span class="sd">        If `len(candidates) == 1` there is no sample.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        item: object</span>
+<span class="sd">            any JSON encodable object chosen as best from candidates</span>
+<span class="sd">        candidates: list or tuple or np.ndarray</span>
+<span class="sd">            collection of items from which best is chosen</span>
+<span class="sd">        context: object</span>
+<span class="sd">            any JSON encodable extra context info that was used with each of the</span>
+<span class="sd">            item to get its score</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str or None</span>
+<span class="sd">            reward_id of this track request or None if an error happened</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">track_with_sample</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">num_candidates</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">sample</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="ow">or</span> <span class="kc">None</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Tracks the item selected and a specific sample.. Provided sample is</span>
+<span class="sd">        appended to track request (in contrary to `track(...)` where sample is</span>
+<span class="sd">        randomly selected from candidates).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        item: object</span>
+<span class="sd">            any JSON encodable object chosen as best from candidates</span>
+<span class="sd">        num_candidates: int</span>
+<span class="sd">            total number of candidates, including the selected item</span>
+<span class="sd">        context: object</span>
+<span class="sd">            any JSON encodable extra context info that was used with each of the</span>
+<span class="sd">            item to get its score</span>
+<span class="sd">        sample: object</span>
+<span class="sd">            a random sample from the candidates</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ste or None</span>
+<span class="sd">            reward_id of this track request or None if an error happened</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+
+    <span class="k">def</span> <span class="nf">add_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reward</span><span class="p">:</span> <span class="nb">float</span> <span class="ow">or</span> <span class="nb">int</span><span class="p">,</span> <span class="n">reward_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add reward for the provided reward_id</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        reward: float or int</span>
+<span class="sd">            the reward to add; must be numeric (float, int ro bool), must not be</span>
+<span class="sd">             `None`, `np.nan` or +-`inf`</span>
+<span class="sd">        reward_id: str</span>
+<span class="sd">            the id that was returned from the track(...) / track_with_sample(...) methods</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            message ID</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 </pre></div>
 </div>
 </section>
 <section id="usage">
-<h1>Usage<a class="headerlink" href="#usage" title="Permalink to this heading"></a></h1>
-<p>The heart of Improve AI is the <em>which()</em> statement. <em>which()</em> is like an AI <em>if/then</em> statement.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">greeting</span><span class="p">,</span> <span class="n">decision_id</span> <span class="o">=</span> <span class="n">greetings_model</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;Hello&#39;</span><span class="p">,</span> <span class="s1">&#39;Howdy&#39;</span><span class="p">,</span> <span class="s1">&#39;Hola&#39;</span><span class="p">)</span>
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this heading"></a></h2>
+<p>Create a list of JSON encodable items and simply call <code class="docutils literal notranslate"><span class="pre">Ranker.rank(items)</span></code>.</p>
+<p>For instance, in a bedtime story app, you may have a list of Story dicts / objects:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">story</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;title string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;author&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;author string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;page_count&quot;</span><span class="p">:</span> <span class="mi">123</span>  <span class="c1"># example integer representing number of pages for a given story</span>
+<span class="p">}</span>
 </pre></div>
 </div>
-<p><em>which()</em> takes a list of <em>variants</em> and returns the best - the “best” being the variant that provides the highest expected reward given the current conditions.</p>
-<p>Decision models are easily trained with <a class="reference external" href="https://improve.ai/reinforcement-learning/">reinforcement learning</a>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">success</span><span class="p">:</span>
-   <span class="n">greetings_model</span><span class="o">.</span><span class="n">add_reward</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">decision_id</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>With reinforcement learning, positive rewards are assigned for positive outcomes (a “carrot”) and negative rewards are assigned for undesirable outcomes (a “stick”).</p>
-<p><em>which()</em> automatically tracks it’s decision with the <a class="reference external" href="https://github.com/improve-ai/gym/">Improve AI Gym</a>.</p>
-</section>
-<section id="contextual-decisions">
-<h1>Contextual Decisions<a class="headerlink" href="#contextual-decisions" title="Permalink to this heading"></a></h1>
-<p>Unlike A/B testing or feature flags, Improve AI uses <em>context</em> to make the best decision.</p>
-<p>Context can be provided via <em>given()</em>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
-<span class="n">greeting</span><span class="p">,</span> <span class="n">decision_id</span> <span class="o">=</span> <span class="n">greetings_model</span><span class="o">.</span><span class="n">given</span><span class="p">({</span><span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;cowboy&quot;</span><span class="p">})</span> \
-                                       <span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s2">&quot;Hello&quot;</span><span class="p">,</span> <span class="s2">&quot;Howdy&quot;</span><span class="p">,</span> <span class="s2">&quot;Hola&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Given the language is <em>cowboy</em>, the variant with the highest expected reward should be <em>“Howdy”</em> and the model would learn to make that choice.</p>
-</section>
-<section id="ranking">
-<h1>Ranking<a class="headerlink" href="#ranking" title="Permalink to this heading"></a></h1>
-<p><a class="reference external" href="https://improve.ai/ranking/">Ranking</a> is a fundamental task in recommender systems, search engines, and social media feeds. Fast ranking can be performed on-device in a single line of code:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ranked_wines</span> <span class="o">=</span> <span class="n">sommelier_model</span><span class="o">.</span><span class="n">given</span><span class="p">(</span><span class="n">entree</span><span class="p">)</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">wines</span><span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>Note</strong>: Decisions are not tracked when calling <em>rank()</em>. <em>which()</em> or <em>decide()</em> must be used to train models for ranking.</p>
-</section>
-<section id="scoring">
-<h1>Scoring<a class="headerlink" href="#scoring" title="Permalink to this heading"></a></h1>
-<p><a class="reference external" href="https://improve.ai/scoring/">Scoring</a> makes it easy to turn any database table into a recommendation engine.</p>
-<p>Simply add a <em>score</em> column to the database and update the score for each row.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scores</span> <span class="o">=</span> <span class="n">conversion_rate_model</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>At query time, sort the query results descending by the <em>score</em> column and the first results will be the top recommendations.</p>
-<p><em>score()</em> is also useful for crafting custom optimization algorithms or providing supplemental metrics in a multi-stage recommendation system.</p>
-<p><strong>Note</strong>: Decisions are not tracked when calling <em>score()</em>. <em>which()</em>, <em>decide()</em>, or <em>optimize()</em> must be used to train models for scoring.</p>
-</section>
-<section id="multivariate-optimization">
-<h1>Multivariate Optimization<a class="headerlink" href="#multivariate-optimization" title="Permalink to this heading"></a></h1>
-<p><a class="reference external" href="https://improve.ai/multivariate-optimization/">Multivariate optimization</a> is the joint optimization of multiple variables simultaneously. This is often useful for app configuration and performance tuning.</p>
-<div class="highlight-swift notranslate"><div class="highlight"><pre><span></span><span class="n">config</span><span class="p">,</span> <span class="n">decision_id</span> <span class="p">=</span> <span class="n">config_model</span><span class="p">.</span><span class="n">optimize</span><span class="p">({</span><span class="s">&quot;buffer_size&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">2048</span><span class="p">,</span> <span class="mi">4096</span><span class="p">,</span> <span class="mi">8192</span><span class="p">],</span>
-                                             <span class="s">&quot;video_bitrate&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">256000</span><span class="p">,</span> <span class="mi">384000</span><span class="p">,</span> <span class="mi">512000</span><span class="p">]})</span>
-</pre></div>
-</div>
-<p>This example decides multiple variables simultaneously.  Notice that instead of a single list of variants, a dictionary mapping keys to lists of variants is provided. This multi-variate mode jointly optimizes all variables for the highest expected reward.</p>
-<p><em>optimize()</em> automatically tracks it’s decision with the <a class="reference external" href="https://github.com/improve-ai/gym/">Improve AI Gym</a>. Rewards are credited to the most recent decision made by the model, including from a previous app session.</p>
-</section>
-<section id="variant-types">
-<h1>Variant Types<a class="headerlink" href="#variant-types" title="Permalink to this heading"></a></h1>
-<p>Variants can be any JSON encodeable data structure of arbitrary complexity, including nested dicts, lists, strings, numbers, and None. Object properties and nested items within collections are automatically encoded as machine learning features to assist in the decision making process.</p>
-<p>The following are all valid:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">greeting</span><span class="p">,</span> <span class="n">decision_id</span> <span class="o">=</span> <span class="n">greetings_model</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;Hello&#39;</span><span class="p">,</span> <span class="s1">&#39;Howdy&#39;</span><span class="p">,</span> <span class="s1">&#39;Hola&#39;</span><span class="p">)</span>
-
-<span class="n">discount</span><span class="p">,</span> <span class="n">decision_id</span> <span class="o">=</span> <span class="n">discounts_model</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">)</span>
-
-<span class="n">enabled</span><span class="p">,</span> <span class="n">decision_id</span> <span class="o">=</span> <span class="n">feature_flag_model</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-
-<span class="n">item</span><span class="p">,</span> <span class="n">decision_id</span> <span class="o">=</span> <span class="n">filter_model</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-
-<span class="n">themes</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;font&quot;</span><span class="p">:</span> <span class="s2">&quot;Helvetica&quot;</span><span class="p">,</span> <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;#000000&quot;</span><span class="p">},</span>
-          <span class="p">{</span><span class="s2">&quot;font&quot;</span><span class="p">:</span> <span class="s2">&quot;Comic Sans&quot;</span><span class="p">,</span> <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;#F0F0F0&quot;</span><span class="p">}]</span>
-
-<span class="n">theme</span><span class="p">,</span> <span class="n">decision_id</span> <span class="o">=</span> <span class="n">themes_model</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">themes</span><span class="p">)</span>
+<p>To obtain a ranked list of stories, use just one line of code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ranked_stories</span> <span class="o">=</span> <span class="n">Ranker</span><span class="p">(</span><span class="n">model_url</span><span class="p">)</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">stories</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
-<section id="privacy">
-<h1>Privacy<a class="headerlink" href="#privacy" title="Permalink to this heading"></a></h1>
-<p>It is strongly recommended to never include Personally Identifiable Information (PII) in variants or givens so that it is never tracked, persisted, or used as training data.</p>
+<section id="reward-assignment">
+<h2>Reward Assignment<a class="headerlink" href="#reward-assignment" title="Permalink to this heading"></a></h2>
+<p>Easily train your rankers using <a class="reference external" href="https://improve.ai/reinforcement-learning/">reinforcement learning</a>.</p>
+<p>First, track when an item is used:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tracker</span> <span class="o">=</span> <span class="n">RewardTracker</span><span class="p">(</span><span class="s2">&quot;stories&quot;</span><span class="p">,</span> <span class="n">track_url</span><span class="p">)</span>
+<span class="n">reward_id</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">track</span><span class="p">(</span><span class="n">story</span><span class="p">,</span> <span class="n">ranked_stories</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Later, if a positive outcome occurs, provide a reward:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">purchased</span><span class="p">:</span>
+    <span class="n">tracker</span><span class="o">.</span><span class="n">add_reward</span><span class="p">(</span><span class="n">profit</span><span class="p">,</span> <span class="n">reward_id</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Reinforcement learning uses positive rewards for favorable outcomes (a “carrot”) and negative rewards
+for undesirable outcomes (a “stick”). By assigning rewards based on business metrics,
+such as revenue or conversions, the system optimizes these metrics over time.</p>
+</section>
+<section id="contextual-ranking-scoring">
+<h2>Contextual Ranking &amp; Scoring<a class="headerlink" href="#contextual-ranking-scoring" title="Permalink to this heading"></a></h2>
+<p>Improve AI turns XGBoost into a contextual multi-armed bandit, meaning that context is considered when making ranking or scoring decisions.</p>
+<p>Often, the choice of the best variant depends on the context that the decision is made within. Let’s take the example of greetings for different times of the day:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">greetings</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Good Morning&quot;</span><span class="p">,</span> 
+             <span class="s2">&quot;Good Afternoon&quot;</span><span class="p">,</span> 
+             <span class="s2">&quot;Good Evening&quot;</span><span class="p">,</span>
+             <span class="s2">&quot;Buenos Días&quot;</span><span class="p">,</span>
+             <span class="s2">&quot;Buenas Tardes&quot;</span><span class="p">,</span>
+             <span class="s2">&quot;Buenas Noches&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>rank() also considers the context of each decision. The context can be any JSON-encodable data structure.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ranked</span> <span class="o">=</span> <span class="n">ranker</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">items</span><span class="o">=</span><span class="n">greetings</span><span class="p">,</span> 
+                     <span class="n">context</span><span class="o">=</span><span class="p">{</span> <span class="s2">&quot;day_time&quot;</span><span class="p">:</span> <span class="mf">12.0</span><span class="p">,</span>
+                               <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en&quot;</span> <span class="p">})</span>
+<span class="n">greeting</span> <span class="o">=</span> <span class="n">ranked</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Trained with appropriate rewards, Improve AI would learn from scratch which greeting is best for each time of day and language.</p>
 </section>
 <section id="resources">
-<h1>Resources<a class="headerlink" href="#resources" title="Permalink to this heading"></a></h1>
+<h2>Resources<a class="headerlink" href="#resources" title="Permalink to this heading"></a></h2>
 <ul class="simple">
 <li><p><a class="reference external" href="https://improve.ai/quick-start/">Quick Start Guide</a></p></li>
-<li><p><a class="reference external" href="https://improve.ai/python-sdk/">Python SDK API Docs</a></p></li>
-<li><p><a class="reference external" href="https://github.com/improve-ai/gym/">Improve AI Gym</a></p></li>
-<li><p><a class="reference external" href="https://aws.amazon.com/marketplace/pp/prodview-pyqrpf5j6xv6g">Improve AI Trainer (FREE)</a></p></li>
-<li><p><a class="reference external" href="https://aws.amazon.com/marketplace/pp/prodview-adchtrf2zyvow">Improve AI Trainer (PRO)</a></p></li>
+<li><p><a class="reference external" href="https://github.com/improve-ai/tracker-trainer/">Tracker / Trainer</a></p></li>
 <li><p><a class="reference external" href="https://improve.ai/reinforcement-learning/">Reinforcement Learning</a></p></li>
-<li><p><a class="reference external" href="https://improve.ai/multivariate-optimization/">Decisions</a></p></li>
-<li><p><a class="reference external" href="https://improve.ai/ranking/">Ranking</a></p></li>
-<li><p><a class="reference external" href="https://improve.ai/scoring/">Scoring</a></p></li>
-<li><p><a class="reference external" href="https://improve.ai/multivariate-optimization/">Multivariate optimization</a></p></li>
 </ul>
 </section>
 <section id="help-improve-our-world">
-<h1>Help Improve Our World<a class="headerlink" href="#help-improve-our-world" title="Permalink to this heading"></a></h1>
+<h2>Help Improve Our World<a class="headerlink" href="#help-improve-our-world" title="Permalink to this heading"></a></h2>
 <p>The mission of Improve AI is to make our corner of the world a little bit better each day. When each of us improve our corner of the world, the whole world becomes better. If your product or work does not make the world better, do not use Improve AI. Otherwise, welcome, I hope you find value in my labor of love.</p>
 <p>– Justin Chapweske</p>
+</section>
 </section>
 
 

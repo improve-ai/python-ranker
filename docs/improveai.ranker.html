@@ -46,17 +46,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Readme:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="readme.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="readme.html#initialization">Initialization</a></li>
-<li class="toctree-l1"><a class="reference internal" href="readme.html#usage">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="readme.html#contextual-decisions">Contextual Decisions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="readme.html#ranking">Ranking</a></li>
-<li class="toctree-l1"><a class="reference internal" href="readme.html#scoring">Scoring</a></li>
-<li class="toctree-l1"><a class="reference internal" href="readme.html#multivariate-optimization">Multivariate Optimization</a></li>
-<li class="toctree-l1"><a class="reference internal" href="readme.html#variant-types">Variant Types</a></li>
-<li class="toctree-l1"><a class="reference internal" href="readme.html#privacy">Privacy</a></li>
-<li class="toctree-l1"><a class="reference internal" href="readme.html#resources">Resources</a></li>
-<li class="toctree-l1"><a class="reference internal" href="readme.html#help-improve-our-world">Help Improve Our World</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readme.html">About Improve AI python ranker</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Classes:</span></p>
 <ul class="current">
@@ -114,6 +104,8 @@
 <dt class="sig sig-object py" id="improveai.ranker.Ranker">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Ranker</span></span><a class="headerlink" href="#improveai.ranker.Ranker" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A utility for ranking items based on their scores. The Ranker struct takes
+a ImproveAI model to evaluate and rank the given items.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="improveai.ranker.Ranker.scorer">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scorer</span></span><a class="headerlink" href="#improveai.ranker.Ranker.scorer" title="Permalink to this definition"></a></dt>
@@ -157,7 +149,7 @@ If both are provided Scorer is preferred.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>scorer</strong> (<a class="reference internal" href="improveai.scorer.html#improveai.scorer.Scorer" title="improveai.scorer.Scorer"><em>Scorer</em></a>) – a Scorer object to be used with this Ranker</p></li>
-<li><p><strong>model_url</strong> (<em>str</em>) – URL or local FS path leading to ImproveAI model to be used with this Ranker</p></li>
+<li><p><strong>model_url</strong> (<em>str</em>) – URL or local FS of a plain or gzip compressed Improve AI model resource</p></li>
 </ul>
 </dd>
 </dl>
@@ -171,11 +163,12 @@ If both are provided Scorer is preferred.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>items</strong> (<em>list</em><em> or </em><em>tuple</em><em> or </em><em>np.ndarray</em>) – list of items to be ranked</p></li>
-<li><p><strong>context</strong> (<em>object</em>) – any JSON encodable object serving as a context for ranking</p></li>
+<li><p><strong>context</strong> (<em>object</em>) – any JSON encodable extra context info that will be used with each of
+the item to get its score</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>a collection of ranked items (collection’s type is identical with <cite>items</cite>)</p>
+<dd class="field-even"><p>a collection of ranked items, sorted by their scores in descending order.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>list or tuple or np.ndarray</p>

@@ -61,7 +61,7 @@ class Scorer:
         Parameters
         ----------
         model_url: str
-            URL or local FS path leading to ImproveAI model to be used with this Scorer
+            URL or local FS of a plain or gzip compressed Improve AI model resource
 
         """
         assert model_url is not None and isinstance(model_url, str)
@@ -72,21 +72,23 @@ class Scorer:
 
     def score(self, items: list or tuple or np.ndarray, context: object = None) -> np.ndarray:
         """
-        Calculate scores for provided items and a context
+        Uses the model to score a list of items with the given context
 
         Parameters
         ----------
         items: list or tuple or np.ndarray
             list of items to be scored
         context: object
-            any JSON encodable object serving as a context for scoring
+            any JSON encodable extra context info that will be used with each of
+            the item to get its score
 
         Returns
         -------
         np.ndarray
-            an array of scores for items of type double
+            an array of float64 (double) values representing the scores of the items.
 
         """
+
         check_candidates(candidates=items)
         # log givens for DEBUG == True
         if DEBUG is True:
