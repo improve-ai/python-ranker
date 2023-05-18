@@ -22,21 +22,8 @@ readme_path = pathlib.Path(__file__).parent.resolve().parent.parent / "README.md
 readme_target = pathlib.Path(__file__).parent / "readme.md"
 
 with readme_target.open("w") as outf:
-    # Change the title to "Readme"
-    outf.write(
-        "\n".join(
-            [
-                "Readme",
-                "======",
-            ]
-        )
-    )
     lines = []
     for line in readme_path.read_text().split("\n"):
-        if line.startswith("# "):
-            # Skip title, because we now use "Readme"
-            # Could also simply exclude first line for the same effect
-            continue
         lines.append(line)
     outf.write("\n".join(lines))
 
