@@ -1,4 +1,4 @@
-# Rank, Score & Optimize Python Data Structures
+# Ranking, Scoring, Decisions, and Optimization with XGBoost
 
 Improve AI is a machine learning platform for quickly implementing app optimization, personalization, and recommendations for [Python](https://improve.ai/python-sdk/), [iOS](https://improve.ai/ios-sdk/), and [Android](https://improve.ai/android-sdk/).
 
