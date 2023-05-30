@@ -1123,6 +1123,48 @@ class TestEncoder(TestCase):
             test_case_filename=os.getenv(
                 "FEATURE_ENCODER_TEST_NESTED_DICT_STRING_KEYS_JSON"))
 
+    def test_float64_noise_passes(self):
+        self._generic_test_encode_record_from_json_data(
+            test_case_filename=os.getenv("FEATURE_ENCODER_FLOAT64_NOISE_PASSES_FLOAT32_NOISE_RAISES_JSON"))
+
+    def test_float64_noise_raises(self):
+        test_case_path = os.sep.join(
+            [self.test_suite_data_directory, os.getenv("FEATURE_ENCODER_FLOAT64_NOISE_PASSES_FLOAT32_NOISE_RAISES_JSON")])
+
+        test_case = self._get_test_data(path_to_test_json=test_case_path)
+
+        self._set_model_properties_from_test_case(test_case=test_case)
+
+        test_input = test_case.get("test_case", None)
+        assert test_input is not None
+
+        item_input = test_input.get("item", None)
+        assert item_input is not None
+
+        # givens and extra features can be None
+        context_input = test_input.get("context", None)
+
+        expected_output = test_case.get("test_output", None)
+        assert expected_output is not None
+
+        print('### expected_output ###')
+        print(expected_output)
+
+        encode_feature_vector_into_float32, manual_encode_into_float32 = \
+            self._get_encoded_arrays(variant_input=item_input, givens_input=context_input)
+
+        expected_output_float32 = convert_values_to_float32(expected_output)
+
+        # check that encode_feature_vector() output is identical with expected output
+        print('### expected_output_float32 ###')
+        print(expected_output_float32)
+        print('### encode_feature_vector_into_float32 ###')
+        print(encode_feature_vector_into_float32)
+        np.testing.assert_array_equal(expected_output_float32, encode_feature_vector_into_float32)
+
+        # check that 'manual' encoding output is identical with expected output
+        np.testing.assert_array_equal(expected_output_float32, manual_encode_into_float32)
+
     def test_encode_item_raises_for_non_json_encodable(self):
         feature_encoder = FeatureEncoder(
             feature_names=['item', 'context'], string_tables={}, model_seed=1)
