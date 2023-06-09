@@ -33,7 +33,6 @@ cpdef double scale(double val, double width=2.0) except *:
     -------
     double
         scaled miss value
-
     """
     assert width >= 0.0
     # map value in [0, 1] to [-width/2, width/2]
@@ -54,7 +53,6 @@ cpdef unsigned long long get_mask(list string_table) except *:
     -------
     unsigned long long
         number of bytes needed to represent string hashed in the table
-
     """
     if len(string_table) == 0:
         return 0
@@ -106,7 +104,6 @@ cdef class StringTable:
             a list of masked hashed strings for each string feature
         model_seed: int
             model seed value
-
         """
 
         if model_seed < 0:
@@ -141,7 +138,6 @@ cdef class StringTable:
         -------
         double
             encoded value
-
         """
         cdef unsigned long long string_hash = xxh3(string, seed=self.model_seed)
 
@@ -165,7 +161,6 @@ cdef class StringTable:
         -------
         double
             encoded miss value
-
         """
         # TODO !! important note -> for negative exponents the base must be of
         #  a float type
@@ -191,7 +186,6 @@ cpdef tuple get_noise_shift_scale(double noise):
     -------
     tuple
         tuple of double: (noise_shift, noise_scale)
-
     """
     assert noise >= 0.0 and noise < 1.0
     # x + noise * 2 ** -142 will round to x for most values of x. Used to create
@@ -218,7 +212,6 @@ cpdef double sprinkle(double x, double noise_shift, double noise_scale):
     -------
     double
         sprinkled value
-
     """
     # x + noise_offset will round to x for most values of x
     # allows different values when x == 0.0
@@ -291,7 +284,6 @@ cdef class FeatureEncoder:
         Raises
         -------
         ValueError if into is not a numpy array or not of a float64 dtype
-
         """
 
         if not isinstance(into, np.ndarray) or into.dtype != np.float64:
@@ -314,7 +306,6 @@ cdef class FeatureEncoder:
             value to be added to features
         noise_scale: double
             multiplier used to scale shifted feature value
-
         """
         self._encode(item, path=ITEM_FEATURE_KEY, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
 
@@ -334,7 +325,6 @@ cdef class FeatureEncoder:
             value to be added to features
         noise_scale: double
             multiplier used to scale shifted feature value
-
         """
         self._encode(context, path=CONTEXT_FEATURE_KEY, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
 
@@ -355,7 +345,6 @@ cdef class FeatureEncoder:
             an array into which feature values will be added
         noise: double
             value in [0, 1) which will be combined with the feature value
-
         """
 
         cdef double noise_shift
@@ -398,7 +387,6 @@ cdef class FeatureEncoder:
             small bias added to the feature value
         noise_scale: double
             small multiplier of the feature value
-
         """
 
         if path in FIRST_LEVEL_FEATURES_CHUNKS:
@@ -465,7 +453,6 @@ cpdef np.ndarray[double, ndim=2, mode='c'] encode_candidates_to_matrix(
     -------
     np.ndarray[double, ndim=2, mode='c']
         2D numpy array with encoded candidates
-
     """
 
     cdef np.ndarray[double, ndim=2, mode='c'] into_matrix = \

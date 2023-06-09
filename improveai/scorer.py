@@ -6,8 +6,11 @@ from improveai.utils.general_purpose_tools import check_candidates
 
 
 class Scorer:
+    """
+    Scores items with optional context using a Improve AI model
+    """
 
-    # TODO do not expose any attribute which is not strictly necessary as a property
+    # Do not expose any attribute which is not strictly necessary as a property
     # exposed as read-only
     @property
     def model_url(self) -> str:
@@ -21,7 +24,6 @@ class Scorer:
         -------
         str
             model URL for this Scorer
-
         """
         return self.__model_url
 
@@ -36,7 +38,6 @@ class Scorer:
         -------
         XGBChooser
             a chooser object for this Scorer
-
         """
         return self.__chooser
 
@@ -50,9 +51,8 @@ class Scorer:
         -------
         float
             Small float value used to randomize model's scores
-
         """
-        return 2**-23
+        return 2 ** -23
 
     def __init__(self, model_url: str):
         """
@@ -62,7 +62,6 @@ class Scorer:
         ----------
         model_url: str
             URL or local FS of a plain or gzip compressed Improve AI model resource
-
         """
         assert model_url is not None and isinstance(model_url, str)
 
@@ -86,7 +85,6 @@ class Scorer:
         -------
         np.ndarray
             an array of float64 (double) values representing the scores of the items.
-
         """
 
         check_candidates(candidates=items)
@@ -95,11 +93,9 @@ class Scorer:
             print(f'[DEBUG] givens: {context}')
 
         # encode variants with single givens
-        # TODO Check that it raises if there is a problem during feature encoding
         encoded_candidates_matrix = self.__chooser.encode_candidates_with_context(
             candidates=items, context=context)
 
-        # TODO Check that it raises for model error, such as non-JSON encodeable data type
         scores = self.__chooser.calculate_predictions(features_matrix=encoded_candidates_matrix) + \
             np.array(np.random.rand(len(items)), dtype='float64') * self.TIEBREAKER_MULTIPLIER
 

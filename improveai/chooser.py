@@ -48,7 +48,6 @@ class XGBChooser:
         -------
         Booster
             xgboost's booster used by this chooser
-
         """
         return self._model
 
@@ -65,7 +64,6 @@ class XGBChooser:
         -------
         dict
             Improve AI model metadata dict
-
         """
         return self._model_metadata
 
@@ -82,7 +80,6 @@ class XGBChooser:
         -------
         FeatureEncoder
             FeatureEncoder of this chooser
-
         """
         return self._feature_encoder
 
@@ -99,7 +96,6 @@ class XGBChooser:
         -------
         str
             Model name of this Improve AI model
-
         """
         return self._model_name
 
@@ -120,7 +116,6 @@ class XGBChooser:
         -------
         list
             Feature names of this Improve AI model
-
         """
         return self._model_feature_names
 
@@ -137,7 +132,6 @@ class XGBChooser:
         -------
         float
             Currently used noise
-
         """
         return self._current_noise
 
@@ -154,7 +148,6 @@ class XGBChooser:
         -------
         float
             Forced noise value
-
         """
         return self._imposed_noise
 
@@ -191,7 +184,6 @@ class XGBChooser:
         -------
         str
             'ai.improve.features'
-
         """
         return FEATURE_NAMES_METADATA_KEY
 
@@ -204,7 +196,6 @@ class XGBChooser:
         -------
         str
             'ai.improve.string_tables'
-
         """
         return 'ai.improve.string_tables'
 
@@ -217,7 +208,6 @@ class XGBChooser:
         -------
         str
             'ai.improve.seed'
-
         """
         return 'ai.improve.seed'
 
@@ -230,7 +220,6 @@ class XGBChooser:
         -------
         str
             'ai.improve.model'
-
         """
         return 'ai.improve.model'
 
@@ -243,7 +232,6 @@ class XGBChooser:
         -------
         str
             'ai.improve.created_at'
-
         """
         return 'ai.improve.created_at'
 
@@ -256,7 +244,6 @@ class XGBChooser:
         -------
         int
             8
-
         """
         return 8
 
@@ -269,7 +256,6 @@ class XGBChooser:
         -------
         str
             'ai.improve.version'
-
         """
         return 'ai.improve.version'
 
@@ -282,7 +268,6 @@ class XGBChooser:
         -------
         str
             'user_defined_metadata'
-
         """
         return USER_DEFINED_METADATA_KEY
 
@@ -295,7 +280,6 @@ class XGBChooser:
         -------
         str
             list of required keys present in model metadata
-
         """
 
         return [
@@ -329,7 +313,6 @@ class XGBChooser:
             URL / path to desired model
         verbose: bool
             should I print debug messages
-
         """
 
         try:
@@ -389,7 +372,6 @@ class XGBChooser:
         -------
         float
             noise used by chooser
-
         """
         if self.imposed_noise is None:
             noise = np.random.rand()
@@ -416,7 +398,6 @@ class XGBChooser:
         -------
         np.ndarray
             2D numpy array with encoded candidates
-
         """
         into_matrix = np.full((len(candidates), len(self.feature_encoder.feature_indexes)), np.nan)
 
@@ -472,7 +453,6 @@ class XGBChooser:
         -------
         np.ndarray
             an array of double scores
-
         """
         # make sure input is a numpy array
         assert isinstance(features_matrix, np.ndarray)
@@ -538,7 +518,6 @@ class XGBChooser:
         -------
         str or Path or bytearray
             path or downloaded model
-
         """
         raw_model_src = model_src
         if not isinstance(model_src, Path) and is_path_http_addr(path=model_src):
@@ -631,7 +610,6 @@ class XGBChooser:
         -------
         list
             list of feature names
-
         """
 
         if not model_metadata:
@@ -661,7 +639,6 @@ class XGBChooser:
         -------
         int
             model seed
-
         """
 
         if not model_metadata:
@@ -689,7 +666,6 @@ class XGBChooser:
         -------
         str
             Improve AI model name
-
         """
 
         if not model_metadata:
@@ -715,7 +691,6 @@ class XGBChooser:
         -------
         dict
             dict of lists with string tables
-
         """
 
         if not model_metadata:

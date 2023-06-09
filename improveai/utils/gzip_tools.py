@@ -18,7 +18,6 @@ def is_gz_bytes(checked_bytes: bytes) -> bool:
     -------
     bool
         flag indicating if provided bytes is a gz compressed bytes
-
     """
 
     if not isinstance(checked_bytes, bytes):
@@ -45,7 +44,6 @@ def get_unzipped_gz(to_be_unzipped_bytes: bytes) -> bytes:
     -------
     bytes
         unzipped bytes
-
     """
 
     if not isinstance(to_be_unzipped_bytes, bytes):
@@ -70,7 +68,6 @@ def check_and_get_unzipped_model(model_src: Union[str, bytes, Path]) -> Union[st
     -------
     Union[str, bytes]
         either decompressed bytes or path to model file
-
     """
 
     if isinstance(model_src, bytes):

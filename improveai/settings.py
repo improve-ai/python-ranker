@@ -9,7 +9,6 @@ def gcc_and_py3_dev_installed() -> bool:
     -------
     bool
         True if both gcc and python3 headers are installed otherwise False
-
     """
     gcc_installed = os.system('gcc -v > /dev/null 2>&1') == 0
     py3_dev_installed = os.system('python3-config --help > /dev/null 2>&1') == 0

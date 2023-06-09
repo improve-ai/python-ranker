@@ -9,12 +9,6 @@ class Ranker:
     a ImproveAI model to evaluate and rank the given items.
     """
 
-    # TODO I think we might go with scorer and model_url as properties with only getter.
-    #  If we won't define them as properties anyone will be able to mutate them
-    #  Exposing only getters and leaving underlying attributes private allows to make them
-    #  immutable and nobody will be able to tinker with them as one could with
-    #  'normal' instance attributes
-
     @property
     def scorer(self):
         """
@@ -42,7 +36,6 @@ class Ranker:
         -------
         str
             model URL for this Ranker
-
         """
         return self.__model_url
 

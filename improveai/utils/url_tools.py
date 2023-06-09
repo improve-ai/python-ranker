@@ -15,7 +15,6 @@ def is_path_http_addr(path: str) -> bool:
     -------
     bool
         True if path is a URL otherwise False
-
     """
     try:
         res = urlparse(path)
@@ -37,7 +36,6 @@ def get_model_bytes_from_url(model_url: str) -> bytes:
     -------
     bytes
         downloaded bytes source url
-
     """
 
     try:

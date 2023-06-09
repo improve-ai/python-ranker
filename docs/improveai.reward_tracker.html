@@ -133,7 +133,7 @@ Use the <cite>reward_id</cite> to track future rewards associated with that item
 <dd><p>Key under which model name is stored in track request dict / body</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Track request body key storing model name</p>
+<dd class="field-odd"><p>“model” -&gt; track request body key storing model name</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>str</p>
@@ -147,7 +147,7 @@ Use the <cite>reward_id</cite> to track future rewards associated with that item
 <dd><p>Key under which message ID is stored in track request dict / body</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Track request body key storing message ID</p>
+<dd class="field-odd"><p>“message_id” -&gt; track request body key storing message ID</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>str</p>
@@ -161,7 +161,7 @@ Use the <cite>reward_id</cite> to track future rewards associated with that item
 <dd><p>Key under which item is stored in track request dict / body</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Track request body key storing best variant</p>
+<dd class="field-odd"><p>“item” -&gt; track request body key storing best variant</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>str</p>
@@ -175,7 +175,7 @@ Use the <cite>reward_id</cite> to track future rewards associated with that item
 <dd><p>Key under which context is stored in track request dict / body</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Track request body key storing givens</p>
+<dd class="field-odd"><p>“context” -&gt; track request body key storing givens</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>str</p>
@@ -189,7 +189,7 @@ Use the <cite>reward_id</cite> to track future rewards associated with that item
 <dd><p>Key under which reward is stored in reward request dict / body</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Track request body key storing reward value</p>
+<dd class="field-odd"><p>“reward” -&gt; track request body key storing reward value</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>str</p>
@@ -203,7 +203,7 @@ Use the <cite>reward_id</cite> to track future rewards associated with that item
 <dd><p>Key under which reward ID is stored in reward request dict / body</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Track request body key storing decision ID</p>
+<dd class="field-odd"><p>“decision_id” -&gt; track request body key storing decision ID</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>str</p>
@@ -447,7 +447,7 @@ item to get its score</p></li>
 <dd class="field-even"><p>reward_id of this track request or None if an error happened</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ste or None</p>
+<dd class="field-odd"><p>str or None</p>
 </dd>
 </dl>
 </dd></dl>

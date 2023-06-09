@@ -26,7 +26,6 @@ def read_jsonstring_from_file(
     -------
     str
         read json string
-
     """
 
     with open(path_to_file, mode) as rf:
@@ -55,7 +54,6 @@ def check_candidates(candidates: list or tuple or np.ndarray) -> list or tuple o
     ----------
     candidates: list or tuple or np.ndarray
         checked variants
-
     """
     # following checks take only less than 0,001 ms
     assert candidates is not None
@@ -77,7 +75,6 @@ def is_valid_ksuid(id_: str) -> bool:
     -------
     bool
         True if string is a valid ksuid otherwise False
-
     """
     if not isinstance(id_, str):
         return False
@@ -114,7 +111,6 @@ def deepcopy_args(*args):
     -------
     list
         list of copied args
-
     """
     return [deepcopy(arg) for arg in args]
 

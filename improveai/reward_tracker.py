@@ -29,8 +29,7 @@ class RewardTracker:
         Returns
         -------
         str
-            Track request body key storing model name
-
+            "model" -> track request body key storing model name
         """
         return "model"
 
@@ -42,8 +41,7 @@ class RewardTracker:
         Returns
         -------
         str
-            Track request body key storing message ID
-
+            "message_id" -> track request body key storing message ID
         """
         return "message_id"
 
@@ -55,8 +53,7 @@ class RewardTracker:
         Returns
         -------
         str
-            Track request body key storing best variant
-
+            "item" -> track request body key storing best variant
         """
         return "item"
 
@@ -68,8 +65,7 @@ class RewardTracker:
         Returns
         -------
         str
-            Track request body key storing givens
-
+            "context" -> track request body key storing givens
         """
         return "context"
 
@@ -81,8 +77,7 @@ class RewardTracker:
         Returns
         -------
         str
-            Track request body key storing reward value
-
+            "reward" -> track request body key storing reward value
         """
         return 'reward'
 
@@ -94,8 +89,7 @@ class RewardTracker:
         Returns
         -------
         str
-            Track request body key storing decision ID
-
+            "decision_id" -> track request body key storing decision ID
         """
         return "decision_id"
 
@@ -108,7 +102,6 @@ class RewardTracker:
         -------
         str
             Track request headers key storing `API key`
-
         """
 
         return "x-api-key"
@@ -122,7 +115,6 @@ class RewardTracker:
         -------
         str
             user info dict key storing track request body which caused an error
-
         """
         return 'ERROR_WITH_PAYLOAD'
 
@@ -135,7 +127,6 @@ class RewardTracker:
         -------
         str
             user info dict key storing track request error code
-
         """
         return 'REQUEST_ERROR_CODE'
 
@@ -148,7 +139,6 @@ class RewardTracker:
         -------
         str
             Track request headers key storing variants count
-
         """
         return 'count'
 
@@ -161,7 +151,6 @@ class RewardTracker:
         -------
         str
             Track request headers key storing sample
-
         """
         return 'sample'
 
@@ -175,7 +164,6 @@ class RewardTracker:
         -------
         str
             Name of the tracked model
-
         """
         return self._model_name
 
@@ -197,7 +185,6 @@ class RewardTracker:
         -------
         str
             Improve AI track endpoint URL
-
         """
         return self._track_url
 
@@ -215,7 +202,6 @@ class RewardTracker:
         -------
         str
             track endpoint API key
-
         """
         return self._api_key
 
@@ -234,7 +220,6 @@ class RewardTracker:
         -------
         bool
             should requests to AWS track endpoint be non-blockng
-
         """
         return self.__threaded_requests
 
@@ -283,7 +268,6 @@ class RewardTracker:
         -------
         dict
             body for _post_improve_request()
-
         """
 
         body = {
@@ -323,7 +307,6 @@ class RewardTracker:
         -------
         object
             sample from candidates
-
         """
         assert len(candidates) > 1, \
             'candidates must have at least 2 items in order to draw sample'
@@ -357,7 +340,6 @@ class RewardTracker:
         -------
         str or None
             reward_id of this track request or None if an error happened
-
         """
         # this will raise an assertion error if candidates are bad
         check_candidates(candidates)
@@ -395,9 +377,8 @@ class RewardTracker:
 
         Returns
         -------
-        ste or None
+        str or None
             reward_id of this track request or None if an error happened
-
         """
 
         item, num_candidates, context, sample = \
@@ -424,7 +405,6 @@ class RewardTracker:
         -------
         str
             message ID
-
         """
 
         assert is_valid_ksuid(reward_id)
@@ -436,7 +416,7 @@ class RewardTracker:
         body = {
             self.MODEL_KEY: self.model_name,
             self.REWARD_KEY: reward,
-            self.REWARD_ID_KEY: reward_id,}
+            self.REWARD_ID_KEY: reward_id}
 
         self.post_improve_request(body_values=body)
 
@@ -455,7 +435,6 @@ class RewardTracker:
         -------
         bool
             True if message_id otherwise False
-
         """
         try:
             assert isinstance(message_id, str) or message_id is None
@@ -474,7 +453,6 @@ class RewardTracker:
             improveai body dumped to JSON
         headers: dict
             request headers
-
         """
         try:
             response = rq.post(url=self.track_url, data=payload_json, headers=headers)

@@ -10,7 +10,7 @@ Feature names prefix for features derived from candidates / items, e.g.:
 
 - item == [1] -> feature names is "item.0"
 
-- item == {"a": 1}} - feature name is "item.a"
+- item == {"a": 1}} -> feature name is "item.a"
 """
 
 CONTEXT_FEATURE_KEY = 'context'
@@ -21,7 +21,7 @@ Feature names prefix for features derived from context, e.g.:
 
 - context == [1] -> feature names is "context.0"
 
-- context == {"a": 1}} - feature name is "context.a"
+- context == {"a": 1}} -> feature name is "context.a"
 """
 
 FIRST_LEVEL_FEATURES_CHUNKS = {ITEM_FEATURE_KEY, CONTEXT_FEATURE_KEY}
@@ -44,7 +44,6 @@ class FeatureEncoder:
         -------
         dict
             a mapping between a string feature names and feature index
-
         """
         return self._feature_indexes
 
@@ -62,7 +61,6 @@ class FeatureEncoder:
         -------
         list
             list of StringTables
-
         """
         return self._string_tables
 
@@ -117,7 +115,6 @@ class FeatureEncoder:
         Raises
         -------
         ValueError if into is not a numpy array or not of a float64 dtype
-
         """
 
         if into is not None:
@@ -140,7 +137,6 @@ class FeatureEncoder:
             value to be added to values of features
         noise_scale: float
             multiplier used to scale shifted feature values
-
         """
         self._encode(item, path=ITEM_FEATURE_KEY, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
 
@@ -158,7 +154,6 @@ class FeatureEncoder:
             value to be added to values of features
         noise_scale: float
             multiplier used to scale shifted feature values
-
         """
         self._encode(context, path=CONTEXT_FEATURE_KEY, into=into, noise_shift=noise_shift, noise_scale=noise_scale)
 
@@ -178,7 +173,6 @@ class FeatureEncoder:
             an array into which feature values will be added
         noise: float
             value in [0, 1) which will be combined with the feature value
-
         """
 
         noise_shift, noise_scale = get_noise_shift_scale(noise)
@@ -217,7 +211,6 @@ class FeatureEncoder:
             small bias added to the feature value
         noise_scale: float
             small multiplier of the feature value
-
         """
         if path in FIRST_LEVEL_FEATURES_CHUNKS:
             self._check_into(into)
@@ -273,7 +266,6 @@ def get_noise_shift_scale(noise: float) -> tuple:
     -------
     tuple
         tuple of floats: (noise_shift, noise_scale)
-
     """
     assert noise >= 0.0 and noise < 1.0
     # x + noise * 2 ** -142 will round to x for most values of x. Used to create
@@ -298,7 +290,6 @@ def sprinkle(x: float, noise_shift: float, noise_scale: float) -> float:
     -------
     float
         sprinkled value
-
     """
     # x + noise_offset will round to x for most values of x
     # allows different values when x == 0.0
@@ -319,7 +310,6 @@ class StringTable:
         -------
         int
             model seed
-
         """
         return self._model_seed
 
@@ -336,7 +326,6 @@ class StringTable:
         -------
         int
             mask used to 'decrease' hashed string value
-
         """
         return self._mask
 
@@ -355,7 +344,6 @@ class StringTable:
         -------
         float
             miss width value
-
         """
         return self._miss_width
 
@@ -372,7 +360,6 @@ class StringTable:
         -------
         dict
             a dict with target value encoding
-
         """
         return self._value_table
 
@@ -390,7 +377,6 @@ class StringTable:
             a list of masked hashed strings for each string feature
         model_seed: int
             model seed value
-
         """
 
         if model_seed < 0:
@@ -425,7 +411,6 @@ class StringTable:
         -------
         float
             encoded value
-
         """
         string_hash = xxh3(string, seed=self.model_seed)
         value = self.value_table.get(string_hash & self.mask)
@@ -447,7 +432,6 @@ class StringTable:
         -------
         float
             encoded miss value
-
         """
         # hash to float in range [-miss_width/2, miss_width/2]
         # 32 bit mask for JS portability
@@ -470,7 +454,6 @@ def scale(val: float, width: float = 2) -> float:
     -------
     float
         scaled miss value
-
     """
     assert width >= 0
     # map value in [0, 1] to [-width/2, width/2]
@@ -491,7 +474,6 @@ def get_mask(string_table: list) -> int:
     -------
     int
         number of bytes needed to represent string hashed in the table
-
     """
     if len(string_table) == 0:
         return 0
